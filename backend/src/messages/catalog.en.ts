@@ -62,6 +62,11 @@ export const CATALOG_EN: Catalog = {
   HELPER_NOT_EDITABLE:
     "{entityId} cannot be set up here yet. Template and group helpers come later; until then in Home Assistant.",
   HELPER_SETTINGS_SAVED: "Settings saved in Home Assistant.",
+  SCENE_SAVED: "Scene saved in Home Assistant.",
+  SCENE_NOT_EDITABLE:
+    "{entityId} cannot be edited here: the scene is not in scenes.yaml (e.g. it comes from a package).",
+  SCENE_PREVIEW_SHOWN: "The devices show the scene now.",
+  SCENE_RESTORED: "The devices are back to how they were.",
   HELPER_DELETED: "Helper deleted.",
   FLOW_UNSUPPORTED: "{entityId} has no flow. Only automations and scripts have one.",
   FLOW_SAVED: "Flow saved in Home Assistant.",

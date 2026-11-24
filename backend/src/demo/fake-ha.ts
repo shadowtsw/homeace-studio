@@ -115,6 +115,8 @@ export class FakeHa {
   /** Stored helpers by "<type>.<id>", once created or updated; others come from their state. */
   private readonly helperItems = new Map<string, Payload>();
   private readonly categories = new Map<CategoryScope, HaCategory[]>();
+  /** scenes.yaml by scene id. */
+  private readonly sceneConfigs = new Map<string, Payload>();
   private readonly flowConfigs = new Map<FlowKind, Map<string, Payload>>([
     ["automation", new Map()],
     ["script", new Map()],
@@ -205,6 +207,13 @@ export class FakeHa {
 
   /** REST GET below `/api`; null for unknown resources, like HA's 404. */
   restGet(path: string): unknown {
+    if (path.startsWith(HA_REST_PATH.sceneConfig)) {
+      const config = this.sceneConfigs.get(
+        decodeURIComponent(path.slice(HA_REST_PATH.sceneConfig.length)),
+      );
+      return config ? structuredClone(config) : null;
+    }
+
     const { kind, key } = this.parseFlowPath(path);
     const config = this.flowConfigs.get(kind)?.get(key);
 
@@ -213,6 +222,8 @@ export class FakeHa {
 
   /** REST POST below `/api`: saves an automation or script; a new key creates its entity. */
   restPost(path: string, body: unknown): unknown {
+    if (path.startsWith(HA_REST_PATH.sceneConfig)) return this.saveScene(path, body);
+
     const { kind, key } = this.parseFlowPath(path);
     const config = structuredClone(body) as Payload;
 
@@ -300,7 +311,9 @@ export class FakeHa {
       last_changed: entity.lastChanged ?? now(),
     });
 
-    if (entity.config) {
+    if (entity.config && domainOf(entity.entityId) === "scene") {
+      this.sceneConfigs.set(entity.uniqueId ?? entity.entityId, structuredClone(entity.config));
+    } else if (entity.config) {
       const kind = domainOf(entity.entityId) as FlowKind;
       this.flowConfigs.get(kind)?.set(entity.uniqueId ?? entity.entityId, entity.config);
     }
@@ -588,7 +601,45 @@ export class FakeHa {
     return null;
   }
 
+  /** POST scenes.yaml: the scene takes over the new config, like after HA's scene reload. */
+  private saveScene(path: string, body: unknown): unknown {
+    const id = decodeURIComponent(path.slice(HA_REST_PATH.sceneConfig.length));
+    const config = structuredClone(body) as Payload;
+
+    if (typeof config !== "object" || config === null || Array.isArray(config)) {
+      throw new HaRestError(HTTP_BAD_REQUEST, "Message malformed: expected a dictionary");
+    }
+
+    this.sceneConfigs.set(id, config);
+    const entry = [...this.registry.values()].find(
+      (item) => domainOf(item.entity_id) === "scene" && item.unique_id === id,
+    );
+    if (entry) {
+      const entities = Object.keys(config.entities ?? {});
+      this.setState(entry.entity_id, this.states.get(entry.entity_id)?.state ?? now(), {
+        entity_id: entities,
+      });
+    }
+
+    return { result: "ok" };
+  }
+
+  /** `scene.apply`: every device takes its state and attributes, like HA's reproduce_state. */
+  private applyScene(payload: Payload): null {
+    const data = (payload.service_data ?? {}) as { entities?: Record<string, unknown> };
+
+    for (const [entityId, raw] of Object.entries(data.entities ?? {})) {
+      const value = (raw && typeof raw === "object" ? raw : { state: raw }) as Payload;
+      const { state, ...attributes } = value;
+      this.setState(entityId, typeof state === "string" ? state : "on", attributes);
+    }
+
+    return null;
+  }
+
   private callService(payload: Payload): null {
+    if (payload.domain === "scene" && payload.service === "apply") return this.applyScene(payload);
+
     const service = String(payload.service);
     const target = (payload.target ?? {}) as { entity_id?: string | string[] };
     const entityIds = [target.entity_id ?? []].flat();

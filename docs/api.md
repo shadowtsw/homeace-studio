@@ -433,3 +433,26 @@ scripts.yaml.
 
 The backend catalog: message ID → text, for `de` (default) and `en`. Placeholders like `{path}` are filled from
 `data.params` of an error. Sent with `Cache-Control: no-cache` and an ETag, so reloads cost a `304`.
+
+## Scenes: /api/scenes
+
+Scenes are edited without switching anything: the values go into scenes.yaml through HA's config API
+(`config/scene/config/<id>`, the scene entity's unique_id), unlike HA's own editor, which switches the
+devices to "photograph" them.
+
+- `GET /api/scenes/:entityId` → `{ entityId, isEditable, devices: [{ entityId, name, domain, values,
+  current }] }`. `values` is what the scene sets (HA's state plus attributes; a plain `"off"` in
+  scenes.yaml comes as `{ state: "off" }`), `current` what the device does now (`{ state, attributes }`,
+  e.g. a light's `supported_color_modes`). Scenes outside scenes.yaml: `isEditable: false`, devices from
+  the scene's `entity_id` attribute, `values: null`.
+- `GET /api/scenes/device/:deviceId` → one such device with its current state as `values`, the starting
+  point when it joins a scene.
+- `PUT /api/scenes/:entityId` `{ entities: { "light.x": { "state": "on", "brightness": 64 } } }` saves
+  them (`SCENE_SAVED`) and answers like GET. Name, id and the rest of the config stay; HA's `metadata`
+  keeps its entries for remaining devices, new devices get `{ entity_only: true }`.
+  `400 SCENE_NOT_EDITABLE` outside scenes.yaml.
+- `POST /api/scenes/:entityId/preview` `{ entities }` shows values on the devices now (`scene.apply`,
+  `SCENE_PREVIEW_SHOWN`). The first time a device is touched, the backend keeps its state.
+- `POST /api/scenes/:entityId/restore` `{ entityIds? }` applies the kept states again (all, or only the
+  given devices, e.g. after trying one) and forgets them (`SCENE_RESTORED`). No snapshot scene is
+  created in HA, so nothing extra shows up there.

@@ -63,6 +63,11 @@ export const CATALOG_ES: Catalog = {
   HELPER_NOT_EDITABLE:
     "{entityId} todavía no se puede configurar aquí. Los ayudantes de plantilla y de grupo llegarán más adelante; hasta entonces, en Home Assistant.",
   HELPER_SETTINGS_SAVED: "Ajustes guardados en Home Assistant.",
+  SCENE_SAVED: "Escena guardada en Home Assistant.",
+  SCENE_NOT_EDITABLE:
+    "{entityId} no se puede editar aquí: la escena no está en scenes.yaml (p. ej. viene de un paquete).",
+  SCENE_PREVIEW_SHOWN: "Los dispositivos muestran ahora la escena.",
+  SCENE_RESTORED: "Los dispositivos vuelven a estar como antes.",
   HELPER_DELETED: "Ayudante eliminado.",
   FLOW_UNSUPPORTED:
     "{entityId} no tiene flujo. Solo las automatizaciones y los scripts tienen uno.",

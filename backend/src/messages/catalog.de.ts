@@ -62,6 +62,11 @@ export const CATALOG_DE: Catalog = {
   HELPER_NOT_EDITABLE:
     "{entityId} lässt sich hier noch nicht einstellen. Template- und Gruppen-Helfer kommen später; bis dahin in Home Assistant.",
   HELPER_SETTINGS_SAVED: "Einstellungen in Home Assistant gespeichert.",
+  SCENE_SAVED: "Szene in Home Assistant gespeichert.",
+  SCENE_NOT_EDITABLE:
+    "{entityId} lässt sich hier nicht bearbeiten: Die Szene steht nicht in scenes.yaml (z. B. aus einem Package).",
+  SCENE_PREVIEW_SHOWN: "Die Geräte zeigen jetzt die Szene.",
+  SCENE_RESTORED: "Die Geräte sind wieder wie vorher.",
   HELPER_DELETED: "Helfer gelöscht.",
   FLOW_UNSUPPORTED: "{entityId} hat keinen Ablauf. Nur Automationen und Skripte haben einen.",
   FLOW_SAVED: "Ablauf in Home Assistant gespeichert.",

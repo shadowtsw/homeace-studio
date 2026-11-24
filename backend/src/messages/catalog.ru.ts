@@ -63,6 +63,11 @@ export const CATALOG_RU: Catalog = {
   HELPER_NOT_EDITABLE:
     "{entityId} пока нельзя настроить здесь. Вспомогательные элементы шаблонов и групп появятся позже; до тех пор — в Home Assistant.",
   HELPER_SETTINGS_SAVED: "Настройки сохранены в Home Assistant.",
+  SCENE_SAVED: "Сцена сохранена в Home Assistant.",
+  SCENE_NOT_EDITABLE:
+    "{entityId} нельзя изменить здесь: сцены нет в scenes.yaml (например, она из пакета).",
+  SCENE_PREVIEW_SHOWN: "Устройства сейчас показывают сцену.",
+  SCENE_RESTORED: "Устройства вернулись в прежнее состояние.",
   HELPER_DELETED: "Вспомогательный элемент удалён.",
   FLOW_UNSUPPORTED: "У {entityId} нет логики. Она есть только у автоматизаций и скриптов.",
   FLOW_SAVED: "Логика сохранена в Home Assistant.",

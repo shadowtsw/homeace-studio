@@ -8,6 +8,7 @@ import { CheckupModule } from "./checkup/checkup.module";
 import { CategoriesModule } from "./categories/categories.module";
 import { EntryAreasModule } from "./areas/entry-areas.module";
 import { DependenciesModule } from "./dependencies/dependencies.module";
+import { ScenesModule } from "./scenes/scenes.module";
 import { TracesModule } from "./traces/traces.module";
 import { RenameModule } from "./rename/rename.module";
 import { DuplicateModule } from "./duplicate/duplicate.module";
@@ -37,6 +38,7 @@ import { MessagesModule } from "./messages/messages.module";
     DependenciesModule,
     EntryAreasModule,
     TracesModule,
+    ScenesModule,
     RenameModule,
     DuplicateModule,
   ],

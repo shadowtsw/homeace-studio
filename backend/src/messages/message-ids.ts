@@ -69,6 +69,10 @@ export const MESSAGE_ID = {
   helperNotDeletable: "HELPER_NOT_DELETABLE",
   helperNotEditable: "HELPER_NOT_EDITABLE",
   helperSettingsSaved: "HELPER_SETTINGS_SAVED",
+  sceneSaved: "SCENE_SAVED",
+  sceneNotEditable: "SCENE_NOT_EDITABLE",
+  scenePreviewShown: "SCENE_PREVIEW_SHOWN",
+  sceneRestored: "SCENE_RESTORED",
 
   // Editor
   flowUnsupported: "FLOW_UNSUPPORTED",

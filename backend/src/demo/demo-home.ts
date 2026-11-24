@@ -184,6 +184,22 @@ function sensor(
   };
 }
 
+/** A light with white tones and colours, and one with white tones only (HA's colour modes). */
+const COLOR_LIGHT = {
+  supported_color_modes: ["color_temp", "hs"],
+  min_color_temp_kelvin: 2000,
+  max_color_temp_kelvin: 6500,
+};
+const WHITE_LIGHT = {
+  supported_color_modes: ["color_temp"],
+  min_color_temp_kelvin: 2700,
+  max_color_temp_kelvin: 6500,
+};
+
+function withAttributes(entity: DemoEntity, attributes: Record<string, unknown>): DemoEntity {
+  return { ...entity, attributes: { ...entity.attributes, ...attributes } };
+}
+
 /** Devices the flows refer to. They are not listed themselves, but give the chips their names. */
 const MOTION = { device: "Terrace motion sensor", areaId: "terrace" };
 const DOOR = { device: "Front door sensor", areaId: "hallway" };
@@ -203,23 +219,38 @@ const DEVICES: DemoEntity[] = [
   sensor("binary_sensor.front_door", "Front door", "off", undefined, DOOR),
   sensor("sensor.front_door_battery", "Front door sensor Battery", "91", "%", DOOR),
   sensor("binary_sensor.anyone_home", "Anyone home", "on"),
-  sensor("light.terrace", "Terrace light", "off", undefined, {
-    device: "Terrace light",
-    areaId: "terrace",
-  }),
-  sensor("light.garden_paths", "Garden path lights", "off", undefined, {
-    device: "Garden path lights",
-    areaId: "garden",
-  }),
-  sensor("light.living_room", "Living room light", "on", undefined, {
-    device: "Ceiling light",
-    areaId: "living_room",
-  }),
-  sensor("light.living_room_floor_lamp", "Floor lamp", "off", undefined, {
-    device: "Floor lamp",
-    areaId: "living_room",
-  }),
-  sensor("cover.awning", "Awning", "open", undefined, { device: "Awning", areaId: "terrace" }),
+  withAttributes(
+    sensor("light.terrace", "Terrace light", "off", undefined, {
+      device: "Terrace light",
+      areaId: "terrace",
+    }),
+    { ...COLOR_LIGHT, effect_list: ["none", "candle", "rainbow"] },
+  ),
+  withAttributes(
+    sensor("light.garden_paths", "Garden path lights", "off", undefined, {
+      device: "Garden path lights",
+      areaId: "garden",
+    }),
+    { supported_color_modes: ["brightness"] },
+  ),
+  withAttributes(
+    sensor("light.living_room", "Living room light", "on", undefined, {
+      device: "Ceiling light",
+      areaId: "living_room",
+    }),
+    { ...WHITE_LIGHT, brightness: 255, color_mode: "color_temp", color_temp_kelvin: 4000 },
+  ),
+  withAttributes(
+    sensor("light.living_room_floor_lamp", "Floor lamp", "off", undefined, {
+      device: "Floor lamp",
+      areaId: "living_room",
+    }),
+    COLOR_LIGHT,
+  ),
+  withAttributes(
+    sensor("cover.awning", "Awning", "open", undefined, { device: "Awning", areaId: "terrace" }),
+    { current_position: 100 },
+  ),
   sensor("sensor.wind_speed", "Wind speed", "12", "km/h", {
     device: "Weather station",
     areaId: "terrace",
@@ -233,10 +264,20 @@ const DEVICES: DemoEntity[] = [
     ...sensor("sensor.washing_machine_power", "Washing machine power", "unavailable", "W"),
     lastChanged: daysAgo(3),
   },
-  sensor("climate.bathroom", "Bathroom heating", "heat", undefined, {
-    device: "Bathroom thermostat",
-    areaId: "bathroom",
-  }),
+  withAttributes(
+    sensor("climate.bathroom", "Bathroom heating", "heat", undefined, {
+      device: "Bathroom thermostat",
+      areaId: "bathroom",
+    }),
+    {
+      hvac_modes: ["off", "heat", "auto"],
+      temperature: 22,
+      current_temperature: 21.5,
+      min_temp: 7,
+      max_temp: 30,
+      target_temp_step: 0.5,
+    },
+  ),
   sensor("alarm_control_panel.home", "Alarm system", "disarmed", undefined, {
     device: "Alarm panel",
     areaId: "hallway",
@@ -619,6 +660,24 @@ const SCENES: DemoEntity[] = [
     areaId: "terrace",
     labels: ["lights"],
     attributes: { entity_id: ["light.terrace", "light.garden_paths", "cover.awning"] },
+    config: {
+      id: "1723912200457",
+      name: "Terrace barbecue",
+      entities: {
+        "light.terrace": {
+          state: "on",
+          brightness: 153,
+          color_mode: "color_temp",
+          color_temp_kelvin: 2700,
+          effect: "candle",
+          friendly_name: "Terrace light",
+          supported_color_modes: ["color_temp", "hs"],
+        },
+        "light.garden_paths": { state: "on", brightness: 204, friendly_name: "Garden path lights" },
+        "cover.awning": { state: "open", current_position: 100, friendly_name: "Awning" },
+      },
+      metadata: {},
+    },
   },
   {
     entityId: "scene.nobody_home",
@@ -628,6 +687,19 @@ const SCENES: DemoEntity[] = [
     uniqueId: "1723912288101",
     category: "Security",
     labels: ["security"],
+    attributes: {
+      entity_id: ["light.terrace", "light.garden_paths", "switch.wallbox", "climate.bathroom"],
+    },
+    config: {
+      id: "1723912288101",
+      name: "Nobody home",
+      entities: {
+        "light.terrace": "off",
+        "light.garden_paths": "off",
+        "switch.wallbox": "off",
+        "climate.bathroom": { state: "heat", temperature: 17 },
+      },
+    },
   },
   {
     entityId: "scene.cozy_evening",
@@ -639,6 +711,24 @@ const SCENES: DemoEntity[] = [
     areaId: "living_room",
     labels: ["lights", "comfort"],
     attributes: { entity_id: ["light.living_room", "light.living_room_floor_lamp"] },
+    config: {
+      id: "1723912301777",
+      name: "Cozy evening",
+      entities: {
+        "light.living_room": { state: "off", friendly_name: "Living room light" },
+        "light.living_room_floor_lamp": {
+          state: "on",
+          brightness: 64,
+          color_mode: "color_temp",
+          color_temp_kelvin: 2700,
+          friendly_name: "Floor lamp",
+        },
+      },
+      metadata: {
+        "light.living_room": { entity_only: true },
+        "light.living_room_floor_lamp": { entity_only: true },
+      },
+    },
   },
 ];
 

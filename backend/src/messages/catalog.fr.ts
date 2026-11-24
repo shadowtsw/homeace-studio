@@ -63,6 +63,11 @@ export const CATALOG_FR: Catalog = {
   HELPER_NOT_EDITABLE:
     "{entityId} ne peut pas encore être réglé ici. Les entrées de type modèle et groupe viendront plus tard ; d'ici là, dans Home Assistant.",
   HELPER_SETTINGS_SAVED: "Réglages enregistrés dans Home Assistant.",
+  SCENE_SAVED: "Scène enregistrée dans Home Assistant.",
+  SCENE_NOT_EDITABLE:
+    "{entityId} ne peut pas être modifiée ici : la scène n'est pas dans scenes.yaml (elle provient par ex. d'un package).",
+  SCENE_PREVIEW_SHOWN: "Les appareils affichent maintenant la scène.",
+  SCENE_RESTORED: "Les appareils sont revenus à leur état précédent.",
   HELPER_DELETED: "Entrée supprimée.",
   FLOW_UNSUPPORTED:
     "{entityId} n'a pas de déroulement. Seules les automatisations et les scripts en ont un.",

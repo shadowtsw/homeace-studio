@@ -69,6 +69,8 @@ export const HA_COMMAND = {
 export const HA_REST_PATH = {
   automationConfig: "config/automation/config/",
   scriptConfig: "config/script/config/",
+  /** scenes.yaml, by the scene's id; HA's own scene editor uses it too. */
+  sceneConfig: "config/scene/config/",
 } as const;
 
 export const HA_CONFIG_ENTRY_TYPE = {
