@@ -26,26 +26,18 @@
           <span class="mdi mdi-alert-circle-outline" />
           {{ t(`helperSettings.problems.${problem.message}`) }}
         </p>
-
-        <div v-if="isDirty" class="helper-settings-view__actions">
-          <span class="helper-settings-view__unsaved">
-            <span class="helper-settings-view__dot" />{{ t("helperSettings.unsaved") }}
-          </span>
-          <button class="btn" type="button" :disabled="isSaving" @click="discard">
-            {{ t("helperSettings.discard") }}
-          </button>
-          <button
-            class="btn btn--primary"
-            type="button"
-            :disabled="isSaving || problem !== null"
-            :title="problem ? t('helperSettings.fixFirst') : undefined"
-            @click="save"
-          >
-            {{ isSaving ? t("helperSettings.saving") : t("helperSettings.save") }}
-          </button>
-        </div>
       </div>
     </template>
+
+    <Teleport defer to="#entry-detail-footer">
+      <SaveFooter
+        v-if="isDirty"
+        :is-saving="isSaving"
+        :blocked-by="problem ? t('helperSettings.fixFirst') : null"
+        @save="save"
+        @discard="discard"
+      />
+    </Teleport>
   </section>
 </template>
 
@@ -60,6 +52,8 @@ import { useToastStore } from "@/stores/toastStore";
 import type { Entry } from "@/types/entry";
 import { hasEditableSettings } from "@/utils/entryActions";
 import { helperSettingsProblem } from "@/utils/helperSettings";
+
+import SaveFooter from "@/components/common/SaveFooter.vue";
 
 import HelperSettingsFields from "./HelperSettingsFields.vue";
 
@@ -185,33 +179,6 @@ watch(
   color: var(--err);
   font-size: 12.5px;
   line-height: 1.4;
-}
-
-.helper-settings-view__actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
-  padding-top: 12px;
-  border-top: 1px solid var(--line);
-}
-
-.helper-settings-view__unsaved {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  margin-right: auto;
-  color: var(--warn);
-  font-size: 12.5px;
-  font-weight: 600;
-}
-
-.helper-settings-view__dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--warn);
 }
 
 .helper-settings-view__later,

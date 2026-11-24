@@ -218,8 +218,9 @@ export function writeControls(
   }
 
   if (domain === "cover" && change.position !== undefined && change.position !== null) {
-    next.current_position = clamp(Math.round(change.position), 0, PERCENT);
-    next.state = next.current_position > 0 ? "open" : "closed";
+    const position = clamp(Math.round(change.position), 0, PERCENT);
+    next.current_position = position;
+    next.state = position > 0 ? "open" : "closed";
   }
 
   if (domain === "climate") {

@@ -2,7 +2,7 @@
  * Relative on purpose: behind HA ingress the app runs under /api/hassio_ingress/<token>/, and the
  * Supervisor forwards <prefix>/api/... to the add-on. Locally Vite proxies /api to the backend.
  */
-const API_BASE_URL = "api";
+export const API_BASE_URL = "api";
 
 /** Status used for ApiError when no HTTP response arrived at all. */
 const NO_RESPONSE_STATUS = 0;

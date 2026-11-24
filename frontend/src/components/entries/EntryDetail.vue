@@ -6,171 +6,186 @@
     </div>
 
     <template v-else>
-      <EntryDetailHeader
-        :entry="entry"
-        :is-technical-details-visible="isTechnicalDetailsVisible"
-        :is-busy="isBusy"
-        @back="emit('back')"
-        @act="(action) => emit('act', action)"
-        @toggle-favorite="emit('toggleFavorite')"
-        @delete="emit('delete')"
-        @enable="emit('save', { isDisabled: false })"
-        :is-renaming="isRenaming"
-        @start-rename="emit('startRename')"
-        @duplicate="emit('duplicate')"
-        @rename="(name) => emit('rename', name)"
-        @cancel-rename="emit('cancelRename')"
-      />
-
-      <FlowSaveBar
-        v-if="hasFlow && hasUnsavedChanges"
-        :is-saving="isFlowSaving"
-        :has-remote-change="hasRemoteChange"
-        @save="emit('saveFlow')"
-        @discard="emit('discardFlow')"
-      />
-
-      <CheckupBanner
-        v-if="findings.length"
-        :findings="findings"
-        :has-flow="hasFlow"
-        :is-busy="isBusy"
-        @show-flow="selectTab(TAB.flow)"
-        @show-history="selectTab(TAB.history)"
-        @turn-off="emit('act', ENTRY_ACTION.turnOff)"
-        @delete="emit('delete')"
-        @ignore="(key) => emit('ignoreFinding', key)"
-      />
-
-      <div class="entry-detail__tabs" role="tablist">
-        <button
-          v-for="tab in tabs"
-          :key="tab"
-          type="button"
-          role="tab"
-          class="entry-detail__tab"
-          :class="{ 'entry-detail__tab--active': activeTab === tab }"
-          :aria-selected="activeTab === tab"
-          @click="selectTab(tab)"
-        >
-          {{ t(`detail.tabs.${tab}`) }}
-          <span v-if="tab === TAB.dependencies && dependencyCount" class="entry-detail__badge">
-            {{ dependencyCount }}
-          </span>
-        </button>
-      </div>
-
-      <div v-if="hasFlow && activeTab === TAB.flow" class="entry-detail__body">
-        <RunOverlayBar
-          v-if="shownRun"
-          :run="shownRun"
-          @to-history="selectTab(TAB.history)"
-          @hide="traces.showOnFlow(null)"
-        />
-        <FlowView
-          :entity-id="entry.entityId"
-          :flow="displayFlow"
-          :kind="entry.kind === 'script' ? 'script' : 'automation'"
-          :is-loading="isFlowLoading"
-          :has-error="hasFlowError"
-          :is-editable="isFlowEditable"
-          :is-technical-details-visible="isTechnicalDetailsVisible"
-          :catalog="catalog"
-          :area-id="entry.area?.areaId ?? null"
-          :run-states="shownRunStates"
-          @change="(change) => emit('changeFlow', change)"
-        />
-      </div>
-
-      <div v-else-if="activeTab === TAB.history" class="entry-detail__body">
-        <RunHistoryView
-          :entry="entry"
-          :flow="displayFlow"
-          :is-technical-details-visible="isTechnicalDetailsVisible"
-          :is-editable="isFlowEditable"
-          :has-unsaved-changes="hasUnsavedChanges"
-          @show-on-flow="showOnFlow"
-        />
-      </div>
-
-      <div v-else-if="activeTab === TAB.settings" class="entry-detail__body">
-        <HelperSettingsView
+      <!-- Header and tabs stay; only what is below them scrolls (owner's wish). -->
+      <div class="entry-detail__top">
+        <EntryDetailHeader
           :entry="entry"
           :is-technical-details-visible="isTechnicalDetailsVisible"
+          :is-busy="isBusy"
+          @back="emit('back')"
+          @act="(action) => emit('act', action)"
+          @toggle-favorite="emit('toggleFavorite')"
+          @delete="emit('delete')"
+          @enable="emit('save', { isDisabled: false })"
+          :is-renaming="isRenaming"
+          @start-rename="emit('startRename')"
+          @duplicate="emit('duplicate')"
+          @rename="(name) => emit('rename', name)"
+          @cancel-rename="emit('cancelRename')"
         />
       </div>
 
-      <div v-else-if="activeTab === TAB.dependencies" class="entry-detail__body">
-        <DependencyView
-          :entry="entry"
-          :has-finding-banner="hasProblemFinding"
-          :is-technical-details-visible="isTechnicalDetailsVisible"
-          @open="(id) => emit('open', id)"
+      <div class="entry-detail__scroll">
+        <CheckupBanner
+          v-if="findings.length"
+          :findings="findings"
+          :has-flow="hasFlow"
+          :is-busy="isBusy"
+          @show-flow="selectTab(TAB.flow)"
+          @show-history="selectTab(TAB.history)"
+          @turn-off="emit('act', ENTRY_ACTION.turnOff)"
+          @delete="emit('delete')"
+          @ignore="(key) => emit('ignoreFinding', key)"
         />
-      </div>
 
-      <div v-else class="entry-detail__body">
-        <p v-if="!entry.isInRegistry" class="entry-detail__hint">
-          <span class="mdi mdi-information-outline" /> {{ t("detail.notInRegistry") }}
-        </p>
+        <div class="entry-detail__tabs" role="tablist">
+          <button
+            v-for="tab in tabs"
+            :key="tab"
+            type="button"
+            role="tab"
+            class="entry-detail__tab"
+            :class="{ 'entry-detail__tab--active': activeTab === tab }"
+            :aria-selected="activeTab === tab"
+            @click="selectTab(tab)"
+          >
+            {{ t(`detail.tabs.${tab}`) }}
+            <span v-if="tab === TAB.dependencies && dependencyCount" class="entry-detail__badge">
+              {{ dependencyCount }}
+            </span>
+          </button>
+        </div>
 
-        <template v-else>
-          <CategoryMoveField
-            class="entry-detail__section"
-            :current-path="entry.categoryPath"
-            :all-paths="allCategoryPaths"
-            :is-disabled="isBusy"
-            @move="(path) => emit('move', path)"
+        <div v-if="hasFlow && activeTab === TAB.flow" class="entry-detail__body">
+          <RunOverlayBar
+            v-if="shownRun"
+            :run="shownRun"
+            @to-history="selectTab(TAB.history)"
+            @hide="traces.showOnFlow(null)"
           />
+          <FlowView
+            :entity-id="entry.entityId"
+            :flow="displayFlow"
+            :kind="entry.kind === 'script' ? 'script' : 'automation'"
+            :is-loading="isFlowLoading"
+            :has-error="hasFlowError"
+            :is-editable="isFlowEditable"
+            :is-technical-details-visible="isTechnicalDetailsVisible"
+            :catalog="catalog"
+            :area-id="entry.area?.areaId ?? null"
+            :run-states="shownRunStates"
+            @change="(change) => emit('changeFlow', change)"
+          />
+        </div>
 
-          <section class="entry-detail__section">
-            <h3>{{ t("detail.identity") }}</h3>
-            <EntryEditForm
-              :entry="entry"
-              :areas="areas"
-              :labels="labels"
-              :fallback-icon="ENTRY_KIND_ICON[entry.kind]"
-              :is-busy="isBusy"
-              @save="(changes) => emit('save', changes)"
+        <div v-else-if="activeTab === TAB.history" class="entry-detail__body">
+          <RunHistoryView
+            :entry="entry"
+            :flow="displayFlow"
+            :is-technical-details-visible="isTechnicalDetailsVisible"
+            :is-editable="isFlowEditable"
+            :has-unsaved-changes="hasUnsavedChanges"
+            @show-on-flow="showOnFlow"
+          />
+        </div>
+
+        <div v-else-if="activeTab === TAB.states" class="entry-detail__body">
+          <SceneEditorView
+            :entry="entry"
+            :is-technical-details-visible="isTechnicalDetailsVisible"
+          />
+        </div>
+
+        <div v-else-if="activeTab === TAB.settings" class="entry-detail__body">
+          <HelperSettingsView
+            :entry="entry"
+            :is-technical-details-visible="isTechnicalDetailsVisible"
+          />
+        </div>
+
+        <div v-else-if="activeTab === TAB.dependencies" class="entry-detail__body">
+          <DependencyView
+            :entry="entry"
+            :has-finding-banner="hasProblemFinding"
+            :is-technical-details-visible="isTechnicalDetailsVisible"
+            @open="(id) => emit('open', id)"
+          />
+        </div>
+
+        <div v-else class="entry-detail__body">
+          <p v-if="!entry.isInRegistry" class="entry-detail__hint">
+            <span class="mdi mdi-information-outline" /> {{ t("detail.notInRegistry") }}
+          </p>
+
+          <template v-else>
+            <CategoryMoveField
+              class="entry-detail__section"
+              :current-path="entry.categoryPath"
+              :all-paths="allCategoryPaths"
+              :is-disabled="isBusy"
+              @move="(path) => emit('move', path)"
             />
-            <div class="entry-detail__card entry-detail__entity-id">
-              <EntityIdField
-                :entry="entry"
-                :is-busy="isBusy"
-                @rename="(preset) => emit('renameId', preset)"
-              />
-            </div>
-          </section>
 
-          <section class="entry-detail__section">
-            <h3>{{ t("visibility.title") }}</h3>
-            <div class="entry-detail__card">
-              <EntryVisibilityForm
+            <section class="entry-detail__section">
+              <h3>{{ t("detail.identity") }}</h3>
+              <EntryEditForm
                 :entry="entry"
+                :areas="areas"
+                :labels="labels"
+                :fallback-icon="ENTRY_KIND_ICON[entry.kind]"
                 :is-busy="isBusy"
                 @save="(changes) => emit('save', changes)"
-                @ask-disable="emit('askDisable')"
               />
+              <div class="entry-detail__card entry-detail__entity-id">
+                <EntityIdField
+                  :entry="entry"
+                  :is-busy="isBusy"
+                  @rename="(preset) => emit('renameId', preset)"
+                />
+              </div>
+            </section>
+
+            <section class="entry-detail__section">
+              <h3>{{ t("visibility.title") }}</h3>
+              <div class="entry-detail__card">
+                <EntryVisibilityForm
+                  :entry="entry"
+                  :is-busy="isBusy"
+                  @save="(changes) => emit('save', changes)"
+                  @ask-disable="emit('askDisable')"
+                />
+              </div>
+            </section>
+          </template>
+
+          <section class="entry-detail__section">
+            <h3>{{ t("detail.own") }}</h3>
+            <div class="entry-detail__card entry-detail__card--padded">
+              <NoteField :note="entry.note" @save="(note) => emit('saveNote', note)" />
             </div>
           </section>
-        </template>
 
-        <section class="entry-detail__section">
-          <h3>{{ t("detail.own") }}</h3>
-          <div class="entry-detail__card entry-detail__card--padded">
-            <NoteField :note="entry.note" @save="(note) => emit('saveNote', note)" />
-          </div>
-        </section>
+          <section class="entry-detail__section">
+            <h3>{{ t("detail.status") }}</h3>
+            <dl class="entry-detail__card">
+              <div v-for="row in statusRows" :key="row.label" class="entry-detail__row">
+                <dt>{{ row.label }}</dt>
+                <dd :class="{ mono: row.isMono }">{{ row.value }}</dd>
+              </div>
+            </dl>
+          </section>
+        </div>
+      </div>
 
-        <section class="entry-detail__section">
-          <h3>{{ t("detail.status") }}</h3>
-          <dl class="entry-detail__card">
-            <div v-for="row in statusRows" :key="row.label" class="entry-detail__row">
-              <dt>{{ row.label }}</dt>
-              <dd :class="{ mono: row.isMono }">{{ row.value }}</dd>
-            </div>
-          </dl>
-        </section>
+      <!-- The save footer: the flow's here, helper settings and scenes teleport theirs in. -->
+      <div id="entry-detail-footer" class="entry-detail__footer">
+        <SaveFooter
+          v-if="hasFlow && hasUnsavedChanges"
+          :is-saving="isFlowSaving"
+          :note="hasRemoteChange ? t('flow.remoteChanged') : null"
+          @save="emit('saveFlow')"
+          @discard="emit('discardFlow')"
+        />
       </div>
     </template>
   </section>
@@ -185,7 +200,7 @@ import CheckupBanner from "@/components/checkup/CheckupBanner.vue";
 import DependencyView from "@/components/dependencies/DependencyView.vue";
 import RunHistoryView from "@/components/history/RunHistoryView.vue";
 import RunOverlayBar from "@/components/history/RunOverlayBar.vue";
-import FlowSaveBar from "@/components/flow/FlowSaveBar.vue";
+import SaveFooter from "@/components/common/SaveFooter.vue";
 import FlowView from "@/components/flow/FlowView.vue";
 import type { CheckupFinding } from "@/services/checkupService";
 import { useDependenciesStore } from "@/stores/dependenciesStore";
@@ -201,6 +216,7 @@ import EntityIdField from "./EntityIdField.vue";
 import EntryEditForm from "./EntryEditForm.vue";
 import EntryVisibilityForm from "./EntryVisibilityForm.vue";
 import HelperSettingsView from "@/components/helpers/HelperSettingsView.vue";
+import SceneEditorView from "@/components/scenes/SceneEditorView.vue";
 import NoteField from "./NoteField.vue";
 
 type DetailRow = { label: string; value: string; isMono?: boolean };
@@ -260,6 +276,7 @@ const { t } = useI18n();
 const TAB = {
   flow: "flow",
   settings: "settings",
+  states: "states",
   properties: "properties",
   history: "history",
   dependencies: "dependencies",
@@ -290,6 +307,7 @@ const isHelper = computed(() => props.entry?.kind === "helper");
 const tabs = computed((): Tab[] => {
   if (hasFlow.value) return [TAB.flow, TAB.properties, TAB.history, TAB.dependencies];
   if (isHelper.value) return [TAB.settings, TAB.properties, TAB.dependencies];
+  if (props.entry?.kind === "scene") return [TAB.states, TAB.properties, TAB.dependencies];
   return [TAB.properties, TAB.dependencies];
 });
 const activeTab = ref<Tab>(TAB.flow);
@@ -352,8 +370,22 @@ const statusRows = computed((): DetailRow[] => {
 </script>
 
 <style scoped>
+/* Header and tabs on top, the content scrolls in between, the save footer at the bottom. */
 .entry-detail {
+  display: flex;
+  flex-direction: column;
   height: 100%;
+  overflow: hidden;
+}
+
+.entry-detail__top,
+.entry-detail__footer {
+  flex: none;
+}
+
+.entry-detail__scroll {
+  flex: 1;
+  min-height: 0;
   overflow: auto;
 }
 
