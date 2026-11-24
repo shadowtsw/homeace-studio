@@ -19,6 +19,16 @@
         }}</span>
       </div>
 
+      <div v-if="whatsNew.hasHighlights" class="settings-menu__row">
+        <div>
+          <b>{{ t("settings.whatsNew", { version: whatsNew.version }) }}</b>
+          <small>{{ t("settings.whatsNewHint") }}</small>
+        </div>
+        <button class="btn" type="button" @click="openWhatsNew">
+          {{ t("settings.whatsNewOpen") }}
+        </button>
+      </div>
+
       <div class="settings-menu__row">
         <div>
           <b>{{ t("settings.technicalDetails") }}</b>
@@ -76,7 +86,8 @@
 
 <script setup lang="ts">
 import { onClickOutside, onKeyStroke } from "@vueuse/core";
-import { ref, useTemplateRef } from "vue";
+import { storeToRefs } from "pinia";
+import { useTemplateRef } from "vue";
 import { useI18n } from "vue-i18n";
 
 import SwitchToggle from "@/components/common/SwitchToggle.vue";
@@ -84,6 +95,7 @@ import { APP_LOCALES, type AppLocale } from "@/i18n";
 import { useAiStore } from "@/stores/aiStore";
 import { useCleanupStore } from "@/stores/cleanupStore";
 import { useSettingsStore } from "@/stores/settingsStore";
+import { useWhatsNewStore } from "@/stores/whatsNewStore";
 
 /** Language names are shown in their own language, so they are not translated. */
 const LOCALE_NAMES: Record<AppLocale, string> = {
@@ -99,8 +111,15 @@ const APP_VERSION = __APP_VERSION__;
 
 const { t } = useI18n();
 const settings = useSettingsStore();
-const isOpen = ref(false);
+// Shared with "Was ist neu", which can point at this menu.
+const { isMenuOpen: isOpen } = storeToRefs(settings);
 const cleanup = useCleanupStore();
+const whatsNew = useWhatsNewStore();
+
+function openWhatsNew(): void {
+  isOpen.value = false;
+  whatsNew.open(true);
+}
 
 const ai = useAiStore();
 

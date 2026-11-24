@@ -22,6 +22,7 @@ To add a language, have a look at the pull request that added Russian (#11). In 
   `frontend/src/i18n/index.ts` and its own name in `SettingsMenu.vue`.
 - `backend/src/messages/catalog.<code>.ts` and the code in `CATALOG_LANGUAGES`
   (`backend/src/editor/editor.constants.ts`), so Home Assistant's own texts come in that language too.
+- The highlights of "Was ist neu" (`frontend/src/constants/whatsNew.ts`) need the language too.
 - Use the words Home Assistant uses in that language (helpers, areas, labels …), so nothing feels new.
 - Plurals: if the language counts differently from English, add a rule in `frontend/src/i18n/pluralRules.ts`
   like Russian does.

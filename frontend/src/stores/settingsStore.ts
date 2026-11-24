@@ -1,5 +1,6 @@
 import { useLocalStorage } from "@vueuse/core";
 import { defineStore } from "pinia";
+import { ref } from "vue";
 
 import { NAV_MODE, type NavMode } from "@/constants/entries";
 import { DEFAULT_PANE_WIDTHS, PANE_WIDTH_LIMITS, type Pane } from "@/constants/layout";
@@ -39,6 +40,9 @@ export const useSettingsStore = defineStore("settings", () => {
   /** The detail pane folded away for a wider list; opening an entry unfolds it. */
   const isDetailFolded = useLocalStorage(STORAGE_KEY.detailFolded, false);
 
+  /** The gear menu is open; shared so "Was ist neu" can point at it. Not kept. */
+  const isMenuOpen = ref(false);
+
   function setPaneWidth(pane: Pane, width: number): void {
     const limits = PANE_WIDTH_LIMITS[pane];
     paneWidths.value = { ...paneWidths.value, [pane]: clampNumber(width, limits.min, limits.max) };
@@ -58,6 +62,7 @@ export const useSettingsStore = defineStore("settings", () => {
     locale,
     navMode,
     isDetailFolded,
+    isMenuOpen,
     setPaneWidth,
     resetPaneWidth,
     resetPaneWidths,

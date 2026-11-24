@@ -157,3 +157,21 @@ body.is-resizing {
     animation: none !important;
   }
 }
+
+/* Short highlight of what "Was ist neu" points at (utils/flash.ts). */
+.is-flashing {
+  animation: flash-outline 1.1s ease-in-out 2;
+}
+
+@keyframes flash-outline {
+  50% {
+    box-shadow: 0 0 0 3px var(--accent);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .is-flashing {
+    animation: none;
+    box-shadow: 0 0 0 3px var(--accent);
+  }
+}

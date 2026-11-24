@@ -11,7 +11,10 @@
       <span class="app-top-bar__status-text">{{ statusText }}</span>
     </span>
 
-    <SettingsMenu />
+    <div class="app-top-bar__menus">
+      <WhatsNewMenu />
+      <SettingsMenu />
+    </div>
   </header>
 </template>
 
@@ -20,6 +23,7 @@ import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 
 import SettingsMenu from "./SettingsMenu.vue";
+import WhatsNewMenu from "./WhatsNewMenu.vue";
 
 export type ConnectionStatus = "loading" | "connected" | "failed";
 
@@ -102,6 +106,13 @@ const statusText = computed(() => {
   color: var(--muted);
   font-size: 12.5px;
   white-space: nowrap;
+}
+
+.app-top-bar__menus {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 2px;
 }
 
 .app-top-bar__led {

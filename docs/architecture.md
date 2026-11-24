@@ -108,6 +108,14 @@ cannot lose an id.
 frontend/src/
   views/StudioView.vue           the one page: loads entries, wires tree, list, detail, splitters, responsive states
   components/layout/             AppTopBar, SettingsMenu, PaneSplitter (drag, keyboard, double-click reset)
+  components/layout/WhatsNewMenu "What's new": gift with a dot next to the gear after an update, popover
+                                 with the highlights; "Zeigen" leads to the feature (utils/flash.ts lets it
+                                 light up), only "OK" confirms. constants/whatsNew.ts holds the highlights per
+                                 release in every language; utils/whatsNew.ts the logic (unseen releases,
+                                 current release, test builds without a version show the newest);
+                                 stores/whatsNewStore keeps the confirmed version (homeace.seenVersion);
+                                 utils/earlierVisit.ts tells a fresh install from an earlier user, captured
+                                 in main.ts before any store writes its defaults
   components/categories/         CategoryTree + recursive CategoryTreeNode
   components/entries/            EntryList (+ EntryListRow, draggable), EntryDetail (+ CategoryMoveField)
   components/categories/         … plus RenameCategoryDialog (preview of every changed HA category)

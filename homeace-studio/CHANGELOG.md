@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- What's new: after an update, a gift next to the gear shows the highlights of the new version in
+  plain words. "Zeigen" leads to the feature, "OK" puts the gift away; the gear menu keeps
+  "Was ist neu" for later. Skipped updates show too; a fresh install starts without it.
+
 ## 0.13.0
 
 - Five languages: German and English as before, now also Russian, French and Spanish. The Russian

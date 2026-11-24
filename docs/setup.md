@@ -110,6 +110,10 @@ Raising `version` in `homeace-studio/config.yaml` on `main` starts the workflow
 3. **Release:** tag `v<version>` and a GitHub release whose notes are the section `## <version>` of
    `homeace-studio/CHANGELOG.md`; it fails when that section is missing.
 
+Write the highlights for "Was ist neu" in `frontend/src/constants/whatsNew.ts` (3–6 points in plain words,
+every UI language; a test fails when the new version has none). A local image (`BUILD_VERSION=local`)
+shows the newest highlights, so `docker compose --profile demo up --build` previews them.
+
 Push the version change only together with that CHANGELOG section (rename "## Unreleased"); HA shows the
 update right away, and the download works once the workflow is done (a few minutes). The packages on
 ghcr.io must be public (GitHub → profile → Packages → package → Package settings → Change visibility).
