@@ -1,13 +1,16 @@
-import { DEFAULT_LANGUAGE, getCatalog, isKnownMessageId } from "./catalog";
+import { DEFAULT_LANGUAGE, LANGUAGES, getCatalog, isKnownMessageId } from "./catalog";
 import { MESSAGE_ID } from "./message-ids";
 
 describe("message catalog", () => {
-  it("has a non-empty text for every message ID", () => {
-    const catalog = getCatalog(DEFAULT_LANGUAGE);
-    const idsWithoutText = Object.values(MESSAGE_ID).filter(
-      (messageId) => !catalog[messageId]?.trim(),
-    );
+  it("has a non-empty text for every message ID in every language", () => {
+    const idsWithoutText = LANGUAGES.flatMap((language) => {
+      const catalog = getCatalog(language);
+      return Object.values(MESSAGE_ID)
+        .filter((messageId) => !catalog[messageId]?.trim())
+        .map((messageId) => `${language}: ${messageId}`);
+    });
 
+    expect(LANGUAGES).toEqual(["de", "en", "ru"]);
     expect(idsWithoutText).toEqual([]);
   });
 

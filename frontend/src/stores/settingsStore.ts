@@ -3,7 +3,7 @@ import { defineStore } from "pinia";
 
 import { NAV_MODE, type NavMode } from "@/constants/entries";
 import { DEFAULT_PANE_WIDTHS, PANE_WIDTH_LIMITS, type Pane } from "@/constants/layout";
-import { DEFAULT_LOCALE, type AppLocale } from "@/i18n";
+import { preferredLocale, type AppLocale } from "@/i18n";
 import { clampNumber } from "@/utils/number";
 
 const STORAGE_KEY = {
@@ -25,7 +25,15 @@ export const useSettingsStore = defineStore("settings", () => {
     { ...DEFAULT_PANE_WIDTHS },
     { mergeDefaults: true },
   );
-  const locale = useLocalStorage<AppLocale>(STORAGE_KEY.locale, DEFAULT_LOCALE);
+  /**
+   * The user's choice wins; without one, the browser language. Not written to storage until the
+   * user picks a language, so a later change of the browser language still counts.
+   */
+  const locale = useLocalStorage<AppLocale>(
+    STORAGE_KEY.locale,
+    preferredLocale(typeof navigator === "undefined" ? [] : navigator.languages),
+    { writeDefaults: false },
+  );
   /** Folders or areas in the tree; stays as the user left it. */
   const navMode = useLocalStorage<NavMode>(STORAGE_KEY.navMode, NAV_MODE.folders);
   /** The detail pane folded away for a wider list; opening an entry unfolds it. */

@@ -1,5 +1,6 @@
 import { CATALOG_DE } from "./catalog.de";
 import { CATALOG_EN } from "./catalog.en";
+import { CATALOG_RU } from "./catalog.ru";
 import type { MessageId } from "./message-ids";
 
 export type Catalog = Record<MessageId, string>;
@@ -9,7 +10,11 @@ export const DEFAULT_LANGUAGE = "de";
 const CATALOGS: Record<string, Catalog> = {
   [DEFAULT_LANGUAGE]: CATALOG_DE,
   en: CATALOG_EN,
+  ru: CATALOG_RU,
 };
+
+/** Every language the backend has texts for. */
+export const LANGUAGES = Object.keys(CATALOGS);
 
 /** Returns the catalog for `language`, or the default language if it is not supported. */
 export function getCatalog(language?: string): Catalog {

@@ -9,6 +9,12 @@ describe("runDuration", () => {
     expect(runDuration(303, "de")).toBe("5 min 03 s");
     expect(runDuration(3900, "de")).toBe("1 h 05 min");
   });
+
+  it("uses Russian units in Russian", () => {
+    expect(runDuration(0.4, "ru")).toBe("0,4 с");
+    expect(runDuration(303, "ru")).toBe("5 мин 03 с");
+    expect(runDuration(3900, "ru")).toBe("1 ч 05 мин");
+  });
 });
 
 describe("dayLabel", () => {

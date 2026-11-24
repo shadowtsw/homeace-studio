@@ -1,7 +1,7 @@
 export const EDITOR_REPOSITORY = Symbol("EDITOR_REPOSITORY");
 
 /** Languages the UI has; the catalog texts come from HA in the same language. */
-export const CATALOG_LANGUAGES = ["de", "en"] as const;
+export const CATALOG_LANGUAGES = ["de", "en", "ru"] as const;
 export const DEFAULT_CATALOG_LANGUAGE = "de";
 
 /** The catalog changes only when integrations change; reload it at most every 10 minutes. */

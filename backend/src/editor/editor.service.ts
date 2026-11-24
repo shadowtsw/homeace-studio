@@ -31,7 +31,7 @@ export class EditorService {
    * The catalog of all trigger, condition and action types in one language. Cached for a while,
    * because it only changes when integrations are added or HA is updated.
    *
-   * @param language - "de" or "en"; anything else falls back to German.
+   * @param language - One of CATALOG_LANGUAGES; anything else falls back to German.
    */
   async getCatalog(language: string | undefined, now = Date.now()): Promise<EditorCatalog> {
     const supported = CATALOG_LANGUAGES.find((code) => code === language);

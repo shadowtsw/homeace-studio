@@ -9,7 +9,7 @@ else is planned.
 backend/src/
   app.module.ts          ConfigModule (reads ../.env locally), global envelope interceptor + exception filter
   common/api/, pipes/    response envelope, error filter, validation errors
-  messages/              message IDs and the de/en catalog, GET /api/messages
+  messages/              message IDs and the de/en/ru catalog, GET /api/messages
   ha/                    everything that talks to HA; HaModule swaps in demo/ when HOMEACE_DEMO=true
   ai/                    AI folder plans: McpHttpServer (own node http server on MCP_PORT 8098, stateless
                          Streamable HTTP per request), mcp-tools.ts (the four MCP tools), McpAccessService
@@ -154,7 +154,8 @@ frontend/src/
   components/common/InlineNameInput  renaming in place (list row, title; later folders and areas): Enter or
                                  leaving saves, Esc cancels; studioStore.renaming says which entry and where;
                                  toastStore.show(text, tone, undo) adds "Rückgängig"
-  locales/__tests__/keys.spec.ts every fixed t("…") key of the code exists in de and en
+  locales/__tests__/keys.spec.ts every fixed t("…") key of the code exists in de, en and ru; ru plurals
+                                 have one form more than en
   utils/folderOrder.ts           own folder order (applyFolderOrder, moveSibling); composables/useFolderDrag
                                  tells tree nodes which folder is dragged (sorting only between siblings)
   components/dependencies/       DependencyView (the "Abhängigkeiten" tab of every entry: uses grouped by
@@ -176,11 +177,14 @@ frontend/src/
   components/common/             SwitchToggle
   stores/                        entriesStore (data + move/rename actions), studioStore (selection, scope, search),
                                  messagesStore (backend catalog for error IDs), toastStore,
-                                 settingsStore (technical details, pane widths, language; localStorage for now)
+                                 settingsStore (technical details, pane widths, language; localStorage for now;
+                                 without a stored language the browser language, else German)
   utils/categoryTree.ts          buildCategoryTree(): "Haus/Terrasse" paths → folder tree with counts
   utils/entryFilter.ts           scope / category / search filter, counts per scope, grouping by category,
                                  isGroupOpenByDefault() (which list groups start expanded)
-  i18n/, locales/de.ts, en.ts    vue-i18n; German is the schema, English must have the same keys
+  i18n/, locales/de.ts, en.ts,   vue-i18n; German is the schema, English and Russian must have the same keys;
+  ru.ts                          i18n/pluralRules.ts picks the Russian plural form (1 | 2–4 | 5+, zero form
+                                 where en has one); preferredLocale() maps navigator.languages to a locale
   styles/tokens.css, base.css    design tokens (light + dark), shared button classes
 ```
 

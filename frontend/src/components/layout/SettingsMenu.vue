@@ -86,7 +86,11 @@ import { useCleanupStore } from "@/stores/cleanupStore";
 import { useSettingsStore } from "@/stores/settingsStore";
 
 /** Language names are shown in their own language, so they are not translated. */
-const LOCALE_NAMES: Record<AppLocale, string> = { de: "Deutsch", en: "English" };
+const LOCALE_NAMES: Record<AppLocale, string> = {
+  de: "Deutsch",
+  en: "English",
+  ru: "Русский",
+};
 
 /** Set at build time from the app version (vite.config.ts). */
 const APP_VERSION = __APP_VERSION__;

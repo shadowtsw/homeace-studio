@@ -252,7 +252,7 @@ All trigger, condition and action types HA describes, with translated names and 
 `{ triggers: { "zone.entered": { name, description, fields: { for: { name, required, default, selector } },
 target } }, conditions: {…}, actions: { "climate.set_temperature": {…} } }`. Built from
 `trigger_platforms/subscribe`, `condition_platforms/subscribe`, `get_services` and `frontend/get_translations`;
-cached 10 minutes per language (`de`, `en`; others fall back to `de`). Classic triggers like `state` are not
+cached 10 minutes per language (`de`, `en`, `ru`; others fall back to `de`). Classic triggers like `state` are not
 in it; the UI has its own blocks for them.
 
 ## GET /api/editor/flows/:entityId

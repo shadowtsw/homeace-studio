@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Russian as a third UI language, with Russian plural forms. Without a choice in the settings,
+  HomeAce Studio now starts in the browser language if it has it, else in German.
+
 ## 0.12.1
 
 - Fixed: opening an entry made HomeAce Studio load the whole entity registry and every state from

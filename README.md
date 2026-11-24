@@ -93,7 +93,7 @@ names the flows that would break.
 
 ![The dependencies of an automation](docs/images/dependencies-light.png)
 
-**Made to be used everywhere.** Light and dark mode, German and English, all columns resizable,
+**Made to be used everywhere.** Light and dark mode, German, English and Russian, all columns resizable,
 and on a phone the list comes first and the details slide in full screen. Technical details such
 as entity IDs stay hidden until you switch them on.
 
