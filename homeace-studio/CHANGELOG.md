@@ -11,6 +11,8 @@
   as they are. Template and group helpers follow later.
 - Duplicate helpers like automations and scripts: the copy icon next to the pencil keeps settings,
   folder, labels and area; the value starts fresh.
+- Clicking through the list keeps the tab you picked in the details (e.g. "Verlauf"), so entries
+  are easy to compare. An entry without that tab opens on its first one.
 - The fold button of the details no longer covers the list's scrollbar; folded, it has a slim rail of
   its own at the right edge.
 

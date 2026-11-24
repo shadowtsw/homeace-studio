@@ -35,8 +35,8 @@
         :findings="findings"
         :has-flow="hasFlow"
         :is-busy="isBusy"
-        @show-flow="activeTab = TAB.flow"
-        @show-history="activeTab = TAB.history"
+        @show-flow="selectTab(TAB.flow)"
+        @show-history="selectTab(TAB.history)"
         @turn-off="emit('act', ENTRY_ACTION.turnOff)"
         @delete="emit('delete')"
         @ignore="(key) => emit('ignoreFinding', key)"
@@ -51,7 +51,7 @@
           class="entry-detail__tab"
           :class="{ 'entry-detail__tab--active': activeTab === tab }"
           :aria-selected="activeTab === tab"
-          @click="activeTab = tab"
+          @click="selectTab(tab)"
         >
           {{ t(`detail.tabs.${tab}`) }}
           <span v-if="tab === TAB.dependencies && dependencyCount" class="entry-detail__badge">
@@ -64,7 +64,7 @@
         <RunOverlayBar
           v-if="shownRun"
           :run="shownRun"
-          @to-history="activeTab = TAB.history"
+          @to-history="selectTab(TAB.history)"
           @hide="traces.showOnFlow(null)"
         />
         <FlowView
@@ -190,6 +190,7 @@ import FlowView from "@/components/flow/FlowView.vue";
 import type { CheckupFinding } from "@/services/checkupService";
 import { useDependenciesStore } from "@/stores/dependenciesStore";
 import { useTracesStore } from "@/stores/tracesStore";
+import { startTab } from "@/utils/detailTab";
 import { runStatesFor } from "@/utils/runStates";
 import type { DisplayFlow, EditorCatalog, FlowChange } from "@/types/editor";
 import type { Area, Entry, EntryChanges, Label } from "@/types/entry";
@@ -282,7 +283,7 @@ const shownRunStates = computed(() =>
 
 function showOnFlow(runId: string): void {
   traces.showOnFlow(runId);
-  activeTab.value = TAB.flow;
+  selectTab(TAB.flow);
 }
 const hasFlow = computed(() => FLOW_KINDS.includes(props.entry?.kind ?? ""));
 const isHelper = computed(() => props.entry?.kind === "helper");
@@ -291,15 +292,24 @@ const tabs = computed((): Tab[] => {
   if (isHelper.value) return [TAB.settings, TAB.properties, TAB.dependencies];
   return [TAB.properties, TAB.dependencies];
 });
-/** The tab a newly opened entry starts on: its flow, a helper's settings, else its properties. */
-const firstTab = (): Tab => tabs.value[0] ?? TAB.properties;
 const activeTab = ref<Tab>(TAB.flow);
+/**
+ * The tab the user picked last. It stays when the next entry lacks it, so clicking from an
+ * automation's history over a helper to the next automation lands on the history again.
+ */
+const pickedTab = ref<Tab | null>(null);
 
-// Every newly opened entry starts on its flow (or its properties) and loads its dependencies.
+function selectTab(tab: Tab): void {
+  activeTab.value = tab;
+  pickedTab.value = tab;
+}
+
+// A newly opened entry starts on the picked tab if it has it (else its flow, a helper's
+// settings or its properties) and loads its dependencies.
 watch(
   () => props.entry?.entityId,
   (entityId) => {
-    activeTab.value = firstTab();
+    activeTab.value = startTab(tabs.value, pickedTab.value) ?? TAB.properties;
     traces.showOnFlow(null);
     void deps.load(entityId ?? null);
   },

@@ -90,6 +90,8 @@
 | 2026-11-24 | A helper copy starts with a fresh value | Owner's wish: people look at the copy instead of taking it over blindly; it is also what HA does for any new helper |
 | 2026-11-24 | Template and group helpers: settings and copy later | HA keeps them as config entries with their own options flow; they show a note where to change them meanwhile |
 | 2026-11-24 | The fold button sits beside the line, folded in a slim rail of its own | Centered on the line it covered the list's scrollbar, folded the counts at the right edge (owner's screenshot) |
+| 2026-11-24 | The three columns are called navigation, list and detail | Same words as in the code (`nav`, `list`, `detail`), so talk, docs and code match; "left / middle / right" was clumsy |
+| 2026-11-24 | The detail keeps the last picked tab when another entry opens | Clicking through the list compares the same tab. An entry without it opens on its first tab, and the picked tab stays for the next entry that has it |
 | 2026-11-20 | Block operations as typed changes on the draft (6d) | One `FlowChange` type for values and list operations keeps the store simple and every operation testable as a pure function |
 | 2026-11-20 | "Disable" writes `enabled: false` | HA's own way: the block stays in the config and can be enabled again |
 | 2026-11-20 | New blocks start with defaults only where obvious, missing values shown in orange | Like the click dummy; HA would reject an empty block anyway, the chip shows what is still needed. Checked: none of the 93 real flows shows a false missing chip |
