@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
@@ -16,6 +16,9 @@ import {
   initialSeenVersion,
   unseenReleases,
 } from "@/utils/whatsNew";
+
+/** The app definition in the repo; its version is the one about to be released. */
+const CONFIG_PATH = join(__dirname, "..", "..", "..", "..", "homeace-studio", "config.yaml");
 
 const release = (version: string): WhatsNewRelease => ({ version, items: [] });
 const RELEASES = [release("0.16.0"), release("0.15.0"), release("0.14.0")];
@@ -89,11 +92,10 @@ describe("WHATS_NEW", () => {
     expect(problems).toEqual([]);
   });
 
-  it("has highlights for the version about to be released", () => {
-    const config = readFileSync(
-      join(__dirname, "..", "..", "..", "..", "homeace-studio", "config.yaml"),
-      "utf8",
-    );
+  // The image build copies only frontend/, without config.yaml; the check runs in the repo (locally
+  // and in the Checks workflow, which every release passes first).
+  it.skipIf(!existsSync(CONFIG_PATH))("has highlights for the version about to be released", () => {
+    const config = readFileSync(CONFIG_PATH, "utf8");
     const version = /^version:\s*"?([^"\r\n]+)"?/m.exec(config)?.[1] ?? "";
 
     // Every release after the one without "What's new" needs its highlights (part of the release).
