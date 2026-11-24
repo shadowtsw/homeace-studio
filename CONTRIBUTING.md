@@ -37,13 +37,17 @@ Assistant (`homeace-studio/`). [docs/setup.md](docs/setup.md) explains the local
 [docs/architecture.md](docs/architecture.md), [docs/api.md](docs/api.md) and
 [docs/decisions.md](docs/decisions.md) explain how it is built and why.
 
-The quickest way to try a change is the demo mode, which needs no Home Assistant:
+The quickest way to try a change is a local test environment in demo mode, which needs no Home
+Assistant. It runs the app the way the add-on does (Node.js 22 or newer, or Docker):
 
 ```bash
-cd frontend && npm install && npm run build
-cd ../backend && npm install && npm run build
-HOMEACE_DEMO=true PORT=3100 STATIC_DIR=../frontend/dist node dist/main.js
+node scripts/local.mjs --demo                 # installs, builds and starts; --skip-build reuses the last build
+docker compose --profile demo up --build      # same image as the release workflow
 ```
+
+Then open http://localhost:8099. The demo home is kept in memory, so a restart resets it. To test
+against your own Home Assistant, see "Local test environment" in [docs/setup.md](docs/setup.md); the
+dev servers with hot reload for frontend work are described there too.
 
 Before a pull request, both parts should pass what the CI checks:
 
