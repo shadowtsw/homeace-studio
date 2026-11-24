@@ -73,7 +73,7 @@ describe("EditorService", () => {
   it("falls back to German for unsupported languages", async () => {
     const { service, loadCatalogSources } = setup();
 
-    await service.getCatalog("fr");
+    await service.getCatalog("it");
 
     expect(loadCatalogSources).toHaveBeenCalledWith("de");
   });

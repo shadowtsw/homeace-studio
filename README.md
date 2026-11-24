@@ -93,7 +93,7 @@ names the flows that would break.
 
 ![The dependencies of an automation](docs/images/dependencies-light.png)
 
-**Made to be used everywhere.** Light and dark mode, German, English and Russian, all columns resizable,
+**Made to be used everywhere.** Light and dark mode, five languages (German, English, French, Spanish and Russian), all columns resizable,
 and on a phone the list comes first and the details slide in full screen. Technical details such
 as entity IDs stay hidden until you switch them on.
 
@@ -157,6 +157,9 @@ Local development against a real HA, a local test environment (`node scripts/loc
 Bug reports and ideas are welcome as [issues](https://github.com/shadowtsw/homeace-studio/issues/new/choose);
 how to contribute is in [CONTRIBUTING.md](CONTRIBUTING.md). Security issues please privately, see
 [SECURITY.md](SECURITY.md).
+
+**Translations:** the Russian one comes from [pcmaster4u](https://github.com/pcmaster4u), thank you! French
+and Spanish are machine-assisted; if one of them is your language, corrections are very welcome.
 
 ## Support
 

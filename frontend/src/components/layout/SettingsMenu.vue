@@ -89,6 +89,8 @@ import { useSettingsStore } from "@/stores/settingsStore";
 const LOCALE_NAMES: Record<AppLocale, string> = {
   de: "Deutsch",
   en: "English",
+  fr: "Français",
+  es: "Español",
   ru: "Русский",
 };
 

@@ -2,8 +2,11 @@
 
 ## Unreleased
 
-- Russian as a third UI language, with Russian plural forms. Without a choice in the settings,
-  HomeAce Studio now starts in the browser language if it has it, else in German.
+- Five languages: German and English as before, now also Russian, French and Spanish. The Russian
+  translation comes from the community (thanks, pcmaster4u!); French and Spanish are machine-assisted,
+  so native speakers are very welcome to improve them.
+- Without a choice in the settings, HomeAce Studio now starts in the browser language if it has it,
+  else in German. A language picked under the gear stays as before.
 
 ## 0.12.1
 

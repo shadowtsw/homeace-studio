@@ -1,0 +1,86 @@
+import type { Catalog } from "./catalog";
+
+/** Spanish texts (machine-assisted, improvements welcome). Placeholders like `{path}` come from `data.params`. */
+export const CATALOG_ES: Catalog = {
+  OK: "Hecho.",
+  CREATED: "Creado.",
+  VALIDATION_FAILED: "La entrada no es válida.",
+  NOT_FOUND: "No encontrado.",
+  CONFLICT: "Esto entra en conflicto con el estado actual.",
+  REQUEST_FAILED: "No se pudo procesar la solicitud.",
+  INTERNAL_ERROR: "Se produjo un error inesperado.",
+
+  INVALID_VALUE: "Valor no válido.",
+  IS_NOT_EMPTY: "No puede estar vacío.",
+  IS_STRING: "Debe ser texto.",
+  MIN_LENGTH: "El texto es demasiado corto.",
+  MAX_LENGTH: "El texto es demasiado largo.",
+  IS_IN: "Este valor no está permitido.",
+  IS_OBJECT: "Estructura no válida.",
+  IS_BOOLEAN: "Debe ser sí o no.",
+  IS_ARRAY: "Debe ser una lista.",
+  MATCHES: "No tiene el formato esperado.",
+
+  ENTRY_NOT_FOUND: "Home Assistant no tiene ninguna entrada {entityId}.",
+  ENTRY_RENAMED: "ID de entidad cambiado.",
+  ENTRY_DUPLICATED: "Copia creada.",
+  ENTRY_ID_INVALID:
+    "“{entityId}” no sirve como ID de entidad: solo minúsculas, cifras y _, el mismo dominio que antes.",
+  ENTRY_ID_TAKEN: "El ID de entidad “{entityId}” ya existe.",
+  ENTRY_NOT_IN_REGISTRY:
+    "{entityId} viene de YAML sin unique_id y no se puede poner en una categoría.",
+  ENTRY_MOVED: "Movido.",
+  ENTRY_UPDATED: "Guardado.",
+  ENTRY_ACTION_DONE: "Hecho.",
+  ENTRY_ACTION_UNSUPPORTED: "“{action}” no funciona para {entityId}.",
+  ENTRY_EXTRAS_SAVED: "Guardado.",
+
+  CATEGORY_PATH_INVALID:
+    "“{path}” no es un nombre de categoría válido. Ningún nivel puede estar vacío.",
+  CATEGORY_NAME_TAKEN: "La categoría “{path}” ya existe.",
+  CATEGORY_MOVE_INTO_ITSELF: "Una categoría no se puede mover dentro de sí misma.",
+  CATEGORY_RENAMED: "Renombrado.",
+  CLEANUP_APPLIED: "Categorías convertidas.",
+  CLEANUP_IGNORED: "No se volverá a sugerir.",
+  CLEANUP_RESTORED: "Las sugerencias ocultas han vuelto.",
+  CLEANUP_DUPLICATE: "“{path}” aparece más de una vez en la lista.",
+
+  AREA_CREATED: "Área creada.",
+  AREA_UPDATED: "Área guardada.",
+  AREA_DELETED: "Área eliminada.",
+  AREA_NAME_TAKEN: "Ya existe un área “{name}”.",
+  AREA_NOT_FOUND: "Home Assistant no tiene (o ya no tiene) esta área.",
+
+  FOLDER_CREATED: "Carpeta creada.",
+  FOLDER_DELETED: "Carpeta eliminada.",
+  FOLDER_EXISTS: "La carpeta “{path}” ya existe.",
+  FOLDER_NOT_FOUND: "No hay ninguna carpeta “{path}”.",
+  FOLDER_ORDER_SAVED: "Orden guardado.",
+  FOLDER_COLOR_SAVED: "Color guardado.",
+
+  HELPER_CREATED: "Ayudante creado.",
+  HELPER_SETTINGS_INVALID: "El ajuste “{field}” no es válido.",
+  HELPER_DELETED: "Ayudante eliminado.",
+  FLOW_UNSUPPORTED:
+    "{entityId} no tiene flujo. Solo las automatizaciones y los scripts tienen uno.",
+  FLOW_SAVED: "Flujo guardado en Home Assistant.",
+  FLOW_NOT_EDITABLE:
+    "{entityId} no se puede editar ni eliminar aquí. Home Assistant no lo guarda en automations.yaml ni en scripts.yaml (p. ej. viene de un paquete o de un blueprint).",
+  FLOW_INVALID: "Home Assistant rechazó el flujo: {reason}",
+  FLOW_CREATED: "Creado en Home Assistant.",
+  TRACES_KEPT: "Home Assistant guarda ahora las últimas {count} ejecuciones.",
+  FLOW_DELETED: "Eliminado en Home Assistant.",
+
+  MCP_SAVED: "Guardado.",
+  MCP_TOKEN_RENEWED: "Nuevo token creado. El anterior ya no funciona.",
+  AI_PLAN_APPLIED: "Plan aplicado.",
+  AI_PLAN_REJECTED: "Plan rechazado.",
+  AI_PLAN_NOT_FOUND: "Este plan ya no existe.",
+  AI_PLAN_CLOSED: "Este plan ya se decidió.",
+  AI_OPERATION_FAILED: "Este paso no funcionó en Home Assistant.",
+
+  CHECKUP_IGNORED: "No se volverá a informar.",
+  CHECKUP_RESTORED: "Los hallazgos ocultos han vuelto.",
+  HELPER_NOT_DELETABLE:
+    "{entityId} no se puede eliminar aquí. Por ahora, elimina los ayudantes de plantilla y de grupo en Home Assistant.",
+};

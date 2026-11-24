@@ -59,14 +59,33 @@ describe("Russian texts of the app", () => {
   });
 });
 
+describe("French and Spanish plurals", () => {
+  it("use the English rule: 0 takes the plural form, 1 the first", () => {
+    const t = (locale: "fr" | "es", count: number): string =>
+      i18n.global.t("picker.hits", count, { locale });
+    expect([0, 1, 2].map((count) => t("fr", count))).toEqual([
+      "0 résultats",
+      "Un résultat",
+      "2 résultats",
+    ]);
+    expect([0, 1, 2].map((count) => t("es", count))).toEqual([
+      "0 resultados",
+      "Un resultado",
+      "2 resultados",
+    ]);
+  });
+});
+
 describe("preferredLocale", () => {
   it("takes the first browser language the app has", () => {
-    expect(preferredLocale(["fr-FR", "ru-RU", "en"])).toBe("ru");
+    expect(preferredLocale(["it-IT", "ru-RU", "en"])).toBe("ru");
+    expect(preferredLocale(["fr-CH", "de"])).toBe("fr");
+    expect(preferredLocale(["es-MX"])).toBe("es");
     expect(preferredLocale(["en-US", "de"])).toBe("en");
   });
 
   it("falls back to German", () => {
-    expect(preferredLocale(["fr", "he"])).toBe("de");
+    expect(preferredLocale(["it", "he"])).toBe("de");
     expect(preferredLocale([])).toBe("de");
   });
 });

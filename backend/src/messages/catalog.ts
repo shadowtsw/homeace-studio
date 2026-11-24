@@ -1,5 +1,7 @@
 import { CATALOG_DE } from "./catalog.de";
 import { CATALOG_EN } from "./catalog.en";
+import { CATALOG_ES } from "./catalog.es";
+import { CATALOG_FR } from "./catalog.fr";
 import { CATALOG_RU } from "./catalog.ru";
 import type { MessageId } from "./message-ids";
 
@@ -10,6 +12,8 @@ export const DEFAULT_LANGUAGE = "de";
 const CATALOGS: Record<string, Catalog> = {
   [DEFAULT_LANGUAGE]: CATALOG_DE,
   en: CATALOG_EN,
+  fr: CATALOG_FR,
+  es: CATALOG_ES,
   ru: CATALOG_RU,
 };
 

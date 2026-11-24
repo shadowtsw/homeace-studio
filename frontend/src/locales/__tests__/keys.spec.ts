@@ -5,9 +5,11 @@ import { describe, expect, it } from "vitest";
 
 import de from "../de";
 import en from "../en";
+import es from "../es";
+import fr from "../fr";
 import ru from "../ru";
 
-const LANGUAGES = { de, en, ru };
+const LANGUAGES = { de, en, fr, es, ru };
 
 const SOURCE_DIR = join(__dirname, "..", "..");
 /** t("a.b.c") or t('a.b.c') with a plain key; template keys like t(`kind.${x}`) are left out. */
@@ -57,6 +59,29 @@ describe("translation keys", () => {
         return textAt(ru, key).split("|").length !== expected;
       })
       .map(([key]) => key);
+
+    expect(wrong).toEqual([]);
+  });
+
+  it("give French and Spanish as many plural forms as English", () => {
+    const wrong = Object.entries({ fr, es }).flatMap(([code, messages]) =>
+      leaves(en)
+        .filter(([, text]) => text.includes("|"))
+        .filter(([key, text]) => textAt(messages, key).split("|").length !== text.split("|").length)
+        .map(([key]) => `${code}: ${key}`),
+    );
+
+    expect(wrong).toEqual([]);
+  });
+
+  it("keep every placeholder of English in every language", () => {
+    const placeholders = (text: string): string =>
+      [...new Set(text.match(/\{\w+\}/g) ?? [])].sort().join(" ");
+    const wrong = Object.entries({ fr, es }).flatMap(([code, messages]) =>
+      leaves(en)
+        .filter(([key, text]) => placeholders(textAt(messages, key)) !== placeholders(text))
+        .map(([key]) => `${code}: ${key}`),
+    );
 
     expect(wrong).toEqual([]);
   });

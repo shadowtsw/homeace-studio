@@ -3,9 +3,11 @@ import { createI18n } from "vue-i18n";
 import { russianPluralRule } from "@/i18n/pluralRules";
 import de from "@/locales/de";
 import en from "@/locales/en";
+import es from "@/locales/es";
+import fr from "@/locales/fr";
 import ru from "@/locales/ru";
 
-export const APP_LOCALES = ["de", "en", "ru"] as const;
+export const APP_LOCALES = ["de", "en", "fr", "es", "ru"] as const;
 
 export type AppLocale = (typeof APP_LOCALES)[number];
 
@@ -32,6 +34,7 @@ export const i18n = createI18n<[MessageSchema], AppLocale>({
   legacy: false,
   locale: DEFAULT_LOCALE,
   fallbackLocale: "en",
-  messages: { de, en, ru },
+  messages: { de, en, fr, es, ru },
+  // French and Spanish use vue-i18n's own rule like English ("0 résultats"); only Russian needs its own.
   pluralRules: { ru: russianPluralRule },
 });

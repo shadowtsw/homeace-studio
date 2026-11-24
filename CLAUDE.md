@@ -12,8 +12,9 @@ git-ignored.
 - Backend (NestJS): controller → service → repository interface → HA implementation; every response uses the
   envelope `{ message, error, data }` with message IDs from `backend/src/messages/` (see docs/api.md).
 - Frontend (Vue 3, `<script setup>`): no UI library, own components on the tokens in `src/styles/tokens.css`;
-  all texts through vue-i18n (`src/locales/de.ts` is the schema, `en.ts` and `ru.ts`
-  must match; ru plurals have one form more than en, see `src/i18n/pluralRules.ts`).
+  all texts through vue-i18n (`src/locales/de.ts` is the schema; `en.ts`, `fr.ts`, `es.ts` and `ru.ts`
+  must match, every new text in all of them; ru plurals have one form more than en, see
+  `src/i18n/pluralRules.ts`).
 - Commits: Conventional Commits (`feat(frontend): …`).
 
 ## Wiki

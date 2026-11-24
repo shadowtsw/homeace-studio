@@ -10,7 +10,7 @@ describe("message catalog", () => {
         .map((messageId) => `${language}: ${messageId}`);
     });
 
-    expect(LANGUAGES).toEqual(["de", "en", "ru"]);
+    expect(LANGUAGES).toEqual(["de", "en", "fr", "es", "ru"]);
     expect(idsWithoutText).toEqual([]);
   });
 
