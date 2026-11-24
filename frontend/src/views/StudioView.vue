@@ -591,6 +591,9 @@ onMounted(() => {
  * min() keeps at least 380px for the detail, whatever width the list was dragged to.
  */
 .studio-view__panes {
+  /* Width of the rail that holds the fold button while the details are folded. */
+  --fold-rail: 28px;
+
   grid-row: 3;
   display: grid;
   grid-template-columns:
@@ -639,13 +642,20 @@ onMounted(() => {
   font-size: 18px;
 }
 
+/* Sits on the detail side of the line, so it never covers the list's scrollbar. */
+.studio-view__fold {
+  transform: translateX(calc(50% + 2px));
+}
+
 .studio-view__fold:hover {
   border-color: var(--accent);
   color: var(--fg);
 }
 
+/* Folded, the round button gets a slim rail of its own at the right edge, so it covers nothing of
+   the list (neither its scrollbar nor the counts at the right). */
 .studio-view--detail-folded .studio-view__panes {
-  grid-template-columns: var(--w-nav) 0 minmax(0, 1fr) 0 0;
+  grid-template-columns: var(--w-nav) 0 minmax(0, 1fr) var(--fold-rail) 0;
 }
 
 .studio-view--detail-folded .studio-view__detail {
@@ -659,7 +669,6 @@ onMounted(() => {
 
 .studio-view--detail-folded .studio-view__fold {
   pointer-events: auto;
-  transform: translateX(-14px);
 }
 
 /* Tablet: categories become a drawer. */
@@ -669,7 +678,7 @@ onMounted(() => {
   }
 
   .studio-view--detail-folded .studio-view__panes {
-    grid-template-columns: minmax(0, 1fr) 0 0;
+    grid-template-columns: minmax(0, 1fr) var(--fold-rail) 0;
   }
 
   .studio-view__nav {

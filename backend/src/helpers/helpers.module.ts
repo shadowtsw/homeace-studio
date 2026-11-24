@@ -17,5 +17,6 @@ import { HaHelpersRepository } from "./repositories/ha-helpers.repository";
     { provide: HELPER_REPOSITORY, useClass: HaHelpersRepository },
     { provide: ENTITY_LOOKUP_WAIT, useValue: wait },
   ],
+  exports: [HelpersService],
 })
 export class HelpersModule {}

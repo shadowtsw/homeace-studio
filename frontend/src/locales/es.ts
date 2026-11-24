@@ -297,6 +297,33 @@ const es: MessageSchema = {
       timerRestoreHint: "Restaurar un temporizador en marcha",
     },
   },
+  helperSettings: {
+    title: "Ajustes",
+    loading: "Cargando los ajustes …",
+    error: "No se pudieron cargar los ajustes.",
+    later:
+      "Los ayudantes de plantilla y de grupo llegarán en una actualización posterior, porque Home Assistant los guarda de otra forma que los demás ayudantes. Hasta entonces, cámbialos en Home Assistant en Ajustes → Dispositivos y servicios → Ayudantes.",
+    unsaved: "Cambios sin guardar",
+    discard: "Descartar",
+    save: "Guardar en HA",
+    saving: "Guardando …",
+    saved: "Ajustes de “{name}” guardados",
+    fixFirst: "Corrige primero el ajuste marcado",
+    problems: {
+      minMaxMissing: "El mínimo y el máximo necesitan un valor.",
+      minMax: "El mínimo debe ser menor que el máximo.",
+      step: "El paso debe ser mayor que 0.",
+      textMin: "La longitud mínima debe ser un número entero desde 0.",
+      textLimit: "Home Assistant guarda como máximo 255 caracteres.",
+      textMinMax: "La longitud mínima no puede ser mayor que la máxima.",
+      optionsEmpty: "Un desplegable necesita al menos una opción.",
+      optionsBlank: "Elimina o pon nombre a las opciones vacías.",
+      optionsTwice: "Cada opción solo puede aparecer una vez.",
+      dateOrTime: "Fecha, hora o ambas: al menos una debe estar activada.",
+      minimumMaximum: "El mínimo no puede ser mayor que el máximo.",
+      duration: "Indica la duración como hh:mm:ss, p. ej. 00:05:00.",
+    },
+  },
   scope: {
     all: "Todo",
     automation: "Automatizaciones",
@@ -347,6 +374,7 @@ const es: MessageSchema = {
   },
   detail: {
     tabs: {
+      settings: "Ajustes",
       flow: "Flujo",
       properties: "Propiedades",
       history: "Historial",
@@ -969,6 +997,8 @@ const es: MessageSchema = {
     undone: "Deshecho",
     renamedEntry: "Renombrado como “{name}”",
     duplicated: "Copia creada, con carpeta, etiquetas y área",
+    duplicatedHelper:
+      "Copia creada, con ajustes, carpeta, etiquetas y área. Su valor empieza de nuevo.",
     duplicatedOff:
       "Copia creada, con carpeta, etiquetas y área. Está apagada para que nada se ejecute dos veces.",
     renamedFolder: "“{from}” ahora es “{to}”",

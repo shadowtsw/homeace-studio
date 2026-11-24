@@ -32,7 +32,27 @@ const ERROR_CODE = {
   unknownCommand: "unknown_command",
 } as const;
 
-const HELPER_COMMAND = /^([a-z_]+)\/(create|delete)$/;
+const HELPER_COMMAND = /^([a-z_]+)\/(create|delete|list|update)$/;
+
+/** What HA stores for a helper when the demo home only gives its state: its settings, from the
+ *  state attributes or HA's defaults. */
+const HELPER_DEFAULTS: Record<string, Payload> = {
+  input_number: { min: 0, max: 100, step: 1, mode: "slider" },
+  input_text: { min: 0, max: 100, mode: "text" },
+  input_select: { options: [] },
+  input_datetime: { has_date: true, has_time: true },
+  counter: { initial: 0, step: 1, restore: true },
+  timer: { duration: "0:05:00", restore: false },
+};
+/** State attributes that are settings of the helper (the rest, like friendly_name, are not). */
+const HELPER_SETTING_ATTRIBUTES: Record<string, string[]> = {
+  input_number: ["min", "max", "step", "mode", "unit_of_measurement"],
+  input_text: ["min", "max", "mode", "pattern"],
+  input_select: ["options"],
+  input_datetime: ["has_date", "has_time"],
+  counter: ["initial", "step", "minimum", "maximum"],
+  timer: ["duration"],
+};
 
 /** Service calls that change a state, by service name. */
 const STATE_BY_SERVICE: Partial<Record<string, string>> = {
@@ -92,6 +112,8 @@ function hoursAgo(hours: number): string {
 export class FakeHa {
   private readonly registry = new Map<string, HaEntityRegistryEntry>();
   private readonly states = new Map<string, HaState>();
+  /** Stored helpers by "<type>.<id>", once created or updated; others come from their state. */
+  private readonly helperItems = new Map<string, Payload>();
   private readonly categories = new Map<CategoryScope, HaCategory[]>();
   private readonly flowConfigs = new Map<FlowKind, Map<string, Payload>>([
     ["automation", new Map()],
@@ -634,6 +656,9 @@ export class FakeHa {
       throw new HaCommandError(ERROR_CODE.unknownCommand, `Unknown command ${type}`);
     }
 
+    if (match[2] === "list") return this.listHelpers(helperType);
+    if (match[2] === "update") return this.updateHelper(helperType, payload);
+
     if (match[2] === "delete") {
       const helperId = String(payload[`${helperType}_id`]);
       const entry = [...this.registry.values()].find(
@@ -661,7 +686,57 @@ export class FakeHa {
     });
     this.emit("entity_registry_updated", { action: "create", entity_id: entityId });
 
-    return { id: entityId.split(DOMAIN_SEPARATOR)[1], ...payload };
+    const id = entityId.split(DOMAIN_SEPARATOR)[1];
+    this.helperItems.set(`${helperType}.${id}`, { ...payload });
+
+    return { id, ...payload };
+  }
+
+  /** `<type>/list`: every stored helper of the type with its settings. */
+  private listHelpers(type: string): Payload[] {
+    return [...this.registry.values()]
+      .filter((entry) => entry.platform === type)
+      .map((entry) => ({ id: entry.unique_id, ...this.storedHelper(type, entry) }));
+  }
+
+  /** `<type>/update`: replaces the stored helper, like HA; the state takes over the settings. */
+  private updateHelper(type: string, payload: Payload): Payload {
+    const idField = `${type}_id`;
+    const id = String(payload[idField]);
+    const entry = [...this.registry.values()].find(
+      (item) => item.platform === type && item.unique_id === id,
+    );
+
+    if (!entry) throw new HaCommandError(ERROR_CODE.notFound, "Helper not found");
+
+    const item = Object.fromEntries(Object.entries(payload).filter(([key]) => key !== idField));
+    this.helperItems.set(`${type}.${id}`, item);
+
+    const settings = Object.fromEntries(
+      (HELPER_SETTING_ATTRIBUTES[type] ?? []).map((key) => [key, item[key]]),
+    );
+    this.setState(entry.entity_id, this.states.get(entry.entity_id)?.state ?? "unknown", settings);
+
+    return { id, ...item };
+  }
+
+  private storedHelper(type: string, entry: HaEntityRegistryEntry): Payload {
+    const stored = this.helperItems.get(`${type}.${entry.unique_id}`);
+    if (stored) return structuredClone(stored);
+
+    const attributes: Payload = { ...this.states.get(entry.entity_id)?.attributes };
+    const fromState = Object.fromEntries(
+      (HELPER_SETTING_ATTRIBUTES[type] ?? [])
+        .filter((key) => attributes[key] !== undefined)
+        .map((key) => [key, attributes[key]]),
+    );
+
+    return {
+      name: entry.original_name ?? entry.entity_id,
+      ...(entry.icon ? { icon: entry.icon } : {}),
+      ...structuredClone(HELPER_DEFAULTS[type] ?? {}),
+      ...structuredClone(fromState),
+    };
   }
 
   private parseFlowPath(path: string): { kind: FlowKind; key: string } {

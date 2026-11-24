@@ -36,6 +36,23 @@ export class HaHelpersRepository implements HelperRepository {
     };
   }
 
+  async findStored(type: HelperType, helperId: string): Promise<Record<string, unknown> | null> {
+    const items = await this.ha.call<Record<string, unknown>[]>(type + HA_COMMAND.helperListSuffix);
+
+    return items.find((item) => item.id === helperId) ?? null;
+  }
+
+  async update(
+    type: HelperType,
+    helperId: string,
+    payload: Record<string, unknown>,
+  ): Promise<void> {
+    await this.ha.call(type + HA_COMMAND.helperUpdateSuffix, {
+      ...payload,
+      [type + HELPER_ID_FIELD_SUFFIX]: helperId,
+    });
+  }
+
   async remove(type: HelperType, helperId: string): Promise<void> {
     await this.ha.call(type + HA_COMMAND.helperDeleteSuffix, {
       [type + HELPER_ID_FIELD_SUFFIX]: helperId,

@@ -42,3 +42,20 @@ export function canDelete(entry: Entry): boolean {
       DELETABLE_FLOW_DOMAINS.includes(entry.domain))
   );
 }
+
+/**
+ * HomeAce Studio copies automations, scripts and storage helpers with folder, labels and area;
+ * scenes and template or group helpers not yet.
+ */
+export function canDuplicate(entry: Entry): boolean {
+  return (
+    entry.isInRegistry &&
+    (DELETABLE_FLOW_DOMAINS.includes(entry.domain) ||
+      DELETABLE_HELPER_DOMAINS.includes(entry.domain))
+  );
+}
+
+/** Helpers whose settings HomeAce Studio edits: the storage helpers (input_*, counter, timer). */
+export function hasEditableSettings(entry: Entry): boolean {
+  return entry.isInRegistry && DELETABLE_HELPER_DOMAINS.includes(entry.domain);
+}

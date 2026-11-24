@@ -1,4 +1,10 @@
-import { buildHelperPayload, HelperSettingsError } from "./helper-payload";
+import {
+  buildCopyPayload,
+  buildHelperPayload,
+  buildUpdatePayload,
+  helperSettingsOf,
+  HelperSettingsError,
+} from "./helper-payload";
 
 function fieldOf(action: () => unknown): string | null {
   try {
@@ -80,5 +86,80 @@ describe("buildHelperPayload", () => {
     expect(fieldOf(() => buildHelperPayload("timer", "X", undefined, { duration: "5 min" }))).toBe(
       "duration",
     );
+  });
+});
+
+describe("helperSettingsOf", () => {
+  it("turns a stored helper into the form's settings, empty strings for unset fields", () => {
+    expect(helperSettingsOf("counter", { id: "c", name: "C", initial: 2, step: 1 })).toEqual({
+      initial: 2,
+      step: 1,
+      minimum: "",
+      maximum: "",
+      restore: true,
+    });
+    expect(helperSettingsOf("input_datetime", { has_date: false, has_time: true })).toEqual({
+      hasDate: false,
+      hasTime: true,
+    });
+  });
+
+  it("shows HA's timer durations with two hour digits", () => {
+    expect(helperSettingsOf("timer", { duration: "0:05:00", restore: true })).toEqual({
+      duration: "00:05:00",
+      restore: true,
+    });
+  });
+
+  it("round-trips: what it reads builds the same payload again", () => {
+    const stored = { min: 0, max: 255, mode: "password", pattern: "[a-z]*" };
+    const settings = helperSettingsOf("input_text", stored);
+
+    expect(buildUpdatePayload("input_text", stored, settings)).toEqual(stored);
+  });
+});
+
+describe("buildUpdatePayload", () => {
+  it("keeps what the form does not edit and leaves out the storage id", () => {
+    const stored = { id: "x", name: "X", icon: "mdi:x", min: 0, max: 10, step: 1, initial: 4 };
+
+    expect(
+      buildUpdatePayload("input_number", stored, { min: 1, max: 9, step: 1, mode: "box" }),
+    ).toEqual({ name: "X", icon: "mdi:x", initial: 4, min: 1, max: 9, step: 1, mode: "box" });
+  });
+
+  it("removes an optional field the user cleared", () => {
+    const stored = {
+      name: "X",
+      min: 0,
+      max: 10,
+      step: 1,
+      mode: "slider",
+      unit_of_measurement: "%",
+    };
+    const payload = buildUpdatePayload("input_number", stored, {
+      min: 0,
+      max: 10,
+      step: 1,
+      mode: "slider",
+      unitOfMeasurement: "",
+    });
+
+    expect(payload).not.toHaveProperty("unit_of_measurement");
+  });
+
+  it("checks the settings like creating does", () => {
+    expect(() => buildUpdatePayload("timer", { name: "T" }, { duration: "5 min" })).toThrow(
+      HelperSettingsError,
+    );
+  });
+});
+
+describe("buildCopyPayload", () => {
+  it("takes everything but the id, with the new name", () => {
+    expect(buildCopyPayload({ id: "a", name: "A", options: ["x", "y"] }, "A (Kopie)")).toEqual({
+      name: "A (Kopie)",
+      options: ["x", "y"],
+    });
   });
 });

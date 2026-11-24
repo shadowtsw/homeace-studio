@@ -60,6 +60,9 @@ export const CATALOG_FR: Catalog = {
 
   HELPER_CREATED: "Entrée créée.",
   HELPER_SETTINGS_INVALID: "Le réglage « {field} » n'est pas valide.",
+  HELPER_NOT_EDITABLE:
+    "{entityId} ne peut pas encore être réglé ici. Les entrées de type modèle et groupe viendront plus tard ; d'ici là, dans Home Assistant.",
+  HELPER_SETTINGS_SAVED: "Réglages enregistrés dans Home Assistant.",
   HELPER_DELETED: "Entrée supprimée.",
   FLOW_UNSUPPORTED:
     "{entityId} n'a pas de déroulement. Seules les automatisations et les scripts en ont un.",

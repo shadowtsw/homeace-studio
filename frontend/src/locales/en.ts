@@ -291,6 +291,33 @@ const en: MessageSchema = {
       timerRestoreHint: "Restore a running timer",
     },
   },
+  helperSettings: {
+    title: "Settings",
+    loading: "Loading the settings …",
+    error: "The settings could not be loaded.",
+    later:
+      "Template and group helpers come in a later update, because Home Assistant stores them differently from the other helpers. Until then, change them in Home Assistant under Settings → Devices & services → Helpers.",
+    unsaved: "Unsaved changes",
+    discard: "Discard",
+    save: "Save to HA",
+    saving: "Saving …",
+    saved: "Settings of “{name}” saved",
+    fixFirst: "Fix the marked setting first",
+    problems: {
+      minMaxMissing: "Minimum and maximum need a value.",
+      minMax: "The minimum must be smaller than the maximum.",
+      step: "The step must be greater than 0.",
+      textMin: "The minimum length must be a whole number from 0.",
+      textLimit: "Home Assistant stores at most 255 characters.",
+      textMinMax: "The minimum length must not be greater than the maximum length.",
+      optionsEmpty: "A dropdown needs at least one option.",
+      optionsBlank: "Please remove or name empty options.",
+      optionsTwice: "Each option may appear only once.",
+      dateOrTime: "Date, time or both: at least one must be on.",
+      minimumMaximum: "The minimum must not be greater than the maximum.",
+      duration: "Please enter the duration as hh:mm:ss, e.g. 00:05:00.",
+    },
+  },
   scope: {
     all: "All",
     automation: "Automations",
@@ -341,6 +368,7 @@ const en: MessageSchema = {
   },
   detail: {
     tabs: {
+      settings: "Settings",
       flow: "Flow",
       properties: "Properties",
       history: "History",
@@ -956,6 +984,8 @@ const en: MessageSchema = {
     undone: "Undone",
     renamedEntry: "Renamed to “{name}”",
     duplicated: "Copy created, with folder, labels and area",
+    duplicatedHelper:
+      "Copy created, with settings, folder, labels and area. Its value starts fresh.",
     duplicatedOff:
       "Copy created, with folder, labels and area. It is switched off so nothing runs twice.",
     renamedFolder: "“{from}” is now “{to}”",

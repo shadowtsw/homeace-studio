@@ -60,6 +60,9 @@ export const CATALOG_ES: Catalog = {
 
   HELPER_CREATED: "Ayudante creado.",
   HELPER_SETTINGS_INVALID: "El ajuste “{field}” no es válido.",
+  HELPER_NOT_EDITABLE:
+    "{entityId} todavía no se puede configurar aquí. Los ayudantes de plantilla y de grupo llegarán más adelante; hasta entonces, en Home Assistant.",
+  HELPER_SETTINGS_SAVED: "Ajustes guardados en Home Assistant.",
   HELPER_DELETED: "Ayudante eliminado.",
   FLOW_UNSUPPORTED:
     "{entityId} no tiene flujo. Solo las automatizaciones y los scripts tienen uno.",

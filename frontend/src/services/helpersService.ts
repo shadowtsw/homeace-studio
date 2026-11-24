@@ -1,6 +1,6 @@
 import type { HelperSettings, HelperType } from "@/constants/helpers";
 
-import { apiFetch, apiPost } from "./api";
+import { apiFetch, apiPost, apiSend } from "./api";
 
 export type NewHelper = {
   type: HelperType;
@@ -16,6 +16,25 @@ export async function createHelper(helper: NewHelper): Promise<string> {
   const result = await apiPost<{ entityId: string }>("/helpers", helper);
 
   return result.entityId;
+}
+
+/** The settings of a storage helper, as the form shows them. */
+export type HelperSettingsView = { type: HelperType; settings: HelperSettings };
+
+const settingsPath = (entityId: string): string =>
+  `/helpers/${encodeURIComponent(entityId)}/settings`;
+
+/** Reads the settings of a storage helper (input_*, counter, timer). */
+export function fetchHelperSettings(entityId: string): Promise<HelperSettingsView> {
+  return apiFetch<HelperSettingsView>(settingsPath(entityId));
+}
+
+/** Saves the settings; @returns them as HA now has them. */
+export function saveHelperSettings(
+  entityId: string,
+  settings: HelperSettings,
+): Promise<HelperSettingsView> {
+  return apiSend<HelperSettingsView>("PUT", settingsPath(entityId), { settings });
 }
 
 /** Deletes a helper in HA (storage helpers only). */

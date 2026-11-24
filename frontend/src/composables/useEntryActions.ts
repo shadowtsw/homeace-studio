@@ -141,7 +141,10 @@ export function useEntryActions(): EntryActions {
         await nextTick();
         const row = document.querySelector(`[data-entity-id="${CSS.escape(entityId)}"]`);
         studio.startRename(entityId, place === "list" && row ? "list" : "title");
-        toasts.show(entry.kind === "automation" ? t("toast.duplicatedOff") : t("toast.duplicated"));
+        // An automation copy starts switched off; a helper copy starts with a fresh value.
+        if (entry.kind === "automation") toasts.show(t("toast.duplicatedOff"));
+        else if (entry.kind === "helper") toasts.show(t("toast.duplicatedHelper"));
+        else toasts.show(t("toast.duplicated"));
       });
     },
     rename: async (entry, name) => {

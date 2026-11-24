@@ -7,19 +7,35 @@
     <label v-for="field in fields" :key="field.key" class="helper-settings__field">
       <span class="field-label">{{ t(`helper.fields.${field.label}`) }}</span>
 
-      <select v-if="field.kind === 'choice'" v-model="settings[field.key]" class="field-input">
+      <select
+        v-if="field.kind === 'choice'"
+        v-model="settings[field.key]"
+        class="field-input"
+        :class="{ 'is-invalid': isInvalid(field.key) }"
+        :aria-invalid="isInvalid(field.key) || undefined"
+      >
         <option v-for="choice in field.choices" :key="choice" :value="choice">
           {{ t(`helper.choices.${choice}`) }}
         </option>
       </select>
-      <span v-else-if="field.kind === 'toggle'" class="helper-settings__toggle">
-        <input v-model="settings[field.key]" type="checkbox" />
+      <span
+        v-else-if="field.kind === 'toggle'"
+        class="helper-settings__toggle"
+        :class="{ 'is-invalid': isInvalid(field.key) }"
+      >
+        <input
+          v-model="settings[field.key]"
+          type="checkbox"
+          :aria-invalid="isInvalid(field.key) || undefined"
+        />
         {{ t(`helper.fields.${field.label}Hint`) }}
       </span>
       <input
         v-else-if="field.kind === 'number'"
         v-model.number="settings[field.key]"
         class="field-input"
+        :class="{ 'is-invalid': isInvalid(field.key) }"
+        :aria-invalid="isInvalid(field.key) || undefined"
         type="number"
         :step="field.step ?? 'any'"
       />
@@ -27,6 +43,8 @@
         v-else
         v-model="settings[field.key]"
         class="field-input"
+        :class="{ 'is-invalid': isInvalid(field.key) }"
+        :aria-invalid="isInvalid(field.key) || undefined"
         :placeholder="field.placeholder"
       />
     </label>
@@ -38,6 +56,8 @@
       <input
         v-model="options[index]"
         class="field-input"
+        :class="{ 'is-invalid': badOptions.includes(index) }"
+        :aria-invalid="badOptions.includes(index) || undefined"
         :aria-label="t('helper.fields.options')"
       />
       <button
@@ -61,6 +81,7 @@ import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 
 import type { HelperSettings, HelperType } from "@/constants/helpers";
+import { badOptionIndexes } from "@/utils/helperSettings";
 
 type Field = {
   key: string;
@@ -111,6 +132,8 @@ const settings = defineModel<HelperSettings>({ required: true });
 
 const props = defineProps<{
   type: HelperType;
+  /** Fields to mark as wrong (red border, aria-invalid), e.g. ["min", "max"]. */
+  invalidFields?: readonly string[];
 }>();
 
 const { t } = useI18n();
@@ -123,6 +146,15 @@ const options = computed(() => {
 
   return Array.isArray(value) ? value : [];
 });
+
+function isInvalid(key: string): boolean {
+  return props.invalidFields?.includes(key) ?? false;
+}
+
+/** Empty or doubled options, marked only while "options" is a field to mark. */
+const badOptions = computed(() =>
+  isInvalid("options") ? badOptionIndexes(options.value.map(String)) : [],
+);
 </script>
 
 <style scoped>
@@ -168,5 +200,16 @@ const options = computed(() => {
   .helper-settings__grid {
     grid-template-columns: minmax(0, 1fr);
   }
+}
+
+.field-input.is-invalid,
+.helper-settings__toggle.is-invalid {
+  border-color: var(--err);
+  box-shadow: 0 0 0 1px var(--err);
+}
+
+.helper-settings__toggle.is-invalid {
+  border-radius: 8px;
+  padding-inline: 6px;
 }
 </style>

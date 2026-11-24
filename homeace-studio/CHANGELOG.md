@@ -5,6 +5,14 @@
 - What's new: after an update, a gift next to the gear shows the highlights of the new version in
   plain words. "Zeigen" leads to the feature, "OK" puts the gift away; the gear menu keeps
   "Was ist neu" for later. Skipped updates show too; a fresh install starts without it.
+- Helper settings: storage helpers (toggle, button, number, text, dropdown, date/time, counter, timer)
+  have a tab "Einstellungen" for their ranges, steps, options, lengths and durations. A setting that
+  Home Assistant would refuse is marked in red before saving. Fields HomeAce Studio does not show stay
+  as they are. Template and group helpers follow later.
+- Duplicate helpers like automations and scripts: the copy icon next to the pencil keeps settings,
+  folder, labels and area; the value starts fresh.
+- The fold button of the details no longer covers the list's scrollbar; folded, it has a slim rail of
+  its own at the right edge.
 
 ## 0.13.0
 

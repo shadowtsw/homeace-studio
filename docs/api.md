@@ -93,6 +93,10 @@ area of the original (HA's own duplicate keeps only the flow). An automation cop
 original and copy do not both react to the same triggers. Answers `{ entityId }` with
 `ENTRY_DUPLICATED`; `400 FLOW_NOT_EDITABLE` / `FLOW_UNSUPPORTED` like the flow editor.
 
+Storage helpers (the 8 types of `POST /api/helpers`) are copied too: everything `<type>/list` has for
+them except the id, with the new name, through `<type>/create`; then folder, labels and area. HA starts
+the copy's value fresh. Template and group helpers: `400 HELPER_NOT_EDITABLE`.
+
 ## PATCH /api/entries/:entityId/extras
 
 `{ "isFavorite": true, "note": "…" }`, both optional; a blank or null note is removed. Overlay only.
@@ -236,6 +240,13 @@ Creates a helper in HA and optionally sorts it into a folder.
   `400 HELPER_NOT_DELETABLE` for template, group and other config-entry helpers; `404 ENTRY_NOT_FOUND`.
 - HA registers the entity a moment after creating the helper; the backend looks it up a few times
   (10 × 200 ms) before sorting it into the folder.
+- `GET /api/helpers/:entityId/settings` → `{ type, settings }`: a storage helper's settings as the form
+  shows them (the camelCase names above; "" for unset optional fields), read with `<type>/list`.
+- `PUT /api/helpers/:entityId/settings` `{ settings }` saves them (`HELPER_SETTINGS_SAVED`) and answers
+  like GET. HA's `<type>/update` replaces the stored helper, so the backend sends all of it: name, icon
+  and every field the form does not show (e.g. an `initial` of a number) go along unchanged; an
+  optional field left empty is removed. `400 HELPER_SETTINGS_INVALID` (`params.field`) like creating;
+  `400 HELPER_NOT_EDITABLE` for template, group and other config-entry helpers.
 
 ## GET /api/events
 

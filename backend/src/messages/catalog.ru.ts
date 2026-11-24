@@ -60,6 +60,9 @@ export const CATALOG_RU: Catalog = {
 
   HELPER_CREATED: "Вспомогательный элемент создан.",
   HELPER_SETTINGS_INVALID: "Недопустимое значение настройки «{field}».",
+  HELPER_NOT_EDITABLE:
+    "{entityId} пока нельзя настроить здесь. Вспомогательные элементы шаблонов и групп появятся позже; до тех пор — в Home Assistant.",
+  HELPER_SETTINGS_SAVED: "Настройки сохранены в Home Assistant.",
   HELPER_DELETED: "Вспомогательный элемент удалён.",
   FLOW_UNSUPPORTED: "У {entityId} нет логики. Она есть только у автоматизаций и скриптов.",
   FLOW_SAVED: "Логика сохранена в Home Assistant.",

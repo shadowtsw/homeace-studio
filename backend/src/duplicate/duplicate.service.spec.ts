@@ -9,6 +9,8 @@ import { FlowsService } from "../editor/flows.service";
 import { HaEditorRepository } from "../editor/repositories/ha-editor.repository";
 import { EntriesService } from "../entries/entries.service";
 import { HaEntriesRepository } from "../entries/repositories/ha-entries.repository";
+import { HelpersService } from "../helpers/helpers.service";
+import { HaHelpersRepository } from "../helpers/repositories/ha-helpers.repository";
 import { DuplicateService } from "./duplicate.service";
 
 /** Duplicates in the demo home, through the real services. */
@@ -29,7 +31,12 @@ function setup() {
     () => 1_700_000_000_000,
   );
 
-  return { service: new DuplicateService(flows, editorService, entries, editor), entries, editor };
+  const helpers = new HelpersService(new HaHelpersRepository(ha), categories, overlay, () =>
+    Promise.resolve(),
+  );
+  const service = new DuplicateService(flows, editorService, entries, helpers, editor);
+
+  return { service, entries, editor, helpers };
 }
 
 describe("DuplicateService", () => {
@@ -67,5 +74,28 @@ describe("DuplicateService", () => {
     const config = await editor.loadConfig("script", entityId);
     expect(config.alias).toBe("Evening mood 2");
     expect(Array.isArray(config.sequence)).toBe(true);
+  });
+
+  it("copies a storage helper with its settings, folder, labels and area", async () => {
+    const { service, entries, helpers } = setup();
+
+    const { entityId } = await service.duplicate(
+      "input_number.terrace_brightness",
+      "Terrace brightness late",
+    );
+
+    const all = await entries.findAll();
+    const original = all.find((entry) => entry.entityId === "input_number.terrace_brightness");
+    const copy = all.find((entry) => entry.entityId === entityId);
+    expect(entityId).toBe("input_number.terrace_brightness_late");
+    expect(copy).toMatchObject({
+      name: "Terrace brightness late",
+      categoryPath: original?.categoryPath,
+      labels: original?.labels,
+      area: original?.area,
+    });
+    await expect(helpers.settings(entityId)).resolves.toEqual(
+      await helpers.settings("input_number.terrace_brightness"),
+    );
   });
 });

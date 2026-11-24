@@ -8,13 +8,18 @@ import type { HelperRegistration, HelperRepository } from "./repositories/helper
 function setup(
   entityIdAfterAttempts: number | null,
   registration: HelperRegistration | null = null,
+  stored: Record<string, unknown> | null = null,
 ) {
   let lookups = 0;
   const create = jest.fn().mockResolvedValue("gaestemodus");
   const remove = jest.fn().mockResolvedValue(undefined);
+  const update = jest.fn().mockResolvedValue(undefined);
+  const findStored = jest.fn().mockResolvedValue(stored);
   const helpers: HelperRepository = {
     create,
     remove,
+    update,
+    findStored,
     findRegistration: jest.fn().mockResolvedValue(registration),
     findEntityId: jest.fn(() => {
       lookups++;
@@ -36,7 +41,7 @@ function setup(
   const noWait = () => Promise.resolve();
   const service = new HelpersService(helpers, categories, overlay, noWait);
 
-  return { service, create, remove, assign, cleanUp, overlay };
+  return { service, create, remove, update, findStored, assign, cleanUp, overlay };
 }
 
 describe("HelpersService", () => {
@@ -113,5 +118,94 @@ describe("HelpersService", () => {
       NotFoundException,
     );
     expect(remove).not.toHaveBeenCalled();
+  });
+
+  describe("settings", () => {
+    const numberHelper: HelperRegistration = {
+      platform: "input_number",
+      uniqueId: "helligkeit",
+      categoryId: null,
+    };
+    const stored = {
+      id: "helligkeit",
+      name: "Helligkeit",
+      icon: "mdi:brightness-6",
+      min: 10,
+      max: 100,
+      step: 5,
+      mode: "slider",
+      unit_of_measurement: "%",
+      initial: 30,
+    };
+
+    it("reads the settings of a storage helper as the form shows them", async () => {
+      const { service } = setup(1, numberHelper, stored);
+
+      await expect(service.settings("input_number.helligkeit")).resolves.toEqual({
+        type: "input_number",
+        settings: { min: 10, max: 100, step: 5, mode: "slider", unitOfMeasurement: "%" },
+      });
+    });
+
+    it("saves the whole helper: unchanged fields go along, the id goes as <type>_id", async () => {
+      const { service, update } = setup(1, numberHelper, stored);
+
+      await service.updateSettings("input_number.helligkeit", {
+        min: 0,
+        max: 255,
+        step: 1,
+        mode: "box",
+        unitOfMeasurement: "",
+      });
+
+      expect(update).toHaveBeenCalledWith("input_number", "helligkeit", {
+        name: "Helligkeit",
+        icon: "mdi:brightness-6",
+        initial: 30,
+        min: 0,
+        max: 255,
+        step: 1,
+        mode: "box",
+      });
+    });
+
+    it("refuses invalid settings with the field", async () => {
+      const { service, update } = setup(1, numberHelper, stored);
+
+      await expect(
+        service.updateSettings("input_number.helligkeit", { min: 50, max: 20 }),
+      ).rejects.toMatchObject({
+        response: { message: "HELPER_SETTINGS_INVALID", params: { field: "max" } },
+      });
+      expect(update).not.toHaveBeenCalled();
+    });
+
+    it("refuses config-entry helpers like template sensors", async () => {
+      const { service } = setup(1, { platform: "template", uniqueId: "x", categoryId: null });
+
+      await expect(service.settings("sensor.pv_surplus")).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+    });
+
+    it("copies a helper with all its settings and a new name into the folder", async () => {
+      const { service, create, assign } = setup(1, numberHelper, stored);
+
+      await service.copy("input_number.helligkeit", "Helligkeit (Kopie)", "Haus/Terrasse");
+
+      expect(create).toHaveBeenCalledWith("input_number", {
+        name: "Helligkeit (Kopie)",
+        icon: "mdi:brightness-6",
+        min: 10,
+        max: 100,
+        step: 5,
+        mode: "slider",
+        unit_of_measurement: "%",
+        initial: 30,
+      });
+      expect(assign).toHaveBeenCalledWith(
+        expect.objectContaining({ scope: "helpers", targetPath: "Haus/Terrasse" }),
+      );
+    });
   });
 });

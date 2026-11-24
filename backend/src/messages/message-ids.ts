@@ -67,6 +67,8 @@ export const MESSAGE_ID = {
   helperSettingsInvalid: "HELPER_SETTINGS_INVALID",
   helperDeleted: "HELPER_DELETED",
   helperNotDeletable: "HELPER_NOT_DELETABLE",
+  helperNotEditable: "HELPER_NOT_EDITABLE",
+  helperSettingsSaved: "HELPER_SETTINGS_SAVED",
 
   // Editor
   flowUnsupported: "FLOW_UNSUPPORTED",

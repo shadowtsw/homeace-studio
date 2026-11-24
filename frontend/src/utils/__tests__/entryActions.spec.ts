@@ -2,7 +2,14 @@ import { describe, expect, it } from "vitest";
 
 import type { Entry } from "@/types/entry";
 
-import { canDelete, canToggle, supportsAction, toggleAction } from "../entryActions";
+import {
+  canDelete,
+  canDuplicate,
+  canToggle,
+  hasEditableSettings,
+  supportsAction,
+  toggleAction,
+} from "../entryActions";
 
 function entry(overrides: Partial<Entry>): Entry {
   return {
@@ -53,5 +60,20 @@ describe("entry actions", () => {
     expect(canDelete(entry({ domain: "scene" }))).toBe(false);
     expect(canDelete(entry({ domain: "input_boolean", isInRegistry: false }))).toBe(false);
     expect(canDelete(entry({ domain: "automation", isInRegistry: false }))).toBe(false);
+  });
+});
+
+describe("canDuplicate and hasEditableSettings", () => {
+  it("copy automations, scripts and storage helpers, not scenes or template helpers", () => {
+    expect(canDuplicate(entry({ domain: "automation" }))).toBe(true);
+    expect(canDuplicate(entry({ domain: "counter" }))).toBe(true);
+    expect(canDuplicate(entry({ domain: "scene" }))).toBe(false);
+    expect(canDuplicate(entry({ domain: "sensor" }))).toBe(false);
+    expect(canDuplicate(entry({ domain: "input_number", isInRegistry: false }))).toBe(false);
+  });
+
+  it("edit the settings of storage helpers only", () => {
+    expect(hasEditableSettings(entry({ domain: "timer" }))).toBe(true);
+    expect(hasEditableSettings(entry({ domain: "sensor" }))).toBe(false);
   });
 });

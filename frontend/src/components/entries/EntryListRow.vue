@@ -100,6 +100,7 @@
 </template>
 
 <script setup lang="ts">
+import { canDuplicate as canDuplicateEntry } from "@/utils/entryActions";
 import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 
@@ -148,11 +149,7 @@ const emit = defineEmits<{
 const { t } = useI18n();
 
 /** HomeAce Studio copies automations and scripts; helpers and scenes not yet. */
-const canDuplicate = computed(
-  () =>
-    props.entry.isInRegistry &&
-    (props.entry.kind === "automation" || props.entry.kind === "script"),
-);
+const canDuplicate = computed(() => canDuplicateEntry(props.entry));
 
 const isOff = computed(() => props.entry.isDisabled || props.entry.state === STATE_OFF);
 const iconClass = computed(

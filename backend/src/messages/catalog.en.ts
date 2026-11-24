@@ -59,6 +59,9 @@ export const CATALOG_EN: Catalog = {
 
   HELPER_CREATED: "Helper created.",
   HELPER_SETTINGS_INVALID: 'The setting "{field}" is not valid.',
+  HELPER_NOT_EDITABLE:
+    "{entityId} cannot be set up here yet. Template and group helpers come later; until then in Home Assistant.",
+  HELPER_SETTINGS_SAVED: "Settings saved in Home Assistant.",
   HELPER_DELETED: "Helper deleted.",
   FLOW_UNSUPPORTED: "{entityId} has no flow. Only automations and scripts have one.",
   FLOW_SAVED: "Flow saved in Home Assistant.",

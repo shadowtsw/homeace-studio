@@ -295,6 +295,33 @@ export default {
       timerRestoreHint: "Laufenden Timer wiederherstellen",
     },
   },
+  helperSettings: {
+    title: "Einstellungen",
+    loading: "Lade die Einstellungen …",
+    error: "Die Einstellungen ließen sich nicht laden.",
+    later:
+      "Template- und Gruppen-Helfer kommen in einem späteren Update, weil Home Assistant sie anders speichert als die übrigen Helfer. Bis dahin änderst du sie in Home Assistant unter Einstellungen → Geräte & Dienste → Helfer.",
+    unsaved: "Ungespeicherte Änderungen",
+    discard: "Verwerfen",
+    save: "In HA speichern",
+    saving: "Speichert …",
+    saved: "Einstellungen von „{name}“ gespeichert",
+    fixFirst: "Erst die markierte Einstellung korrigieren",
+    problems: {
+      minMaxMissing: "Minimum und Maximum brauchen einen Wert.",
+      minMax: "Das Minimum muss kleiner sein als das Maximum.",
+      step: "Die Schrittweite muss größer als 0 sein.",
+      textMin: "Die Mindestlänge muss eine ganze Zahl ab 0 sein.",
+      textLimit: "Home Assistant speichert höchstens 255 Zeichen.",
+      textMinMax: "Die Mindestlänge darf nicht größer sein als die Höchstlänge.",
+      optionsEmpty: "Eine Auswahl braucht mindestens eine Option.",
+      optionsBlank: "Leere Optionen bitte entfernen oder benennen.",
+      optionsTwice: "Jede Option darf nur einmal vorkommen.",
+      dateOrTime: "Datum, Uhrzeit oder beides: Mindestens eins muss an sein.",
+      minimumMaximum: "Das Minimum darf nicht größer sein als das Maximum.",
+      duration: "Die Dauer bitte als hh:mm:ss angeben, z. B. 00:05:00.",
+    },
+  },
   scope: {
     all: "Alle",
     automation: "Automationen",
@@ -345,6 +372,7 @@ export default {
   },
   detail: {
     tabs: {
+      settings: "Einstellungen",
       flow: "Ablauf",
       properties: "Eigenschaften",
       history: "Verlauf",
@@ -969,6 +997,8 @@ export default {
     undone: "Rückgängig gemacht",
     renamedEntry: "Umbenannt in „{name}“",
     duplicated: "Kopie angelegt, mit Ordner, Labels und Bereich",
+    duplicatedHelper:
+      "Kopie angelegt, mit Einstellungen, Ordner, Labels und Bereich. Der Wert startet neu.",
     duplicatedOff:
       "Kopie angelegt, mit Ordner, Labels und Bereich. Sie ist ausgeschaltet, damit nichts doppelt läuft.",
     renamedFolder: "„{from}“ heißt jetzt „{to}“",

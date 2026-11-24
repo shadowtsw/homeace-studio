@@ -59,6 +59,10 @@ export const HA_COMMAND = {
   helperCreateSuffix: "/create",
   /** `input_boolean/delete` with `{ input_boolean_id: … }`, … */
   helperDeleteSuffix: "/delete",
+  /** `input_number/list`: every stored helper of a type with its settings. */
+  helperListSuffix: "/list",
+  /** `input_number/update` with `{ input_number_id: … }`; HA replaces the stored helper with it. */
+  helperUpdateSuffix: "/update",
 } as const;
 
 /** REST paths (below `/api`) of the files behind HA's automation and script editors. */

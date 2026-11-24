@@ -8,7 +8,14 @@ import { removeExtras } from "../entries/entry-extras";
 import { OVERLAY_REPOSITORY } from "../overlay/overlay.constants";
 import type { OverlayRepository } from "../overlay/repositories/overlay.repository";
 import type { CreateHelperDto } from "./dto/create-helper.dto";
-import { buildHelperPayload, HelperSettingsError } from "./helper-payload";
+import {
+  buildCopyPayload,
+  buildHelperPayload,
+  buildUpdatePayload,
+  helperSettingsOf,
+  HelperSettingsError,
+  type HelperSettings,
+} from "./helper-payload";
 import {
   ENTITY_LOOKUP_ATTEMPTS,
   ENTITY_LOOKUP_DELAY_MS,
@@ -20,6 +27,17 @@ import {
 import type { HelperRepository } from "./repositories/helper.repository";
 
 const ENTITY_ID_SEPARATOR = ".";
+
+/** A helper HA keeps in one of its storage collections, with what it stores about it. */
+type StorageHelper = {
+  type: HelperType;
+  helperId: string;
+  categoryId: string | null;
+  stored: Record<string, unknown>;
+};
+
+/** The settings of a storage helper as the form shows them. */
+export type HelperSettingsView = { type: HelperType; settings: HelperSettings };
 
 @Injectable()
 export class HelpersService {
@@ -93,9 +111,99 @@ export class HelpersService {
     this.logger.log(`Deleted ${entityId}`);
   }
 
+  /**
+   * The settings of a storage helper (input_*, counter, timer), as the form shows them.
+   *
+   * @throws BadRequestException `HELPER_NOT_EDITABLE` for config-entry helpers (template, group …).
+   */
+  async settings(entityId: string): Promise<HelperSettingsView> {
+    const helper = await this.requireStorageHelper(entityId);
+
+    return { type: helper.type, settings: helperSettingsOf(helper.type, helper.stored) };
+  }
+
+  /**
+   * Saves new settings of a storage helper. Name, icon and fields the form does not show stay as
+   * they are; HA replaces the stored helper, so they are sent along unchanged.
+   *
+   * @returns The settings as HA now has them.
+   * @throws BadRequestException `HELPER_SETTINGS_INVALID` naming the first invalid setting.
+   */
+  async updateSettings(entityId: string, settings: HelperSettings): Promise<HelperSettingsView> {
+    const helper = await this.requireStorageHelper(entityId);
+    const payload = this.checked(() => buildUpdatePayload(helper.type, helper.stored, settings));
+
+    await this.helpers.update(helper.type, helper.helperId, payload);
+    this.logger.log(`Saved the settings of ${entityId}`);
+
+    return this.settings(entityId);
+  }
+
+  /**
+   * Creates a copy of a storage helper with all its settings and puts it into `categoryPath`.
+   * HA starts its value fresh, like for any new helper.
+   *
+   * @returns The entity ID of the copy.
+   */
+  async copy(entityId: string, name: string, categoryPath: string | null): Promise<string> {
+    const helper = await this.requireStorageHelper(entityId);
+    const helperId = await this.helpers.create(helper.type, buildCopyPayload(helper.stored, name));
+    const copyId = await this.waitForEntityId(helper.type, helperId);
+
+    if (!copyId) {
+      this.logger.warn(`Entity of the copy of ${entityId} not found; category not set`);
+      return helper.type + ENTITY_ID_SEPARATOR + helperId;
+    }
+
+    if (categoryPath) {
+      await this.categories.assign({
+        entityId: copyId,
+        scope: CATEGORY_SCOPE.helpers,
+        currentCategoryId: null,
+        targetPath: categoryPath,
+      });
+    }
+    this.logger.log(`Copied ${entityId} to ${copyId}`);
+
+    return copyId;
+  }
+
+  /**
+   * @throws NotFoundException `ENTRY_NOT_FOUND` when HA does not know the entity or its stored helper.
+   * @throws BadRequestException `HELPER_NOT_EDITABLE` for helpers that are config entries.
+   */
+  private async requireStorageHelper(entityId: string): Promise<StorageHelper> {
+    const registration = await this.helpers.findRegistration(entityId);
+    const notFound = (): NotFoundException =>
+      new NotFoundException(apiError(MESSAGE_ID.entryNotFound, { params: { entityId } }));
+
+    if (!registration) throw notFound();
+
+    const type = HELPER_TYPES.find((helperType) => helperType === registration.platform);
+
+    if (!type) {
+      throw new BadRequestException(
+        apiError(MESSAGE_ID.helperNotEditable, { params: { entityId } }),
+      );
+    }
+
+    const stored = await this.helpers.findStored(type, registration.uniqueId);
+
+    if (!stored) throw notFound();
+
+    return { type, helperId: registration.uniqueId, categoryId: registration.categoryId, stored };
+  }
+
   private toPayload(dto: CreateHelperDto): Record<string, unknown> {
+    return this.checked(() =>
+      buildHelperPayload(dto.type, dto.name.trim(), dto.icon?.trim(), dto.settings ?? {}),
+    );
+  }
+
+  /** Runs a payload builder; an invalid setting becomes `HELPER_SETTINGS_INVALID` with its field. */
+  private checked(build: () => Record<string, unknown>): Record<string, unknown> {
     try {
-      return buildHelperPayload(dto.type, dto.name.trim(), dto.icon?.trim(), dto.settings ?? {});
+      return build();
     } catch (error) {
       if (error instanceof HelperSettingsError) {
         throw new BadRequestException(

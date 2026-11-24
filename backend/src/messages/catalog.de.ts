@@ -59,6 +59,9 @@ export const CATALOG_DE: Catalog = {
 
   HELPER_CREATED: "Helfer angelegt.",
   HELPER_SETTINGS_INVALID: "Die Einstellung „{field}“ ist nicht gültig.",
+  HELPER_NOT_EDITABLE:
+    "{entityId} lässt sich hier noch nicht einstellen. Template- und Gruppen-Helfer kommen später; bis dahin in Home Assistant.",
+  HELPER_SETTINGS_SAVED: "Einstellungen in Home Assistant gespeichert.",
   HELPER_DELETED: "Helfer gelöscht.",
   FLOW_UNSUPPORTED: "{entityId} hat keinen Ablauf. Nur Automationen und Skripte haben einen.",
   FLOW_SAVED: "Ablauf in Home Assistant gespeichert.",

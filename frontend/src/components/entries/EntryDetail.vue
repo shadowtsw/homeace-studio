@@ -93,6 +93,13 @@
         />
       </div>
 
+      <div v-else-if="activeTab === TAB.settings" class="entry-detail__body">
+        <HelperSettingsView
+          :entry="entry"
+          :is-technical-details-visible="isTechnicalDetailsVisible"
+        />
+      </div>
+
       <div v-else-if="activeTab === TAB.dependencies" class="entry-detail__body">
         <DependencyView
           :entry="entry"
@@ -192,6 +199,7 @@ import EntryDetailHeader from "./EntryDetailHeader.vue";
 import EntityIdField from "./EntityIdField.vue";
 import EntryEditForm from "./EntryEditForm.vue";
 import EntryVisibilityForm from "./EntryVisibilityForm.vue";
+import HelperSettingsView from "@/components/helpers/HelperSettingsView.vue";
 import NoteField from "./NoteField.vue";
 
 type DetailRow = { label: string; value: string; isMono?: boolean };
@@ -250,6 +258,7 @@ const { t } = useI18n();
 
 const TAB = {
   flow: "flow",
+  settings: "settings",
   properties: "properties",
   history: "history",
   dependencies: "dependencies",
@@ -276,18 +285,21 @@ function showOnFlow(runId: string): void {
   activeTab.value = TAB.flow;
 }
 const hasFlow = computed(() => FLOW_KINDS.includes(props.entry?.kind ?? ""));
-const tabs = computed((): Tab[] =>
-  hasFlow.value
-    ? [TAB.flow, TAB.properties, TAB.history, TAB.dependencies]
-    : [TAB.properties, TAB.dependencies],
-);
+const isHelper = computed(() => props.entry?.kind === "helper");
+const tabs = computed((): Tab[] => {
+  if (hasFlow.value) return [TAB.flow, TAB.properties, TAB.history, TAB.dependencies];
+  if (isHelper.value) return [TAB.settings, TAB.properties, TAB.dependencies];
+  return [TAB.properties, TAB.dependencies];
+});
+/** The tab a newly opened entry starts on: its flow, a helper's settings, else its properties. */
+const firstTab = (): Tab => tabs.value[0] ?? TAB.properties;
 const activeTab = ref<Tab>(TAB.flow);
 
 // Every newly opened entry starts on its flow (or its properties) and loads its dependencies.
 watch(
   () => props.entry?.entityId,
   (entityId) => {
-    activeTab.value = hasFlow.value ? TAB.flow : TAB.properties;
+    activeTab.value = firstTab();
     traces.showOnFlow(null);
     void deps.load(entityId ?? null);
   },

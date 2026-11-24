@@ -3,8 +3,8 @@ import type { AppLocale } from "@/i18n";
 /** A text in every UI language; the type makes a missing language a build error. */
 export type LocalizedText = Record<AppLocale, string>;
 
-/** Where "Zeigen" takes the user. */
-export type WhatsNewTarget = "settings";
+/** Where "Zeigen" takes the user: the gear menu, or the helpers in the list. */
+export type WhatsNewTarget = "settings" | "helpers";
 
 export type WhatsNewItem = {
   /** MDI icon class, e.g. "mdi-gift-outline". */
@@ -41,6 +41,42 @@ export const WHATS_NEW: readonly WhatsNewRelease[] = [
   {
     version: "0.14.0",
     items: [
+      {
+        icon: "mdi-tune-variant",
+        title: {
+          de: "Helfer einstellen",
+          en: "Helper settings",
+          fr: "Réglages des entrées",
+          es: "Ajustes de los ayudantes",
+          ru: "Настройки вспомогательных элементов",
+        },
+        text: {
+          de: "Bereiche, Schritte, Optionen, Längen und Dauern direkt im Tab „Einstellungen“ ändern. Passt etwas nicht, sagt HomeAce es vor dem Speichern.",
+          en: "Change ranges, steps, options, lengths and durations right in the “Settings” tab. If something does not fit, HomeAce says so before saving.",
+          fr: "Modifiez plages, pas, options, longueurs et durées directement dans l'onglet « Réglages ». Si quelque chose ne va pas, HomeAce le signale avant l'enregistrement.",
+          es: "Cambia rangos, pasos, opciones, longitudes y duraciones directamente en la pestaña “Ajustes”. Si algo no encaja, HomeAce lo avisa antes de guardar.",
+          ru: "Меняйте диапазоны, шаги, варианты, длины и длительности прямо на вкладке «Настройки». Если что-то не так, HomeAce скажет об этом до сохранения.",
+        },
+        show: "helpers",
+      },
+      {
+        icon: "mdi-content-copy",
+        title: {
+          de: "Helfer duplizieren",
+          en: "Duplicate helpers",
+          fr: "Dupliquer des entrées",
+          es: "Duplicar ayudantes",
+          ru: "Копирование вспомогательных элементов",
+        },
+        text: {
+          de: "Das Kopie-Symbol hinter dem Stift gibt es jetzt auch für Helfer: mit Einstellungen, Ordner, Labels und Bereich. Der Wert startet neu.",
+          en: "The copy icon next to the pencil now works for helpers too: with settings, folder, labels and area. The value starts fresh.",
+          fr: "L'icône de copie à côté du crayon fonctionne désormais aussi pour les entrées : avec réglages, dossier, étiquettes et pièce. La valeur repart de zéro.",
+          es: "El icono de copia junto al lápiz ahora también sirve para los ayudantes: con ajustes, carpeta, etiquetas y área. El valor empieza de nuevo.",
+          ru: "Значок копирования рядом с карандашом теперь работает и для вспомогательных элементов: с настройками, папкой, метками и пространством. Значение начинается заново.",
+        },
+        show: "helpers",
+      },
       {
         icon: "mdi-gift-outline",
         title: {

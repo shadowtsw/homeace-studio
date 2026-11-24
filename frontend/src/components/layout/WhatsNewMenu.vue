@@ -74,12 +74,14 @@ import { useI18n } from "vue-i18n";
 import { RELEASES_URL, type WhatsNewTarget } from "@/constants/whatsNew";
 import type { AppLocale } from "@/i18n";
 import { useSettingsStore } from "@/stores/settingsStore";
+import { useStudioStore } from "@/stores/studioStore";
 import { useWhatsNewStore } from "@/stores/whatsNewStore";
 import { flashElement } from "@/utils/flash";
 
 const { t, locale: i18nLocale } = useI18n();
 const whatsNew = useWhatsNewStore();
 const settings = useSettingsStore();
+const studio = useStudioStore();
 
 const locale = computed(() => i18nLocale.value as AppLocale);
 const newest = computed(() => whatsNew.releases[0] ?? null);
@@ -93,6 +95,12 @@ async function show(target: WhatsNewTarget): Promise<void> {
     settings.isMenuOpen = true;
     await nextTick();
     flashElement(document.querySelector(".settings-menu__panel"));
+  }
+
+  if (target === "helpers") {
+    studio.scope = "helper";
+    await nextTick();
+    flashElement(document.querySelector(".entry-list__scope--active"));
   }
 }
 

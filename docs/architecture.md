@@ -53,7 +53,9 @@ backend/src/
   categories/cleanup/    tidy-up assistant: cleanup-analysis.ts (pure: findCleanupProposals, planCleanup),
                          CleanupService + CleanupController under /api/categories/cleanup
   helpers/               POST /api/helpers: helper-payload.ts checks settings per type, then `<type>/create`,
-                         wait for the entity, sort it into the folder
+                         wait for the entity, sort it into the folder; GET/PUT :entityId/settings:
+                         helperSettingsOf (HA → form) and buildUpdatePayload (form → the whole stored
+                         helper for `<type>/update`); copy() for duplicates (buildCopyPayload)
   editor/                catalog.mapper.ts (HA descriptions + translations → catalog), flow-entities.ts,
                          EditorService (catalog cache, flows, save), GET /api/editor/catalog,
                          GET + PUT /api/editor/flows/:id; FlowsService + FlowsController:
@@ -108,6 +110,10 @@ cannot lose an id.
 frontend/src/
   views/StudioView.vue           the one page: loads entries, wires tree, list, detail, splitters, responsive states
   components/layout/             AppTopBar, SettingsMenu, PaneSplitter (drag, keyboard, double-click reset)
+  components/helpers/HelperSettingsView  the "Einstellungen" tab of storage helpers (first tab of every
+                                 helper; template/group helpers get a "later" note): HelperSettingsFields
+                                 from the create dialog, utils/helperSettings.ts checks while typing
+                                 (never stricter than the backend) and names the fields to mark red
   components/layout/WhatsNewMenu "What's new": gift with a dot next to the gear after an update, popover
                                  with the highlights; "Zeigen" leads to the feature (utils/flash.ts lets it
                                  light up), only "OK" confirms. constants/whatsNew.ts holds the highlights per

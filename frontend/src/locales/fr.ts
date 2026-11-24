@@ -303,6 +303,33 @@ const fr: MessageSchema = {
       timerRestoreHint: "Restaurer un minuteur en cours",
     },
   },
+  helperSettings: {
+    title: "Réglages",
+    loading: "Chargement des réglages …",
+    error: "Les réglages n'ont pas pu être chargés.",
+    later:
+      "Les entrées de type modèle et groupe viendront dans une mise à jour ultérieure, car Home Assistant les enregistre autrement que les autres entrées. D'ici là, modifiez-les dans Home Assistant sous Paramètres → Appareils et services → Entrées.",
+    unsaved: "Modifications non enregistrées",
+    discard: "Annuler les modifications",
+    save: "Enregistrer dans HA",
+    saving: "Enregistrement …",
+    saved: "Réglages de « {name} » enregistrés",
+    fixFirst: "Corrigez d'abord le réglage marqué",
+    problems: {
+      minMaxMissing: "Le minimum et le maximum doivent avoir une valeur.",
+      minMax: "Le minimum doit être inférieur au maximum.",
+      step: "Le pas doit être supérieur à 0.",
+      textMin: "La longueur minimale doit être un nombre entier à partir de 0.",
+      textLimit: "Home Assistant enregistre au plus 255 caractères.",
+      textMinMax: "La longueur minimale ne doit pas dépasser la longueur maximale.",
+      optionsEmpty: "Une liste déroulante a besoin d'au moins une option.",
+      optionsBlank: "Veuillez supprimer ou nommer les options vides.",
+      optionsTwice: "Chaque option ne doit apparaître qu'une fois.",
+      dateOrTime: "Date, heure ou les deux : au moins l'une doit être activée.",
+      minimumMaximum: "Le minimum ne doit pas dépasser le maximum.",
+      duration: "Veuillez saisir la durée au format hh:mm:ss, par ex. 00:05:00.",
+    },
+  },
   scope: {
     all: "Tout",
     automation: "Automatisations",
@@ -353,6 +380,7 @@ const fr: MessageSchema = {
   },
   detail: {
     tabs: {
+      settings: "Réglages",
       flow: "Déroulement",
       properties: "Propriétés",
       history: "Historique",
@@ -984,6 +1012,8 @@ const fr: MessageSchema = {
     undone: "Annulé",
     renamedEntry: "Renommé en « {name} »",
     duplicated: "Copie créée, avec dossier, étiquettes et pièce",
+    duplicatedHelper:
+      "Copie créée, avec réglages, dossier, étiquettes et pièce. Sa valeur repart de zéro.",
     duplicatedOff:
       "Copie créée, avec dossier, étiquettes et pièce. Elle est désactivée pour que rien ne s'exécute deux fois.",
     renamedFolder: "« {from} » s'appelle maintenant « {to} »",
