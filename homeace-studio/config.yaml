@@ -1,6 +1,6 @@
 # Home Assistant add-on definition. Docs: https://developers.home-assistant.io/docs/add-ons/configuration
 name: HomeAce Studio
-version: "0.12.1"
+version: "0.13.0"
 slug: homeace_studio
 description: A clearer UI for automations, scripts, scenes and helpers, with nested categories.
 url: https://github.com/shadowtsw/homeace-studio

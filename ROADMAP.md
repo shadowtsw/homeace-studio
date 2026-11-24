@@ -39,6 +39,7 @@ The parts are released together, after a test round on a real Home Assistant.
 
 | Version | Highlights |
 | --- | --- |
+| ✅ 0.13.0 | Five languages: Russian from the community, French and Spanish (machine-assisted, corrections welcome); first start in the browser language |
 | ✅ 0.12.1 | Opening an entry no longer loads the whole entity registry: far less CPU when clicking through |
 | ✅ 0.12.0 | Change an entity ID with every reference; aliases, hidden, disabled; rename in place (double click, F2) with undo; duplicate with folder, labels and area; sort folders; fold the details pane |
 | ✅ 0.11.0 | Dependencies tab; area view with "sort into folders by area"; create and edit areas; run history |

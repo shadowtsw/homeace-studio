@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.13.0
 
 - Five languages: German and English as before, now also Russian, French and Spanish. The Russian
   translation comes from the community (thanks, pcmaster4u!); French and Spanish are machine-assisted,
