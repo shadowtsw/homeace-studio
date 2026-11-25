@@ -144,6 +144,7 @@ scripts/build-addon.mjs      copies homeace-studio/ + frontend/ + backend/ (no n
 | scenes | [features/scenes.md](features/scenes.md) |
 | helpers | [features/helpers.md](features/helpers.md) |
 | folders, HA categories, tidy-up assistant | [features/folders.md](features/folders.md) |
+| labels: assign, manage, uses before delete | [features/labels.md](features/labels.md) |
 | areas | [features/areas.md](features/areas.md) |
 | check-up | [features/checkup.md](features/checkup.md) |
 | dependencies | [features/dependencies.md](features/dependencies.md) |

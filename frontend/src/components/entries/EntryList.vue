@@ -57,6 +57,7 @@
 
       <div
         v-if="checkedIds.size > 0"
+        ref="bulkBar"
         class="entry-list__bulk"
         role="toolbar"
         :aria-label="t('list.bulk')"
@@ -67,6 +68,9 @@
         </button>
         <button class="btn" type="button" @click="emit('setAreaChecked')">
           <span class="mdi mdi-map-marker-outline" />{{ t("areas.set.button") }}
+        </button>
+        <button class="btn" type="button" @click="bulkBar && emit('labelChecked', bulkBar)">
+          <span class="mdi mdi-label-outline" />{{ t("labels.add") }}
         </button>
         <button class="btn" type="button" @click="emit('uncategorizeChecked')">
           {{ t("list.takeOut") }}
@@ -122,6 +126,7 @@
           :is-check-active="checkedIds.size > 0"
           :area-note="areaView ? (areaView.notes[entry.entityId] ?? '') : undefined"
           :is-renaming="entry.entityId === renamingId"
+          :is-labels-visible="isListLabelsVisible"
           @start-rename="emit('startRename', entry.entityId)"
           @duplicate="emit('duplicate', entry.entityId)"
           @rename="(name) => emit('rename', entry.entityId, name)"
@@ -209,6 +214,8 @@ const props = defineProps<{
   /** Rows ticked for moving several entries at once. */
   checkedIds: ReadonlySet<string>;
   isTechnicalDetailsVisible: boolean;
+  /** Label chips under each name (setting "Labels in der Liste zeigen", off by default). */
+  isListLabelsVisible: boolean;
   /** Set while an area of the area view is selected: its title and why each entry is in it. */
   areaView: AreaListView | null;
   /** The row whose name is being edited in place. */
@@ -229,6 +236,8 @@ const emit = defineEmits<{
   uncategorizeChecked: [];
   /** "Bereich" for the ticked rows. */
   setAreaChecked: [];
+  /** "Label" for the ticked rows; the picker opens next to the bar and never covers it. */
+  labelChecked: [bar: HTMLElement];
   startRename: [entityId: string];
   duplicate: [entityId: string];
   rename: [entityId: string, name: string];
@@ -245,6 +254,7 @@ const BREADCRUMB_SEPARATOR = " › ";
 
 const isNewMenuOpen = ref(false);
 const newMenu = useTemplateRef("newMenu");
+const bulkBar = useTemplateRef<HTMLElement>("bulkBar");
 
 onClickOutside(newMenu, () => (isNewMenuOpen.value = false));
 

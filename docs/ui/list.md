@@ -67,8 +67,11 @@ the list:
 
 - **Ticking:** the checkbox ticks one row, shift-click ticks a range from the last clicked row (taking the
   clicked row's new state, so it can untick a range too). "Alle" ticks the visible rows. Only registry
-  entries can be ticked or dragged (`isInRegistry`). The bulk bar offers move, set area and take out of
-  the folder.
+  entries can be ticked or dragged (`isInRegistry`). The bulk bar offers move, set area, "Label" and take
+  out of the folder. "Label" opens the `LabelPicker` next to the bar; a tick acts at once on all ticked
+  entries (see [labels](../features/labels.md)).
+- **Label chips:** with "Labels in der Liste zeigen" on (per user, off by default), each row shows its
+  labels as small chips without icon (`EntryListRow`, prop `isLabelsVisible`).
 - **Inline rename:** double-click on the name, the pencil, or F2. `studio.renaming = { entityId, place:
   "list" | "title" }` says where the input is.
 - **Quick actions:** on/off switch (`canToggle`), run (`supportsAction(run)`), duplicate (automations,

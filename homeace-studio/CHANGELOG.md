@@ -16,6 +16,11 @@
 - Filters can be combined: Strg+Klick (⌘+Klick on a Mac), right-click or a long press on a filter
   adds it, a plain click shows only that one. The choice is kept, and the filter bar wraps instead of
   scrolling.
+- Labels: the properties show an entry's labels as chips, "+ Label" opens a search to tick, create or
+  edit labels (name, colour, icon). Several ticked entries get or lose a label in one go with "Label"
+  in the selection bar. Before a label is deleted, HomeAce Studio shows where it is used, including
+  automations and scripts that switch everything with that label. New setting "Labels in der Liste
+  zeigen" (off by default).
 
 - What's new: after an update, a gift next to the gear shows the highlights of the new version in
   plain words. "Zeigen" leads to the feature, "OK" puts the gift away; the gear menu keeps

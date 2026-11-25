@@ -103,6 +103,7 @@
           :unsaved-ids="unsavedIds"
           :checked-ids="studio.checkedIds"
           :is-technical-details-visible="settings.isTechnicalDetailsVisible"
+          :is-list-labels-visible="settings.isListLabelsVisible"
           :area-view="areaView"
           :renaming-id="studio.renaming?.place === 'list' ? studio.renaming.entityId : null"
           @start-rename="(entityId) => studio.startRename(entityId, 'list')"
@@ -118,6 +119,7 @@
           @uncategorize-checked="actions.moveEntries([...studio.checkedIds], null)"
           @set-area-checked="areas.startSetArea([...studio.checkedIds])"
           @act="entryActions.act"
+          @label-checked="(bar) => (bulkLabelField = bar)"
           @select-scope="studio.selectScope"
           @toggle-scope="studio.toggleListScope"
           @open-entity="openEntity"
@@ -191,6 +193,20 @@
 
     <div class="studio-view__scrim" @click="isNavOpen = false" />
 
+    <LabelPicker
+      v-if="bulkLabelField && studio.checkedIds.size > 0"
+      :field="bulkLabelField"
+      :labels="lookups.labels"
+      :checked-ids="bulkLabels.all"
+      :partial-ids="bulkLabels.some"
+      :counts="labelActions.counts.value"
+      :is-busy="labelActions.isBusy.value"
+      @toggle="(labelId) => labelActions.toggleOnEntries(labelId, [...studio.checkedIds])"
+      @create="createBulkLabel"
+      @update="(labelId, fields) => void labelActions.update(labelId, fields)"
+      @delete="deleteBulkLabel"
+      @close="bulkLabelField = null"
+    />
     <QuickMenu
       v-if="entityMenu.menu.value"
       :anchor="entityMenu.menu.value.anchor"
@@ -223,6 +239,7 @@ import { useI18n } from "vue-i18n";
 import CategoryTree from "@/components/categories/CategoryTree.vue";
 import CheckupList from "@/components/checkup/CheckupList.vue";
 import QuickMenu from "@/components/common/QuickMenu.vue";
+import LabelPicker from "@/components/labels/LabelPicker.vue";
 import AiPlanHint from "@/components/ai/AiPlanHint.vue";
 import AreaNav from "@/components/areas/AreaNav.vue";
 import CleanupHint from "@/components/cleanup/CleanupHint.vue";
@@ -233,6 +250,7 @@ import PaneSplitter from "@/components/layout/PaneSplitter.vue";
 import { useAreaActions } from "@/composables/useAreaActions";
 import { useCategoryActions } from "@/composables/useCategoryActions";
 import { useEntityMenu } from "@/composables/useEntityMenu";
+import { useLabelActions } from "@/composables/useLabelActions";
 import { useCreateActions } from "@/composables/useCreateActions";
 import { useEntryActions } from "@/composables/useEntryActions";
 import { useFlowTexts } from "@/composables/useFlowTexts";
@@ -265,7 +283,7 @@ import { useStudioStore } from "@/stores/studioStore";
 import { useTracesStore } from "@/stores/tracesStore";
 import { useToastStore } from "@/stores/toastStore";
 import type { EntityOption } from "@/types/editor";
-import type { Area, Entry, EntryChanges } from "@/types/entry";
+import type { Area, Entry, EntryChanges, Label } from "@/types/entry";
 import { areaNote, type AreaListView } from "@/utils/areaNotes";
 import { tidyCandidates } from "@/utils/areaTidy";
 import { areaFilter, areaOfFilter } from "@/utils/entryFilter";
@@ -519,6 +537,36 @@ const entityMenu = useEntityMenu({
   },
   startMoveEntity: (entity) => actions.startMoveEntity(entity),
 });
+
+// ---- labels for the ticked rows (Mehrfachauswahl) -------------------------------------------
+
+const labelActions = useLabelActions();
+/** The bulk bar while its label picker is open; null when closed. */
+const bulkLabelField = ref<HTMLElement | null>(null);
+
+/** Labels on every ticked entry (ticked in the picker) and on some of them (a dash). */
+const bulkLabels = computed(() => {
+  const ticked = entriesStore.entries.filter((entry) => studio.checkedIds.has(entry.entityId));
+  const countOf = new Map<string, number>();
+  for (const entry of ticked)
+    for (const label of entry.labels)
+      countOf.set(label.labelId, (countOf.get(label.labelId) ?? 0) + 1);
+  const all = [...countOf].filter(([, count]) => count === ticked.length).map(([id]) => id);
+  const some = [...countOf].filter(([, count]) => count < ticked.length).map(([id]) => id);
+
+  return { all, some };
+});
+
+/** A new label goes to every ticked entry at once. */
+async function createBulkLabel(name: string): Promise<void> {
+  const label = await labelActions.create(name);
+  if (label) await labelActions.toggleOnEntries(label.labelId, [...studio.checkedIds]);
+}
+
+function deleteBulkLabel(label: Label): void {
+  bulkLabelField.value = null;
+  void labelActions.startDelete(label);
+}
 
 function openEntity(entity: EntityOption, anchor: HTMLElement): void {
   entityMenu.open(entity, anchor);

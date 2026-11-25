@@ -13,6 +13,7 @@ describe("PREFERENCES", () => {
   // stays on this device. A new preference has to be placed on purpose, so this list must change.
   it("follows the user only for settings changed on purpose", () => {
     expect(preferenceNamesWithScope(PREFERENCE_SCOPE.user)).toEqual([
+      "listLabels",
       "locale",
       "sceneAutoSave",
       "seenVersion",

@@ -44,6 +44,15 @@
     @cancel="actions.cancelAreaTidy"
     @confirm="confirmAreaTidy"
   />
+  <LabelDeleteDialog
+    v-if="labelActions.deleting.value"
+    :label="labelActions.deleting.value.label"
+    :usage="labelActions.deleting.value.usage"
+    :is-busy="labelActions.isBusy.value"
+    @confirm="labelActions.confirmDelete"
+    @cancel="labelActions.cancelDelete"
+    @more="showLabelsTopic"
+  />
   <MoveEntriesDialog
     v-if="actions.movingIds.value"
     :count="actions.movingIds.value.length"
@@ -187,6 +196,8 @@ import FolderColorDialog from "@/components/categories/FolderColorDialog.vue";
 import NewFolderDialog from "@/components/categories/NewFolderDialog.vue";
 import RenameCategoryDialog from "@/components/categories/RenameCategoryDialog.vue";
 import MoveEntriesDialog from "@/components/entries/MoveEntriesDialog.vue";
+import LabelDeleteDialog from "@/components/labels/LabelDeleteDialog.vue";
+import { useLabelActions } from "@/composables/useLabelActions";
 import RenameEntityDialog from "@/components/entries/RenameEntityDialog.vue";
 import ConfirmDialog from "@/components/common/ConfirmDialog.vue";
 import DependencyUserRow from "@/components/dependencies/DependencyUserRow.vue";
@@ -223,6 +234,14 @@ const props = defineProps<{
   entryActions: ReturnType<typeof useEntryActions>;
   areaActions: ReturnType<typeof useAreaActions>;
 }>();
+
+const labelActions = useLabelActions();
+
+/** "Mehr dazu" in the delete dialog: the topic about labels in "Gut zu wissen". */
+function showLabelsTopic(): void {
+  labelActions.cancelDelete();
+  settingsWindow.showTopic("labels");
+}
 
 const emit = defineEmits<{
   closeColor: [];

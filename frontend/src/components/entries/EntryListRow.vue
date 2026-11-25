@@ -57,6 +57,13 @@
           {{ entry.entityId }}
         </span>
         <span v-else class="entry-list-row__sub">{{ subtitle }}</span>
+        <span v-if="isLabelsVisible && entry.labels.length > 0" class="entry-list-row__labels">
+          <LabelChip
+            v-for="label in entry.labels"
+            :key="label.labelId"
+            :label="{ name: label.name, color: label.color, icon: null }"
+          />
+        </span>
       </span>
     </component>
     <button
@@ -106,6 +113,7 @@ import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 
 import InlineNameInput from "@/components/common/InlineNameInput.vue";
+import LabelChip from "@/components/labels/LabelChip.vue";
 import SwitchToggle from "@/components/common/SwitchToggle.vue";
 import { ENTRY_ACTION, ENTRY_KIND_ICON, type EntryAction } from "@/constants/entries";
 import type { Entry } from "@/types/entry";
@@ -120,6 +128,8 @@ const STATE_OFF = "off";
 const SUBTITLE_SEPARATOR = " · ";
 
 const props = defineProps<{
+  /** Label chips under the name (setting, off by default). */
+  isLabelsVisible?: boolean;
   entry: Entry;
   isSelected: boolean;
   isTechnicalDetailsVisible: boolean;
@@ -291,6 +301,20 @@ function startDrag(event: DragEvent): void {
 .entry-list-row__star {
   color: var(--kind-automation);
   font-size: 13px;
+}
+
+/* Small and quiet: the labels are extra information, the name stays the main thing. */
+.entry-list-row__labels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+  font-size: 11px;
+}
+
+.entry-list-row__labels :deep(.label-chip) {
+  padding: 0 7px;
+  font-size: 11px;
 }
 
 .entry-list-row__sub {

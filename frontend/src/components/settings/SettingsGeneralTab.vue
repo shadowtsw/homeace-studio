@@ -28,6 +28,15 @@
     </SettingsRow>
 
     <SettingsRow
+      :title="t('settings.listLabels')"
+      :hint="t('settings.listLabelsHint')"
+      :preference="PREFERENCES.listLabels"
+      more-topic="labels"
+    >
+      <SwitchToggle v-model="settings.isListLabelsVisible" :label="t('settings.listLabels')" />
+    </SettingsRow>
+
+    <SettingsRow
       :title="t('settings.paneWidths')"
       :hint="t('settings.paneWidthsHint')"
       :preference="PREFERENCES.paneWidths"

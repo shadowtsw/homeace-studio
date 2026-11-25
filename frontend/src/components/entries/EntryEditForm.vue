@@ -32,21 +32,39 @@
 
     <div class="entry-edit__field">
       <span class="field-label">{{ t("detail.labels") }}</span>
-      <div class="entry-edit__labels">
-        <button
-          v-for="label in labels"
+      <!-- The given labels as chips; "+ Label" opens the picker, which never covers them. -->
+      <div ref="labelField" class="entry-edit__labels">
+        <LabelChip
+          v-for="label in pickedLabels"
           :key="label.labelId"
-          class="entry-edit__label"
-          :class="{ 'entry-edit__label--on': labelIds.includes(label.labelId) }"
+          :label="label"
+          is-removable
+          :is-disabled="isBusy"
+          @remove="toggleLabel(label.labelId)"
+        />
+        <button
+          class="btn btn--small"
           type="button"
-          :aria-pressed="labelIds.includes(label.labelId)"
           :disabled="isBusy"
-          @click="toggleLabel(label.labelId)"
+          :aria-expanded="isPickerOpen"
+          @click="isPickerOpen = !isPickerOpen"
         >
-          {{ label.name }}
+          <span class="mdi mdi-plus" />{{ t("labels.add") }}
         </button>
-        <span v-if="labels.length === 0" class="entry-edit__hint">{{ t("detail.noLabels") }}</span>
       </div>
+      <LabelPicker
+        v-if="isPickerOpen && labelField"
+        :field="labelField"
+        :labels="labels"
+        :checked-ids="labelIds"
+        :counts="labelActions.counts.value"
+        :is-busy="labelActions.isBusy.value"
+        @toggle="toggleLabel"
+        @create="createLabel"
+        @update="(labelId, fields) => void labelActions.update(labelId, fields)"
+        @delete="deleteLabel"
+        @close="isPickerOpen = false"
+      />
     </div>
 
     <div class="entry-edit__buttons">
@@ -62,9 +80,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+import { computed, ref, useTemplateRef, watch } from "vue";
 import { useI18n } from "vue-i18n";
 
+import LabelChip from "@/components/labels/LabelChip.vue";
+import LabelPicker from "@/components/labels/LabelPicker.vue";
+import { useLabelActions } from "@/composables/useLabelActions";
 import { useAreasStore } from "@/stores/areasStore";
 import type { Area, Entry, EntryChanges, Label } from "@/types/entry";
 import { mdiIconClass } from "@/utils/text";
@@ -128,6 +149,43 @@ watch(
     isSaving = false;
   },
   { immediate: true },
+);
+
+// ---- labels: given ones as chips, the picker for the rest ----------------------------------
+
+const labelActions = useLabelActions();
+const labelField = useTemplateRef<HTMLElement>("labelField");
+const isPickerOpen = ref(false);
+
+/** The ticked labels with name, colour and icon; one HA no longer knows keeps the entry's name. */
+const pickedLabels = computed(() =>
+  labelIds.value.map(
+    (labelId) =>
+      props.labels.find((label) => label.labelId === labelId) ?? {
+        labelId,
+        name: props.entry.labels.find((label) => label.labelId === labelId)?.name ?? labelId,
+        icon: null,
+        color: null,
+      },
+  ),
+);
+
+/** A new label is made in HA right away and ticked here; "Speichern" gives it to the entry. */
+async function createLabel(name: string): Promise<void> {
+  const label = await labelActions.create(name);
+  if (label && !labelIds.value.includes(label.labelId))
+    labelIds.value = [...labelIds.value, label.labelId];
+}
+
+function deleteLabel(label: Label): void {
+  isPickerOpen.value = false;
+  void labelActions.startDelete(label);
+}
+
+// Another entry: the picker belongs to the old one
+watch(
+  () => props.entry.entityId,
+  () => (isPickerOpen.value = false),
 );
 
 /** Value of the "+ Neuer Bereich …" option; never saved. */
@@ -211,24 +269,8 @@ function save(): void {
 .entry-edit__labels {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 6px;
-}
-
-.entry-edit__label {
-  padding: 4px 11px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: var(--surface-2);
-  color: var(--muted);
-  cursor: pointer;
-  font-size: 12.5px;
-  font-weight: 500;
-}
-
-.entry-edit__label--on {
-  border-color: var(--accent);
-  background: var(--accent-soft);
-  color: var(--fg);
 }
 
 .entry-edit__buttons {

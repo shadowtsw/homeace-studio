@@ -15,6 +15,11 @@ export const useSettingsStore = defineStore("settings", () => {
     preference: PREFERENCES.technicalDetails,
     defaultValue: false,
   });
+  /** Off by default: the list showed no labels before, so nothing changes until the user wants them. */
+  const isListLabelsVisible = usePreference({
+    preference: PREFERENCES.listLabels,
+    defaultValue: false,
+  });
   /**
    * The user's choice wins; without one, the browser language. Not written to storage until the
    * user picks a language, so a later change of the browser language still counts.
@@ -39,6 +44,7 @@ export const useSettingsStore = defineStore("settings", () => {
 
   return {
     isTechnicalDetailsVisible,
+    isListLabelsVisible,
     locale,
     isSceneAutoSave,
     storedTraces,

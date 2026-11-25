@@ -24,6 +24,8 @@ export type Preference = {
 export const PREFERENCES = {
   locale: { storageKey: "homeace.locale", scope: PREFERENCE_SCOPE.user },
   technicalDetails: { storageKey: "homeace.technicalDetails", scope: PREFERENCE_SCOPE.user },
+  /** Label chips under each name in the list. */
+  listLabels: { storageKey: "homeace.listLabels", scope: PREFERENCE_SCOPE.user },
   sceneAutoSave: { storageKey: "homeace.sceneAutoSave", scope: PREFERENCE_SCOPE.user },
   /** How many runs new automations and scripts keep. */
   storedTraces: { storageKey: "homeace.storedTraces", scope: PREFERENCE_SCOPE.user },
