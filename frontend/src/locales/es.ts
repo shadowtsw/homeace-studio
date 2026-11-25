@@ -1271,6 +1271,7 @@ const es: MessageSchema = {
     moreTitle: "¿Quién más usa esto?",
     gone: "ya no existe",
     goneHint: "Sustitúyelo o quítalo en el flujo",
+    goneHintScene: "Quítalo en la escena en “Estados”",
     emptyUses: {
       helper: "Los ayudantes no usan nada por sí mismos.",
       other: "No usa nada.",

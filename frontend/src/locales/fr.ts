@@ -1287,6 +1287,7 @@ const fr: MessageSchema = {
     moreTitle: "Qui d'autre l'utilise ?",
     gone: "n'existe plus",
     goneHint: "Remplacez-le ou retirez-le dans le déroulement",
+    goneHintScene: "Retirez-le dans la scène sous « États »",
     emptyUses: {
       helper: "Les entrées n'utilisent rien elles-mêmes.",
       other: "N'utilise rien.",

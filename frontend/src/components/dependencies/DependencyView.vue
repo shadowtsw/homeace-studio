@@ -27,6 +27,7 @@
               :label="labelOf(use.entityId, use.name)"
               :entry="entryOf(use.entityId)"
               :entry-of="entryOf"
+              :gone-hint="goneHint"
               :is-technical-details-visible="isTechnicalDetailsVisible"
               @open="(id) => emit('open', id)"
             />
@@ -71,7 +72,7 @@ import { useEntriesStore } from "@/stores/entriesStore";
 import { useLookupsStore } from "@/stores/lookupsStore";
 import type { EntityOption } from "@/types/editor";
 import type { Entry } from "@/types/entry";
-import { countUses, groupUsesByRole } from "@/utils/dependencies";
+import { countUses, goneHintKey, groupUsesByRole } from "@/utils/dependencies";
 import { countByDevice, rowLabel } from "@/utils/entityPicker";
 
 import DependencyUseRow from "./DependencyUseRow.vue";
@@ -113,6 +114,8 @@ watch(
 const result = computed(() =>
   deps.current?.entityId === props.entry.entityId ? deps.current : null,
 );
+
+const goneHint = computed(() => t(goneHintKey(props.entry.kind)));
 
 // The detail loads the dependencies with the entry; if that failed, opening the tab tries again.
 onMounted(() => {

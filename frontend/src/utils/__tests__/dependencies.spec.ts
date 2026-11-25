@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import type { DependencyUse } from "@/services/dependenciesService";
 
-import { countUses, groupUsesByRole } from "../dependencies";
+import { countUses, goneHintKey, groupUsesByRole } from "../dependencies";
 
 const use = (entityId: string, roles: DependencyUse["roles"], exists = true): DependencyUse => ({
   entityId,
@@ -34,5 +34,13 @@ describe("countUses", () => {
     expect(
       countUses([use("light.a", ["condition", "action"]), use("light.old", ["action"], false)]),
     ).toEqual({ total: 2, gone: 1 });
+  });
+});
+
+describe("goneHintKey", () => {
+  it("sends a scene to its states, everything else to the flow", () => {
+    expect(goneHintKey("scene")).toBe("deps.goneHintScene");
+    expect(goneHintKey("automation")).toBe("deps.goneHint");
+    expect(goneHintKey("script")).toBe("deps.goneHint");
   });
 });

@@ -77,6 +77,8 @@ const props = defineProps<{
   /** Set when it is an entry of its own, which then opens on click. */
   entry: Entry | null;
   entryOf: (entityId: string) => Entry | null;
+  /** What to do when it no longer exists; depends on the kind of the open entry. */
+  goneHint: string;
   isTechnicalDetailsVisible: boolean;
 }>();
 
@@ -93,7 +95,7 @@ const icon = computed(
 );
 
 const sub = computed(() => {
-  if (!props.use.exists) return t("deps.goneHint");
+  if (!props.use.exists) return props.goneHint;
   if (props.entry) return t(`kind.${props.entry.kind}`);
   return props.option?.areaName ?? "";
 });

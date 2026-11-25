@@ -1269,6 +1269,7 @@ export default {
     moreTitle: "Wer benutzt das noch?",
     gone: "gibt es nicht mehr",
     goneHint: "Im Ablauf ersetzen oder entfernen",
+    goneHintScene: "In der Szene unter „Zustände“ entfernen",
     emptyUses: {
       helper: "Helfer benutzen selbst nichts.",
       other: "Benutzt nichts.",

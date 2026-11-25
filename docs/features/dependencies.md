@@ -39,5 +39,7 @@ index feeds the derived [areas](areas.md), the rename references and the disable
 - The detail header badge counts uses + users of the open entry.
 - If the check-up banner already names gone or unavailable entities, the tab leaves out its summary line
   (`hasFindingBanner`).
+- A use that no longer exists says where to fix it, after the kind of the open entry (`goneHintKey`):
+  a scene under "Zustände", automations and scripts in the flow.
 - Entity-ID matching is on whole IDs (`ENTITY_ID` regex). Keep it in step with
   `checkup-analysis.ts` `collectEntityRefs` and `rename/entity-id.ts`.

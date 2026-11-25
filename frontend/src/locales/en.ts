@@ -1254,6 +1254,7 @@ const en: MessageSchema = {
     moreTitle: "Who else uses this?",
     gone: "no longer exists",
     goneHint: "Replace or remove it in the flow",
+    goneHintScene: "Remove it in the scene under “States”",
     emptyUses: {
       helper: "Helpers do not use anything themselves.",
       other: "Uses nothing.",
