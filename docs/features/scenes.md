@@ -23,11 +23,13 @@ afterwards.
 GET /api/scenes/:entityId
   scenes.yaml has it → isEditable, devices with `values` (what the scene sets) and `current` (live state)
   otherwise (package, …) → read-only, members from the state attribute `entity_id`
-edit → local draft (nothing switches)
+edit → draft, kept per entry in draftsStore (nothing switches)
 Vorschau      → POST :id/preview { entities }   (backend keeps the devices' states first, then scene.apply)
 Ausprobieren  → POST :id/preview { one device }
 back / leave  → POST :id/restore { deviceIds? }  (applies the kept states, forgets them)
 In HA speichern → PUT :id { entities } → REST /api/config/scene/config/<id>
+automatic saving → the same PUT ~1 s after the last edit (AUTO_SAVE_DELAY_MS)
+Alles rückgängig → PUT :id { the state before the first automatic save }
 ```
 
 - **Snapshot in memory:** `ScenesService.snapshots` holds per scene what each previewed device did before.
@@ -48,7 +50,15 @@ In HA speichern → PUT :id { entities } → REST /api/config/scene/config/<id>
   übernehmen" takes everything the device has right now.
 - Devices offered for adding: `light`, `switch`, `cover`, `climate`, `fan`, `media_player`
   (`SCENE_DOMAINS`). Others may already be in a scene and stay as they are.
-- Edits are local to the tab: opening another entry discards them (no per-entry draft as for flows).
+- Edits are kept per entry in `draftsStore` (`keepScene`, with the devices added in the editor), so they
+  survive switching tabs and entries, show the dot in the list, and the browser asks before closing.
+- **Automatic saving** ("Szenen automatisch speichern" in the gear menu, `settings.isSceneAutoSave`, off
+  by default): saves ~1 s after the last edit, without a toast. Leaving the scene with an edit still
+  waiting saves it right away (`flushAutoSave`). Edits made while a save runs stay in the draft and
+  follow. A failed automatic save falls back to the normal footer for this scene.
+- **"Alles rückgängig"** goes back to how the scene was before its first automatic save
+  (`draftsStore.sceneUndo`), also in HA. Only while the scene stays open: StudioView forgets it when
+  another entry is selected.
 
 ## Recipe: support a new device kind
 

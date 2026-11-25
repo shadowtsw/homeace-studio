@@ -43,7 +43,9 @@ HA has two kinds of helpers, and HomeAce Studio treats them differently:
   never refuse what the backend accepts. The backend is the authority.
 - Timer durations: HA stores `0:05:00`, and the form shows `00:05:00` (`helper-payload.ts`).
 - `input_text` max length is capped at HA's own limit.
-- Unsaved settings are lost when another entry opens (the tab reloads on entity change).
+- Unsaved settings are kept per entry in `draftsStore` (`keepHelper`), so they survive switching tabs
+  and entries. The tab reloads HA's settings on entity change and puts the kept draft on top; when HA's
+  settings differ from the draft's `base`, the footer says so (`save.remoteChanged`).
 
 ## Recipe: support a new storage helper type
 

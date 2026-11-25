@@ -11,7 +11,8 @@ banner, tabs, and a fixed save footer. Only the middle scrolls.
 | Header: kind, title (inline rename), rename / duplicate buttons, on/off or "Aktivieren", run, favorite, delete, back (phone) | `components/entries/EntryDetailHeader.vue` |
 | Start tab of a newly opened entry | `utils/detailTab.ts` (`startTab`) |
 | Check-up banner above the tabs | `components/checkup/CheckupBanner.vue` |
-| Save footer ("Ungespeicherte Änderungen · Verwerfen · In HA speichern") | `components/common/SaveFooter.vue` |
+| Save footer ("Ungespeicherte Änderungen · Verwerfen · In HA speichern", or the status line of automatic saving) | `components/common/SaveFooter.vue` |
+| Unsaved helper settings and scene edits per entry | `stores/draftsStore.ts` |
 
 ## Tabs per kind
 
@@ -49,6 +50,9 @@ The footer `<div id="entry-detail-footer">` always exists while an entry is open
   meanwhile).
 - **Helper settings and scenes:** the tab teleports its own `SaveFooter` in
   (`<Teleport defer to="#entry-detail-footer">`). `blockedBy` disables saving while the form has a problem.
+- **Scenes with "Szenen automatisch speichern"** (gear menu, off by default): the footer becomes a status
+  line (`autoStatus`: "Speichert gleich von selbst …" → "✓ Automatisch gespeichert · 14:25") with
+  "Alles rückgängig". It stays up between saves, so it slides in only once. No toast per save.
 
 ## Data per open entry
 
@@ -57,15 +61,17 @@ The footer `<div id="entry-detail-footer">` always exists while an entry is open
 | Flow (automation, script) | StudioView watch → `editorStore.loadFlow` |
 | Dependencies | `EntryDetail` watch → `dependenciesStore.load` |
 | Run history | `RunHistoryView` → `tracesStore.load`. The run shown on the flow is reset when the entry changes |
-| Scene / helper settings | their tab components on mount and on entity change |
+| Scene / helper settings | their tab components on mount and on entity change; a kept draft from `draftsStore` comes back on top |
 
 Every store drops answers that arrive for an entry that is no longer open.
 
 ## Pitfalls
 
-- **Unsaved edits per kind differ:** flow drafts are kept per entry in `editorStore` and survive switching
-  entries. Helper settings and scene edits are local to their tab and are **lost when another entry
-  opens**. A scene preview is restored on leaving.
+- **Unsaved edits are kept per entry:** flows in `editorStore`, helper settings and scenes in
+  `draftsStore`. The tabs are unmounted on switching (`v-else-if`), so their components write every edit
+  into the store (deep `watch`) and take a kept draft back when they load. StudioView merges both
+  `unsavedIds` for the dot in the list and the `beforeunload` prompt. A new editor tab needs the same,
+  or its edits are lost silently. A scene preview is restored on leaving.
 - Form components take over a new `entry` object from live updates only while the user is not editing
   (`EntryEditForm` compares with the entry it was filled from). New forms should follow the same pattern.
 - A new tab needs: a key in `TAB`, the `tabs` list per kind, a `detail.tabs.<key>` text in every locale,

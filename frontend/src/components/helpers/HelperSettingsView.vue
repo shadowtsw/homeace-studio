@@ -34,6 +34,7 @@
         v-if="isDirty"
         :is-saving="isSaving"
         :blocked-by="problem ? t('helperSettings.fixFirst') : null"
+        :note="hasRemoteChange ? t('save.remoteChanged') : null"
         @save="save"
         @discard="discard"
       />
@@ -47,6 +48,7 @@ import { useI18n } from "vue-i18n";
 
 import type { HelperSettings, HelperType } from "@/constants/helpers";
 import { fetchHelperSettings, saveHelperSettings } from "@/services/helpersService";
+import { useDraftsStore } from "@/stores/draftsStore";
 import { useMessagesStore } from "@/stores/messagesStore";
 import { useToastStore } from "@/stores/toastStore";
 import type { Entry } from "@/types/entry";
@@ -65,6 +67,7 @@ const props = defineProps<{
 const { t } = useI18n();
 const toasts = useToastStore();
 const messages = useMessagesStore();
+const drafts = useDraftsStore();
 
 const type = ref<HelperType | null>(null);
 /** The settings as HA has them, and the user's edited copy. */
@@ -73,12 +76,20 @@ const draft = ref<HelperSettings | null>(null);
 const isLoading = ref(false);
 const hasError = ref(false);
 const isSaving = ref(false);
+/** The helper the shown settings belong to; null while another one loads. */
+const loadedId = ref<string | null>(null);
 
 /** Template and group helpers are config entries in HA; they come later. */
 const isEditable = computed(() => hasEditableSettings(props.entry));
 const isDirty = computed(
   () => JSON.stringify(draft.value) !== JSON.stringify(saved.value) && draft.value !== null,
 );
+/** HA has other settings than when the edits started. */
+const hasRemoteChange = computed(() => {
+  const kept = loadedId.value ? drafts.helpers[loadedId.value] : undefined;
+
+  return kept !== undefined && JSON.stringify(kept.base) !== JSON.stringify(saved.value);
+});
 const problem = computed(() =>
   type.value && draft.value ? helperSettingsProblem(type.value, draft.value) : null,
 );
@@ -97,7 +108,9 @@ async function load(): Promise<void> {
     if (entityId !== props.entry.entityId) return;
     type.value = view.type;
     saved.value = view.settings;
-    draft.value = structuredClone(view.settings);
+    // Edits made before switching to another tab or entry come back.
+    draft.value = structuredClone(toRaw(drafts.helpers[entityId]?.value) ?? view.settings);
+    loadedId.value = entityId;
   } catch {
     hasError.value = true;
   } finally {
@@ -127,10 +140,20 @@ function discard(): void {
   draft.value = structuredClone(toRaw(saved.value));
 }
 
-// A newly opened helper starts with its settings from HA; unsaved edits of the previous one go.
+// Every edit goes into the drafts store, so it survives switching tabs and entries.
+watch(
+  draft,
+  (value) => {
+    if (loadedId.value && saved.value && value)
+      drafts.keepHelper(loadedId.value, saved.value, value);
+  },
+  { deep: true },
+);
+
 watch(
   () => props.entry.entityId,
   () => {
+    loadedId.value = null;
     type.value = null;
     saved.value = null;
     draft.value = null;

@@ -74,11 +74,18 @@
     </template>
 
     <Teleport defer to="#entry-detail-footer">
+      <!-- With automatic saving the footer stays as a status line once it is up, so it slides in
+           only once. -->
       <SaveFooter
-        v-if="isDirty && view?.isEditable && !hasError && !isLoading"
+        v-if="view?.isEditable && !hasError && !isLoading && (isDirty || (isAutoSave && undo))"
         :is-saving="isSaving"
+        :note="hasRemoteChange ? t('save.remoteChanged') : null"
+        :auto-status="isAutoSave ? (isDirty ? 'pending' : 'saved') : null"
+        :saved-at="undo?.savedAt ?? null"
+        :can-undo-all="undo !== null"
         @save="save"
         @discard="discard"
+        @undo-all="undoAll"
       />
     </Teleport>
   </section>
@@ -101,8 +108,10 @@ import {
   type SceneDevice,
   type SceneView,
 } from "@/services/scenesService";
+import { useDraftsStore, type SceneEntities } from "@/stores/draftsStore";
 import { useLookupsStore } from "@/stores/lookupsStore";
 import { useMessagesStore } from "@/stores/messagesStore";
+import { useSettingsStore } from "@/stores/settingsStore";
 import { useToastStore } from "@/stores/toastStore";
 import type { Entry } from "@/types/entry";
 import { domainOf, type SceneValue } from "@/utils/sceneValues";
@@ -118,11 +127,15 @@ const props = defineProps<{
 const SCENE_DOMAINS = ["light", "switch", "cover", "climate", "fan", "media_player"];
 /** Live edits during a preview wait this long, so a dragged slider does not flood HA. */
 const PREVIEW_DELAY_MS = 250;
+/** With automatic saving on, a scene is saved this long after the last edit. */
+const AUTO_SAVE_DELAY_MS = 1000;
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 const toasts = useToastStore();
 const messages = useMessagesStore();
 const lookups = useLookupsStore();
+const drafts = useDraftsStore();
+const settings = useSettingsStore();
 
 const view = ref<SceneView | null>(null);
 const devices = reactive(new Map<string, SceneDevice>());
@@ -134,6 +147,8 @@ const isLoading = ref(false);
 const hasError = ref(false);
 const isSaving = ref(false);
 const isPreviewing = ref(false);
+/** The scene the shown values belong to; null while another one loads. */
+const loadedId = ref<string | null>(null);
 /** Devices shown on their own with "Ausprobieren". */
 const trying = reactive(new Set<string>());
 const isPicking = ref(false);
@@ -185,9 +200,20 @@ useEventListener(
 );
 useEventListener(window, "resize", () => (isPicking.value = false));
 
-const entities = (): Record<string, SceneValue> =>
+const entities = (): SceneEntities =>
   Object.fromEntries(order.value.map((id) => [id, draft.value[id] ?? {}]));
-const isDirty = computed(() => JSON.stringify(entities()) !== JSON.stringify(saved.value));
+const same = (first: unknown, second: unknown): boolean =>
+  JSON.stringify(first) === JSON.stringify(second);
+const isDirty = computed(() => !same(entities(), saved.value));
+/** HA has other values than when the edits started. */
+const hasRemoteChange = computed(() => {
+  const kept = loadedId.value ? drafts.scenes[loadedId.value] : undefined;
+
+  return kept !== undefined && !same(kept.base, saved.value);
+});
+/** Devices added in the editor that HA does not have in the scene yet. */
+const addedDevices = (): SceneDevice[] =>
+  order.value.filter((id) => !(id in saved.value)).map(deviceOf);
 
 function deviceOf(id: string): SceneDevice {
   return (
@@ -215,15 +241,34 @@ async function load(): Promise<void> {
   }
 }
 
+const valuesOf = (result: SceneView): SceneEntities =>
+  Object.fromEntries(result.devices.map((d) => [d.entityId, d.values ?? {}]));
+
+/** Shows a scene as HA has it, or with the edits kept from before switching tabs or entries. */
 function show(result: SceneView): void {
+  const kept = drafts.scenes[result.entityId];
   view.value = result;
   devices.clear();
-  for (const device of result.devices) devices.set(device.entityId, device);
-  saved.value = Object.fromEntries(result.devices.map((d) => [d.entityId, d.values ?? {}]));
+  for (const device of [...result.devices, ...(kept?.added ?? [])]) {
+    devices.set(device.entityId, device);
+  }
+  saved.value = valuesOf(result);
   // toRaw: Vue wraps refs in proxies, which structuredClone cannot copy.
-  draft.value = structuredClone(toRaw(saved.value));
-  order.value = result.devices.map((device) => device.entityId);
+  draft.value = structuredClone(toRaw(kept?.value ?? saved.value));
+  order.value = Object.keys(draft.value);
+  loadedId.value = result.entityId;
 }
+
+// Every edit goes into the drafts store, so it survives switching tabs and entries.
+watch(
+  [draft, order],
+  () => {
+    if (loadedId.value && view.value?.isEditable) {
+      drafts.keepScene(loadedId.value, saved.value, entities(), addedDevices());
+    }
+  },
+  { deep: true },
+);
 
 // ---- editing (switches nothing, unless a preview or "Ausprobieren" runs) ---------------------
 
@@ -323,12 +368,130 @@ async function add(id: string): Promise<void> {
   }
 }
 
+/**
+ * Takes over what HA saved. Edits made while saving stay as a draft (automatic saving sends them
+ * next); if another scene was opened meanwhile, only its kept draft is done.
+ */
+function applySaved(result: SceneView, sent: SceneEntities): void {
+  const entityId = result.entityId;
+  const kept = drafts.scenes[entityId];
+  const isDone = !kept || same(kept.value, sent);
+
+  if (isDone) drafts.dropScene(entityId);
+  if (loadedId.value !== entityId) return;
+  if (isDone) {
+    show(result);
+    return;
+  }
+
+  view.value = result;
+  for (const device of result.devices) devices.set(device.entityId, device);
+  saved.value = valuesOf(result);
+  // The draft now starts from what was just saved, so it is not taken for a change in HA.
+  drafts.dropScene(entityId);
+  drafts.keepScene(entityId, saved.value, entities(), addedDevices());
+}
+
 async function save(): Promise<void> {
+  const entityId = loadedId.value;
+  if (!entityId) return;
+
+  const sent = entities();
   isSaving.value = true;
 
   try {
-    show(await saveScene(props.entry.entityId, entities()));
+    applySaved(await saveScene(entityId, sent), sent);
     toasts.show(t("scene.toast.saved", { name: props.entry.name }));
+    hasAutoSaveFailed.value = false;
+  } catch (error) {
+    fail(error);
+  } finally {
+    isSaving.value = false;
+  }
+}
+
+// ---- saving automatically (setting under the gear; editing switches nothing anyway) -----------
+
+/** A failed automatic save falls back to the normal footer, so the edits are not left hanging. */
+const hasAutoSaveFailed = ref(false);
+const isAutoSave = computed(() => settings.isSceneAutoSave && !hasAutoSaveFailed.value);
+/** "Alles rückgängig" of this scene: how it was before its first automatic save. */
+const undo = computed(() =>
+  drafts.sceneUndo && drafts.sceneUndo.entityId === loadedId.value ? drafts.sceneUndo : null,
+);
+let autoSaveTimer: ReturnType<typeof setTimeout> | undefined;
+
+function scheduleAutoSave(): void {
+  clearTimeout(autoSaveTimer);
+  autoSaveTimer = setTimeout(() => void autoSave(), AUTO_SAVE_DELAY_MS);
+}
+
+/** Saves without a toast; the footer tells "Automatisch gespeichert · 14:25". */
+async function autoSave(): Promise<void> {
+  autoSaveTimer = undefined;
+  const entityId = loadedId.value;
+  if (!entityId || !isDirty.value) return;
+  if (isSaving.value) {
+    scheduleAutoSave();
+    return;
+  }
+
+  const sent = entities();
+  const before = saved.value;
+  isSaving.value = true;
+
+  try {
+    const result = await saveScene(entityId, sent);
+    const time = new Date().toLocaleTimeString(locale.value, {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+    drafts.noteAutoSave(entityId, before, time);
+    applySaved(result, sent);
+  } catch (error) {
+    hasAutoSaveFailed.value = true;
+    fail(error);
+  } finally {
+    isSaving.value = false;
+  }
+
+  // Edited further while saving: those edits follow.
+  if (isAutoSave.value && isDirty.value && loadedId.value === entityId) scheduleAutoSave();
+}
+
+/** Leaving with an edit still waiting: it is saved right away. */
+function flushAutoSave(): void {
+  if (autoSaveTimer === undefined) return;
+  clearTimeout(autoSaveTimer);
+  void autoSave();
+}
+
+watch([isAutoSave, () => JSON.stringify(entities())], () => {
+  if (isAutoSave.value && isDirty.value && view.value?.isEditable) {
+    scheduleAutoSave();
+    return;
+  }
+  clearTimeout(autoSaveTimer);
+  autoSaveTimer = undefined;
+});
+
+/** Back to how the scene was when it was opened, also in HA, however many saves there were. */
+async function undoAll(): Promise<void> {
+  const entityId = loadedId.value;
+  const base = undo.value?.base;
+  if (!entityId || !base) return;
+
+  clearTimeout(autoSaveTimer);
+  autoSaveTimer = undefined;
+  isSaving.value = true;
+
+  try {
+    const result = await saveScene(entityId, base);
+    drafts.dropScene(entityId);
+    drafts.forgetUndo();
+    show(result);
+    if (isPreviewing.value) previewScene(entityId, entities()).catch(fail);
+    toasts.show(t("scene.toast.undoneAll", { name: props.entry.name }));
   } catch (error) {
     fail(error);
   } finally {
@@ -362,14 +525,20 @@ useEventListener(window, "pagehide", () => {
 watch(
   () => props.entry.entityId,
   (entityId, previous) => {
+    flushAutoSave();
     if (previous) leave(previous);
     isPicking.value = false;
+    hasAutoSaveFailed.value = false;
+    loadedId.value = null;
     void load();
   },
   { immediate: true },
 );
 
-onBeforeUnmount(() => leave(props.entry.entityId));
+onBeforeUnmount(() => {
+  flushAutoSave();
+  leave(props.entry.entityId);
+});
 </script>
 
 <style scoped>

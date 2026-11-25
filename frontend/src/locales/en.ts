@@ -16,6 +16,9 @@ const en: MessageSchema = {
     version: "Version {version}",
     technicalDetails: "Technical details",
     technicalDetailsHint: "Show entity IDs, storage locations and API calls. Off for beginners.",
+    autoSaveScenes: "Save scenes automatically",
+    autoSaveScenesHint:
+      "Shortly after the last change, with “Undo all” in the footer. Editing doesn't switch anything anyway.",
     language: "Language",
     paneWidths: "Column widths",
     paneWidthsHint: "Drag the dividers. Double-click resets a column.",
@@ -118,7 +121,6 @@ const en: MessageSchema = {
     discard: "Discard",
     save: "Save to HA",
     saving: "Saving …",
-    remoteChanged: "Changed in Home Assistant meanwhile. Saving overwrites that.",
     entity: "Entity",
     add: { trigger: "Trigger", condition: "Condition", action: "Action" },
     addTitle: {
@@ -323,6 +325,11 @@ const en: MessageSchema = {
     discard: "Discard",
     save: "Save to HA",
     saving: "Saving …",
+    remoteChanged: "Changed in Home Assistant meanwhile. Saving overwrites that.",
+    autoPending: "Saving by itself in a moment …",
+    autoSaved: "Saved automatically · {time}",
+    undoAll: "Undo all",
+    undoAllTitle: "Back to how the scene was when you opened it, also in Home Assistant",
   },
   scene: {
     loading: "Loading the scene …",
@@ -398,6 +405,7 @@ const en: MessageSchema = {
     },
     toast: {
       saved: "“{name}” saved, without switching anything",
+      undoneAll: "“{name}” is back to how it was when opened, also in Home Assistant",
       previewOn:
         "Preview: one device shows the scene now | Preview: {count} devices show the scene now",
       restored: "Back to how it was",

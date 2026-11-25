@@ -21,6 +21,11 @@
   fan speed) stays as it is and is named. Scenes outside scenes.yaml are shown read-only.
 - "In HA speichern" moved to a footer at the bottom of the details, always in view, for flows,
   helper settings and scenes. The header and tabs of the details no longer scroll away.
+- "Szenen automatisch speichern" in the gear menu (off by default): scenes save shortly after the
+  last change. The footer shows "Speichert gleich von selbst …" and then "Automatisch gespeichert",
+  with "Alles rückgängig" back to how the scene was when you opened it.
+- Unsaved helper settings and scene edits are no longer lost when you open another tab or entry. Like
+  automations and scripts, they show a dot in the list, and the browser asks before closing the tab.
 - The fold button of the details no longer covers the list's scrollbar; folded, it has a slim rail of
   its own at the right edge.
 

@@ -21,6 +21,9 @@ const fr: MessageSchema = {
     technicalDetails: "Détails techniques",
     technicalDetailsHint:
       "Afficher les ID d'entité, les emplacements de stockage et les appels API. Désactivé pour les débutants.",
+    autoSaveScenes: "Enregistrer les scènes automatiquement",
+    autoSaveScenesHint:
+      "Peu après la dernière modification, avec « Tout annuler » en bas. Modifier n'allume ni n'éteint rien de toute façon.",
     language: "Langue",
     paneWidths: "Largeur des colonnes",
     paneWidthsHint: "Faites glisser les séparateurs. Un double-clic réinitialise une colonne.",
@@ -128,8 +131,6 @@ const fr: MessageSchema = {
     discard: "Annuler les modifications",
     save: "Enregistrer dans HA",
     saving: "Enregistrement …",
-    remoteChanged:
-      "Modifié entre-temps dans Home Assistant. L'enregistrement écrase cette modification.",
     entity: "Entité",
     add: { trigger: "Déclencheur", condition: "Condition", action: "Action" },
     addTitle: {
@@ -335,6 +336,12 @@ const fr: MessageSchema = {
     discard: "Annuler les modifications",
     save: "Enregistrer dans HA",
     saving: "Enregistrement …",
+    remoteChanged:
+      "Modifié entre-temps dans Home Assistant. L'enregistrement écrase cette modification.",
+    autoPending: "Enregistrement automatique dans un instant …",
+    autoSaved: "Enregistré automatiquement · {time}",
+    undoAll: "Tout annuler",
+    undoAllTitle: "Revenir à l'état de la scène à son ouverture, aussi dans Home Assistant",
   },
   scene: {
     loading: "Chargement de la scène …",
@@ -411,6 +418,7 @@ const fr: MessageSchema = {
     },
     toast: {
       saved: "« {name} » enregistrée, sans rien allumer ni éteindre",
+      undoneAll: "« {name} » est revenue à son état d'ouverture, aussi dans Home Assistant",
       previewOn:
         "Aperçu : un appareil affiche maintenant la scène | Aperçu : {count} appareils affichent maintenant la scène",
       restored: "État précédent rétabli",

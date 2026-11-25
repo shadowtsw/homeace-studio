@@ -13,6 +13,7 @@ const STORAGE_KEY = {
   locale: "homeace.locale",
   navMode: "homeace.navMode",
   detailFolded: "homeace.detailFolded",
+  sceneAutoSave: "homeace.sceneAutoSave",
 } as const;
 
 /**
@@ -40,6 +41,9 @@ export const useSettingsStore = defineStore("settings", () => {
   /** The detail pane folded away for a wider list; opening an entry unfolds it. */
   const isDetailFolded = useLocalStorage(STORAGE_KEY.detailFolded, false);
 
+  /** Scenes save shortly after the last edit; off by default, saving stays a deliberate step. */
+  const isSceneAutoSave = useLocalStorage(STORAGE_KEY.sceneAutoSave, false);
+
   /** The gear menu is open; shared so "Was ist neu" can point at it. Not kept. */
   const isMenuOpen = ref(false);
 
@@ -62,6 +66,7 @@ export const useSettingsStore = defineStore("settings", () => {
     locale,
     navMode,
     isDetailFolded,
+    isSceneAutoSave,
     isMenuOpen,
     setPaneWidth,
     resetPaneWidth,

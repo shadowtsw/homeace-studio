@@ -16,6 +16,9 @@ export default {
     technicalDetails: "Technische Details",
     technicalDetailsHint:
       "Entity-IDs, Speicherorte und API-Aufrufe anzeigen. Für den Einstieg ausgeschaltet.",
+    autoSaveScenes: "Szenen automatisch speichern",
+    autoSaveScenesHint:
+      "Kurz nach der letzten Änderung, „Alles rückgängig“ in der Fußleiste. Bearbeiten schaltet ja nichts.",
     language: "Sprache",
     paneWidths: "Spaltenbreiten",
     paneWidthsHint: "An den Trennlinien ziehen. Doppelklick setzt eine Spalte zurück.",
@@ -122,7 +125,6 @@ export default {
     discard: "Verwerfen",
     save: "In HA speichern",
     saving: "Speichert …",
-    remoteChanged: "Inzwischen in Home Assistant geändert. Speichern überschreibt das.",
     entity: "Entität",
     add: { trigger: "Auslöser", condition: "Bedingung", action: "Aktion" },
     addTitle: {
@@ -327,6 +329,11 @@ export default {
     discard: "Verwerfen",
     save: "In HA speichern",
     saving: "Speichert …",
+    remoteChanged: "Inzwischen in Home Assistant geändert. Speichern überschreibt das.",
+    autoPending: "Speichert gleich von selbst …",
+    autoSaved: "Automatisch gespeichert · {time}",
+    undoAll: "Alles rückgängig",
+    undoAllTitle: "Zurück zum Stand beim Öffnen der Szene, auch in Home Assistant",
   },
   scene: {
     loading: "Lade die Szene …",
@@ -402,6 +409,7 @@ export default {
     },
     toast: {
       saved: "„{name}“ gespeichert, ohne dass etwas geschaltet hat",
+      undoneAll: "„{name}“ ist wieder wie beim Öffnen, auch in Home Assistant",
       previewOn:
         "Vorschau: Ein Gerät zeigt jetzt die Szene | Vorschau: {count} Geräte zeigen jetzt die Szene",
       restored: "Voriger Zustand wiederhergestellt",

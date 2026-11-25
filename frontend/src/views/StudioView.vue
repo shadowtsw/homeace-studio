@@ -97,7 +97,7 @@
           :scope-counts="data.scopeCounts.value"
           :category="studio.category"
           :selected-entity-id="studio.selectedEntityId"
-          :unsaved-ids="editorStore.unsavedIds"
+          :unsaved-ids="unsavedIds"
           :checked-ids="studio.checkedIds"
           :is-technical-details-visible="settings.isTechnicalDetailsVisible"
           :area-view="areaView"
@@ -236,6 +236,7 @@ import { useAreasStore } from "@/stores/areasStore";
 import { useCheckupStore } from "@/stores/checkupStore";
 import { useCleanupStore } from "@/stores/cleanupStore";
 import { useDependenciesStore } from "@/stores/dependenciesStore";
+import { useDraftsStore } from "@/stores/draftsStore";
 import { useEditorStore } from "@/stores/editorStore";
 import { useEntriesStore } from "@/stores/entriesStore";
 import { useEntryAreasStore } from "@/stores/entryAreasStore";
@@ -269,6 +270,7 @@ const create = useCreateActions();
 const entryActions = useEntryActions();
 const { isLive } = useLiveUpdates();
 const editorStore = useEditorStore();
+const draftsStore = useDraftsStore();
 const flowTexts = useFlowTexts();
 const toasts = useToastStore();
 const messages = useMessagesStore();
@@ -357,6 +359,8 @@ watch(
   () => data.selectedEntry.value?.entityId,
   (entityId) => {
     const entry = data.selectedEntry.value;
+    // "Alles rückgängig" of a scene only reaches back while that scene stays open.
+    draftsStore.forgetUndo(entityId);
 
     if (entityId && entry && FLOW_KINDS.includes(entry.kind)) {
       void editorStore.loadFlow(entityId);
@@ -399,9 +403,12 @@ const displayFlow = computed(() => {
   return display ? markGoneChips(display, gone) : display;
 });
 
+/** Entries with unsaved edits: flows, helper settings and scenes. */
+const unsavedIds = computed(() => new Set([...editorStore.unsavedIds, ...draftsStore.unsavedIds]));
+
 // Unsaved edits live only in this tab; the browser asks before they are lost.
 useEventListener(window, "beforeunload", (event: BeforeUnloadEvent) => {
-  if (editorStore.unsavedIds.size > 0) event.preventDefault();
+  if (unsavedIds.value.size > 0) event.preventDefault();
 });
 
 /** Only used on narrow screens (CSS decides): nav as drawer, detail as full-screen layer. */

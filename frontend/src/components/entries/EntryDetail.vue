@@ -182,7 +182,7 @@
         <SaveFooter
           v-if="hasFlow && hasUnsavedChanges"
           :is-saving="isFlowSaving"
-          :note="hasRemoteChange ? t('flow.remoteChanged') : null"
+          :note="hasRemoteChange ? t('save.remoteChanged') : null"
           @save="emit('saveFlow')"
           @discard="emit('discardFlow')"
         />

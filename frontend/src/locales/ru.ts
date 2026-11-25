@@ -20,6 +20,9 @@ const ru: MessageSchema = {
     technicalDetails: "Технические детали",
     technicalDetailsHint:
       "Показывать ID объектов, места хранения и вызовы API. Новичкам лучше выключить.",
+    autoSaveScenes: "Сохранять сцены автоматически",
+    autoSaveScenesHint:
+      "Вскоре после последнего изменения, с кнопкой «Отменить всё» внизу. Редактирование всё равно ничего не переключает.",
     language: "Язык",
     paneWidths: "Ширина колонок",
     paneWidthsHint: "Тяните за разделители. Двойной щелчок возвращает колонку как было.",
@@ -124,7 +127,6 @@ const ru: MessageSchema = {
     discard: "Отменить",
     save: "Сохранить в HA",
     saving: "Сохранение …",
-    remoteChanged: "Тем временем изменено в Home Assistant. Сохранение это перезапишет.",
     entity: "Объект",
     add: { trigger: "Триггер", condition: "Условие", action: "Действие" },
     addTitle: {
@@ -329,6 +331,11 @@ const ru: MessageSchema = {
     discard: "Отменить",
     save: "Сохранить в HA",
     saving: "Сохранение …",
+    remoteChanged: "Тем временем изменено в Home Assistant. Сохранение это перезапишет.",
+    autoPending: "Скоро сохранится само …",
+    autoSaved: "Сохранено автоматически · {time}",
+    undoAll: "Отменить всё",
+    undoAllTitle: "Вернуть сцену к состоянию на момент открытия, также в Home Assistant",
   },
   scene: {
     loading: "Загрузка сцены …",
@@ -404,6 +411,7 @@ const ru: MessageSchema = {
     },
     toast: {
       saved: "«{name}» сохранена, ничего не переключалось",
+      undoneAll: "«{name}» снова как при открытии, также в Home Assistant",
       previewOn:
         "Предпросмотр: сцену показывает {count} устройство | Предпросмотр: сцену показывают {count} устройства | Предпросмотр: сцену показывают {count} устройств",
       restored: "Прежнее состояние восстановлено",

@@ -41,6 +41,14 @@
       </div>
 
       <div class="settings-menu__row">
+        <div>
+          <b>{{ t("settings.autoSaveScenes") }}</b>
+          <small>{{ t("settings.autoSaveScenesHint") }}</small>
+        </div>
+        <SwitchToggle v-model="settings.isSceneAutoSave" :label="t('settings.autoSaveScenes')" />
+      </div>
+
+      <div class="settings-menu__row">
         <label for="settings-locale">
           <b>{{ t("settings.language") }}</b>
         </label>

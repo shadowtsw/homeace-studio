@@ -21,6 +21,9 @@ const es: MessageSchema = {
     technicalDetails: "Detalles técnicos",
     technicalDetailsHint:
       "Mostrar ID de entidad, ubicaciones de almacenamiento y llamadas a la API. Desactivado para principiantes.",
+    autoSaveScenes: "Guardar escenas automáticamente",
+    autoSaveScenesHint:
+      "Poco después del último cambio, con “Deshacer todo” abajo. Editar no enciende ni apaga nada.",
     language: "Idioma",
     paneWidths: "Ancho de columnas",
     paneWidthsHint: "Arrastra los separadores. Un doble clic restablece una columna.",
@@ -124,7 +127,6 @@ const es: MessageSchema = {
     discard: "Descartar",
     save: "Guardar en HA",
     saving: "Guardando …",
-    remoteChanged: "Se cambió mientras tanto en Home Assistant. Guardar lo sobrescribe.",
     entity: "Entidad",
     add: { trigger: "Desencadenante", condition: "Condición", action: "Acción" },
     addTitle: {
@@ -329,6 +331,11 @@ const es: MessageSchema = {
     discard: "Descartar",
     save: "Guardar en HA",
     saving: "Guardando …",
+    remoteChanged: "Se cambió mientras tanto en Home Assistant. Guardar lo sobrescribe.",
+    autoPending: "Se guardará solo en un momento …",
+    autoSaved: "Guardado automáticamente · {time}",
+    undoAll: "Deshacer todo",
+    undoAllTitle: "Volver a cómo estaba la escena al abrirla, también en Home Assistant",
   },
   scene: {
     loading: "Cargando la escena …",
@@ -405,6 +412,7 @@ const es: MessageSchema = {
     },
     toast: {
       saved: "“{name}” guardada, sin encender ni apagar nada",
+      undoneAll: "“{name}” vuelve a estar como al abrirla, también en Home Assistant",
       previewOn:
         "Vista previa: un dispositivo muestra ahora la escena | Vista previa: {count} dispositivos muestran ahora la escena",
       restored: "De vuelta a como estaba",

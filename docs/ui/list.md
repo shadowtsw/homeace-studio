@@ -47,7 +47,8 @@ ignore the search.
   "list" | "title" }` says where the input is.
 - **Quick actions:** on/off switch (`canToggle`), run (`supportsAction(run)`), duplicate (automations,
   scripts, storage helpers).
-- **Unsaved dot:** `editorStore.unsavedIds`, the entries with flow drafts.
+- **Unsaved dot:** `unsavedIds` in StudioView, the entries with flow drafts (`editorStore`) plus helper
+  and scene drafts (`draftsStore`).
 - **Subtitle:** kind and area. Technical details show the entity ID instead. In the area view, the area
   note replaces the area.
 
