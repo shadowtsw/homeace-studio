@@ -60,6 +60,16 @@ class FakeCategories implements CategoryRepository {
     return Promise.resolve(assigned.length);
   };
 
+  /** Entities HA has no registry entry for. */
+  readonly unregistered = new Set<string>();
+
+  findEntityCategory = (entityId: string, scope: CategoryScope) =>
+    Promise.resolve(
+      this.unregistered.has(entityId)
+        ? undefined
+        : (this.assignments.get(`${scope}:${entityId}`) ?? null),
+    );
+
   listAssignments = (scope: CategoryScope) => {
     const byCategory = new Map<string, string[]>();
     for (const [key, categoryId] of this.assignments.entries()) {
@@ -178,6 +188,38 @@ describe("CategoriesService", () => {
       };
 
       await expect(service.assign(assignment)).rejects.toBeInstanceOf(BadRequestException);
+    });
+  });
+
+  describe("moveEntity", () => {
+    it("puts an entity into a folder in HomeAce Studio's own scope, other scopes untouched", async () => {
+      const otherId = categories.seed("automation", "Haus/Terrasse", ["light.terrasse"]);
+
+      await service.moveEntity("light.terrasse", "Haus/Terrasse");
+
+      expect(categories.names("homeace_entities")).toEqual(["Haus/Terrasse"]);
+      expect(categories.assignments.get("homeace_entities:light.terrasse")).toBe(
+        overlay.data.ownedCategoryIds[0],
+      );
+      expect(categories.assignments.get("automation:light.terrasse")).toBe(otherId);
+    });
+
+    it("takes it out again and removes the folder it created when it became empty", async () => {
+      await service.moveEntity("light.terrasse", "Haus/Terrasse");
+      await service.moveEntity("light.terrasse", null);
+
+      expect(categories.assignments.get("homeace_entities:light.terrasse")).toBeNull();
+      expect(categories.names("homeace_entities")).toEqual([]);
+      expect(overlay.data.ownedCategoryIds).toEqual([]);
+    });
+
+    it("refuses an entity without a registry entry", async () => {
+      categories.unregistered.add("light.yaml");
+
+      await expect(service.moveEntity("light.yaml", "Haus")).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+      expect(categories.names("homeace_entities")).toEqual([]);
     });
   });
 

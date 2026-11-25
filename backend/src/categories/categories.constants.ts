@@ -6,6 +6,13 @@ export const CATEGORY_SCOPE = {
   script: "script",
   scene: "scene",
   helpers: "helpers",
+  /**
+   * Folders for plain entities (lights, sensors, …). HA has no scope of its own for them; this one is
+   * HomeAce Studio's. HA keeps it in its registry and backup but shows it nowhere, so HA's lists stay
+   * short. Tested on HA: created, assigned, still there after a restart. Never rename it: it is
+   * stored in the users' HA.
+   */
+  entities: "homeace_entities",
 } as const;
 
 export type CategoryScope = (typeof CATEGORY_SCOPE)[keyof typeof CATEGORY_SCOPE];

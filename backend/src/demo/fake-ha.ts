@@ -273,7 +273,8 @@ export class FakeHa {
 
   private addEntity(entity: DemoEntity): void {
     const configEntryId = entity.configEntryId ?? null;
-    const scope = scopeOf(entity.entityId, configEntryId);
+    // Plain entities (lights, sensors) keep their folder in HomeAce Studio's own scope.
+    const scope = scopeOf(entity.entityId, configEntryId) ?? CATEGORY_SCOPE.entities;
     const categories: Partial<Record<string, string>> = {};
 
     if (scope && entity.category) {

@@ -1,7 +1,8 @@
 import { Injectable } from "@nestjs/common";
 
+import { HaCommandError } from "../../ha/ha-command.error";
 import { HaConnectionService } from "../../ha/ha-connection.service";
-import { HA_COMMAND } from "../../ha/ha.constants";
+import { HA_COMMAND, HA_ERROR_CODE } from "../../ha/ha.constants";
 import type { HaCategory, HaEntityRegistryEntry } from "../../ha/ha.types";
 import type { CategoryScope } from "../categories.constants";
 import type { Category } from "../category.model";
@@ -57,6 +58,23 @@ export class HaCategoriesRepository implements CategoryRepository {
     const assigned = entries.filter((entry) => entry.categories[scope] === categoryId);
 
     return assigned.length;
+  }
+
+  async findEntityCategory(
+    entityId: string,
+    scope: CategoryScope,
+  ): Promise<string | null | undefined> {
+    try {
+      const entry = await this.ha.call<HaEntityRegistryEntry>(HA_COMMAND.entityRegistryGet, {
+        entity_id: entityId,
+      });
+
+      return entry.categories[scope] ?? null;
+    } catch (error) {
+      if (error instanceof HaCommandError && error.code === HA_ERROR_CODE.notFound)
+        return undefined;
+      throw error;
+    }
   }
 
   async listAssignments(scope: CategoryScope): Promise<Map<string, string[]>> {

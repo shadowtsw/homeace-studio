@@ -113,13 +113,14 @@ stops a running `script`. Returns `null` with `ENTRY_ACTION_DONE`;
 
 HA's areas `[{ areaId, name, icon }]` and labels `[{ labelId, name, icon, color }]`, sorted by name.
 
-`GET /api/entities` lists every entity HA has, for the entity picker of the flow editor, sorted by name:
+`GET /api/entities` lists every entity HA has, for the entity picker of the flow editor and the entities
+in the list, sorted by name:
 
 ```json
 [{ "entityId": "sensor.front_door_battery", "name": "Front door sensor Battery", "shortName": "Battery",
    "domain": "sensor", "state": "91", "unit": "%", "options": null,
    "deviceId": "…", "deviceName": "Front door sensor", "areaId": "hallway", "areaName": "Hallway",
-   "labels": [] }]
+   "labels": [], "categoryPath": "Haus/Flur", "isInRegistry": true }]
 ```
 
 - `shortName` is the name within its device ("Battery"), or the full name when it does not start with
@@ -128,6 +129,18 @@ HA's areas `[{ areaId, name, icon }]` and labels `[{ labelId, name, icon, color 
 - `labels` are label names; `unit` is `unit_of_measurement` or `null`.
 - `options` holds the possible states of select-like entities (input_select, select, enum sensors),
   otherwise `null`.
+- `categoryPath` is the entity's folder: a category in HomeAce Studio's own scope `homeace_entities`
+  (see [features/folders.md](features/folders.md)), else `null`. `isInRegistry` is `false` for entities
+  without a registry entry; they cannot be put into a folder.
+
+## POST /api/entities/:entityId/move
+
+Puts a plain entity (light, sensor, …) into a folder, like `POST /api/entries/:entityId/move` does it for
+entries: same body `{ "categoryPath": "Haus/Flur" }` (`null` takes it out), same rules for creating and
+cleaning up owned categories, message `ENTRY_MOVED`. The category lives in the scope `homeace_entities`.
+
+- Errors: `400 ENTRY_NOT_IN_REGISTRY` (`params.entityId`; also for an unknown entity),
+  `400 CATEGORY_PATH_INVALID`, `400 VALIDATION_FAILED`.
 
 ## Areas: POST /api/areas · PATCH /api/areas/:areaId · DELETE /api/areas/:areaId
 

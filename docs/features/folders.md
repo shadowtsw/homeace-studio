@@ -8,6 +8,11 @@ The structure lives in HA, not in an own database. The UI side is in [../ui/navi
 - HA has categories **per scope**: `automation`, `script`, `scene`, `helpers` (`CATEGORY_SCOPE_BY_KIND`
   in `backend/src/entries/entries.constants.ts`). A folder "Haus/Terrasse" can be one category in each
   scope. The tree merges them by name.
+- **Plain entities** (lights, sensors, …) have no scope in HA. HomeAce Studio uses its own scope
+  `homeace_entities` (`CATEGORY_SCOPE.entities`). HA keeps it in its registry and backup but shows it
+  nowhere, so HA's label and category lists stay short. Tested on HA 2026.11 (throwaway container):
+  created, assigned, still there after a restart. **Never rename the scope**: it is stored in the users'
+  HA. Renaming and cleaning up folders include it, because they loop over `CATEGORY_SCOPES`.
 - HA only ever holds categories that have entries. A folder without own entries (`Arbeitszimmer` above
   `Arbeitszimmer/Heizung`) exists only in the UI. Empty folders the user created are kept in the overlay
   (`folders`).
@@ -29,6 +34,7 @@ unchanged, keeps the `category_id` on rename, and refuses a duplicate name withi
 | HA category and entity registry | `backend/src/categories/repositories/ha-categories.repository.ts` |
 | Empty folders, colors, order (`/api/folders`, overlay only) | `backend/src/categories/folders.service.ts`, `folders.controller.ts`, `folder-order.ts` |
 | Moving an entry (`POST /api/entries/:id/move`) | `backend/src/entries/entries.service.ts` → `CategoriesService.assign` |
+| Moving a plain entity (`POST /api/entities/:id/move`), its folder in `GET /api/entities` | `backend/src/categories/entity-folders.controller.ts` → `CategoriesService.moveEntity`; `backend/src/lookups/entity-options.ts` |
 | Tidy-up assistant (`/api/categories/cleanup`) | `backend/src/categories/cleanup/` (`cleanup-analysis.ts` is pure) |
 | Frontend actions with toasts (move one / many, rename dialog + inline, order) | `frontend/src/composables/useCategoryActions.ts` |
 | Rename dialog with preview of every changed HA category | `frontend/src/components/categories/RenameCategoryDialog.vue` |

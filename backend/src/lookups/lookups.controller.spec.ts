@@ -56,6 +56,7 @@ describe("LookupsController", () => {
       ],
       "config/area_registry/list": [{ area_id: "flur", name: "Flur", icon: null }],
       "config/label_registry/list": [],
+      "config/category_registry/list": [],
     };
     const call = jest.fn((type: string) => Promise.resolve(answers[type]));
     const controller = new LookupsController({ call } as unknown as HaConnectionService);

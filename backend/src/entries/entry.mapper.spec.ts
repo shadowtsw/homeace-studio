@@ -29,6 +29,7 @@ const NO_CATEGORIES: Record<CategoryScope, HaCategory[]> = {
   script: [],
   scene: [],
   helpers: [],
+  homeace_entities: [],
 };
 
 function snapshot(overrides: Partial<HaSnapshot>): HaSnapshot {

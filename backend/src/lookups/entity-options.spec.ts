@@ -55,6 +55,7 @@ describe("entity options", () => {
         { area_id: "bad", name: "Bad", icon: null },
       ],
       labels: [{ label_id: "batt", name: "Batterien", icon: null, color: null }],
+      entityCategories: [],
     });
 
     expect(options.map((option) => option.entityId)).toEqual([
@@ -74,6 +75,32 @@ describe("entity options", () => {
       name: "input_boolean.gast",
       deviceId: null,
       areaName: null,
+    });
+  });
+
+  it("names the folder from HomeAce Studio's own scope and tells which entities can have one", () => {
+    const options = toEntityOptions({
+      states: [
+        { entity_id: "light.terrasse", state: "off", attributes: { friendly_name: "Terrasse" } },
+        { entity_id: "light.yaml", state: "off", attributes: { friendly_name: "YAML-Licht" } },
+      ],
+      registry: [
+        // A category in another scope must not count as its folder.
+        registry("light.terrasse", { categories: { homeace_entities: "c1", automation: "c9" } }),
+      ],
+      devices: [],
+      areas: [],
+      labels: [],
+      entityCategories: [{ category_id: "c1", name: "Haus/Terrasse", icon: null }],
+    });
+
+    expect(options.find((option) => option.entityId === "light.terrasse")).toMatchObject({
+      categoryPath: "Haus/Terrasse",
+      isInRegistry: true,
+    });
+    expect(options.find((option) => option.entityId === "light.yaml")).toMatchObject({
+      categoryPath: null,
+      isInRegistry: false,
     });
   });
 });

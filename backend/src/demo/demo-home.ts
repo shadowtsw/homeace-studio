@@ -206,6 +206,30 @@ const DOOR = { device: "Front door sensor", areaId: "hallway" };
 const IRRIGATION = { device: "Lawn irrigation", areaId: "garden" };
 const INVERTER = { device: "Inverter", areaId: "garage" };
 
+/**
+ * Plain entities sorted into folders (a category in HomeAce Studio's own scope); the rest wait
+ * unsorted, so the demo shows both.
+ */
+const ENTITY_FOLDERS: Partial<Record<string, string>> = {
+  "binary_sensor.terrace_motion": "House/Terrace",
+  "light.terrace": "House/Terrace",
+  "cover.awning": "House/Terrace",
+  "sensor.wind_speed": "House/Terrace",
+  "light.garden_paths": "House/Garden",
+  "sensor.lawn_moisture": "House/Garden",
+  "valve.lawn_irrigation": "House/Garden",
+  "sensor.solar_power": "Energy/Solar",
+  "sensor.house_consumption": "Energy/Solar",
+  "switch.wallbox": "Energy/Solar",
+  "climate.bathroom": "Climate/Bathroom",
+};
+
+function inEntityFolder(entity: DemoEntity): DemoEntity {
+  const category = ENTITY_FOLDERS[entity.entityId];
+
+  return category ? { ...entity, category } : entity;
+}
+
 const DEVICES: DemoEntity[] = [
   sensor("binary_sensor.terrace_motion", "Terrace motion", "off", undefined, MOTION),
   sensor("sensor.terrace_motion_battery", "Terrace motion sensor Battery", "78", "%", MOTION),
@@ -905,7 +929,7 @@ export function createDemoHome(now = Date.now()): DemoHome {
       { label_id: "comfort", name: "Comfort", icon: null, color: "teal" },
     ],
     entities: structuredClone([
-      ...DEVICES,
+      ...DEVICES.map(inEntityFolder),
       ...AUTOMATIONS,
       ...SCRIPTS,
       ...SCENES,

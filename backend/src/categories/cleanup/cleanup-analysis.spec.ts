@@ -10,12 +10,19 @@ type Seed = Partial<Record<CategoryScope, Record<string, string[]>>>;
 
 /** Categories and assignments per scope from `{ automation: { "Büro - Licht": ["a.1"] } }`. */
 function state(seed: Seed): { categories: ScopeCategories; assignments: ScopeAssignments } {
-  const categories = { automation: [], script: [], scene: [], helpers: [] } as ScopeCategories;
-  const assignments = {
+  const categories = {
+    automation: [],
+    script: [],
+    scene: [],
+    helpers: [],
+    homeace_entities: [],
+  } as ScopeCategories;
+  const assignments: ScopeAssignments = {
     automation: new Map(),
     script: new Map(),
     scene: new Map(),
     helpers: new Map(),
+    homeace_entities: new Map(),
   };
   let nextId = 1;
 

@@ -1,4 +1,12 @@
-import type { HaArea, HaDevice, HaEntityRegistryEntry, HaLabel, HaState } from "../ha/ha.types";
+import { CATEGORY_SCOPE } from "../categories/categories.constants";
+import type {
+  HaArea,
+  HaCategory,
+  HaDevice,
+  HaEntityRegistryEntry,
+  HaLabel,
+  HaState,
+} from "../ha/ha.types";
 
 /** One entity as the picker of the flow editor shows it. */
 export type EntityOption = {
@@ -19,6 +27,10 @@ export type EntityOption = {
   areaId: string | null;
   areaName: string | null;
   labels: string[];
+  /** Its folder ("Haus/Terrasse"), a category in HomeAce Studio's own scope; null when none. */
+  categoryPath: string | null;
+  /** Only entities with a registry entry can be put into a folder (YAML without unique_id cannot). */
+  isInRegistry: boolean;
 };
 
 export type EntitySources = {
@@ -27,6 +39,8 @@ export type EntitySources = {
   devices: HaDevice[];
   areas: HaArea[];
   labels: HaLabel[];
+  /** The categories of the scope `homeace_entities`, for the folder names. */
+  entityCategories: HaCategory[];
 };
 
 const DOMAIN_SEPARATOR = ".";
@@ -50,6 +64,9 @@ export function toEntityOptions(sources: EntitySources): EntityOption[] {
   const devices = new Map(sources.devices.map((device) => [device.id, device]));
   const areaNames = new Map(sources.areas.map((area) => [area.area_id, area.name]));
   const labelNames = new Map(sources.labels.map((label) => [label.label_id, label.name]));
+  const folderNames = new Map(
+    sources.entityCategories.map((category) => [category.category_id, category.name]),
+  );
 
   const options = sources.states.map((state): EntityOption => {
     const entry = registry.get(state.entity_id);
@@ -58,6 +75,7 @@ export function toEntityOptions(sources: EntitySources): EntityOption[] {
     const areaId = entry?.area_id ?? device?.area_id ?? null;
     const name = state.attributes.friendly_name ?? state.entity_id;
     const unit = state.attributes.unit_of_measurement;
+    const categoryId = entry?.categories[CATEGORY_SCOPE.entities];
 
     return {
       entityId: state.entity_id,
@@ -72,6 +90,8 @@ export function toEntityOptions(sources: EntitySources): EntityOption[] {
       areaId,
       areaName: areaId ? (areaNames.get(areaId) ?? null) : null,
       labels: (entry?.labels ?? []).map((id) => labelNames.get(id) ?? id),
+      categoryPath: categoryId ? (folderNames.get(categoryId) ?? null) : null,
+      isInRegistry: entry !== undefined,
     };
   });
 

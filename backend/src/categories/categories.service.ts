@@ -5,7 +5,12 @@ import { apiError } from "src/common/api/api-response";
 import { MESSAGE_ID } from "src/messages/message-ids";
 import { OVERLAY_REPOSITORY } from "../overlay/overlay.constants";
 import type { OverlayRepository } from "../overlay/repositories/overlay.repository";
-import { CATEGORY_REPOSITORY, CATEGORY_SCOPES, type CategoryScope } from "./categories.constants";
+import {
+  CATEGORY_REPOSITORY,
+  CATEGORY_SCOPE,
+  CATEGORY_SCOPES,
+  type CategoryScope,
+} from "./categories.constants";
 import { isSameOrBelow, replacePathPrefix } from "./category-path";
 import { requireCategoryPath } from "./require-category-path";
 import type { CategoryRepository } from "./repositories/category.repository";
@@ -50,6 +55,25 @@ export class CategoriesService {
     if (currentCategoryId) {
       await this.cleanUp(scope, currentCategoryId);
     }
+  }
+
+  /**
+   * Puts a plain entity (light, sensor, …) into a folder, or takes it out with null. Its folder is a
+   * category in HomeAce Studio's own scope, so renaming and cleaning up work as for entries.
+   *
+   * @throws BadRequestException `ENTRY_NOT_IN_REGISTRY` when HA has no registry entry for it.
+   */
+  async moveEntity(entityId: string, targetPath: string | null): Promise<void> {
+    const scope = CATEGORY_SCOPE.entities;
+    const currentCategoryId = await this.categories.findEntityCategory(entityId, scope);
+
+    if (currentCategoryId === undefined) {
+      throw new BadRequestException(
+        apiError(MESSAGE_ID.entryNotInRegistry, { params: { entityId } }),
+      );
+    }
+
+    await this.assign({ entityId, scope, currentCategoryId, targetPath });
   }
 
   /**
