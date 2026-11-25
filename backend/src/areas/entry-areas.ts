@@ -1,5 +1,6 @@
 import type { DependencyIndex } from "../dependencies/dependency-analysis";
 import type { Entry } from "../entries/entry.model";
+import { createDeviceContext } from "../ha/device-context";
 import type { HaArea, HaDevice, HaEntityRegistryEntry, HaState } from "../ha/ha.types";
 
 export const AREA_SOURCE = {
@@ -46,24 +47,30 @@ type Candidate = { link: EntryAreaLink; count: number };
 export function deriveEntryAreas(input: EntryAreasInput): EntryAreas[] {
   const areaNames = new Map(input.areas.map((area) => [area.area_id, area.name]));
   const devices = new Map(input.devices.map((device) => [device.id, device]));
+  const deviceContext = createDeviceContext(input.devices);
   const registry = new Map(input.registry.map((entry) => [entry.entity_id, entry]));
   const friendlyNames = new Map(
     input.states.map((state) => [state.entity_id, state.attributes.friendly_name ?? null]),
   );
 
-  /** The entity's own area, else its device's (like HA shows it). */
+  const deviceOf = (entityId: string): HaDevice | undefined => {
+    const deviceId = registry.get(entityId)?.device_id;
+    return deviceId ? devices.get(deviceId) : undefined;
+  };
+
+  /** The entity's own area, else its device's, else the parent device's (like HA shows it). */
   const areaOf = (entityId: string): string | null => {
     const entry = registry.get(entityId);
     if (!entry) return null;
-    const device = entry.device_id ? devices.get(entry.device_id) : undefined;
-    return entry.area_id ?? device?.area_id ?? null;
+    const device = deviceOf(entityId);
+    return entry.area_id ?? (device ? deviceContext.areaIdOf(device) : null);
   };
 
   /** "Terrace motion sensor" for an entity of a device, else the entity's own name. */
   const viaNameOf = (entityId: string): string => {
-    const deviceId = registry.get(entityId)?.device_id;
-    const device = deviceId ? devices.get(deviceId) : undefined;
-    return device?.name_by_user ?? device?.name ?? friendlyNames.get(entityId) ?? entityId;
+    const device = deviceOf(entityId);
+    const deviceName = device ? deviceContext.nameOf(device) : null;
+    return deviceName ?? friendlyNames.get(entityId) ?? entityId;
   };
 
   const add = (

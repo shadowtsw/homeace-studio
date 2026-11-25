@@ -21,6 +21,8 @@
   in the selection bar. Before a label is deleted, HomeAce Studio shows where it is used, including
   automations and scripts that switch everything with that label. New setting "Labels in der Liste
   zeigen" (off by default).
+- Ready for Home Assistant 2026.12, which splits plugs with several outlets into one device per
+  outlet: each outlet stays in the room of its plug and is named with it ("Eve Energy Top").
 
 - What's new: after an update, a gift next to the gear shows the highlights of the new version in
   plain words. "Zeigen" leads to the feature, "OK" puts the gift away; the gear menu keeps

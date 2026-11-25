@@ -13,6 +13,11 @@ export type DemoEntity = {
   uniqueId?: string;
   /** Device it belongs to (its name); its area goes to the device, like HA does it. */
   device?: string;
+  /**
+   * Makes `device` a child device of this one (HA 2026.9+, e.g. an outlet of a power strip); the
+   * area then goes to the parent and the child has none of its own.
+   */
+  parentDevice?: string;
   /** Category path in the entity's scope, e.g. "House/Terrace". */
   category?: string;
   areaId?: string;
@@ -187,7 +192,7 @@ function sensor(
   name: string,
   state: string,
   unit?: string,
-  place?: { device: string; areaId?: string },
+  place?: { device: string; parentDevice?: string; areaId?: string },
 ): DemoEntity {
   return {
     entityId,
@@ -196,6 +201,7 @@ function sensor(
     platform: "demo",
     attributes: unit ? { unit_of_measurement: unit } : {},
     device: place?.device,
+    parentDevice: place?.parentDevice,
     areaId: place?.areaId,
   };
 }
@@ -221,6 +227,11 @@ const MOTION = { device: "Terrace motion sensor", areaId: "terrace" };
 const DOOR = { device: "Front door sensor", areaId: "hallway" };
 const IRRIGATION = { device: "Lawn irrigation", areaId: "garden" };
 const INVERTER = { device: "Inverter", areaId: "garage" };
+const powerStripOutlet = (outlet: number) => ({
+  device: `Outlet ${outlet}`,
+  parentDevice: "Living room power strip",
+  areaId: "living_room",
+});
 
 /**
  * Plain entities sorted into folders (a category in HomeAce Studio's own scope); the rest wait
@@ -309,6 +320,9 @@ const DEVICES: DemoEntity[] = [
   sensor("sensor.solar_power", "Solar power", "3420", "W", INVERTER),
   sensor("sensor.house_consumption", "House consumption", "1580", "W", INVERTER),
   sensor("switch.wallbox", "Wallbox", "off", undefined, { device: "Wallbox", areaId: "garage" }),
+  // Like HA 2026.12 splits multi-outlet plugs: each outlet is a child device named on its own.
+  sensor("switch.power_strip_outlet_1", "Outlet 1", "on", undefined, powerStripOutlet(1)),
+  sensor("switch.power_strip_outlet_2", "Outlet 2", "off", undefined, powerStripOutlet(2)),
   {
     ...sensor("sensor.washing_machine_power", "Washing machine power", "unavailable", "W"),
     lastChanged: daysAgo(3),

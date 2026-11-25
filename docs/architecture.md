@@ -120,7 +120,7 @@ Risk per area, quick checks and the check per HA release: [ha-compatibility.md](
 | Categories (per scope: automation, script, scene, helpers) | WS `config/category_registry/list · create · update · delete` |
 | Entity properties: name, icon, area, labels, category, aliases, hidden, disabled, entity ID | WS `config/entity_registry/list · get · update` |
 | Labels, areas | WS `config/label_registry/*`, `config/area_registry/*` |
-| Devices (name and area, for the entity picker and derived areas) | WS `config/device_registry/list` |
+| Devices (name and area, for the entity picker and derived areas; child devices through `parent_device_id`) | WS `config/device_registry/list` |
 | Automation / script config as HA runs it | WS `automation/config`, `script/config` |
 | Automation config (stored, write, delete) | REST `GET/POST/DELETE /api/config/automation/config/<id>` |
 | Script config | REST `/api/config/script/config/<object_id>` |

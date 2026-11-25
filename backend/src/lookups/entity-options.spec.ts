@@ -78,6 +78,28 @@ describe("entity options", () => {
     });
   });
 
+  it("takes area and name of a child device from its parent", () => {
+    const [option] = toEntityOptions({
+      states: [{ entity_id: "switch.top", state: "on", attributes: { friendly_name: "Top" } }],
+      registry: [registry("switch.top", { device_id: "top" })],
+      devices: [
+        { id: "plug", name: "Eve Energy", name_by_user: null, area_id: "wohnen" },
+        { id: "top", name: "Top", name_by_user: null, area_id: null, parent_device_id: "plug" },
+      ],
+      areas: [{ area_id: "wohnen", name: "Wohnzimmer", icon: null }],
+      labels: [],
+      entityCategories: [],
+    });
+
+    expect(option).toMatchObject({
+      shortName: "Top",
+      deviceId: "top",
+      deviceName: "Eve Energy Top",
+      areaId: "wohnen",
+      areaName: "Wohnzimmer",
+    });
+  });
+
   it("names the folder from HomeAce Studio's own scope and tells which entities can have one", () => {
     const options = toEntityOptions({
       states: [

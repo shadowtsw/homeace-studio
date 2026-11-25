@@ -15,6 +15,10 @@ shows up in an area even without its own area: HomeAce Studio derives one from w
 | `usedBy` | otherwise: areas of the automations and scripts that use it (one step, not further; mostly helpers) |
 
 The input is the [dependency index](dependencies.md) plus devices and areas from `HomeSnapshotService`.
+An entity's area is its own, else its device's, else, for a child device (HA 2026.9+, e.g. one outlet
+of a power strip, `parent_device_id`), the parent's. Device names of children get the parent's name
+in front ("Power strip Outlet 1"), because HA names them on their own ("Outlet 1"). Both come from
+`createDeviceContext` (`backend/src/ha/device-context.ts`), which the entity picker uses too.
 `GET /api/entry-areas` returns the list for all entries. In the frontend, `entryAreasStore.linksOf(entityId)`
 serves it to the filter (`areaIdsOf`), the area nav counts and the row notes (`utils/areaNotes.ts`:
 "über Bewegungsmelder · auch in Garten").

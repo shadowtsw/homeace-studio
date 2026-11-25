@@ -34,7 +34,13 @@ export type HaDevice = {
   name: string | null;
   /** Name set by the user; wins over `name`. */
   name_by_user: string | null;
+  /** Own area; a child device without one takes its parent's (see `ha/device-context.ts`). */
   area_id: string | null;
+  /**
+   * Set only on child devices (HA 2026.9+): the product they are part of, e.g. the power strip of
+   * an outlet. Older HA versions and regular devices leave it out.
+   */
+  parent_device_id?: string | null;
   /** Label ids; HA sends them, older demo data may leave them out. */
   labels?: string[];
 };

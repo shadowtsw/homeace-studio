@@ -52,6 +52,25 @@ describe("deriveEntryAreas", () => {
     expect(result?.areas).toEqual([]);
   });
 
+  it("finds the area of a child device through its parent", () => {
+    const [result] = deriveEntryAreas({
+      ...base,
+      entries: [entry("script.x")],
+      registry: [
+        { entity_id: "switch.top", device_id: "top", area_id: null },
+      ] as EntryAreasInput["registry"],
+      devices: [
+        { id: "plug", name: "Eve Energy", name_by_user: null, area_id: "porch" },
+        { id: "top", name: "Top", name_by_user: null, area_id: null, parent_device_id: "plug" },
+      ],
+      index: new Map([["script.x", uses("switch.top")]]),
+    });
+
+    expect(result?.areas.map((area) => [area.areaId, area.via?.name])).toEqual([
+      ["porch", "Eve Energy Top"],
+    ]);
+  });
+
   it("goes only one step through users", () => {
     const result = deriveEntryAreas({
       ...base,

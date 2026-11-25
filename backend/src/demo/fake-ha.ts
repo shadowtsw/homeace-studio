@@ -288,7 +288,11 @@ export class FakeHa {
     }
 
     // Like HA: a device carries the area, its entities inherit it.
-    const device = entity.device ? this.ensureDevice(entity.device, entity.areaId ?? null) : null;
+    const areaId = entity.areaId ?? null;
+    const parent = entity.parentDevice ? this.ensureDevice(entity.parentDevice, areaId) : null;
+    const device = entity.device
+      ? this.ensureDevice(entity.device, parent ? null : areaId, parent?.id)
+      : null;
 
     this.registry.set(entity.entityId, {
       entity_id: entity.entityId,
@@ -326,16 +330,20 @@ export class FakeHa {
     }
   }
 
-  private ensureDevice(name: string, areaId: string | null): HaDevice {
-    const existing = [...this.devices.values()].find((device) => device.name === name);
+  /** A child device (`parentId`) has no area of its own; HA then shows the parent's. */
+  private ensureDevice(name: string, areaId: string | null, parentId?: string): HaDevice {
+    const existing = [...this.devices.values()].find(
+      (device) => device.name === name && (device.parent_device_id ?? undefined) === parentId,
+    );
 
     if (existing) return existing;
 
-    const device = {
+    const device: HaDevice = {
       id: `demo_device_${this.nextId++}`,
       name,
       name_by_user: null,
       area_id: areaId,
+      ...(parentId ? { parent_device_id: parentId } : {}),
     };
     this.devices.set(device.id, device);
 

@@ -1,4 +1,5 @@
 import { CATEGORY_SCOPE } from "../categories/categories.constants";
+import { createDeviceContext } from "../ha/device-context";
 import type {
   HaArea,
   HaCategory,
@@ -25,7 +26,7 @@ export type EntityOption = {
   options: string[] | null;
   deviceId: string | null;
   deviceName: string | null;
-  /** The entity's own area, else its device's. */
+  /** The entity's own area, else its device's (a child device's parent counts). */
   areaId: string | null;
   areaName: string | null;
   labels: string[];
@@ -64,6 +65,7 @@ export function nameWithinDevice(name: string, deviceName: string | null): strin
 export function toEntityOptions(sources: EntitySources): EntityOption[] {
   const registry = new Map(sources.registry.map((entry) => [entry.entity_id, entry]));
   const devices = new Map(sources.devices.map((device) => [device.id, device]));
+  const deviceContext = createDeviceContext(sources.devices);
   const areaNames = new Map(sources.areas.map((area) => [area.area_id, area.name]));
   const labelNames = new Map(sources.labels.map((label) => [label.label_id, label.name]));
   const folderNames = new Map(
@@ -73,8 +75,8 @@ export function toEntityOptions(sources: EntitySources): EntityOption[] {
   const options = sources.states.map((state): EntityOption => {
     const entry = registry.get(state.entity_id);
     const device = entry?.device_id ? devices.get(entry.device_id) : undefined;
-    const deviceName = device ? (device.name_by_user ?? device.name ?? null) : null;
-    const areaId = entry?.area_id ?? device?.area_id ?? null;
+    const deviceName = device ? deviceContext.nameOf(device) : null;
+    const areaId = entry?.area_id ?? (device ? deviceContext.areaIdOf(device) : null);
     const name = state.attributes.friendly_name ?? state.entity_id;
     const unit = state.attributes.unit_of_measurement;
     const categoryId = entry?.categories[CATEGORY_SCOPE.entities];
