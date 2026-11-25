@@ -425,6 +425,7 @@ export default {
     script: "Skripte",
     scene: "Szenen",
     helper: "Helfer",
+    entities: "Entitäten",
   },
   kind: {
     automation: "Automation",
@@ -442,7 +443,25 @@ export default {
     name: "Name",
     folder: "Ordner (optional)",
   },
+  scopeMenu: {
+    label: "Filter",
+    hint: "Klick: nur {name} · {key}+Klick oder Rechtsklick: dazuschalten",
+    only: "Nur „{name}“",
+    add: "„{name}“ dazuschalten",
+    remove: "„{name}“ wegnehmen",
+    faster: "Schneller: {key}+Klick",
+    ctrl: "Strg",
+  },
+  entityRow: {
+    hint: "Ziehen: auf einen Ordner oder in einen Ablauf · Klick: in einen Ordner verschieben",
+    hintNoFolder:
+      "Diese Entität hat keinen Eintrag in HAs Registry (YAML ohne unique_id) und kann deshalb in keinen Ordner.",
+    moveTitle: "„{name}“ in einen Ordner verschieben",
+  },
   list: {
+    moreEntities: "Weitere {count} anzeigen",
+    noEntitiesHere:
+      "Noch keine Entitäten in diesem Ordner. Die übrigen warten unter „Ohne Kategorie“: zieh sie auf einen Ordner im Baum.",
     rename: "Umbenennen (Doppelklick oder F2)",
     check: "„{name}“ auswählen",
     checkHint: "Auswählen, um mehrere auf einmal zu verschieben. Mit Shift einen ganzen Bereich.",
@@ -1091,6 +1110,8 @@ export default {
     deleteAnyway: "Trotzdem löschen",
   },
   toast: {
+    entityMoved: "„{name}“ liegt jetzt in {path}",
+    entityMovedOut: "„{name}“ liegt in keinem Ordner mehr",
     undo: "Rückgängig",
     undone: "Rückgängig gemacht",
     renamedEntry: "Umbenannt in „{name}“",

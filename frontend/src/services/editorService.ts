@@ -1,6 +1,6 @@
 import type { EditorCatalog, EntityOption, Flow } from "@/types/editor";
 
-import { apiFetch, apiSend } from "./api";
+import { apiFetch, apiPost, apiSend } from "./api";
 
 /** All trigger, condition and action types with names in this language. */
 export function fetchCatalog(language: string): Promise<EditorCatalog> {
@@ -17,7 +17,15 @@ export function saveFlow(entityId: string, config: Record<string, unknown>): Pro
   return apiSend<Flow>("PUT", `/editor/flows/${encodeURIComponent(entityId)}`, { config });
 }
 
-/** Every entity HA has, for the entity picker. */
+/** Every entity HA has, for the entity picker and the entities in the list. */
 export function fetchEntities(): Promise<EntityOption[]> {
   return apiFetch<EntityOption[]>("/entities");
+}
+
+/** Puts a plain entity into a folder; null takes it out. */
+export async function moveEntityToFolder(
+  entityId: string,
+  categoryPath: string | null,
+): Promise<void> {
+  await apiPost<null>(`/entities/${encodeURIComponent(entityId)}/move`, { categoryPath });
 }

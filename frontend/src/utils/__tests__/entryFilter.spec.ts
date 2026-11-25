@@ -92,10 +92,14 @@ describe("filterEntries", () => {
   ];
 
   it("combines scope, category and search on name or entity ID", () => {
-    const byScope = filterEntries(entries, { scope: "script", category: "__all", search: "" });
-    const bySearch = filterEntries(entries, { scope: "all", category: "Haus", search: "TERRASSE" });
+    const byScope = filterEntries(entries, { scopes: ["script"], category: "__all", search: "" });
+    const bySearch = filterEntries(entries, {
+      scopes: ["all"],
+      category: "Haus",
+      search: "TERRASSE",
+    });
     const byEntityId = filterEntries(entries, {
-      scope: "all",
+      scopes: ["all"],
       category: "__all",
       search: "gaeste",
     });

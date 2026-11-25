@@ -1,7 +1,7 @@
 import { apiFetch, apiPost } from "./api";
 
-/** HA's category scopes; all helpers share "helpers". */
-export type CategoryScope = "automation" | "script" | "scene" | "helpers";
+/** HA's category scopes; all helpers share "helpers", plain entities use HomeAce Studio's own. */
+export type CategoryScope = "automation" | "script" | "scene" | "helpers" | "homeace_entities";
 
 /** Entries per scope in one category name. */
 export type ScopeCounts = Partial<Record<CategoryScope, number>>;

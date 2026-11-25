@@ -49,6 +49,10 @@ export type EntityOption = {
   areaId: string | null;
   areaName: string | null;
   labels: string[];
+  /** Its folder (HomeAce Studio's own category scope in HA); null when none. */
+  categoryPath: string | null;
+  /** Without a registry entry (YAML without unique_id) it cannot have a folder. */
+  isInRegistry: boolean;
 };
 
 export type BlockSection = "trigger" | "condition" | "action";

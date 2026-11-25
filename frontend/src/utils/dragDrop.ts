@@ -23,3 +23,27 @@ export function getDraggedEntity(transfer: EntryTransfer | null): string | null 
 
   return transfer.getData(ENTRY_DRAG_TYPE) || null;
 }
+
+/**
+ * Own MIME type for plain entities (lights, sensors …) dragged from the list. They can go onto a
+ * folder (moved) or into a flow or scene (copied as a new block), so their drag allows both.
+ */
+export const PLAIN_ENTITY_DRAG_TYPE = "application/x-homeace-plain-entity";
+
+/** Puts a plain entity on a drag; a browser silently refuses a drop whose effect was not allowed. */
+export function setDraggedPlainEntity(transfer: DataTransfer, entityId: string): void {
+  transfer.setData(PLAIN_ENTITY_DRAG_TYPE, entityId);
+  transfer.effectAllowed = "copyMove";
+}
+
+/** Whether a drag carries a plain entity; works during dragover, where only the types are known. */
+export function carriesPlainEntity(transfer: Pick<DataTransfer, "types"> | null): boolean {
+  return transfer !== null && [...transfer.types].includes(PLAIN_ENTITY_DRAG_TYPE);
+}
+
+/** The dragged plain entity on drop, or null when the drag came from somewhere else. */
+export function getDraggedPlainEntity(transfer: EntryTransfer | null): string | null {
+  if (!transfer || !carriesPlainEntity(transfer)) return null;
+
+  return transfer.getData(PLAIN_ENTITY_DRAG_TYPE) || null;
+}

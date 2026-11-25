@@ -421,6 +421,7 @@ const en: MessageSchema = {
     script: "Scripts",
     scene: "Scenes",
     helper: "Helpers",
+    entities: "Entities",
   },
   kind: {
     automation: "Automation",
@@ -438,7 +439,25 @@ const en: MessageSchema = {
     name: "Name",
     folder: "Folder (optional)",
   },
+  scopeMenu: {
+    label: "Filters",
+    hint: "Click: only {name} · {key}+click or right-click: add",
+    only: "Only “{name}”",
+    add: "Add “{name}”",
+    remove: "Remove “{name}”",
+    faster: "Faster: {key}+click",
+    ctrl: "Ctrl",
+  },
+  entityRow: {
+    hint: "Drag onto a folder or into a flow · Click: move to a folder",
+    hintNoFolder:
+      "This entity has no entry in HA's registry (YAML without unique_id), so it cannot go into a folder.",
+    moveTitle: "Move “{name}” to a folder",
+  },
   list: {
+    moreEntities: "Show {count} more",
+    noEntitiesHere:
+      "No entities in this folder yet. The others wait under “Uncategorized”: drag them onto a folder in the tree.",
     rename: "Rename (double click or F2)",
     check: "Select “{name}”",
     checkHint: "Select to move several at once. With Shift, a whole range.",
@@ -1078,6 +1097,8 @@ const en: MessageSchema = {
     deleteAnyway: "Delete anyway",
   },
   toast: {
+    entityMoved: "“{name}” is now in {path}",
+    entityMovedOut: "“{name}” is no longer in a folder",
     undo: "Undo",
     undone: "Undone",
     renamedEntry: "Renamed to “{name}”",

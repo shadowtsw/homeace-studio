@@ -1,5 +1,9 @@
 <template>
-  <DialogFrame :title="t('move.title', { count }, count)" @close="emit('cancel')" @submit="submit">
+  <DialogFrame
+    :title="title ?? t('move.title', { count }, count)"
+    @close="emit('cancel')"
+    @submit="submit"
+  >
     <label class="field-label" :for="folderId">{{ t("move.folder") }}</label>
     <input
       :id="folderId"
@@ -34,11 +38,13 @@ import { useI18n } from "vue-i18n";
 import DialogFrame from "@/components/common/DialogFrame.vue";
 import { normalizeFolderPath } from "@/utils/cleanupSelection";
 
-/** Target folder for several ticked entries; a new folder is created on the way. */
+/** Target folder for ticked entries or one entity; a new folder is created on the way. */
 defineProps<{
   count: number;
   allPaths: string[];
   isBusy: boolean;
+  /** Instead of "N Einträge verschieben", e.g. for one entity. */
+  title?: string;
 }>();
 
 const emit = defineEmits<{

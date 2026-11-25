@@ -434,6 +434,7 @@ const fr: MessageSchema = {
     script: "Scripts",
     scene: "Scènes",
     helper: "Entrées",
+    entities: "Entités",
   },
   kind: {
     automation: "Automatisation",
@@ -451,7 +452,25 @@ const fr: MessageSchema = {
     name: "Nom",
     folder: "Dossier (facultatif)",
   },
+  scopeMenu: {
+    label: "Filtres",
+    hint: "Clic : seulement {name} · {key}+clic ou clic droit : ajouter",
+    only: "Seulement « {name} »",
+    add: "Ajouter « {name} »",
+    remove: "Retirer « {name} »",
+    faster: "Plus rapide : {key}+clic",
+    ctrl: "Ctrl",
+  },
+  entityRow: {
+    hint: "Glisser sur un dossier ou dans un déroulement · Clic : déplacer dans un dossier",
+    hintNoFolder:
+      "Cette entité n'a pas d'entrée dans le registre de HA (YAML sans unique_id), elle ne peut donc aller dans aucun dossier.",
+    moveTitle: "Déplacer « {name} » dans un dossier",
+  },
   list: {
+    moreEntities: "Afficher {count} de plus",
+    noEntitiesHere:
+      "Pas encore d'entités dans ce dossier. Les autres attendent sous « Sans catégorie » : glissez-les sur un dossier de l'arborescence.",
     rename: "Renommer (double-clic ou F2)",
     check: "Sélectionner « {name} »",
     checkHint: "Sélectionnez pour en déplacer plusieurs à la fois. Avec Maj, toute une plage.",
@@ -1107,6 +1126,8 @@ const fr: MessageSchema = {
     deleteAnyway: "Supprimer quand même",
   },
   toast: {
+    entityMoved: "« {name} » est maintenant dans {path}",
+    entityMovedOut: "« {name} » n'est plus dans aucun dossier",
     undo: "Annuler",
     undone: "Annulé",
     renamedEntry: "Renommé en « {name} »",

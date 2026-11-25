@@ -29,6 +29,14 @@ export type EntryScope = EntryKind | typeof SCOPE_ALL;
 
 export const ENTRY_SCOPES: readonly EntryScope[] = [SCOPE_ALL, ...ENTRY_KINDS];
 
+/** Not an entry kind: HA's plain entities (lights, sensors, …), a filter of their own. */
+export const SCOPE_ENTITIES = "entities";
+
+/** One filter of the list; several can be combined (Strg/⌘+Klick, right-click, long press). */
+export type ListScope = EntryScope | typeof SCOPE_ENTITIES;
+
+export const LIST_SCOPES: readonly ListScope[] = [...ENTRY_SCOPES, SCOPE_ENTITIES];
+
 /** Separates the levels inside one HA category name ("Haus/Terrasse"). */
 export const CATEGORY_SEPARATOR = "/";
 

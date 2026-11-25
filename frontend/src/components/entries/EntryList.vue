@@ -85,23 +85,16 @@
         </button>
       </div>
 
-      <div class="entry-list__scopes" role="tablist">
-        <button
-          v-for="option in ENTRY_SCOPES"
-          :key="option"
-          type="button"
-          role="tab"
-          :aria-selected="scope === option"
-          :class="{ 'entry-list__scope--active': scope === option }"
-          @click="scope = option"
-        >
-          {{ t(`scope.${option}`) }}<span>{{ scopeCounts[option] }}</span>
-        </button>
-      </div>
+      <ListScopeTabs
+        :scopes="scopes"
+        :counts="scopeCounts"
+        @select="(scope) => emit('selectScope', scope)"
+        @toggle="(scope) => emit('toggleScope', scope)"
+      />
     </div>
 
     <div class="entry-list__body">
-      <p v-if="entries.length === 0" class="entry-list__empty">
+      <p v-if="entries.length === 0 && entities.length === 0" class="entry-list__empty">
         {{ isRealCategory && !isSearching ? t("list.emptyFolder") : t("list.empty") }}
       </p>
 
@@ -115,7 +108,9 @@
           <span class="mdi" :class="isOpen(group) ? 'mdi-chevron-down' : 'mdi-chevron-right'" />
           <span class="entry-list__group-name">{{ groupLabel(group.path) }}</span>
           <span class="entry-list__group-line" />
-          <span class="entry-list__group-count">{{ group.entries.length }}</span>
+          <span class="entry-list__group-count">{{
+            group.entries.length + group.entities.length
+          }}</span>
         </button>
         <EntryListRow
           v-for="entry in isOpen(group) ? group.entries : []"
@@ -136,7 +131,37 @@
           @select="(entityId) => emit('select', entityId)"
           @act="(item, action) => emit('act', item, action)"
         />
+        <template v-if="isOpen(group) && group.entities.length > 0">
+          <div v-if="group.entries.length > 0" class="entry-list__entity-sep">
+            <span class="mdi mdi-devices" />{{ t("scope.entities") }}
+          </div>
+          <EntityListRow
+            v-for="entity in shownEntities(group)"
+            :key="entity.entityId"
+            :entity="entity"
+            :is-technical-details-visible="isTechnicalDetailsVisible"
+            :is-area-shown="!areaView"
+            @open="(item, anchor) => emit('openEntity', item, anchor)"
+          />
+          <!-- A big HA has hundreds of loose entities; they come in pages, so the list stays fast. -->
+          <button
+            v-if="group.entities.length > shownEntities(group).length"
+            type="button"
+            class="entry-list__more"
+            @click="showMoreEntities(group)"
+          >
+            {{
+              t("list.moreEntities", {
+                count: group.entities.length - shownEntities(group).length,
+              })
+            }}
+          </button>
+        </template>
       </template>
+
+      <p v-if="isShowingEntities && isRealCategory && !hasEntities" class="entry-list__hint">
+        <span class="mdi mdi-devices" />{{ t("list.noEntitiesHere") }}
+      </p>
     </div>
   </section>
 </template>
@@ -150,31 +175,32 @@ import {
   CATEGORY_FILTER,
   CATEGORY_SEPARATOR,
   ENTRY_KIND_ICON,
-  ENTRY_SCOPES,
   NEW_ENTRY_KINDS,
   type EntryAction,
-  type EntryScope,
+  type ListScope,
   type NewEntryKind,
 } from "@/constants/entries";
+import type { EntityOption } from "@/types/editor";
 import type { Entry } from "@/types/entry";
 import type { AreaListView } from "@/utils/areaNotes";
-import {
-  groupByCategory,
-  isGroupOpenByDefault,
-  isSpecialCategory,
-  type EntryGroup,
-} from "@/utils/entryFilter";
+import { groupListItems, type ListGroup } from "@/utils/entityList";
+import { isGroupOpenByDefault, isSpecialCategory } from "@/utils/entryFilter";
 
 import { rangeBetween } from "@/utils/selection";
 
+import EntityListRow from "./EntityListRow.vue";
 import EntryListRow from "./EntryListRow.vue";
+import ListScopeTabs from "./ListScopeTabs.vue";
 
 const search = defineModel<string>("search", { required: true });
-const scope = defineModel<EntryScope>("scope", { required: true });
 
 const props = defineProps<{
   entries: Entry[];
-  scopeCounts: Record<EntryScope, number>;
+  /** Plain entities of the view; empty unless the filter "Entitäten" is chosen. */
+  entities: EntityOption[];
+  scopes: readonly ListScope[];
+  isShowingEntities: boolean;
+  scopeCounts: Record<ListScope, number>;
   /** Selected tree node: a category path or one of CATEGORY_FILTER. */
   category: string;
   selectedEntityId: string | null;
@@ -207,6 +233,10 @@ const emit = defineEmits<{
   duplicate: [entityId: string];
   rename: [entityId: string, name: string];
   cancelRename: [];
+  selectScope: [scope: ListScope];
+  toggleScope: [scope: ListScope];
+  /** A plain entity was clicked: the page offers where it can go. */
+  openEntity: [entity: EntityOption, anchor: HTMLElement];
 }>();
 
 const { t } = useI18n();
@@ -284,7 +314,23 @@ function addFolder(): void {
   emit("addFolder", isRealCategory.value ? props.category : null);
 }
 
-const groups = computed(() => groupByCategory(props.entries));
+const groups = computed(() => groupListItems(props.entries, props.entities));
+const hasEntities = computed(() => props.entities.length > 0);
+
+/** Plain entities shown per group at first; more come with "Weitere … anzeigen". */
+const ENTITY_PAGE = 150;
+const entityLimits = ref<Record<string, number>>({});
+
+function shownEntities(group: ListGroup): EntityOption[] {
+  const limit = entityLimits.value[group.path ?? NO_CATEGORY_KEY] ?? ENTITY_PAGE;
+
+  return group.entities.slice(0, limit);
+}
+
+function showMoreEntities(group: ListGroup): void {
+  const key = group.path ?? NO_CATEGORY_KEY;
+  entityLimits.value = { ...entityLimits.value, [key]: shownEntities(group).length + ENTITY_PAGE };
+}
 const isRealCategory = computed(() => !isSpecialCategory(props.category));
 
 /** Key for the group of entries without a category (its path is null). */
@@ -295,12 +341,15 @@ const toggledGroups = ref<Record<string, boolean>>({});
 
 watch(
   () => props.category,
-  () => (toggledGroups.value = {}),
+  () => {
+    toggledGroups.value = {};
+    entityLimits.value = {};
+  },
 );
 
 const isSearching = computed(() => search.value.trim() !== "");
 
-function isOpen(group: EntryGroup): boolean {
+function isOpen(group: ListGroup): boolean {
   // Search results are never hidden in a collapsed group.
   if (isSearching.value) return true;
 
@@ -315,7 +364,7 @@ function isOpen(group: EntryGroup): boolean {
   );
 }
 
-function toggleGroup(group: EntryGroup): void {
+function toggleGroup(group: ListGroup): void {
   toggledGroups.value = {
     ...toggledGroups.value,
     [group.path ?? NO_CATEGORY_KEY]: !isOpen(group),
@@ -516,41 +565,47 @@ function groupLabel(path: string | null): string {
   font-size: 14px;
 }
 
-.entry-list__scopes {
+/* Plain entities inside a folder group, after its entries */
+.entry-list__entity-sep {
   display: flex;
-  gap: 2px;
-  padding: 3px;
-  overflow-x: auto;
-  /* Still scrolls by touch, wheel and keyboard; a bar would cover half the tabs. */
-  scrollbar-width: none;
-  border-radius: 9px;
-  background: var(--sunken);
+  align-items: center;
+  gap: 6px;
+  margin: 8px 10px 2px 16px;
+  color: var(--faint);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
-.entry-list__scopes button {
-  flex: 1;
-  padding: 5px 8px;
+.entry-list__more {
+  display: block;
+  margin: 4px 0 8px 26px;
+  padding: 4px 8px;
   border: 0;
   border-radius: 7px;
-  background: transparent;
-  color: var(--muted);
+  background: none;
+  color: var(--accent);
+  font: inherit;
   font-size: 12.5px;
   font-weight: 600;
-  white-space: nowrap;
   cursor: pointer;
 }
 
-.entry-list__scopes button span {
-  margin-left: 4px;
-  color: var(--faint);
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
+.entry-list__more:hover {
+  background: var(--sunken);
 }
 
-.entry-list__scopes .entry-list__scope--active {
-  background: var(--surface);
-  color: var(--fg);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+.entry-list__hint {
+  display: flex;
+  gap: 8px;
+  margin: 12px 6px;
+  padding: 9px 11px;
+  border-radius: 10px;
+  background: var(--sunken);
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.45;
 }
 
 .entry-list__body {

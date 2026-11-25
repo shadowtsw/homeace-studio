@@ -27,6 +27,8 @@ function entity(entityId: string, extra: Partial<EntityOption> = {}): EntityOpti
     areaId: null,
     areaName: null,
     labels: [],
+    categoryPath: null,
+    isInRegistry: true,
     ...extra,
   };
 }

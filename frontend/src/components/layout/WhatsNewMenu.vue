@@ -98,7 +98,7 @@ async function show(target: WhatsNewTarget): Promise<void> {
   }
 
   if (target === "helpers" || target === "scenes") {
-    studio.scope = target === "helpers" ? "helper" : "scene";
+    studio.selectScope(target === "helpers" ? "helper" : "scene");
     await nextTick();
     flashElement(document.querySelector(".entry-list__scope--active"));
   }

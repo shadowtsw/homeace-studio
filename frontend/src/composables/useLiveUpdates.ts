@@ -5,6 +5,8 @@ import { useAiStore } from "@/stores/aiStore";
 import { useEditorStore } from "@/stores/editorStore";
 import { useEntriesStore } from "@/stores/entriesStore";
 import { useFoldersStore } from "@/stores/foldersStore";
+import { useLookupsStore } from "@/stores/lookupsStore";
+import { useStudioStore } from "@/stores/studioStore";
 
 /** Relative, like every API call, so it also works behind HA ingress. */
 const EVENTS_URL = "api/events";
@@ -22,6 +24,8 @@ export function useLiveUpdates(): { isLive: ComputedRef<boolean> } {
   const foldersStore = useFoldersStore();
   const editorStore = useEditorStore();
   const ai = useAiStore();
+  const lookups = useLookupsStore();
+  const studio = useStudioStore();
   const { data, status } = useEventSource(EVENTS_URL, [], { autoReconnect: true });
   const visibility = useDocumentVisibility();
 
@@ -30,6 +34,8 @@ export function useLiveUpdates(): { isLive: ComputedRef<boolean> } {
   watch(data, () => {
     void entriesStore.refresh();
     void editorStore.refreshFlow();
+    // Plain entities only while they are shown; reading every state is not free in a big HA.
+    if (studio.isShowingEntities) void lookups.loadEntities(true);
     // New folder plans from an AI arrive the same way.
     void ai.loadPlans();
   });

@@ -231,6 +231,8 @@ describe("turning input into config values", () => {
       areaId: null,
       areaName: null,
       labels: [],
+      categoryPath: null,
+      isInRegistry: true,
     };
     const entities = [
       {

@@ -2,7 +2,10 @@ import { ref, type Ref } from "vue";
 import { useI18n } from "vue-i18n";
 
 import { CATEGORY_SEPARATOR } from "@/constants/entries";
+import { moveEntityToFolder } from "@/services/editorService";
 import { useEntriesStore } from "@/stores/entriesStore";
+import { useLookupsStore } from "@/stores/lookupsStore";
+import type { EntityOption } from "@/types/editor";
 import type { TidyMove } from "@/utils/areaTidy";
 import { useFoldersStore } from "@/stores/foldersStore";
 import { useMessagesStore } from "@/stores/messagesStore";
@@ -21,6 +24,12 @@ type CategoryActions = {
   cancelMoveMany: () => void;
   /** Moves several entries; null takes them out of their category. Clears the ticked rows. */
   moveEntries: (entityIds: string[], categoryPath: string | null) => Promise<void>;
+  /** The plain entity in the "move to" dialog; null when it is closed. */
+  movingEntity: Ref<EntityOption | null>;
+  startMoveEntity: (entity: EntityOption) => void;
+  cancelMoveEntity: () => void;
+  /** Puts a plain entity (light, sensor …) into a folder; null takes it out. */
+  moveEntity: (entityId: string, categoryPath: string | null) => Promise<void>;
   startRename: (path: string) => void;
   cancelRename: () => void;
   confirmRename: (newPath: string) => Promise<void>;
@@ -53,10 +62,12 @@ export function useCategoryActions(): CategoryActions {
   const messages = useMessagesStore();
   const toasts = useToastStore();
   const studio = useStudioStore();
+  const lookups = useLookupsStore();
 
   const isBusy = ref(false);
   const renamingPath = ref<string | null>(null);
   const movingIds = ref<string[] | null>(null);
+  const movingEntity = ref<EntityOption | null>(null);
 
   function showError(error: unknown): void {
     toasts.show(messages.textFor(error, t("errors.actionFailed")), "error");
@@ -76,6 +87,36 @@ export function useCategoryActions(): CategoryActions {
         ? t("toast.moved", { name: entry.name, path: categoryPath })
         : t("toast.movedOut", { name: entry.name });
       toasts.show(text);
+    } catch (error) {
+      showError(error);
+    } finally {
+      isBusy.value = false;
+    }
+  }
+
+  async function moveEntity(entityId: string, categoryPath: string | null): Promise<void> {
+    // Already there, or HA has no registry entry for it (then it cannot have a folder)
+    const entity = lookups.entities.find((item) => item.entityId === entityId);
+    if (!entity || entity.categoryPath === categoryPath) return;
+    if (!entity.isInRegistry) {
+      toasts.show(t("entityRow.hintNoFolder"), "error");
+      return;
+    }
+
+    isBusy.value = true;
+
+    try {
+      // Move in HA, then read the entities again so list and tree show it
+      await moveEntityToFolder(entityId, categoryPath);
+      await lookups.loadEntities(true);
+      movingEntity.value = null;
+
+      const name = entity.name;
+      toasts.show(
+        categoryPath
+          ? t("toast.entityMoved", { name, path: categoryPath })
+          : t("toast.entityMovedOut", { name }),
+      );
     } catch (error) {
       showError(error);
     } finally {
@@ -263,6 +304,10 @@ export function useCategoryActions(): CategoryActions {
     startMoveMany: (entityIds) => (movingIds.value = entityIds),
     cancelMoveMany: () => (movingIds.value = null),
     moveEntries,
+    movingEntity,
+    startMoveEntity: (entity) => (movingEntity.value = entity),
+    cancelMoveEntity: () => (movingEntity.value = null),
+    moveEntity,
     startRename,
     cancelRename,
     confirmRename,

@@ -427,6 +427,7 @@ const ru: MessageSchema = {
     script: "Скрипты",
     scene: "Сцены",
     helper: "Вспомогательные",
+    entities: "Объекты",
   },
   kind: {
     automation: "Автоматизация",
@@ -444,7 +445,25 @@ const ru: MessageSchema = {
     name: "Название",
     folder: "Папка (необязательно)",
   },
+  scopeMenu: {
+    label: "Фильтры",
+    hint: "Клик: только {name} · {key}+клик или правый клик: добавить",
+    only: "Только «{name}»",
+    add: "Добавить «{name}»",
+    remove: "Убрать «{name}»",
+    faster: "Быстрее: {key}+клик",
+    ctrl: "Ctrl",
+  },
+  entityRow: {
+    hint: "Перетащите в папку или в логику · Клик: переместить в папку",
+    hintNoFolder:
+      "У этого объекта нет записи в реестре HA (YAML без unique_id), поэтому его нельзя поместить в папку.",
+    moveTitle: "Переместить «{name}» в папку",
+  },
   list: {
+    moreEntities: "Показать ещё {count}",
+    noEntitiesHere:
+      "В этой папке пока нет объектов. Остальные ждут в «Без категории»: перетащите их на папку в дереве.",
     rename: "Переименовать (двойной щелчок или F2)",
     check: "Выбрать «{name}»",
     checkHint: "Выберите, чтобы переместить несколько сразу. С Shift — целый диапазон.",
@@ -1101,6 +1120,8 @@ const ru: MessageSchema = {
     deleteAnyway: "Всё равно удалить",
   },
   toast: {
+    entityMoved: "«{name}» теперь в {path}",
+    entityMovedOut: "«{name}» больше не в папке",
     undo: "Отменить",
     undone: "Отменено",
     renamedEntry: "Переименовано в «{name}»",

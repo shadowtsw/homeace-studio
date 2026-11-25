@@ -102,6 +102,7 @@
           @add-folder="(path) => emit('addFolder', path)"
           @delete-folder="(path) => emit('deleteFolder', path)"
           @drop-entry="(path, entityId) => emit('dropEntry', path, entityId)"
+          @drop-entity="(path, entityId) => emit('dropEntity', path, entityId)"
         />
       </ul>
 
@@ -166,6 +167,8 @@ const emit = defineEmits<{
   pickColor: [path: string];
   /** `path` null: the entry was dropped on "Ohne Kategorie". */
   dropEntry: [path: string | null, entityId: string];
+  /** A plain entity was dropped on a folder; `path` null: on "Ohne Kategorie". */
+  dropEntity: [path: string | null, entityId: string];
   "update:mode": [mode: NavMode];
 }>();
 
@@ -180,7 +183,10 @@ const {
   onDragOver,
   onDragLeave,
   onDrop,
-} = useEntryDropTarget((entityId) => emit("dropEntry", null, entityId));
+} = useEntryDropTarget(
+  (entityId) => emit("dropEntry", null, entityId),
+  (entityId) => emit("dropEntity", null, entityId),
+);
 
 /** Which folders are open is pure UI state of this tree. */
 const expandedPaths = ref(new Set<string>());

@@ -1,15 +1,17 @@
 import {
   AREA_FILTER_PREFIX,
   CATEGORY_FILTER,
-  SCOPE_ALL,
   type EntryScope,
+  type ListScope,
 } from "@/constants/entries";
 import type { Entry } from "@/types/entry";
 
 import { isSameOrBelow } from "./categoryPath";
+import { showsKind } from "./listScopes";
 
 export type EntryFilter = {
-  scope: EntryScope;
+  /** The chosen filters of the list; "Alle" or single kinds (plain entities are filtered elsewhere). */
+  scopes: readonly ListScope[];
   /** A category path, or one of {@link CATEGORY_FILTER}. */
   category: string;
   search: string;
@@ -89,7 +91,7 @@ export function matchesSearch(entry: Entry, search: string): boolean {
 export function filterEntries(entries: readonly Entry[], filter: EntryFilter): Entry[] {
   return entries.filter(
     (entry) =>
-      (filter.scope === SCOPE_ALL || entry.kind === filter.scope) &&
+      showsKind(filter.scopes, entry.kind) &&
       isInCategory(entry, filter.category, filter.areaIdsOf) &&
       matchesSearch(entry, filter.search),
   );
@@ -98,7 +100,7 @@ export function filterEntries(entries: readonly Entry[], filter: EntryFilter): E
 /**
  * Counts entries per scope, for the numbers on the scope tabs.
  *
- * @returns One count per kind plus the total under {@link SCOPE_ALL}.
+ * @returns One count per kind plus the total under `all`.
  */
 export function countByScope(entries: readonly Entry[]): Record<EntryScope, number> {
   const counts: Record<EntryScope, number> = {
@@ -135,7 +137,8 @@ export function groupByCategory(entries: readonly Entry[]): EntryGroup[] {
   return sortedPaths.map((path) => ({ path, entries: groups.get(path) ?? [] }));
 }
 
-function compareCategoryPaths(first: string | null, second: string | null): number {
+/** Folders by path, case-insensitive; "no folder" (null) last. */
+export function compareCategoryPaths(first: string | null, second: string | null): number {
   if (first === second) return 0;
   if (first === null) return 1;
   if (second === null) return -1;

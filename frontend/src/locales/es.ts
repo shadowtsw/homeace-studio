@@ -428,6 +428,7 @@ const es: MessageSchema = {
     script: "Scripts",
     scene: "Escenas",
     helper: "Ayudantes",
+    entities: "Entidades",
   },
   kind: {
     automation: "Automatización",
@@ -445,7 +446,25 @@ const es: MessageSchema = {
     name: "Nombre",
     folder: "Carpeta (opcional)",
   },
+  scopeMenu: {
+    label: "Filtros",
+    hint: "Clic: solo {name} · {key}+clic o clic derecho: añadir",
+    only: "Solo “{name}”",
+    add: "Añadir “{name}”",
+    remove: "Quitar “{name}”",
+    faster: "Más rápido: {key}+clic",
+    ctrl: "Ctrl",
+  },
+  entityRow: {
+    hint: "Arrastra a una carpeta o a un flujo · Clic: mover a una carpeta",
+    hintNoFolder:
+      "Esta entidad no tiene entrada en el registro de HA (YAML sin unique_id), así que no puede ir a ninguna carpeta.",
+    moveTitle: "Mover “{name}” a una carpeta",
+  },
   list: {
+    moreEntities: "Mostrar {count} más",
+    noEntitiesHere:
+      "Todavía no hay entidades en esta carpeta. Las demás esperan en “Sin categoría”: arrástralas a una carpeta del árbol.",
     rename: "Renombrar (doble clic o F2)",
     check: "Seleccionar “{name}”",
     checkHint: "Selecciona para mover varias a la vez. Con Mayús, todo un rango.",
@@ -1092,6 +1111,8 @@ const es: MessageSchema = {
     deleteAnyway: "Eliminar de todos modos",
   },
   toast: {
+    entityMoved: "“{name}” ahora está en {path}",
+    entityMovedOut: "“{name}” ya no está en ninguna carpeta",
     undo: "Deshacer",
     undone: "Deshecho",
     renamedEntry: "Renombrado como “{name}”",

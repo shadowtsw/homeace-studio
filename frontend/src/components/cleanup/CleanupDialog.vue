@@ -235,13 +235,20 @@ const emit = defineEmits<{
   applied: [categoryCount: number];
 }>();
 
-const SCOPE_ORDER: CategoryScope[] = ["automation", "script", "scene", "helpers"];
+const SCOPE_ORDER: CategoryScope[] = [
+  "automation",
+  "script",
+  "scene",
+  "helpers",
+  "homeace_entities",
+];
 /** Backend scope → key below `scope.` in the locale files. */
 const SCOPE_KEY: Record<CategoryScope, string> = {
   automation: "automation",
   script: "script",
   scene: "scene",
   helpers: "helper",
+  homeace_entities: "entities",
 };
 
 const { t } = useI18n();

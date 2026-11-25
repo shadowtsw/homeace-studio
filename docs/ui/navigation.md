@@ -35,9 +35,10 @@ compare against the prefix by hand. Changing the selection or the scope tab clea
 
 ## Folder tree
 
-- Built in `useStudioData.tree`: `buildCategoryTree(paths of the scope tab, saved empty folders, paths of
-  all scopes)`, then `applyFolderOrder`. Counts follow the scope tab, but folders of other scopes stay, so
-  the tree keeps its shape when you switch tabs.
+- Built in `useStudioData.tree`: `buildCategoryTree(paths of the chosen filters, saved empty folders, paths
+  of all scopes)`, then `applyFolderOrder`. Counts follow the filters (plain entities count while
+  "Entitäten" is chosen), but folders of other scopes stay, so the tree keeps its shape when you switch.
+  Folders that only hold plain entities are part of the shape too.
 - Node flags (`CategoryNode`): `isFolderOnly` (no entry directly here; HA has no such category),
   `isSavedFolder` (user's empty folder from the overlay), `isCategory` (HA has this category in some scope).
 - Only a saved, empty folder without children and without an HA category can be deleted (`canDelete`).
@@ -52,6 +53,9 @@ compare against the prefix by hand. Changing the selection or the scope tab clea
 
 Two kinds of drags, told apart by their own MIME types:
 
+- **Plain entity → node** (`PLAIN_ENTITY_DRAG_TYPE`): puts the entity into that folder, or takes it out on
+  "Ohne Kategorie" (`actions.moveEntity`, `POST /api/entities/:id/move`). Areas do not take plain
+  entities: `useEntryDropTarget` only accepts them where a second handler is given.
 - **List row → node** (`ENTRY_DRAG_TYPE`): moves the entry into that folder, or onto "Ohne Kategorie"
   (`path` null). If the row is ticked together with others, all ticked rows move (`dropEntry` in
   StudioView). In the area view, dropping sets the entry's own area (`dropOnArea`).

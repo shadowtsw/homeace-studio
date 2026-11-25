@@ -1,14 +1,16 @@
 import { computed, type ComputedRef } from "vue";
 
-import { CATEGORY_FILTER, SCOPE_ALL, type EntryScope } from "@/constants/entries";
+import { CATEGORY_FILTER, SCOPE_ALL, SCOPE_ENTITIES, type ListScope } from "@/constants/entries";
 import { useEntriesStore } from "@/stores/entriesStore";
 import { useEntryAreasStore } from "@/stores/entryAreasStore";
 import { useFoldersStore } from "@/stores/foldersStore";
 import { useLookupsStore } from "@/stores/lookupsStore";
 import { useStudioStore } from "@/stores/studioStore";
+import type { EntityOption } from "@/types/editor";
 import type { Entry } from "@/types/entry";
 import { applyFolderOrder } from "@/utils/folderOrder";
 import { buildCategoryTree, flattenCategoryPaths, type CategoryNode } from "@/utils/categoryTree";
+import { filterListEntities } from "@/utils/entityList";
 import { countByScope, filterEntries, isSpecialCategory } from "@/utils/entryFilter";
 
 /** One area in the tree of the area view. */
@@ -24,8 +26,10 @@ type StudioData = {
   currentFolder: ComputedRef<string | null>;
   uncategorizedCount: ComputedRef<number>;
   favoriteCount: ComputedRef<number>;
-  scopeCounts: ComputedRef<Record<EntryScope, number>>;
+  scopeCounts: ComputedRef<Record<ListScope, number>>;
   visibleEntries: ComputedRef<Entry[]>;
+  /** Plain entities of the selection and search; empty unless the filter "Entitäten" is chosen. */
+  visibleEntities: ComputedRef<EntityOption[]>;
   /** Every area, those with entries in the current scope first, then by name. */
   areaNav: ComputedRef<AreaNavItem[]>;
   /** Entries of the current scope without any area. */
@@ -43,20 +47,33 @@ export function useStudioData(): StudioData {
   const areaIdsOf = (entityId: string): string[] =>
     entryAreas.linksOf(entityId).map((link) => link.areaId);
 
-  // Counts follow the scope tab; the folders themselves stay, so the tree keeps its shape.
+  // Counts follow the filters; the folders themselves stay, so the tree keeps its shape.
   const scopedEntries = computed(() =>
     filterEntries(entriesStore.entries, {
-      scope: studio.scope,
+      scopes: studio.scopes,
       category: CATEGORY_FILTER.all,
       search: "",
     }),
   );
+  // Plain entities: everything HA has minus the entries, which have rows of their own.
+  const entryIds = computed(() => new Set(entriesStore.entries.map((entry) => entry.entityId)));
+  const plainEntities = computed(() =>
+    lookups.entities.filter((entity) => !entryIds.value.has(entity.entityId)),
+  );
+  /** Plain entities count and show only while their filter is chosen. */
+  const scopedEntities = computed(() => (studio.isShowingEntities ? plainEntities.value : []));
   const tree = computed(() =>
     applyFolderOrder(
       buildCategoryTree(
-        scopedEntries.value.map((entry) => entry.categoryPath),
+        [
+          ...scopedEntries.value.map((entry) => entry.categoryPath),
+          ...scopedEntities.value.map((entity) => entity.categoryPath),
+        ],
         foldersStore.folders,
-        entriesStore.entries.map((entry) => entry.categoryPath),
+        [
+          ...entriesStore.entries.map((entry) => entry.categoryPath),
+          ...plainEntities.value.map((entity) => entity.categoryPath),
+        ],
       ),
       foldersStore.order,
     ),
@@ -65,7 +82,10 @@ export function useStudioData(): StudioData {
   const allCategoryPaths = computed(() =>
     flattenCategoryPaths(
       buildCategoryTree(
-        entriesStore.entries.map((entry) => entry.categoryPath),
+        [
+          ...entriesStore.entries.map((entry) => entry.categoryPath),
+          ...plainEntities.value.map((entity) => entity.categoryPath),
+        ],
         foldersStore.folders,
       ),
     ),
@@ -74,27 +94,42 @@ export function useStudioData(): StudioData {
     isSpecialCategory(studio.category) ? null : studio.category,
   );
   const uncategorizedCount = computed(
-    () => scopedEntries.value.filter((entry) => entry.categoryPath === null).length,
+    () =>
+      scopedEntries.value.filter((entry) => entry.categoryPath === null).length +
+      scopedEntities.value.filter((entity) => entity.categoryPath === null).length,
   );
   const favoriteCount = computed(
     () => scopedEntries.value.filter((entry) => entry.isFavorite).length,
   );
-  const scopeCounts = computed(() =>
-    countByScope(
-      filterEntries(entriesStore.entries, {
-        scope: SCOPE_ALL,
-        category: studio.category,
-        search: studio.search,
-        areaIdsOf,
-      }),
-    ),
-  );
-  const visibleEntries = computed(() =>
-    filterEntries(entriesStore.entries, {
-      scope: studio.scope,
+  // The numbers on the filters: what each one would show here, whatever is chosen right now
+  const scopeCounts = computed(() => {
+    const entries = filterEntries(entriesStore.entries, {
+      scopes: [SCOPE_ALL],
       category: studio.category,
       search: studio.search,
       areaIdsOf,
+    });
+    const entities = filterListEntities(plainEntities.value, {
+      category: studio.category,
+      search: studio.search,
+      entryIds: entryIds.value,
+    });
+
+    return { ...countByScope(entries), [SCOPE_ENTITIES]: entities.length };
+  });
+  const visibleEntries = computed(() =>
+    filterEntries(entriesStore.entries, {
+      scopes: studio.scopes,
+      category: studio.category,
+      search: studio.search,
+      areaIdsOf,
+    }),
+  );
+  const visibleEntities = computed(() =>
+    filterListEntities(scopedEntities.value, {
+      category: studio.category,
+      search: studio.search,
+      entryIds: entryIds.value,
     }),
   );
   // Every area HA has, also empty ones (a target for dragged entries); those with entries first.
@@ -115,6 +150,11 @@ export function useStudioData(): StudioData {
       }
     }
 
+    // A plain entity counts in HA's area of it (its own or its device's)
+    for (const entity of scopedEntities.value) {
+      if (entity.areaId) counts.set(entity.areaId, (counts.get(entity.areaId) ?? 0) + 1);
+    }
+
     return [...items.values()]
       .map((area) => ({ ...area, count: counts.get(area.areaId) ?? 0 }))
       .sort(
@@ -124,7 +164,9 @@ export function useStudioData(): StudioData {
       );
   });
   const noAreaCount = computed(
-    () => scopedEntries.value.filter((entry) => areaIdsOf(entry.entityId).length === 0).length,
+    () =>
+      scopedEntries.value.filter((entry) => areaIdsOf(entry.entityId).length === 0).length +
+      scopedEntities.value.filter((entity) => entity.areaId === null).length,
   );
   const selectedEntry = computed(
     () => entriesStore.entries.find((entry) => entry.entityId === studio.selectedEntityId) ?? null,
@@ -139,6 +181,7 @@ export function useStudioData(): StudioData {
     favoriteCount,
     scopeCounts,
     visibleEntries,
+    visibleEntities,
     areaNav,
     noAreaCount,
     selectedEntry,

@@ -8,7 +8,10 @@ folder, with search, scope tabs, a "Neu" menu and bulk actions. A click opens th
 
 | What | File |
 | --- | --- |
-| Column: title with breadcrumb, "Neu" menu, search, bulk bar, scope tabs, groups | `components/entries/EntryList.vue` |
+| Column: title with breadcrumb, "Neu" menu, search, bulk bar, groups | `components/entries/EntryList.vue` |
+| Filter bar (combinable: Strg/⌘+Klick, right-click menu, long press on touch) | `components/entries/ListScopeTabs.vue`, rules in `utils/listScopes.ts` |
+| One plain entity (light, sensor …): drag source, click offers its folder | `components/entries/EntityListRow.vue` |
+| Which plain entities a view shows, groups of entries + entities | `utils/entityList.ts` (`filterListEntities`, `groupListItems`) |
 | One row: checkbox, icon, name (inline rename), star, unsaved dot, quick actions, drag source | `components/entries/EntryListRow.vue` |
 | Check-up instead of the list (node "Check-up") | `components/checkup/CheckupList.vue` |
 | Filter, search, counts, grouping, which groups start open | `utils/entryFilter.ts` |
@@ -18,15 +21,35 @@ folder, with search, scope tabs, a "Neu" menu and bulk actions. A click opens th
 
 ## Filtering
 
-`filterEntries(entries, { scope, category, search, areaIdsOf })` applies, in this order:
+`filterEntries(entries, { scopes, category, search, areaIdsOf })` applies, in this order:
 
-1. **Scope tab** (`studio.scope`: `all` or one kind).
+1. **Filters** (`studio.scopes`): `all`, single kinds and `entities`, combinable. A plain click chooses
+   only that filter; Strg+Klick (Mac ⌘+Klick, because Ctrl+click is the right-click there), the
+   right-click menu or a long press on touch add or remove one (`toggleScope`). "Alle" and single kinds
+   exclude each other; "Alle" means all **entries**, plain entities only show with their own filter, so
+   "Alle" stays usable in a big HA. The choice is kept in the browser (`homeace.scopes`).
 2. **Tree selection** (`isInCategory`, see the selection table in [navigation.md](navigation.md)).
 3. **Search** (`matchesSearch`): name or entity ID, case-insensitive. The search is simpler than the
    entity picker's (no umlaut folding).
 
-The numbers on the scope tabs come from the same filter without the scope (`scopeCounts`). The tree counts
-ignore the search.
+The numbers on the filters come from the same filter without the scopes (`scopeCounts`, `entities` from
+`filterListEntities`). The tree counts ignore the search.
+
+## Plain entities
+
+With the filter "Entitäten" chosen, HA's plain entities (from `GET /api/entities`, minus the entries) join
+the list:
+
+- A folder shows the entities sorted into it, after its entries (`groupListItems`); entities without a
+  folder belong to "Ohne Kategorie". In the area view, an area shows the entities HA puts there (own area
+  or the device's). Favorites and the check-up never show entities.
+- Search covers name, entity ID, device and area.
+- A group shows 150 entities at first, then "Weitere … anzeigen" (`ENTITY_PAGE`), so a big HA stays fast.
+- A row is a `div role="button"`, not a `button`: browsers (Firefox at all) do not start a drag from a
+  button. Its drag allows `copyMove` (onto a folder it moves, into a flow it will copy); a browser
+  silently refuses a drop whose effect the drag did not allow.
+- Clicking a row opens "in einen Ordner verschieben" (`MoveEntriesDialog` with a title of its own).
+- Entities without a registry entry (YAML without `unique_id`) cannot have a folder; they say so.
 
 ## Groups
 
@@ -65,7 +88,7 @@ kind, with ignore and restore. It reloads on mount. See [../features/checkup.md]
 
 ## Pitfalls
 
-- The search field and the scope tabs are `v-model`s on `studio.search` / `studio.scope`. Don't keep a
-  copy in the component.
+- The search field is a `v-model` on `studio.search`; the filters go through `studio.selectScope` /
+  `studio.toggleListScope`. Don't keep a copy in the component.
 - Arrow-key navigation is a `window` listener in `EntryList`. It skips inputs and dialogs. New
   keyboard-driven UI has to do the same.

@@ -52,6 +52,15 @@
     @cancel="actions.cancelMoveMany"
     @confirm="(path) => actions.moveEntries(actions.movingIds.value ?? [], path)"
   />
+  <MoveEntriesDialog
+    v-if="actions.movingEntity.value"
+    :count="1"
+    :title="t('entityRow.moveTitle', { name: actions.movingEntity.value.name })"
+    :all-paths="allPaths"
+    :is-busy="actions.isBusy.value"
+    @cancel="actions.cancelMoveEntity"
+    @confirm="(path) => actions.moveEntity(actions.movingEntity.value?.entityId ?? '', path)"
+  />
   <NewFolderDialog
     v-if="create.folderDraft.value"
     :parent="create.folderDraft.value.parent"

@@ -1,12 +1,19 @@
+import { useLocalStorage } from "@vueuse/core";
 import { defineStore } from "pinia";
-import { ref, watch } from "vue";
+import { computed, ref, watch } from "vue";
 
-import { CATEGORY_FILTER, SCOPE_ALL, type EntryScope } from "@/constants/entries";
+import { CATEGORY_FILTER, SCOPE_ALL, type ListScope } from "@/constants/entries";
+import { showsEntities, toggleScope, validScopes } from "@/utils/listScopes";
 
-/** What the user is looking at: tree selection, scope tab, search, the open entry and ticked rows. */
+const SCOPES_STORAGE_KEY = "homeace.scopes";
+
+/** What the user is looking at: tree selection, filters, search, the open entry and ticked rows. */
 export const useStudioStore = defineStore("studio", () => {
   const category = ref<string>(CATEGORY_FILTER.all);
-  const scope = ref<EntryScope>(SCOPE_ALL);
+  /** The chosen filters; kept in the browser, so the list looks the same after reloading. */
+  const storedScopes = useLocalStorage<ListScope[]>(SCOPES_STORAGE_KEY, [SCOPE_ALL]);
+  const scopes = computed<ListScope[]>(() => validScopes(storedScopes.value));
+  const isShowingEntities = computed(() => showsEntities(scopes.value));
   const search = ref("");
   const selectedEntityId = ref<string | null>(null);
   /** Rows ticked for moving several entries at once. */
@@ -20,6 +27,16 @@ export const useStudioStore = defineStore("studio", () => {
 
   function stopRename(): void {
     renaming.value = null;
+  }
+
+  /** A plain click: only this filter. */
+  function selectScope(scope: ListScope): void {
+    storedScopes.value = [scope];
+  }
+
+  /** Strg/⌘+Klick or the filter's menu: add or remove it. */
+  function toggleListScope(scope: ListScope): void {
+    storedScopes.value = toggleScope(scopes.value, scope);
   }
 
   function selectCategory(path: string): void {
@@ -45,12 +62,15 @@ export const useStudioStore = defineStore("studio", () => {
     if (checkedIds.value.size > 0) checkedIds.value = new Set();
   }
 
-  // Ticked rows belong to what is on screen; another folder or tab starts fresh.
-  watch([category, scope], clearChecked);
+  // Ticked rows belong to what is on screen; another folder or filter starts fresh.
+  watch([category, scopes], clearChecked);
 
   return {
     category,
-    scope,
+    scopes,
+    isShowingEntities,
+    selectScope,
+    toggleListScope,
     search,
     selectedEntityId,
     checkedIds,

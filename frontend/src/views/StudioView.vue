@@ -47,6 +47,7 @@
           @select="selectCategory"
           @rename="actions.startRename"
           @drop-entry="dropEntry"
+          @drop-entity="(path, entityId) => actions.moveEntity(entityId, path)"
           @add-folder="create.startFolder"
           @delete-folder="create.deleteFolder"
           @pick-color="(path) => (colorPath = path)"
@@ -92,8 +93,10 @@
         <EntryList
           v-else
           v-model:search="studio.search"
-          v-model:scope="studio.scope"
+          :scopes="studio.scopes"
+          :is-showing-entities="studio.isShowingEntities"
           :entries="data.visibleEntries.value"
+          :entities="data.visibleEntities.value"
           :scope-counts="data.scopeCounts.value"
           :category="studio.category"
           :selected-entity-id="studio.selectedEntityId"
@@ -115,6 +118,9 @@
           @uncategorize-checked="actions.moveEntries([...studio.checkedIds], null)"
           @set-area-checked="areas.startSetArea([...studio.checkedIds])"
           @act="entryActions.act"
+          @select-scope="studio.selectScope"
+          @toggle-scope="studio.toggleListScope"
+          @open-entity="openEntity"
         />
       </div>
       <PaneSplitter
@@ -247,6 +253,7 @@ import { useSettingsStore } from "@/stores/settingsStore";
 import { useStudioStore } from "@/stores/studioStore";
 import { useTracesStore } from "@/stores/tracesStore";
 import { useToastStore } from "@/stores/toastStore";
+import type { EntityOption } from "@/types/editor";
 import type { Area, Entry, EntryChanges } from "@/types/entry";
 import { areaNote, type AreaListView } from "@/utils/areaNotes";
 import { tidyCandidates } from "@/utils/areaTidy";
@@ -483,6 +490,12 @@ async function ignoreFinding(key: string): Promise<void> {
 }
 
 /** Dropping a ticked row moves every ticked row; any other row moves alone. */
+/** A plain entity was clicked: for now its folder; step 3 adds flow and scene targets. */
+function openEntity(entity: EntityOption): void {
+  if (entity.isInRegistry) actions.startMoveEntity(entity);
+  else toasts.show(t("entityRow.hintNoFolder"));
+}
+
 function dropEntry(path: string | null, entityId: string): void {
   if (studio.checkedIds.has(entityId) && studio.checkedIds.size > 1) {
     void actions.moveEntries([...studio.checkedIds], path);
@@ -567,6 +580,8 @@ onMounted(() => {
   void entriesStore.load();
   void foldersStore.load();
   void lookups.load();
+  // Plain entities: counts on the filter and their folders in the tree
+  void lookups.loadEntities();
   void ai.loadPlans();
 });
 </script>

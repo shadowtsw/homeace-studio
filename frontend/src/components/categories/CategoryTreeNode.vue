@@ -111,6 +111,7 @@
         @add-folder="(path) => emit('addFolder', path)"
         @delete-folder="(path) => emit('deleteFolder', path)"
         @drop-entry="(path, entityId) => emit('dropEntry', path, entityId)"
+        @drop-entity="(path, entityId) => emit('dropEntity', path, entityId)"
       />
     </ul>
   </li>
@@ -150,13 +151,16 @@ const emit = defineEmits<{
   deleteFolder: [path: string];
   pickColor: [path: string];
   dropEntry: [path: string, entityId: string];
+  /** A plain entity (light, sensor …) was dropped here. */
+  dropEntity: [path: string, entityId: string];
   /** A folder was dropped before or after this one (same parent). */
   reorder: [moved: string, target: string, isBefore: boolean];
 }>();
 
 const { t } = useI18n();
-const { isDropOver, onDragOver, onDragLeave, onDrop } = useEntryDropTarget((entityId) =>
-  emit("dropEntry", props.node.path, entityId),
+const { isDropOver, onDragOver, onDragLeave, onDrop } = useEntryDropTarget(
+  (entityId) => emit("dropEntry", props.node.path, entityId),
+  (entityId) => emit("dropEntity", props.node.path, entityId),
 );
 
 /** Where a dragged sibling folder would land: a line above or below this one. */
