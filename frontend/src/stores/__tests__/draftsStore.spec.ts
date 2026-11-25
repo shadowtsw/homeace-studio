@@ -24,10 +24,10 @@ describe("draftsStore", () => {
     const drafts = useDraftsStore();
     const saved = { name: "Target", min: 0 } as HelperSettings;
 
-    drafts.keepHelper(HELPER, saved, { ...saved, min: 5 });
+    drafts.keepHelper({ entityId: HELPER, saved, value: { ...saved, min: 5 } });
     expect(drafts.unsavedIds.has(HELPER)).toBe(true);
 
-    drafts.keepHelper(HELPER, saved, { ...saved });
+    drafts.keepHelper({ entityId: HELPER, saved, value: { ...saved } });
     expect(drafts.unsavedIds.has(HELPER)).toBe(false);
   });
 
@@ -36,8 +36,8 @@ describe("draftsStore", () => {
     const first = { name: "Target", min: 0 } as HelperSettings;
     const changedInHa = { name: "Target", min: 1 } as HelperSettings;
 
-    drafts.keepHelper(HELPER, first, { ...first, min: 5 });
-    drafts.keepHelper(HELPER, changedInHa, { ...first, min: 6 });
+    drafts.keepHelper({ entityId: HELPER, saved: first, value: { ...first, min: 5 } });
+    drafts.keepHelper({ entityId: HELPER, saved: changedInHa, value: { ...first, min: 6 } });
 
     expect(drafts.helpers[HELPER]).toEqual({ base: first, value: { ...first, min: 6 } });
   });
@@ -47,7 +47,7 @@ describe("draftsStore", () => {
     const saved = { "light.sofa": { state: "on" } };
     const edited = { ...saved, "light.lamp": { state: "on" } };
 
-    drafts.keepScene(SCENE, saved, edited, [lamp]);
+    drafts.keepScene({ entityId: SCENE, saved, value: edited, added: [lamp] });
     expect(drafts.scenes[SCENE]).toEqual({ base: saved, value: edited, added: [lamp] });
 
     drafts.dropScene(SCENE);
@@ -56,9 +56,10 @@ describe("draftsStore", () => {
 
   it("does not share the values it keeps with the editor", () => {
     const drafts = useDraftsStore();
+    const saved = { "light.sofa": { state: "on" } };
     const edited = { "light.sofa": { state: "off" } };
 
-    drafts.keepScene(SCENE, { "light.sofa": { state: "on" } }, edited, []);
+    drafts.keepScene({ entityId: SCENE, saved, value: edited, added: [] });
     edited["light.sofa"].state = "on";
 
     expect(drafts.scenes[SCENE]?.value).toEqual({ "light.sofa": { state: "off" } });
@@ -67,16 +68,17 @@ describe("draftsStore", () => {
   it("undoes back to the state before the first automatic save", () => {
     const drafts = useDraftsStore();
     const opened = { "light.sofa": { state: "on" } };
+    const switchedOff = { "light.sofa": { state: "off" } };
 
-    drafts.noteAutoSave(SCENE, opened, "14:25");
-    drafts.noteAutoSave(SCENE, { "light.sofa": { state: "off" } }, "14:26");
+    drafts.noteAutoSave({ entityId: SCENE, before: opened, savedAt: "14:25" });
+    drafts.noteAutoSave({ entityId: SCENE, before: switchedOff, savedAt: "14:26" });
 
     expect(drafts.sceneUndo).toEqual({ entityId: SCENE, base: opened, savedAt: "14:26" });
   });
 
   it("forgets the undo state when another entry opens, not when the same one does", () => {
     const drafts = useDraftsStore();
-    drafts.noteAutoSave(SCENE, {}, "14:25");
+    drafts.noteAutoSave({ entityId: SCENE, before: {}, savedAt: "14:25" });
 
     drafts.forgetUndo(SCENE);
     expect(drafts.sceneUndo).not.toBeNull();

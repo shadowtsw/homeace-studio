@@ -88,7 +88,10 @@ const isDirty = computed(
 const hasRemoteChange = computed(() => {
   const kept = loadedId.value ? drafts.helpers[loadedId.value] : undefined;
 
-  return kept !== undefined && JSON.stringify(kept.base) !== JSON.stringify(saved.value);
+  if (!kept) return false;
+  const isSameAsBase = JSON.stringify(kept.base) === JSON.stringify(saved.value);
+
+  return !isSameAsBase;
 });
 const problem = computed(() =>
   type.value && draft.value ? helperSettingsProblem(type.value, draft.value) : null,
@@ -145,7 +148,7 @@ watch(
   draft,
   (value) => {
     if (loadedId.value && saved.value && value)
-      drafts.keepHelper(loadedId.value, saved.value, value);
+      drafts.keepHelper({ entityId: loadedId.value, saved: saved.value, value });
   },
   { deep: true },
 );

@@ -263,9 +263,14 @@ function show(result: SceneView): void {
 watch(
   [draft, order],
   () => {
-    if (loadedId.value && view.value?.isEditable) {
-      drafts.keepScene(loadedId.value, saved.value, entities(), addedDevices());
-    }
+    if (!loadedId.value || !view.value?.isEditable) return;
+
+    drafts.keepScene({
+      entityId: loadedId.value,
+      saved: saved.value,
+      value: entities(),
+      added: addedDevices(),
+    });
   },
   { deep: true },
 );
@@ -372,24 +377,28 @@ async function add(id: string): Promise<void> {
  * Takes over what HA saved. Edits made while saving stay as a draft (automatic saving sends them
  * next); if another scene was opened meanwhile, only its kept draft is done.
  */
-function applySaved(result: SceneView, sent: SceneEntities): void {
+function applySaved({ result, sent }: { result: SceneView; sent: SceneEntities }): void {
+  // Nothing edited since sending: the kept draft is done, also for a scene no longer open
   const entityId = result.entityId;
   const kept = drafts.scenes[entityId];
   const isDone = !kept || same(kept.value, sent);
+  const isStillOpen = loadedId.value === entityId;
 
   if (isDone) drafts.dropScene(entityId);
-  if (loadedId.value !== entityId) return;
+  if (!isStillOpen) return;
   if (isDone) {
     show(result);
     return;
   }
 
+  // Edited further: take HA's answer, keep the newer edits on top
   view.value = result;
   for (const device of result.devices) devices.set(device.entityId, device);
   saved.value = valuesOf(result);
-  // The draft now starts from what was just saved, so it is not taken for a change in HA.
+
+  // Restart the draft from what was just saved, so it is not taken for a change in HA
   drafts.dropScene(entityId);
-  drafts.keepScene(entityId, saved.value, entities(), addedDevices());
+  drafts.keepScene({ entityId, saved: saved.value, value: entities(), added: addedDevices() });
 }
 
 async function save(): Promise<void> {
@@ -400,7 +409,8 @@ async function save(): Promise<void> {
   isSaving.value = true;
 
   try {
-    applySaved(await saveScene(entityId, sent), sent);
+    const result = await saveScene(entityId, sent);
+    applySaved({ result, sent });
     toasts.show(t("scene.toast.saved", { name: props.entry.name }));
     hasAutoSaveFailed.value = false;
   } catch (error) {
@@ -428,6 +438,7 @@ function scheduleAutoSave(): void {
 
 /** Saves without a toast; the footer tells "Automatisch gespeichert · 14:25". */
 async function autoSave(): Promise<void> {
+  // Nothing to save, or a save still running: try again later
   autoSaveTimer = undefined;
   const entityId = loadedId.value;
   if (!entityId || !isDirty.value) return;
@@ -436,18 +447,19 @@ async function autoSave(): Promise<void> {
     return;
   }
 
+  // Save what the scene sets now, remember how it was for "Alles rückgängig"
   const sent = entities();
   const before = saved.value;
   isSaving.value = true;
 
   try {
     const result = await saveScene(entityId, sent);
-    const time = new Date().toLocaleTimeString(locale.value, {
+    const savedAt = new Date().toLocaleTimeString(locale.value, {
       hour: "2-digit",
       minute: "2-digit",
     });
-    drafts.noteAutoSave(entityId, before, time);
-    applySaved(result, sent);
+    drafts.noteAutoSave({ entityId, before, savedAt });
+    applySaved({ result, sent });
   } catch (error) {
     hasAutoSaveFailed.value = true;
     fail(error);
@@ -455,8 +467,9 @@ async function autoSave(): Promise<void> {
     isSaving.value = false;
   }
 
-  // Edited further while saving: those edits follow.
-  if (isAutoSave.value && isDirty.value && loadedId.value === entityId) scheduleAutoSave();
+  // Edited further while saving: those edits follow
+  const hasNewerEdits = isAutoSave.value && isDirty.value && loadedId.value === entityId;
+  if (hasNewerEdits) scheduleAutoSave();
 }
 
 /** Leaving with an edit still waiting: it is saved right away. */
@@ -481,15 +494,19 @@ async function undoAll(): Promise<void> {
   const base = undo.value?.base;
   if (!entityId || !base) return;
 
+  // A waiting automatic save would undo the undo
   clearTimeout(autoSaveTimer);
   autoSaveTimer = undefined;
   isSaving.value = true;
 
   try {
+    // Save the old state in HA, start over without draft and undo
     const result = await saveScene(entityId, base);
     drafts.dropScene(entityId);
     drafts.forgetUndo();
     show(result);
+
+    // A running preview shows the old state too
     if (isPreviewing.value) previewScene(entityId, entities()).catch(fail);
     toasts.show(t("scene.toast.undoneAll", { name: props.entry.name }));
   } catch (error) {

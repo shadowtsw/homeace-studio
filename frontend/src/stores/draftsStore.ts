@@ -20,6 +20,11 @@ type SceneDraft = Draft<SceneEntities> & { added: SceneDevice[] };
 /** How the open scene was before its first automatic save, for "Alles rückgängig". */
 type SceneUndo = { entityId: string; base: SceneEntities; savedAt: string };
 
+/** An entry's edits next to what HA has saved right now. */
+type KeepOptions<T> = { entityId: string; saved: T; value: T };
+type KeepSceneOptions = KeepOptions<SceneEntities> & { added: SceneDevice[] };
+type NoteAutoSaveOptions = { entityId: string; before: SceneEntities; savedAt: string };
+
 const same = (first: unknown, second: unknown): boolean =>
   JSON.stringify(first) === JSON.stringify(second);
 
@@ -41,27 +46,24 @@ export const useDraftsStore = defineStore("drafts", () => {
   );
 
   /** Keeps the edited settings; edited back to what HA has, nothing is left to save. */
-  function keepHelper(entityId: string, saved: HelperSettings, value: HelperSettings): void {
+  function keepHelper({ entityId, saved, value }: KeepOptions<HelperSettings>): void {
     const rest = { ...helpers.value };
     delete rest[entityId];
     const base = helpers.value[entityId]?.base ?? copy(saved);
-    helpers.value = same(value, saved)
-      ? rest
-      : { ...rest, [entityId]: { base, value: copy(value) } };
+    const isBackToSaved = same(value, saved);
+
+    helpers.value = isBackToSaved ? rest : { ...rest, [entityId]: { base, value: copy(value) } };
   }
 
-  function keepScene(
-    entityId: string,
-    saved: SceneEntities,
-    value: SceneEntities,
-    added: SceneDevice[],
-  ): void {
+  /** Keeps a scene's edits with the devices added in the editor; like {@link keepHelper}. */
+  function keepScene({ entityId, saved, value, added }: KeepSceneOptions): void {
     const rest = { ...scenes.value };
     delete rest[entityId];
     const base = scenes.value[entityId]?.base ?? copy(saved);
-    scenes.value = same(value, saved)
-      ? rest
-      : { ...rest, [entityId]: { base, value: copy(value), added: copy(added) } };
+    const isBackToSaved = same(value, saved);
+    const draft = { base, value: copy(value), added: copy(added) };
+
+    scenes.value = isBackToSaved ? rest : { ...rest, [entityId]: draft };
   }
 
   /** The scene is saved (or its edits are thrown away): nothing left to keep. */
@@ -72,8 +74,10 @@ export const useDraftsStore = defineStore("drafts", () => {
   }
 
   /** Notes an automatic save; only the first one since opening the scene keeps how it was. */
-  function noteAutoSave(entityId: string, before: SceneEntities, savedAt: string): void {
-    const base = sceneUndo.value?.entityId === entityId ? sceneUndo.value.base : copy(before);
+  function noteAutoSave({ entityId, before, savedAt }: NoteAutoSaveOptions): void {
+    const isSavedBefore = sceneUndo.value?.entityId === entityId;
+    const base = isSavedBefore && sceneUndo.value ? sceneUndo.value.base : copy(before);
+
     sceneUndo.value = { entityId, base, savedAt };
   }
 
