@@ -94,6 +94,9 @@ export const CATALOG_FR: Catalog = {
 
   CHECKUP_IGNORED: "Ne sera plus signalé.",
   CHECKUP_RESTORED: "Les constats masqués sont de retour.",
+  PREFERENCES_NO_USER:
+    "Les paramètres par utilisateur n'existent que si HomeAce Studio est ouvert via Home Assistant.",
+  PREFERENCE_INVALID: "Le paramètre « {name} » n'a pas de valeur valide.",
   HELPER_NOT_DELETABLE:
     "{entityId} ne peut pas être supprimé ici. Pour l'instant, supprimez les entrées de type modèle et groupe dans Home Assistant.",
 };

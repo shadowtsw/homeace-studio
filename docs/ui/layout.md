@@ -75,9 +75,16 @@ Choosing a tree node always sets `isNavOpen = false`, and opening an entry alway
   person = follows the user to every device, screen = only on this device (`PREFERENCE_SCOPE`).
   Tools and links have no preference and no symbol. The AI access belongs to the whole add-on, so its
   tab says so in a note instead.
-- `settingsWindow.hasHaUser` is still false: everything lives in this browser, so every row shows the
-  screen and the footer says "Ohne Anmeldung über Home Assistant …". With settings per HA user it
-  turns on, and the footer explains both symbols.
+- **Settings per HA user** (`stores/preferencesStore.ts`): every `usePreference` of scope `user` is
+  tracked. At start `load()` asks the backend who is there. With a HA user, the backend's values win;
+  on the user's first visit through HA this browser's stored values are handed over (only values the
+  browser really stored, so an unpicked default like the browser language is no choice). A change is
+  sent after 400 ms (`PUT /api/preferences/:name`). Other open tabs pick it up on their next load.
+  The browser always keeps a copy, so the app starts with the last values at once.
+- Without a HA user (opened locally, in the demo) `settingsWindow.hasHaUser` is false: everything
+  lives in this browser, every row shows the screen and the footer says "Ohne Anmeldung über Home
+  Assistant …". With a user, the footer says "Gilt für <Name> auf allen Geräten" and explains both
+  symbols.
 - Tools ("Kategorien aufräumen", "Ordnung in einem Klick") and "Was ist neu" open their own windows;
   the settings window closes for them.
 - **Gut zu wissen** (`SettingsGoodToKnowTab`): topics on the left (`GOOD_TO_KNOW_TOPICS`), text on the

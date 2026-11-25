@@ -94,6 +94,9 @@ export const CATALOG_ES: Catalog = {
 
   CHECKUP_IGNORED: "No se volverá a informar.",
   CHECKUP_RESTORED: "Los hallazgos ocultos han vuelto.",
+  PREFERENCES_NO_USER:
+    "Los ajustes por usuario solo existen si HomeAce Studio se abre desde Home Assistant.",
+  PREFERENCE_INVALID: "El ajuste “{name}” no tiene un valor válido.",
   HELPER_NOT_DELETABLE:
     "{entityId} no se puede eliminar aquí. Por ahora, elimina los ayudantes de plantilla y de grupo en Home Assistant.",
 };

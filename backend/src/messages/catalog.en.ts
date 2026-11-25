@@ -92,6 +92,9 @@ export const CATALOG_EN: Catalog = {
 
   CHECKUP_IGNORED: "Will not be reported again.",
   CHECKUP_RESTORED: "Hidden findings are back.",
+  PREFERENCES_NO_USER:
+    "Settings per user only exist when HomeAce Studio is opened through Home Assistant.",
+  PREFERENCE_INVALID: "The setting “{name}” has no valid value.",
   HELPER_NOT_DELETABLE:
     "{entityId} cannot be deleted here. Delete template and group helpers in Home Assistant for now.",
 };

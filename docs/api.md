@@ -472,13 +472,22 @@ scripts.yaml.
 The backend catalog: message ID → text, for `de` (default) and `en`. Placeholders like `{path}` are filled from
 `data.params` of an error. Sent with `Cache-Control: no-cache` and an ETag, so reloads cost a `304`.
 
-## GET /api/preferences
+## Settings per HA user: GET /api/preferences · POST /api/preferences/import · PUT /api/preferences/:name
 
-Which HA user opened HomeAce Studio: `data.user` is `{ id, name }` or `null`. Read from the headers HA's
-Supervisor adds to every ingress request (`X-Remote-User-Id`, `-Name`, `-Display-Name`;
-`backend/src/preferences/ha-user.ts`). Port 8099 is not published, so requests only arrive through
-ingress; locally and in the demo there is no user. For now nothing else: keeping settings per user
-builds on this (planned: the values per user in the overlay).
+The user always comes from the headers HA's Supervisor adds to every ingress request
+(`X-Remote-User-Id`, `-Name`, `-Display-Name`; `backend/src/preferences/ha-user.ts`), never from the
+body, so nobody can write another user's settings. Port 8099 is not published, so requests only arrive
+through ingress; locally and in the demo there is no user.
+
+- `GET` → `{ user: { id, name } | null, values }`. `values` is `null` without a user or on the user's
+  first visit (nothing kept yet).
+- `POST /import` `{ values }` → the user's settings afterwards. Only the first device imports; when the
+  user already has settings they win and nothing changes (one step in the overlay queue, so two
+  devices opening at once cannot both import).
+- `PUT /:name` `{ value }` → the user's settings. Values are booleans, finite numbers or strings up to
+  200 characters; names letters and digits (`preferences/preference-values.ts`), at most 50 per user.
+- Errors: `PREFERENCES_NO_USER` (400, no HA user), `PREFERENCE_INVALID` (400, bad name or value).
+- Kept in the overlay under `userPreferences[<HA user ID>]`.
 
 ## Scenes: /api/scenes
 

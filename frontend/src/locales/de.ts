@@ -69,6 +69,7 @@ export default {
       about: "Über HomeAce",
     },
     scope: {
+      userNamed: "Gilt für {name} auf allen Geräten",
       addon: "Gilt für alle in diesem Home Assistant",
       user: "Gilt für dich auf allen Geräten",
       device: "Gilt nur auf diesem Gerät",

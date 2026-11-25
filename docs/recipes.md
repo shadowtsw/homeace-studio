@@ -49,7 +49,8 @@ Checklists for changes that touch several places. Feature-specific recipes are o
    remembers by itself is `device` (pane widths differ per screen). Adjust the test in
    `constants/__tests__/preferences.spec.ts`; it lists both groups on purpose.
 2. Read and write it only through `usePreference({ preference, defaultValue })`, never with
-   `useLocalStorage` directly.
+   `useLocalStorage` directly. Scope `user` is then synced with the HA user automatically
+   (`stores/preferencesStore.ts`); the backend needs no change.
 3. Settings changed on purpose go into `stores/settingsStore.ts`, the look of the columns into
    `stores/layoutStore.ts`, list filters into `stores/studioStore.ts`.
 

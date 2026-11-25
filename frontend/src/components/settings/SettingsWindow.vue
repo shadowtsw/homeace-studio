@@ -51,7 +51,10 @@
 
       <footer class="settings-window__foot">
         <template v-if="settingsWindow.hasHaUser">
-          <span><span class="mdi mdi-account-outline" />{{ t("settings.scope.user") }}</span>
+          <span>
+            <span class="mdi mdi-account-outline" />
+            {{ t("settings.scope.userNamed", { name: settingsWindow.detectedHaUser?.name ?? "" }) }}
+          </span>
           <span><span class="mdi mdi-monitor" />{{ t("settings.scope.device") }}</span>
         </template>
         <span v-else><span class="mdi mdi-monitor" />{{ t("settings.scope.noUser") }}</span>

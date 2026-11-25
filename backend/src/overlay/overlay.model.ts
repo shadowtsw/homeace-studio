@@ -2,6 +2,11 @@ import type { AiPlan, McpAccess } from "../ai/ai-plan.model";
 
 export const OVERLAY_VERSION = 1;
 
+/** One user's kept settings: short names, small plain values (see preferences/preference-values.ts). */
+export type UserPreferences = Record<string, PreferenceValue>;
+
+export type PreferenceValue = string | number | boolean;
+
 /** Own extras that HA never sees. Grows with favorites, notes, colors, … */
 export type Overlay = {
   version: typeof OVERLAY_VERSION;
@@ -31,6 +36,11 @@ export type Overlay = {
   mcp: McpAccess;
   /** Folder plans from an AI, open ones and recently decided ones. */
   aiPlans: AiPlan[];
+  /**
+   * Settings that follow a HA user to every device, by HA user ID: preference name → value (e.g.
+   * "locale" → "de"). A user without an entry has not opened HomeAce Studio through HA yet.
+   */
+  userPreferences: Record<string, UserPreferences>;
 };
 
 export const EMPTY_OVERLAY: Overlay = {
@@ -45,4 +55,5 @@ export const EMPTY_OVERLAY: Overlay = {
   checkupIgnored: [],
   mcp: { isEnabled: false, token: null },
   aiPlans: [],
+  userPreferences: {},
 };

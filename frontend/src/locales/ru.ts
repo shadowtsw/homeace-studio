@@ -72,6 +72,7 @@ const ru: MessageSchema = {
       about: "О HomeAce",
     },
     scope: {
+      userNamed: "Действует для {name} на всех устройствах",
       addon: "Действует для всех в этом Home Assistant",
       user: "Действует для вас на всех устройствах",
       device: "Действует только на этом устройстве",

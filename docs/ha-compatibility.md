@@ -51,7 +51,7 @@ storage interface, changed rarely, but once already. 🟢 low: documented core A
 | 🟠 | Devices, config entries | WS `config/device_registry/list`, `config_entries/get` | `lookups/lookups.controller.ts`, `snapshot/home-snapshot.service.ts`, `entries/` | derived areas missing, template or group helpers missing from the list | Area view shows device areas; a template helper is listed |
 | 🟠 | Run history | WS `trace/list`, `trace/get` | `traces/traces.service.ts`, `traces/trace-mapper.ts` | history empty or steps wrong | Run an automation, open its history |
 | 🟠 | Live updates | event names `state_changed`, `*_registry_updated` | `live/live-events.ts` | list does not refresh after a change in HA | Rename something in HA; HomeAce follows without reload |
-| 🟠 | HA user | ingress headers `x-remote-user-*` | `preferences/ha-user.ts` | user not recognized (later: settings per user lost) | With technical details on, "Über HomeAce" shows the user |
+| 🟠 | HA user | ingress headers `x-remote-user-*` | `preferences/ha-user.ts`, `preferences/preferences.service.ts` | user not recognized: settings no longer follow the user and stay in the browser | With technical details on, "Über HomeAce" shows the user; the settings footer names them |
 | 🟢 | Core | WS auth, `get_states`, `call_service`, `subscribe_events` | `ha/ha-connection.service.ts`, `entries/` | nothing loads, run and on/off fail | App loads; run a script |
 | 🟢 | Supervisor | proxy URLs, `SUPERVISOR_TOKEN`, ingress prefix, `config.yaml` schema, app store | `ha/ha.constants.ts`, `homeace-studio/config.yaml` | app does not start, open or update | Install or update the app, open it from the sidebar |
 

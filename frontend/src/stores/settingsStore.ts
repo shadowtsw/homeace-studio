@@ -6,8 +6,9 @@ import { DEFAULT_STORED_TRACES } from "@/constants/traces";
 import { preferredLocale, type AppLocale } from "@/i18n";
 
 /**
- * Settings the user changes on purpose. They follow the user (scope "user"): kept in the browser for
- * now, later per HA user in the overlay. How the columns look lives in the layout store.
+ * Settings the user changes on purpose. They follow the user (scope "user"): kept per HA user in the
+ * overlay, with a copy in the browser (see the preferences store). How the columns look lives in
+ * the layout store.
  */
 export const useSettingsStore = defineStore("settings", () => {
   /** Off by default: entity IDs, storage badges and API names would put beginners off. */

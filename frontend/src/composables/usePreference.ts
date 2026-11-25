@@ -1,7 +1,8 @@
 import { useLocalStorage, type RemovableRef } from "@vueuse/core";
-import type { MaybeRefOrGetter } from "vue";
+import type { MaybeRefOrGetter, Ref } from "vue";
 
 import type { Preference } from "@/constants/preferences";
+import { usePreferencesStore } from "@/stores/preferencesStore";
 
 export type UsePreferenceOptions<T> = {
   /** The entry from PREFERENCES: storage key and scope. */
@@ -17,8 +18,8 @@ export type UsePreferenceOptions<T> = {
  * A kept preference as a ref. Every preference goes through here, so where it applies is decided
  * in one place (PREFERENCES).
  *
- * For now both scopes live in this browser. With settings per HA user, the "user" scope also goes
- * to the backend; callers do not change.
+ * The browser always keeps it. Scope "user" is also synced with the backend for the HA user who
+ * opened HomeAce Studio (preferences store); callers do not notice. Call it in a store's setup.
  */
 export function usePreference<T>({
   preference,
@@ -26,8 +27,11 @@ export function usePreference<T>({
   isMergingDefaults = false,
   isWritingDefaults = true,
 }: UsePreferenceOptions<T>): RemovableRef<T> {
-  return useLocalStorage(preference.storageKey, defaultValue, {
+  const value = useLocalStorage(preference.storageKey, defaultValue, {
     mergeDefaults: isMergingDefaults,
     writeDefaults: isWritingDefaults,
   });
+  usePreferencesStore().track(preference, value as Ref<unknown>);
+
+  return value;
 }

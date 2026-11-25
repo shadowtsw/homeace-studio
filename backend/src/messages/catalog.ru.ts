@@ -93,6 +93,9 @@ export const CATALOG_RU: Catalog = {
 
   CHECKUP_IGNORED: "Больше не будет показываться.",
   CHECKUP_RESTORED: "Скрытые находки снова показаны.",
+  PREFERENCES_NO_USER:
+    "Настройки для каждого пользователя есть, только если HomeAce Studio открыт через Home Assistant.",
+  PREFERENCE_INVALID: "У настройки «{name}» нет допустимого значения.",
   HELPER_NOT_DELETABLE:
     "{entityId} здесь удалить нельзя. Вспомогательные элементы-шаблоны и группы пока удаляйте в Home Assistant.",
 };

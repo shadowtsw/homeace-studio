@@ -102,6 +102,10 @@ export const MESSAGE_ID = {
   // Check-up
   checkupIgnored: "CHECKUP_IGNORED",
   checkupRestored: "CHECKUP_RESTORED",
+
+  // Settings per HA user
+  preferencesNoUser: "PREFERENCES_NO_USER",
+  preferenceInvalid: "PREFERENCE_INVALID",
 } as const;
 
 export type MessageId = (typeof MESSAGE_ID)[keyof typeof MESSAGE_ID];

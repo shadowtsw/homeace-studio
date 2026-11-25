@@ -92,6 +92,9 @@ export const CATALOG_DE: Catalog = {
 
   CHECKUP_IGNORED: "Wird nicht mehr gemeldet.",
   CHECKUP_RESTORED: "Ausgeblendete Funde sind wieder da.",
+  PREFERENCES_NO_USER:
+    "Einstellungen pro Benutzer gibt es nur, wenn HomeAce Studio über Home Assistant geöffnet wird.",
+  PREFERENCE_INVALID: "Die Einstellung „{name}“ hat keinen gültigen Wert.",
   HELPER_NOT_DELETABLE:
     "{entityId} lässt sich hier nicht löschen. Template- und Gruppen-Helfer löschst du vorerst in Home Assistant.",
 };

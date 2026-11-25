@@ -69,6 +69,7 @@ const en: MessageSchema = {
       about: "About HomeAce",
     },
     scope: {
+      userNamed: "Applies to {name} on all devices",
       addon: "Applies to everyone in this Home Assistant",
       user: "Applies to you on all devices",
       device: "Applies only on this device",

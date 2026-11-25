@@ -10,10 +10,11 @@ import {
   type GoodToKnowTopic,
   type SettingsTab,
 } from "@/constants/settings";
-import { fetchPreferences, type HaUser } from "@/services/preferencesService";
+import { usePreferencesStore } from "@/stores/preferencesStore";
 
 /** The settings window the gear opens: whether it is open and which tab it shows. */
 export const useSettingsWindowStore = defineStore("settingsWindow", () => {
+  const preferences = usePreferencesStore();
   const isOpen = ref(false);
   /** Opens on the tab used last, on this device. */
   const storedTab = usePreference<SettingsTab>({
@@ -26,23 +27,11 @@ export const useSettingsWindowStore = defineStore("settingsWindow", () => {
   });
 
   /**
-   * Whether the settings follow a HA user. Not yet: until the backend keeps them per HA user,
-   * everything stays in this browser, and the window says so.
+   * The HA user the settings follow; null when HomeAce Studio was not opened through HA (then
+   * everything stays in this browser, and the window says so), undefined before the first answer.
    */
-  const hasHaUser = ref(false);
-  /**
-   * The HA user the backend sees; shown under "Über HomeAce" with technical details. Null when
-   * HomeAce Studio was not opened through HA, undefined before the first answer.
-   */
-  const detectedHaUser = ref<HaUser | null | undefined>(undefined);
-
-  async function loadHaUser(): Promise<void> {
-    try {
-      detectedHaUser.value = (await fetchPreferences()).user;
-    } catch (error) {
-      console.error("Loading the HA user failed", error);
-    }
-  }
+  const detectedHaUser = computed(() => preferences.haUser);
+  const hasHaUser = computed(() => Boolean(preferences.haUser));
 
   /** Where a preference applies right now: without a HA user, everything is on this device. */
   function effectiveScope(scope: PreferenceScope): PreferenceScope {
@@ -53,7 +42,6 @@ export const useSettingsWindowStore = defineStore("settingsWindow", () => {
   function open(nextTab?: SettingsTab): void {
     if (nextTab) storedTab.value = nextTab;
     isOpen.value = true;
-    void loadHaUser();
   }
 
   function close(): void {
