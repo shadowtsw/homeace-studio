@@ -219,12 +219,12 @@ const hasChildren = computed(() => props.node.children.length > 0);
 /** Own color, or the one inherited from the nearest colored parent folder. */
 const color = computed(() => folderColor(props.node.path, props.colors));
 const isExpanded = computed(() => props.expandedPaths.has(props.node.path));
-/** Only a user's empty folder can be deleted; folders with entries vanish with their last entry. */
 /** Nothing in the scope shown, but not one of the user's own empty folders. */
 const isEmptyHere = computed(
   () => props.node.totalCount === 0 && (props.node.isCategory || !props.node.isSavedFolder),
 );
 
+/** Only a user's empty folder can be deleted; folders with entries vanish with their last entry. */
 const canDelete = computed(
   () =>
     props.node.isSavedFolder &&

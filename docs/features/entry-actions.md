@@ -52,5 +52,3 @@ Disabled entries have no state and cannot act (`supportsAction`). The header sho
 ## Pitfalls
 
 - `ACTION_DOMAINS` (frontend `constants/entries.ts`) and `SERVICE_BY_ACTION` (backend) must stay in step.
-- The comments "helpers and scenes not yet" in `EntryListRow.vue` / `EntryDetailHeader.vue` are older than
-  helper copies. `canDuplicate` is the truth.

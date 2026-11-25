@@ -148,7 +148,7 @@ const emit = defineEmits<{
 
 const { t } = useI18n();
 
-/** HomeAce Studio copies automations and scripts; helpers and scenes not yet. */
+/** Copies automations, scripts and storage helpers; scenes and template/group helpers not yet. */
 const canDuplicate = computed(() => canDuplicateEntry(props.entry));
 
 const isOff = computed(() => props.entry.isDisabled || props.entry.state === STATE_OFF);
