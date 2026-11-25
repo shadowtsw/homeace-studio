@@ -1,10 +1,5 @@
 <template>
-  <DialogFrame
-    :title="t('ai.title')"
-    is-wide
-    @close="ai.closeSettings()"
-    @submit="ai.closeSettings()"
-  >
+  <div class="mcp">
     <p class="mcp__intro">{{ t("ai.intro") }}</p>
     <p v-if="!mcp" class="mcp__intro">{{ t("ai.loading") }}</p>
 
@@ -86,60 +81,19 @@
         </li>
       </ol>
 
-      <div class="mcp__rules">
-        <div>
-          <b><span class="mdi mdi-check-circle-outline mcp__yes" />{{ t("ai.canTitle") }}</b>
-          <ul>
-            <li>{{ t("ai.can1") }}</li>
-            <li>{{ t("ai.can2") }}</li>
-            <li>{{ t("ai.can3") }}</li>
-          </ul>
-        </div>
-        <div>
-          <b><span class="mdi mdi-cancel mcp__no" />{{ t("ai.cannotTitle") }}</b>
-          <ul>
-            <li>{{ t("ai.cannot1") }}</li>
-            <li>{{ t("ai.cannot2") }}</li>
-            <li>{{ t("ai.cannot3") }}</li>
-          </ul>
-        </div>
-      </div>
-
-      <div v-if="ai.openPlans.length" class="mcp__plans">
-        <b>{{ t("ai.openPlans") }}</b>
-        <button
-          v-for="plan in ai.openPlans"
-          :key="plan.id"
-          type="button"
-          @click="openPlan(plan.id)"
-        >
-          <span class="mdi mdi-creation" />
-          <span>{{ plan.title }}</span>
-          <span class="mcp__muted">{{
-            t("ai.changes", { count: plan.operations.length }, plan.operations.length)
-          }}</span>
-        </button>
-      </div>
-
-      <p v-if="settings.isTechnicalDetailsVisible" class="mcp__tech">{{ t("ai.tools") }}</p>
+      <McpAccessRules />
     </template>
-
-    <template #buttons>
-      <button class="btn btn--primary" type="submit">{{ t("ai.done") }}</button>
-    </template>
-  </DialogFrame>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { storeToRefs } from "pinia";
-import { computed, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 
-import DialogFrame from "@/components/common/DialogFrame.vue";
 import SwitchToggle from "@/components/common/SwitchToggle.vue";
 import { useAiStore } from "@/stores/aiStore";
 import { useMessagesStore } from "@/stores/messagesStore";
-import { useSettingsStore } from "@/stores/settingsStore";
 import { useToastStore } from "@/stores/toastStore";
 import {
   MCP_CLIENT,
@@ -150,7 +104,12 @@ import {
   type McpClient,
 } from "@/utils/aiPlan";
 
-/** Settings of the AI access: open the port, switch on, add the address and token to an AI client. */
+import McpAccessRules from "./McpAccessRules.vue";
+
+/**
+ * The AI access, as a tab of the settings window: open the port, switch on, add the address and
+ * token to an AI client.
+ */
 const CLIENTS: McpClient[] = [MCP_CLIENT.claudeCode, MCP_CLIENT.json];
 const TOKEN_PLACEHOLDER = "<TOKEN>";
 
@@ -158,8 +117,12 @@ const { t, locale } = useI18n();
 const ai = useAiStore();
 const { mcp } = storeToRefs(ai);
 const messages = useMessagesStore();
-const settings = useSettingsStore();
 const toasts = useToastStore();
+
+// Fresh on every open: the port or the last connection may have changed meanwhile.
+onMounted(() => {
+  void ai.loadMcp().catch((error: unknown) => console.error("Loading MCP access failed", error));
+});
 
 const isBusy = ref(false);
 const isTokenShown = ref(false);
@@ -225,14 +188,14 @@ async function renew(): Promise<void> {
 async function copy(text: string): Promise<void> {
   toasts.show((await copyText(text)) ? t("toast.copied") : t("toast.copyFailed"));
 }
-
-function openPlan(planId: string): void {
-  ai.closeSettings();
-  ai.review(planId);
-}
 </script>
 
 <style scoped>
+.mcp {
+  display: grid;
+  gap: 12px;
+}
+
 .mcp__intro {
   margin: 0;
   color: var(--muted);
@@ -363,76 +326,5 @@ function openPlan(planId: string): void {
 .mcp__ghost {
   border-color: transparent;
   background: transparent;
-}
-
-.mcp__rules {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-}
-
-.mcp__rules > div {
-  padding: 10px 12px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  font-size: 13px;
-}
-
-.mcp__rules b {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 6px;
-}
-
-.mcp__rules ul {
-  display: grid;
-  gap: 3px;
-  margin: 0;
-  padding-left: 18px;
-  color: var(--muted);
-}
-
-.mcp__yes {
-  color: var(--ok);
-}
-
-.mcp__no {
-  color: var(--err);
-}
-
-.mcp__plans {
-  display: grid;
-  gap: 6px;
-}
-
-.mcp__plans button {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 9px 12px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: var(--surface-2);
-  text-align: left;
-  cursor: pointer;
-}
-
-.mcp__plans button > span:nth-child(2) {
-  flex: 1;
-  font-weight: 600;
-}
-
-.mcp__tech {
-  margin: 0;
-  color: var(--faint);
-  font-family: var(--font-mono);
-  font-size: 11.5px;
-}
-
-@media (max-width: 820px) {
-  .mcp__rules {
-    grid-template-columns: minmax(0, 1fr);
-  }
 }
 </style>

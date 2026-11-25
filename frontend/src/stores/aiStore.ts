@@ -20,7 +20,6 @@ import {
 export const useAiStore = defineStore("ai", () => {
   const mcp = ref<McpOverview | null>(null);
   const plans = ref<AiPlan[]>([]);
-  const isSettingsOpen = ref(false);
   /** The plan in the review dialog; null when closed. */
   const reviewPlanId = ref<string | null>(null);
   /** "Later" on the hint: it shrinks to a small entry until the page is loaded again. */
@@ -41,15 +40,6 @@ export const useAiStore = defineStore("ai", () => {
 
   async function loadMcp(): Promise<void> {
     mcp.value = await fetchMcp();
-  }
-
-  function openSettings(): void {
-    isSettingsOpen.value = true;
-    void loadMcp().catch((error: unknown) => console.error("Loading MCP access failed", error));
-  }
-
-  function closeSettings(): void {
-    isSettingsOpen.value = false;
   }
 
   /** Errors go to the caller, which shows them. */
@@ -85,13 +75,10 @@ export const useAiStore = defineStore("ai", () => {
     mcp,
     plans,
     openPlans,
-    isSettingsOpen,
     reviewPlan,
     isHintPutOff,
     loadPlans,
     loadMcp,
-    openSettings,
-    closeSettings,
     setEnabled,
     renewToken,
     review,

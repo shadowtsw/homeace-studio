@@ -14,7 +14,8 @@ The code calls them `nav`, `list` and `detail`. Each column has its own page:
 | Settings the user changes on purpose (scope `user`): technical details, language, scene auto-save | `stores/settingsStore.ts` |
 | How the columns look on this device (scope `device`): pane widths, nav mode, detail folded | `stores/layoutStore.ts` |
 | Every kept preference with its storage key and scope; read and written only through `usePreference` | `constants/preferences.ts`, `composables/usePreference.ts` (all in localStorage for now, `homeace.*`) |
-| Top bar (connection status, live dot, gear menu, What's new) | `components/layout/AppTopBar.vue`, `SettingsMenu.vue`, `WhatsNewMenu.vue` |
+| Top bar (connection status, live dot, language menu, gear, What's new) | `components/layout/AppTopBar.vue`, `LanguageMenu.vue`, `WhatsNewMenu.vue` |
+| Settings window (tabs, one file per tab, scope symbol per setting) | `components/settings/SettingsWindow.vue`, `SettingsRow.vue`, `Settings*Tab.vue`, `stores/settingsWindowStore.ts`, `constants/settings.ts` |
 | Splitters between the columns | `components/layout/PaneSplitter.vue`, limits in `constants/layout.ts` |
 | Every dialog and the toasts of the page | `components/layout/StudioDialogs.vue`, `components/common/ToastHost.vue` |
 | Actions with toasts and error texts | `composables/useCategoryActions.ts` (move, rename, order), `useCreateActions.ts` (folders, helpers, flows), `useEntryActions.ts` (entry actions), `useAreaActions.ts` |
@@ -56,14 +57,32 @@ Choosing a tree node always sets `isNavOpen = false`, and opening an entry alway
 ## Top bar and "What's new"
 
 - `AppTopBar`: connection status (`loading` / `connected` / `failed` from `entriesStore`), live dot
-  (`isLive`), entry count, gear menu (`SettingsMenu`: technical details, language, AI access, tidy-up
-  assistant, What's new, reset pane widths).
+  (`isLive`), entry count, the language menu (`LanguageMenu`, "DE ▾", the only quick setting) and the
+  gear, which opens the settings window (see below).
 - `WhatsNewMenu`: after an update, a gift with a dot next to the gear and a popover with the highlights.
   "Zeigen" leads to the feature (`utils/flash.ts` lets it light up), and only "OK" confirms.
   `constants/whatsNew.ts` holds the highlights per release in every language. `utils/whatsNew.ts` has the
   logic (unseen releases, test builds without a version show the newest). `stores/whatsNewStore` keeps
   the confirmed version (`PREFERENCES.seenVersion`, scope `user`). `utils/earlierVisit.ts` tells a fresh install from an
   earlier user. It is captured in `main.ts` before any store writes its defaults.
+
+## Settings window
+
+- The gear opens `SettingsWindow` (mounted in `StudioDialogs`). Tabs in `SETTINGS_TABS`
+  (`constants/settings.ts`): Allgemein, Bearbeiten, Werkzeuge, KI-Zugang, Über HomeAce; one component per
+  tab. It opens on the tab used last (`PREFERENCES.settingsTab`, on this device).
+- Every setting is a `SettingsRow` with the `preference` behind it. The row shows where it applies:
+  person = follows the user to every device, screen = only on this device (`PREFERENCE_SCOPE`).
+  Tools and links have no preference and no symbol. The AI access belongs to the whole add-on, so its
+  tab says so in a note instead.
+- `settingsWindow.hasHaUser` is still false: everything lives in this browser, so every row shows the
+  screen and the footer says "Ohne Anmeldung über Home Assistant …". With settings per HA user it
+  turns on, and the footer explains both symbols.
+- Tools ("Kategorien aufräumen", "Ordnung in einem Klick") and "Was ist neu" open their own windows;
+  the settings window closes for them.
+- **Rules:** a setting only exists when users really want it differently. Texts describe what the
+  user notices, never how it is built (technical detail only behind "Technische Details").
+- Phone: for now the window fills the screen with the tabs on top; a list → page layout comes later.
 
 ## Keyboard
 

@@ -1,5 +1,4 @@
 import { defineStore } from "pinia";
-import { ref } from "vue";
 
 import { usePreference } from "@/composables/usePreference";
 import { PREFERENCES } from "@/constants/preferences";
@@ -31,13 +30,9 @@ export const useSettingsStore = defineStore("settings", () => {
     defaultValue: false,
   });
 
-  /** The gear menu is open; shared so "Was ist neu" can point at it. Not kept. */
-  const isMenuOpen = ref(false);
-
   return {
     isTechnicalDetailsVisible,
     locale,
     isSceneAutoSave,
-    isMenuOpen,
   };
 });

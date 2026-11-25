@@ -17,27 +17,47 @@ const es: MessageSchema = {
   settings: {
     open: "Ajustes",
     title: "Ajustes",
-    version: "Versión {version}",
+    close: "Cerrar",
+    tabs: {
+      general: "General",
+      editing: "Edición",
+      tools: "Herramientas",
+      ai: "Acceso de IA",
+      about: "Acerca de HomeAce",
+    },
+    scope: {
+      user: "Se aplica a ti en todos tus dispositivos",
+      device: "Se aplica solo en este dispositivo",
+      noUser:
+        "Sin iniciar sesión a través de Home Assistant, todo se aplica solo en este dispositivo.",
+    },
+    language: "Idioma",
+    languageHint: "Más rápido: el código de arriba, junto al engranaje.",
+    languageMenu: "Cambiar idioma",
     technicalDetails: "Detalles técnicos",
     technicalDetailsHint:
       "Mostrar ID de entidad, ubicaciones de almacenamiento y llamadas a la API. Desactivado para principiantes.",
-    autoSaveScenes: "Guardar escenas automáticamente",
-    autoSaveScenesHint:
-      "Poco después del último cambio, con “Deshacer todo” abajo. Editar no enciende ni apaga nada.",
-    language: "Idioma",
     paneWidths: "Ancho de columnas",
     paneWidthsHint: "Arrastra los separadores. Un doble clic restablece una columna.",
     reset: "Restablecer",
+    autoSaveScenes: "Guardar escenas automáticamente",
+    autoSaveScenesHint:
+      "Poco después del último cambio, con “Deshacer todo” abajo. Editar no enciende ni apaga nada.",
+    toolsNote:
+      "Las herramientas abren su propia ventana porque funcionan por pasos. Nada cambia en Home Assistant hasta que confirmes la vista previa.",
+    toolOpen: "Abrir",
     cleanup: "Ordenar categorías",
     cleanupHint: "Convertir categorías antiguas como “Oficina - Luces” en subcarpetas reales.",
-    cleanupOpen: "Abrir",
-    whatsNew: "Novedades de la versión {version}",
+    tidyHint: "Ordenar las entradas en carpetas según su área.",
+    aiNote:
+      "Se aplica a todo el complemento, es decir, a todos los usuarios de este Home Assistant.",
+    version: "Versión {version}",
     whatsNewHint: "Lo que cambió con la última actualización.",
-    whatsNewOpen: "Ver",
-    ai: "Acceso de IA (MCP)",
-    aiHintOn: "Activado: una IA puede proponer planes de carpetas.",
-    aiHintOff: "Una IA como Claude puede proponer planes de carpetas que revisas aquí.",
-    aiOpen: "Abrir",
+    whatsNewOpen: "Novedades",
+    allChanges: "Todos los cambios",
+    allChangesHint: "El registro completo de cambios en GitHub.",
+    issues: "Informar de un error o proponer una idea",
+    issuesHint: "En GitHub.",
   },
   whatsNew: {
     open: "Novedades",
@@ -678,7 +698,6 @@ const es: MessageSchema = {
     hintLine: "Una sugerencia de orden | {count} sugerencias de orden",
   },
   ai: {
-    title: "Acceso de IA (MCP)",
     intro:
       "Permite que una IA como Claude lea tus carpetas y entradas y proponga un plan de carpetas. No puede cambiar nada: cada plan llega aquí para que lo revises, y solo tu clic cambia Home Assistant.",
     loading: "Cargando …",
@@ -713,7 +732,6 @@ const es: MessageSchema = {
     tools:
       "Herramientas: list_folders · list_entries · propose_folder_plan · get_plan_status · Streamable HTTP con un token bearer",
     openPlans: "Propuestas abiertas",
-    done: "Hecho",
     planFrom: "Propuesto por {client} · {time}",
     someAi: "una IA",
     reasoning: "El razonamiento de la IA",

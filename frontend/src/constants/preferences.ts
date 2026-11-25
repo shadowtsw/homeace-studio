@@ -31,4 +31,6 @@ export const PREFERENCES = {
   detailFolded: { storageKey: "homeace.detailFolded", scope: PREFERENCE_SCOPE.device },
   navMode: { storageKey: "homeace.navMode", scope: PREFERENCE_SCOPE.device },
   listScopes: { storageKey: "homeace.scopes", scope: PREFERENCE_SCOPE.device },
+  /** The tab the settings window opened last. */
+  settingsTab: { storageKey: "homeace.settingsTab", scope: PREFERENCE_SCOPE.device },
 } as const satisfies Record<string, Preference>;

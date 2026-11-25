@@ -13,7 +13,16 @@
 
     <div class="app-top-bar__menus">
       <WhatsNewMenu />
-      <SettingsMenu />
+      <LanguageMenu />
+      <button
+        class="icon-btn"
+        type="button"
+        :aria-label="t('settings.open')"
+        :title="t('settings.open')"
+        @click="settingsWindow.open()"
+      >
+        <span class="mdi mdi-cog-outline" />
+      </button>
     </div>
   </header>
 </template>
@@ -22,7 +31,9 @@
 import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 
-import SettingsMenu from "./SettingsMenu.vue";
+import { useSettingsWindowStore } from "@/stores/settingsWindowStore";
+
+import LanguageMenu from "./LanguageMenu.vue";
 import WhatsNewMenu from "./WhatsNewMenu.vue";
 
 export type ConnectionStatus = "loading" | "connected" | "failed";
@@ -35,6 +46,7 @@ const props = defineProps<{
 }>();
 
 const { t } = useI18n();
+const settingsWindow = useSettingsWindowStore();
 
 const statusText = computed(() => {
   if (props.status === "connected" && props.isLive) {

@@ -26,6 +26,7 @@ describe("PREFERENCES", () => {
       "listScopes",
       "navMode",
       "paneWidths",
+      "settingsTab",
     ]);
   });
 

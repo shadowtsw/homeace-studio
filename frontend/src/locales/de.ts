@@ -12,27 +12,45 @@ export default {
   settings: {
     open: "Einstellungen",
     title: "Einstellungen",
-    version: "Version {version}",
+    close: "Schließen",
+    tabs: {
+      general: "Allgemein",
+      editing: "Bearbeiten",
+      tools: "Werkzeuge",
+      ai: "KI-Zugang",
+      about: "Über HomeAce",
+    },
+    scope: {
+      user: "Gilt für dich auf allen Geräten",
+      device: "Gilt nur auf diesem Gerät",
+      noUser: "Ohne Anmeldung über Home Assistant gilt alles nur auf diesem Gerät.",
+    },
+    language: "Sprache",
+    languageHint: "Schneller: das Kürzel oben neben dem Zahnrad.",
+    languageMenu: "Sprache wechseln",
     technicalDetails: "Technische Details",
     technicalDetailsHint:
       "Entity-IDs, Speicherorte und API-Aufrufe anzeigen. Für den Einstieg ausgeschaltet.",
-    autoSaveScenes: "Szenen automatisch speichern",
-    autoSaveScenesHint:
-      "Kurz nach der letzten Änderung, „Alles rückgängig“ in der Fußleiste. Bearbeiten schaltet ja nichts.",
-    language: "Sprache",
     paneWidths: "Spaltenbreiten",
     paneWidthsHint: "An den Trennlinien ziehen. Doppelklick setzt eine Spalte zurück.",
     reset: "Zurücksetzen",
+    autoSaveScenes: "Szenen automatisch speichern",
+    autoSaveScenesHint:
+      "Kurz nach der letzten Änderung, „Alles rückgängig“ in der Fußleiste. Bearbeiten schaltet ja nichts.",
+    toolsNote:
+      "Werkzeuge öffnen ein eigenes Fenster, weil sie in Schritten ablaufen. In Home Assistant ändert sich erst etwas, wenn du in der Vorschau bestätigst.",
+    toolOpen: "Öffnen",
     cleanup: "Kategorien aufräumen",
     cleanupHint: "Alte Kategorien wie „Büro - Licht“ in echte Unterordner umstellen.",
-    cleanupOpen: "Öffnen",
-    whatsNew: "Neu in Version {version}",
+    tidyHint: "Einträge nach ihrem Bereich in Ordner sortieren.",
+    aiNote: "Gilt für das ganze Add-on, also für alle Benutzer dieses Home Assistant.",
+    version: "Version {version}",
     whatsNewHint: "Was sich mit dem letzten Update geändert hat.",
-    whatsNewOpen: "Ansehen",
-    ai: "KI-Zugang (MCP)",
-    aiHintOn: "An: eine KI darf Ordner-Pläne vorschlagen.",
-    aiHintOff: "Eine KI wie Claude kann Ordner-Pläne vorschlagen, die du hier prüfst.",
-    aiOpen: "Öffnen",
+    whatsNewOpen: "Was ist neu",
+    allChanges: "Alle Änderungen",
+    allChangesHint: "Der vollständige Changelog auf GitHub.",
+    issues: "Fehler melden oder Idee vorschlagen",
+    issuesHint: "Auf GitHub, gern auch auf Deutsch.",
   },
   whatsNew: {
     open: "Was ist neu",
@@ -674,7 +692,6 @@ export default {
     hintLine: "Ein Aufräum-Vorschlag | {count} Aufräum-Vorschläge",
   },
   ai: {
-    title: "KI-Zugang (MCP)",
     intro:
       "Damit kann eine KI wie Claude deine Ordner und Einträge lesen und dir einen Ordner-Plan vorschlagen. Ändern kann sie nichts: Jeder Plan landet hier zur Prüfung, und erst dein Klick stellt Home Assistant um.",
     loading: "Wird geladen …",
@@ -709,7 +726,6 @@ export default {
     tools:
       "Werkzeuge: list_folders · list_entries · propose_folder_plan · get_plan_status · Streamable HTTP mit Bearer-Token",
     openPlans: "Offene Vorschläge",
-    done: "Fertig",
     planFrom: "Vorschlag von {client} · {time}",
     someAi: "einer KI",
     reasoning: "Begründung der KI",

@@ -13,6 +13,15 @@ export type AppLocale = (typeof APP_LOCALES)[number];
 
 export const DEFAULT_LOCALE: AppLocale = "de";
 
+/** Language names are shown in their own language, so they are not translated. */
+export const LOCALE_NAMES: Record<AppLocale, string> = {
+  de: "Deutsch",
+  en: "English",
+  fr: "Français",
+  es: "Español",
+  ru: "Русский",
+};
+
 /** German is the source of truth; every other language must have the same keys. */
 export type MessageSchema = typeof de;
 

@@ -162,7 +162,7 @@
     @close="cleanup.close()"
     @applied="onCleanedUp"
   />
-  <McpSettingsDialog v-if="ai.isSettingsOpen" />
+  <SettingsWindow v-if="settingsWindow.isOpen" @tidy="actions.startAreaTidy" />
   <AiPlanDialog
     v-if="ai.reviewPlan"
     :key="ai.reviewPlan.id"
@@ -181,7 +181,6 @@ import AiPlanDialog from "@/components/ai/AiPlanDialog.vue";
 import AreaDialog from "@/components/areas/AreaDialog.vue";
 import AreaTidyDialog from "@/components/areas/AreaTidyDialog.vue";
 import SetAreaDialog from "@/components/areas/SetAreaDialog.vue";
-import McpSettingsDialog from "@/components/ai/McpSettingsDialog.vue";
 import CleanupDialog from "@/components/cleanup/CleanupDialog.vue";
 import FolderColorDialog from "@/components/categories/FolderColorDialog.vue";
 import NewFolderDialog from "@/components/categories/NewFolderDialog.vue";
@@ -193,6 +192,7 @@ import DependencyUserRow from "@/components/dependencies/DependencyUserRow.vue";
 import ToastHost from "@/components/common/ToastHost.vue";
 import NewFlowDialog from "@/components/flow/NewFlowDialog.vue";
 import NewHelperDialog from "@/components/helpers/NewHelperDialog.vue";
+import SettingsWindow from "@/components/settings/SettingsWindow.vue";
 import type { useAreaActions } from "@/composables/useAreaActions";
 import type { useCategoryActions } from "@/composables/useCategoryActions";
 import type { useCreateActions } from "@/composables/useCreateActions";
@@ -207,6 +207,7 @@ import { useEntriesStore } from "@/stores/entriesStore";
 import { useEntryAreasStore } from "@/stores/entryAreasStore";
 import { useFoldersStore } from "@/stores/foldersStore";
 import { useLookupsStore } from "@/stores/lookupsStore";
+import { useSettingsWindowStore } from "@/stores/settingsWindowStore";
 import { useToastStore } from "@/stores/toastStore";
 
 /** All dialogs and toasts of the studio page, kept out of the page to keep it readable. */
@@ -241,6 +242,7 @@ const dependencies = useDependenciesStore();
 const entryAreas = useEntryAreasStore();
 const areas = useAreasStore();
 const lookups = useLookupsStore();
+const settingsWindow = useSettingsWindowStore();
 
 /** An area created from "Bereich setzen" is picked there when it comes back. */
 const setAreaPreset = ref<string | null>(null);

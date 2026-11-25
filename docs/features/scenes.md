@@ -59,7 +59,7 @@ Alles rückgängig → PUT :id { the state before the first automatic save }
   why they cannot. Same kinds as above.
 - Edits are kept per entry in `draftsStore` (`keepScene`, with the devices added in the editor), so they
   survive switching tabs and entries, show the dot in the list, and the browser asks before closing.
-- **Automatic saving** ("Szenen automatisch speichern" in the gear menu, `settings.isSceneAutoSave`, off
+- **Automatic saving** ("Szenen automatisch speichern" in Settings → Bearbeiten, `settings.isSceneAutoSave`, off
   by default): saves ~1 s after the last edit, without a toast. Leaving the scene with an edit still
   waiting saves it right away (`flush`). Edits made while a save runs stay in the draft and
   follow. A failed automatic save falls back to the normal footer for this scene.

@@ -71,16 +71,17 @@ import { onClickOutside, onKeyStroke } from "@vueuse/core";
 import { computed, nextTick, useTemplateRef } from "vue";
 import { useI18n } from "vue-i18n";
 
+import { SETTINGS_TAB } from "@/constants/settings";
 import { RELEASES_URL, type WhatsNewTarget } from "@/constants/whatsNew";
 import type { AppLocale } from "@/i18n";
-import { useSettingsStore } from "@/stores/settingsStore";
+import { useSettingsWindowStore } from "@/stores/settingsWindowStore";
 import { useStudioStore } from "@/stores/studioStore";
 import { useWhatsNewStore } from "@/stores/whatsNewStore";
 import { flashElement } from "@/utils/flash";
 
 const { t, locale: i18nLocale } = useI18n();
 const whatsNew = useWhatsNewStore();
-const settings = useSettingsStore();
+const settingsWindow = useSettingsWindowStore();
 const studio = useStudioStore();
 
 const locale = computed(() => i18nLocale.value as AppLocale);
@@ -91,10 +92,11 @@ const older = computed(() => whatsNew.releases.slice(1));
 async function show(target: WhatsNewTarget): Promise<void> {
   whatsNew.close();
 
+  // "Was ist neu" sits under "Über HomeAce" in the settings window
   if (target === "settings") {
-    settings.isMenuOpen = true;
+    settingsWindow.open(SETTINGS_TAB.about);
     await nextTick();
-    flashElement(document.querySelector(".settings-menu__panel"));
+    flashElement(document.querySelector(".settings-window__panel"));
   }
 
   if (target === "helpers" || target === "scenes") {

@@ -17,28 +17,47 @@ const fr: MessageSchema = {
   settings: {
     open: "Paramètres",
     title: "Paramètres",
-    version: "Version {version}",
+    close: "Fermer",
+    tabs: {
+      general: "Général",
+      editing: "Modification",
+      tools: "Outils",
+      ai: "Accès IA",
+      about: "À propos de HomeAce",
+    },
+    scope: {
+      user: "S'applique à vous sur tous vos appareils",
+      device: "S'applique uniquement sur cet appareil",
+      noUser: "Sans connexion via Home Assistant, tout s'applique uniquement sur cet appareil.",
+    },
+    language: "Langue",
+    languageHint: "Plus rapide : le code en haut, à côté de l'engrenage.",
+    languageMenu: "Changer de langue",
     technicalDetails: "Détails techniques",
     technicalDetailsHint:
       "Afficher les ID d'entité, les emplacements de stockage et les appels API. Désactivé pour les débutants.",
-    autoSaveScenes: "Enregistrer les scènes automatiquement",
-    autoSaveScenesHint:
-      "Peu après la dernière modification, avec « Tout annuler » en bas. Modifier n'allume ni n'éteint rien de toute façon.",
-    language: "Langue",
     paneWidths: "Largeur des colonnes",
     paneWidthsHint: "Faites glisser les séparateurs. Un double-clic réinitialise une colonne.",
     reset: "Réinitialiser",
+    autoSaveScenes: "Enregistrer les scènes automatiquement",
+    autoSaveScenesHint:
+      "Peu après la dernière modification, avec « Tout annuler » en bas. Modifier n'allume ni n'éteint rien de toute façon.",
+    toolsNote:
+      "Les outils ouvrent leur propre fenêtre, car ils se déroulent en plusieurs étapes. Rien ne change dans Home Assistant avant que vous confirmiez l'aperçu.",
+    toolOpen: "Ouvrir",
     cleanup: "Ranger les catégories",
     cleanupHint:
       "Transformer d'anciennes catégories comme « Bureau - Lumières » en vrais sous-dossiers.",
-    cleanupOpen: "Ouvrir",
-    whatsNew: "Nouveau dans la version {version}",
+    tidyHint: "Ranger les entrées dans des dossiers selon leur pièce.",
+    aiNote:
+      "S'applique à tout le module complémentaire, donc à tous les utilisateurs de ce Home Assistant.",
+    version: "Version {version}",
     whatsNewHint: "Ce qui a changé avec la dernière mise à jour.",
-    whatsNewOpen: "Voir",
-    ai: "Accès IA (MCP)",
-    aiHintOn: "Activé : une IA peut proposer des plans de dossiers.",
-    aiHintOff: "Une IA comme Claude peut proposer des plans de dossiers que vous vérifiez ici.",
-    aiOpen: "Ouvrir",
+    whatsNewOpen: "Nouveautés",
+    allChanges: "Toutes les modifications",
+    allChangesHint: "Le journal complet des modifications sur GitHub.",
+    issues: "Signaler un bug ou proposer une idée",
+    issuesHint: "Sur GitHub.",
   },
   whatsNew: {
     open: "Nouveautés",
@@ -683,7 +702,6 @@ const fr: MessageSchema = {
     hintLine: "Une proposition de rangement | {count} propositions de rangement",
   },
   ai: {
-    title: "Accès IA (MCP)",
     intro:
       "Cela permet à une IA comme Claude de lire vos dossiers et éléments et de proposer un plan de dossiers. Elle ne peut rien modifier : chaque plan arrive ici pour vérification, et seul votre clic modifie Home Assistant.",
     loading: "Chargement …",
@@ -719,7 +737,6 @@ const fr: MessageSchema = {
     tools:
       "Outils : list_folders · list_entries · propose_folder_plan · get_plan_status · Streamable HTTP avec un jeton bearer",
     openPlans: "Propositions ouvertes",
-    done: "Terminé",
     planFrom: "Proposé par {client} · {time}",
     someAi: "une IA",
     reasoning: "Le raisonnement de l'IA",

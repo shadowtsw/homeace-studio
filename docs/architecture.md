@@ -80,7 +80,8 @@ frontend/src/
   views/StudioView.vue   the one page; wires Navigation · List · Detail        ui/layout.md
   components/<feature>/  one folder per feature (categories, entries, flow, scenes, helpers, areas, …)
   components/common/     DialogFrame, ConfirmDialog, SaveFooter, InlineNameInput, SwitchToggle, ToastHost
-  components/layout/     AppTopBar, SettingsMenu, WhatsNewMenu, PaneSplitter, StudioDialogs
+  components/layout/     AppTopBar, LanguageMenu, WhatsNewMenu, PaneSplitter, StudioDialogs
+  components/settings/   the settings window and one file per tab
   composables/           page actions with toasts (useCategoryActions, useEntryActions, …), useStudioData
   stores/                Pinia, one per concern (entries, studio, settings, editor, folders, …)
   services/              API calls, one file per backend area; api.ts has apiFetch / ApiError

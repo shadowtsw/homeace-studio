@@ -50,7 +50,7 @@ The footer `<div id="entry-detail-footer">` always exists while an entry is open
   meanwhile).
 - **Helper settings and scenes:** the tab teleports its own `SaveFooter` in
   (`<Teleport defer to="#entry-detail-footer">`). `blockedBy` disables saving while the form has a problem.
-- **Scenes with "Szenen automatisch speichern"** (gear menu, off by default): the footer becomes a status
+- **Scenes with "Szenen automatisch speichern"** (Settings → Bearbeiten, off by default): the footer becomes a status
   line (`autoStatus`: "Speichert gleich von selbst …" → "✓ Automatisch gespeichert · 14:25") with
   "Alles rückgängig". It stays up between saves, so it slides in only once. No toast per save.
 
