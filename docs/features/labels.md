@@ -52,8 +52,11 @@ v33). `useNoCoverPlacement(field, panel)`:
    picker opens below (shorter if need be).
 2. After each tick (chips may wrap into a new row) it checks again. Still clear: it stays still (no
    jumping). Grown into: it stays on its side and gets shorter, down to 200 px, before it flips.
-3. It closes on Escape, a click outside (the field itself does not count), a window resize and a scroll
-   by the user. Its own scroll from step 1 is ignored (`isOwnScroll`).
+3. While it is open, the page behind does not scroll with wheel or finger (`usePageScrollLock`); only its
+   list does, and with `overscroll-behavior: contain` it does not hand the scroll on to the page at its
+   ends (owner's feedback on dummy v34: a mouse slipping off the list moved the page while the picker
+   stayed). It closes on Escape, a click outside (the field itself does not count), a window resize and a
+   scroll by scrollbar or keyboard. Its own scroll from step 1 is ignored (`isOwnScroll`).
 
 ## Usage check
 

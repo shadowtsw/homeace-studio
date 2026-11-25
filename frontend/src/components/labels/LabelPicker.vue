@@ -69,6 +69,7 @@ import { computed, nextTick, onMounted, ref, toRef, useTemplateRef, watch } from
 import { useI18n } from "vue-i18n";
 
 import { useNoCoverPlacement } from "@/composables/useNoCoverPlacement";
+import { usePageScrollLock } from "@/composables/usePageScrollLock";
 import type { LabelFields } from "@/services/labelsService";
 import type { Label } from "@/types/entry";
 
@@ -160,7 +161,9 @@ const fieldRef = computed(() => props.field);
 onClickOutside(panel, () => emit("close"), { ignore: [fieldRef] });
 onKeyStroke("Escape", () => (editing.value ? (editing.value = null) : emit("close")));
 useEventListener(window, "resize", () => emit("close"));
-// Fixed in the window: when the user scrolls the page away, it closes (not when we scroll ourselves)
+// The page behind does not scroll with wheel or finger while it is open; only its list does
+usePageScrollLock({ panel, scrollable: ".label-picker__list" });
+// Fixed in the window: scrolled away anyway (scrollbar, keyboard), it closes (not when we scroll ourselves)
 useEventListener(
   document,
   "scroll",
@@ -203,6 +206,8 @@ useEventListener(
   flex: 1;
   min-height: 0;
   overflow: auto;
+  /* At its ends the scroll does not go on to the page behind */
+  overscroll-behavior: contain;
 }
 
 .label-picker__row {
