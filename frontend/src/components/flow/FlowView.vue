@@ -327,7 +327,8 @@ const entityDrop = useFlowEntityDrop({
   isEditable: toRef(props, "isEditable"),
   catalog: toRef(props, "catalog"),
   openMenu,
-  emitChange: (change) => emit("change", change),
+  // Closes the menu the choice came from, then sends the change
+  emitChange: closeAndEmit,
 });
 
 provide(
