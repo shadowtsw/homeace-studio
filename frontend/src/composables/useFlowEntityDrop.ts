@@ -9,7 +9,7 @@ import type {
   EntityOption,
   FlowChange,
 } from "@/types/editor";
-import { carriesPlainEntity } from "@/utils/dragDrop";
+import { carriesEntity, carriesPlainEntity } from "@/utils/dragDrop";
 import { flashElement } from "@/utils/flash";
 import { branchesOf, dropTargets, nextBlockId, type DropTarget } from "@/utils/flow/dropTargets";
 import { entityFit, type ChoiceLabel, type EntityChoice } from "@/utils/flow/entityBlocks";
@@ -18,6 +18,8 @@ import { usePlainEntityDrag } from "./usePlainEntityDrag";
 
 type FlowEntityDropOptions = {
   flow: Ref<DisplayFlow | null>;
+  /** The open automation or script; dropping it into itself would loop. */
+  selfId: Ref<string>;
   isEditable: Ref<boolean>;
   catalog: Ref<EditorCatalog | null>;
   /** The flow's own menu (FlowView's popover), for the choices and "Wohin genau?". */
@@ -40,7 +42,7 @@ export type DropSign = { text: string; isOk: boolean };
  * ("Bewegung erkannt", "Einschalten" …), and the new block goes to the end of that list.
  */
 export function useFlowEntityDrop(options: FlowEntityDropOptions) {
-  const { flow, isEditable, catalog, openMenu, emitChange } = options;
+  const { flow, selfId, isEditable, catalog, openMenu, emitChange } = options;
   const { t } = useI18n();
   const drag = usePlainEntityDrag();
 
@@ -59,6 +61,7 @@ export function useFlowEntityDrop(options: FlowEntityDropOptions) {
     if (!entity || !isEditable.value) return null;
 
     // Why not
+    if (entity.entityId === selfId.value) return { text: t("flow.drop.why.self"), isOk: false };
     const fit = entityFit(entity, section, catalog.value);
     if ("reason" in fit) return { text: t(`flow.drop.why.${fit.reason}`), isOk: false };
 
@@ -80,14 +83,16 @@ export function useFlowEntityDrop(options: FlowEntityDropOptions) {
     const element = (event.target as HTMLElement | null)?.closest<HTMLElement>("[data-drop-key]");
     const target = targetOf(element?.dataset.dropKey ?? null);
     const entity = drag.dragged.value;
-    if (!element || !target || !entity) return null;
+    if (!element || !target || !entity || entity.entityId === selfId.value) return null;
 
     const fit = entityFit(entity, target.section, catalog.value);
     return "reason" in fit ? null : { element, target };
   }
 
   function onDragOver(event: DragEvent): void {
-    if (!isEditable.value || !carriesPlainEntity(event.dataTransfer)) return;
+    // Plain entities and entries (helpers, scripts …) alike; files or text are no target
+    const carriesOurs = carriesPlainEntity(event.dataTransfer) || carriesEntity(event.dataTransfer);
+    if (!isEditable.value || !carriesOurs) return;
 
     const hit = listAt(event);
     hoverKey.value = hit?.target.key ?? null;

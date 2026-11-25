@@ -19,11 +19,22 @@ const MOTION_CLASSES = new Set(["motion", "occupancy", "presence", "moving"]);
 /** Device classes of contacts that open and close. */
 const OPENING_CLASSES = new Set(["door", "window", "opening", "garage_door"]);
 /** Domains whose states are plainly on and off. */
-const ON_OFF_DOMAINS = new Set(["light", "switch", "fan", "input_boolean", "siren", "humidifier"]);
+const ON_OFF_DOMAINS = new Set([
+  "light",
+  "switch",
+  "fan",
+  "input_boolean",
+  "siren",
+  "humidifier",
+  "automation",
+  "script",
+]);
 /** Domains that report where someone is. */
 const PRESENCE_DOMAINS = new Set(["person", "device_tracker"]);
 /** Domains with a number as their state. */
-const NUMBER_DOMAINS = new Set(["sensor", "number", "input_number"]);
+const NUMBER_DOMAINS = new Set(["sensor", "number", "input_number", "counter"]);
+/** Domains whose state is only the time they last fired: they trigger, but have nothing to check. */
+const MOMENT_DOMAINS = new Set(["scene", "button", "input_button"]);
 /** States a device only passes through; not worth a choice. */
 const PASSING_STATES = new Set(["opening", "closing", "locking", "unlocking", "jammed"]);
 
@@ -41,8 +52,15 @@ const ACTIONS_BY_DOMAIN: Record<string, string[]> = {
   vacuum: ["vacuum.start", "vacuum.return_to_base"],
   scene: ["scene.turn_on"],
   script: ["script.turn_on"],
+  automation: ["automation.trigger", "automation.turn_on", "automation.turn_off"],
   button: ["button.press"],
   input_button: ["input_button.press"],
+  input_number: ["input_number.set_value"],
+  input_select: ["input_select.select_option"],
+  input_text: ["input_text.set_value"],
+  input_datetime: ["input_datetime.set_datetime"],
+  counter: ["counter.increment", "counter.decrement", "counter.reset"],
+  timer: ["timer.start", "timer.cancel"],
   alarm_control_panel: [
     "alarm_control_panel.alarm_arm_away",
     "alarm_control_panel.alarm_arm_night",
@@ -116,6 +134,11 @@ function triggerChoices(entity: EntityOption): EntityChoice[] {
         item: { trigger: "numeric_state", entity_id: entityId, below: value },
       },
     ];
+  }
+
+  // A scene or a button: it fires, that is all
+  if (MOMENT_DOMAINS.has(entity.domain)) {
+    return [{ label: { key: "fires" }, item: { trigger: "state", entity_id: entityId } }];
   }
 
   // Known states, else "changes" in any way
@@ -193,7 +216,11 @@ export function entityFit(
   catalog: EditorCatalog | null,
 ): EntityFit {
   if (section === "trigger") return { choices: triggerChoices(entity) };
-  if (section === "condition") return { choices: conditionChoices(entity) };
+  if (section === "condition") {
+    // A scene or a button only knows when it last fired; there is nothing to check
+    if (MOMENT_DOMAINS.has(entity.domain)) return { reason: "noCondition" };
+    return { choices: conditionChoices(entity) };
+  }
 
   return actionChoices(entity, catalog);
 }

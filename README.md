@@ -108,9 +108,8 @@ as entity IDs stay hidden until you switch them on.
 **Devices in folders, dragged into flows.** Turn on the filter *Entities* and lights, sensors and
 everything else join the list, each in its folder. Drag a device onto a folder to sort it in, or
 straight into an automation: drop the motion sensor on *When* and pick *Motion detected*, the lamp
-on *Then* and pick *Turn on*. Sections that fit light up, the others say why not. HA has no
-categories for entities, so these folders live in a category scope of HomeAce Studio's own: stored
-in Home Assistant and its backups, but not filling HA's own menus.
+on *Then* and pick *Turn on*. Sections that fit light up, the others say why not. The folders are
+stored in Home Assistant and its backups, without crowding HA's own menus.
 
 ## Good to know
 

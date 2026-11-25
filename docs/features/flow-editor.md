@@ -120,7 +120,11 @@ list (`onApplyArea`). Suggestions: entities the flow already uses, then the entr
 
 With the filter "Entitäten" on, plain entities can be dragged from the list onto the flow
 (`EntityListRow` → `usePlainEntityDrag`; browsers hide the drag data until the drop, so the targets read
-the dragged entity there).
+the dragged entity there). Entry rows (helpers, scripts, scenes, automations) are a source too: their
+drag keeps `ENTRY_DRAG_TYPE` (folders move them in their own scope) and allows `copyMove`; only the
+dragged row goes into a flow, never the ticked ones. The open entry is no target for itself
+(`selfId`, reason `self`), so nothing runs itself. Scenes and buttons trigger ("Wird ausgelöst") but
+have nothing to check (`noCondition`).
 
 - **Targets:** every section and every branch list of the same kind (`dropTargets`). The innermost list
   under the pointer wins (`closest("[data-drop-key]")`: sections set it on `.flow-view__blocks`,

@@ -35,6 +35,7 @@ export function useEntryDropTarget(
 
     // preventDefault() is what tells the browser "dropping here is allowed".
     event.preventDefault();
+    if (event.dataTransfer) event.dataTransfer.dropEffect = "move";
     isDropOver.value = true;
   }
 

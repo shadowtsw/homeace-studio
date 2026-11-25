@@ -324,6 +324,7 @@ function onApply(value: unknown): void {
 
 const entityDrop = useFlowEntityDrop({
   flow: toRef(props, "flow"),
+  selfId: toRef(props, "entityId"),
   isEditable: toRef(props, "isEditable"),
   catalog: toRef(props, "catalog"),
   openMenu,

@@ -4,14 +4,15 @@
 
 - Folders for devices: the new filter "Entitäten" shows lights, sensors and every other plain entity,
   each in its folder after the automations and helpers there. Drag one onto a folder to sort it in, or
-  onto "Ohne Kategorie" to take it out. HA has no categories for entities, so HomeAce Studio keeps
-  them in a category scope of its own: stored in Home Assistant (and its backups), but invisible in
-  HA's lists, so its label and category menus stay short.
+  onto "Ohne Kategorie" to take it out. The folders are stored in Home Assistant and its backups,
+  without crowding HA's own label and category lists.
 - Drag entities into flows: drop a motion sensor on "Wenn" and pick "Bewegung erkannt", a lamp on
   "Dann" and pick HA's "Einschalten". Fitting sections light up, the others say why not (a sensor
   cannot be switched). Branches of a Wenn/Sonst block are targets of their own; dropped next to them,
   HomeAce Studio asks where exactly. A measured value starts with its current value as the limit.
   Dropped on a scene, a device joins with its current state. On a phone, tap the entity instead.
+  Helpers, scripts, scenes and automations from the list can be dragged in the same way ("Gästemodus
+  ist aus", "Szene aktivieren"); an automation or script never into itself.
 - Filters can be combined: Strg+Klick (⌘+Klick on a Mac), right-click or a long press on a filter
   adds it, a plain click shows only that one. The choice is kept, and the filter bar wraps instead of
   scrolling.

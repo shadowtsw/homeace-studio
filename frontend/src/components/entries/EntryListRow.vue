@@ -10,6 +10,7 @@
     :data-entity-id="entry.entityId"
     :draggable="entry.isInRegistry && !isRenaming"
     @dragstart="startDrag"
+    @dragend="drag.end()"
   >
     <input
       class="entry-list-row__check"
@@ -108,6 +109,8 @@ import InlineNameInput from "@/components/common/InlineNameInput.vue";
 import SwitchToggle from "@/components/common/SwitchToggle.vue";
 import { ENTRY_ACTION, ENTRY_KIND_ICON, type EntryAction } from "@/constants/entries";
 import type { Entry } from "@/types/entry";
+import { usePlainEntityDrag } from "@/composables/usePlainEntityDrag";
+import { useLookupsStore } from "@/stores/lookupsStore";
 import { setDraggedEntity } from "@/utils/dragDrop";
 import { canToggle, isOn, supportsAction, toggleAction } from "@/utils/entryActions";
 import { mdiIconClass } from "@/utils/text";
@@ -134,6 +137,9 @@ const props = defineProps<{
    */
   areaNote?: string;
 }>();
+
+const lookups = useLookupsStore();
+const drag = usePlainEntityDrag();
 
 const emit = defineEmits<{
   select: [entityId: string];
@@ -166,8 +172,15 @@ const subtitle = computed(() => {
 function startDrag(event: DragEvent): void {
   if (!event.dataTransfer) return;
 
-  event.dataTransfer.effectAllowed = "move";
+  // Onto a folder it moves, into a flow it becomes a new block (a copy); the drag has to allow
+  // both, or the browser silently refuses one of them.
+  event.dataTransfer.effectAllowed = "copyMove";
   setDraggedEntity(event.dataTransfer, props.entry.entityId);
+
+  // Flows read it here (browsers hide the drag data until the drop); only this row, never the
+  // ticked ones, which only move together onto a folder
+  const option = lookups.entities.find((entity) => entity.entityId === props.entry.entityId);
+  if (option) drag.start(option);
 }
 </script>
 

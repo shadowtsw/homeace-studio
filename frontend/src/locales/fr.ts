@@ -109,6 +109,7 @@ const fr: MessageSchema = {
   flow: {
     drop: {
       choice: {
+        fires: "Se déclenche",
         motionOn: "Mouvement détecté",
         motionOff: "Plus de mouvement",
         opens: "S'ouvre",
@@ -134,6 +135,8 @@ const fr: MessageSchema = {
         isBelow: "Est en dessous de …",
       },
       why: {
+        self: "Une entrée ne peut pas aller en elle-même, cela se répéterait sans fin.",
+        noCondition: "N'a pas d'état à vérifier, seulement le moment de son dernier déclenchement.",
         sensor: "Un capteur ne fait que signaler, il ne se commande pas.",
         measure: "Une valeur mesurée ne se commande pas.",
         noAction: "L'éditeur ne connaît pas encore d'action pour ce type d'entité.",

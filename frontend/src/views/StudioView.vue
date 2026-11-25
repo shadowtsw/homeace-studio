@@ -503,6 +503,7 @@ async function ignoreFinding(key: string): Promise<void> {
 /** A plain entity was clicked (or tapped): where it can go in the open flow, and its folder. */
 const entityMenu = useEntityMenu({
   displayFlow,
+  flowId: computed(() => editorStore.flow?.entityId ?? null),
   flowKind: computed(() => editorStore.flow?.kind ?? null),
   isFlowEditable: computed(
     () => editorStore.flow?.isEditable === true && displayFlow.value !== null,

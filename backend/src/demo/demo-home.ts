@@ -66,6 +66,14 @@ const SERVICES: HaServices = {
     close_cover: { target: target("cover") },
   },
   switch: { turn_on: { target: target("switch") }, turn_off: { target: target("switch") } },
+  input_boolean: {
+    turn_on: { target: target("input_boolean") },
+    turn_off: { target: target("input_boolean") },
+  },
+  automation: {
+    trigger: { target: target("automation") },
+    turn_off: { target: target("automation") },
+  },
   valve: { open_valve: { target: target("valve") }, close_valve: { target: target("valve") } },
   climate: {
     set_temperature: {
@@ -109,6 +117,10 @@ const SERVICE_TEXTS: Record<string, Record<string, string>> = {
     "cover.close_cover": "Close",
     "switch.turn_on": "Turn on",
     "switch.turn_off": "Turn off",
+    "input_boolean.turn_on": "Turn on",
+    "input_boolean.turn_off": "Turn off",
+    "automation.trigger": "Trigger",
+    "automation.turn_off": "Turn off",
     "valve.open_valve": "Open",
     "valve.close_valve": "Close",
     "climate.set_temperature": "Set target temperature",
@@ -132,6 +144,10 @@ const SERVICE_TEXTS: Record<string, Record<string, string>> = {
     "cover.close_cover": "Schließen",
     "switch.turn_on": "Einschalten",
     "switch.turn_off": "Ausschalten",
+    "input_boolean.turn_on": "Einschalten",
+    "input_boolean.turn_off": "Ausschalten",
+    "automation.trigger": "Ausführen",
+    "automation.turn_off": "Ausschalten",
     "valve.open_valve": "Öffnen",
     "valve.close_valve": "Schließen",
     "climate.set_temperature": "Zieltemperatur einstellen",

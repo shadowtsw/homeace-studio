@@ -1,7 +1,7 @@
 import { computed, nextTick, ref, type Ref } from "vue";
 import { useI18n } from "vue-i18n";
 
-import { carriesPlainEntity } from "@/utils/dragDrop";
+import { carriesEntity, carriesPlainEntity } from "@/utils/dragDrop";
 import { flashElement } from "@/utils/flash";
 import { sceneMisfit } from "@/utils/flow/entityBlocks";
 
@@ -39,7 +39,8 @@ export function useSceneEntityDrop({ isEditable, deviceIds, add }: SceneEntityDr
   });
 
   function onDragOver(event: DragEvent): void {
-    if (!carriesPlainEntity(event.dataTransfer) || !sign.value?.isOk) return;
+    const carriesOurs = carriesPlainEntity(event.dataTransfer) || carriesEntity(event.dataTransfer);
+    if (!carriesOurs || !sign.value?.isOk) return;
 
     event.preventDefault();
     if (event.dataTransfer) event.dataTransfer.dropEffect = "copy";

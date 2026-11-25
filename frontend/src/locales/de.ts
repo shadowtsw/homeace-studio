@@ -103,6 +103,7 @@ export default {
   flow: {
     drop: {
       choice: {
+        fires: "Wird ausgelöst",
         motionOn: "Bewegung erkannt",
         motionOff: "Keine Bewegung mehr",
         opens: "Wird geöffnet",
@@ -128,6 +129,9 @@ export default {
         isBelow: "Liegt unter …",
       },
       why: {
+        self: "Ein Eintrag kann nicht in sich selbst, das würde sich endlos wiederholen.",
+        noCondition:
+          "Hat keinen Zustand, den man prüfen könnte, nur wann es zuletzt ausgelöst wurde.",
         sensor: "Ein Sensor meldet nur, steuern lässt er sich nicht.",
         measure: "Ein Messwert lässt sich nicht steuern.",
         noAction: "Für diese Art von Entität kennt der Editor noch keine Aktion.",

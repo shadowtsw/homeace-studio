@@ -19,6 +19,8 @@ import { choiceText } from "./useFlowEntityDrop";
 type EntityMenuOptions = {
   /** The open automation or script as shown; null when another kind of entry is open. */
   displayFlow: Ref<DisplayFlow | null>;
+  /** The open automation or script; it is no target for itself. */
+  flowId: Ref<string | null>;
   flowKind: Ref<FlowKind | null>;
   isFlowEditable: Ref<boolean>;
   isSceneOpen: Ref<boolean>;
@@ -44,7 +46,7 @@ const FOLDER_ID = "__folder";
  * the way on a phone, where nothing can be dragged next to the flow.
  */
 export function useEntityMenu(options: EntityMenuOptions) {
-  const { displayFlow, flowKind, isFlowEditable, isSceneOpen, catalog } = options;
+  const { displayFlow, flowId, flowKind, isFlowEditable, isSceneOpen, catalog } = options;
   const { applyChange, showDetail, startMoveEntity } = options;
   const { t } = useI18n();
   const menu = ref<OpenMenu | null>(null);
@@ -111,7 +113,10 @@ export function useEntityMenu(options: EntityMenuOptions) {
     root: BlockSection,
     targets: DropTarget[],
   ): QuickMenuItem[] {
-    const fit = entityFit(entity, root, catalog.value);
+    const fit =
+      entity.entityId === flowId.value
+        ? { reason: "self" }
+        : entityFit(entity, root, catalog.value);
     if ("reason" in fit) {
       const why = t(`flow.drop.why.${fit.reason}`);
       return [

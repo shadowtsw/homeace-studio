@@ -114,6 +114,44 @@ describe("entity blocks", () => {
     expect(entityFit(entity("weather.home"), "action", catalog)).toEqual({ reason: "noAction" });
   });
 
+  it("treats helpers like devices: a switch turns on, a number has a limit", () => {
+    const guests = entity("input_boolean.gaeste");
+    const target = entity("input_number.soll", { state: "21.5" });
+
+    expect(labels(entityFit(guests, "trigger", catalog))).toEqual([
+      { key: "turnsOn" },
+      { key: "turnsOff" },
+    ]);
+    expect("choices" in entityFit(target, "condition", catalog)).toBe(true);
+    expect(labels(entityFit(target, "condition", catalog))).toEqual([
+      { key: "isAbove" },
+      { key: "isBelow" },
+    ]);
+  });
+
+  it("lets a scene or a button fire, but has nothing to check", () => {
+    const scene = entity("scene.abend", { state: "2026-11-25T20:00:00+00:00" });
+    const fit = entityFit(scene, "trigger", catalog);
+
+    expect(labels(fit)).toEqual([{ key: "fires" }]);
+    expect("choices" in fit && fit.choices[0]?.item).toEqual({
+      trigger: "state",
+      entity_id: "scene.abend",
+    });
+    expect(entityFit(scene, "condition", catalog)).toEqual({ reason: "noCondition" });
+  });
+
+  it("offers automations only the actions HA describes", () => {
+    const withAutomation = {
+      ...catalog,
+      actions: { ...catalog.actions, "automation.trigger": { name: "Ausführen", fields: {} } },
+    } as unknown as EditorCatalog;
+
+    expect(labels(entityFit(entity("automation.licht"), "action", withAutomation))).toEqual([
+      { text: "Ausführen" },
+    ]);
+  });
+
   it("knows what a scene can hold", () => {
     expect(sceneMisfit(entity("light.flur"))).toBeNull();
     expect(sceneMisfit(entity("binary_sensor.flur"))).toBe("sceneSensor");

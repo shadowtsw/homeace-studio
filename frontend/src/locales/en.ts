@@ -101,6 +101,7 @@ const en: MessageSchema = {
   flow: {
     drop: {
       choice: {
+        fires: "Fires",
         motionOn: "Motion detected",
         motionOff: "Motion cleared",
         opens: "Opens",
@@ -126,6 +127,8 @@ const en: MessageSchema = {
         isBelow: "Is below …",
       },
       why: {
+        self: "An entry cannot go into itself; it would repeat endlessly.",
+        noCondition: "Has no state to check, only when it last fired.",
         sensor: "A sensor only reports; it cannot be controlled.",
         measure: "A measured value cannot be controlled.",
         noAction: "The editor knows no action for this kind of entity yet.",
