@@ -17,6 +17,14 @@ git-ignored.
   `src/i18n/pluralRules.ts`).
 - Commits: Conventional Commits (`feat(frontend): …`).
 
+## HA releases first
+
+Whatever the task, start every session by looking at the "Check log" in
+[docs/ha-compatibility.md](docs/ha-compatibility.md). If a Home Assistant beta or release is out
+without a line there (beta: last Wednesday of the month, release: first Wednesday), a line still says
+"not tested yet", or a HomeAce release is planned on an untested HA version, tell the maintainer in one
+or two lines before anything else and offer the check ([docs/recipes.md](docs/recipes.md#ha-release-check)).
+
 ## Wiki
 
 Read the page for the area you touch before researching the code. Update it in the same change when
