@@ -1,0 +1,77 @@
+# Page layout
+
+The app is one page with three columns: **Navigation** (left), **List** (middle) and **Detail** (right).
+The code calls them `nav`, `list` and `detail`. Each column has its own page:
+[navigation.md](navigation.md), [list.md](list.md), [detail.md](detail.md).
+
+## Where what lives
+
+| What | File |
+| --- | --- |
+| The page: loads data, wires the three columns, handles their events | `views/StudioView.vue` |
+| Everything the page derives (tree, filtered entries, counts, area nav, open entry) | `composables/useStudioData.ts` |
+| What the user is looking at: tree selection, scope tab, search, open entry, ticked rows, inline rename | `stores/studioStore.ts` |
+| Per-browser UI settings: technical details, pane widths, language, nav mode, detail folded | `stores/settingsStore.ts` (localStorage keys `homeace.*`) |
+| Top bar (connection status, live dot, gear menu, What's new) | `components/layout/AppTopBar.vue`, `SettingsMenu.vue`, `WhatsNewMenu.vue` |
+| Splitters between the columns | `components/layout/PaneSplitter.vue`, limits in `constants/layout.ts` |
+| Every dialog and the toasts of the page | `components/layout/StudioDialogs.vue`, `components/common/ToastHost.vue` |
+| Actions with toasts and error texts | `composables/useCategoryActions.ts` (move, rename, order), `useCreateActions.ts` (folders, helpers, flows), `useEntryActions.ts` (entry actions), `useAreaActions.ts` |
+
+## Grid and splitters
+
+- `.studio-view__panes` is a CSS grid `nav | splitter | list | splitter | detail`. The splitters have zero
+  width and a wider, invisible grab area.
+- The widths are CSS variables `--w-nav` and `--w-list` from `settings.paneWidths`. `min()` keeps at least
+  380 px for the detail, whatever width the list was dragged to.
+- `PaneSplitter` supports dragging, arrow keys (`SPLITTER_KEYBOARD_STEP` 16 px) and double-click to reset
+  (`settings.resetPaneWidth`). `PANE_WIDTH_LIMITS`: nav 200–440, list 300–700 px.
+- **Folding the detail:** the round button on the list splitter toggles `settings.isDetailFolded`. The list
+  then takes the whole width and the button gets a 28 px rail of its own (`--fold-rail`). Opening an entry
+  unfolds the detail again (`selectEntry` in StudioView).
+
+## Responsive states
+
+| Width | Navigation | Detail |
+| --- | --- | --- |
+| > 1180 px | column | column |
+| ≤ 1180 px | drawer (`isNavOpen`, scrim closes it; the ☰ button in the list opens it) | column |
+| ≤ 820 px | drawer | full-screen layer sliding in (`isDetailOpen`, "back" in the header closes it) |
+
+`isNavOpen` and `isDetailOpen` only matter on narrow screens. CSS decides whether they have any effect.
+Choosing a tree node always sets `isNavOpen = false`, and opening an entry always sets `isDetailOpen = true`.
+
+## Data flow of the page
+
+1. `onMounted`: `entriesStore.load()`, `foldersStore.load()`, `lookups.load()` (areas, labels),
+   `ai.loadPlans()`.
+2. Every new `entriesStore.entries` (after moves, renames or live updates) triggers a quiet reload of the
+   cleanup proposals, check-up, dependencies, run history and entry areas (the `watch` at the end of
+   StudioView).
+3. Opening an automation or script loads its flow (`editorStore.loadFlow`). Other kinds clear it. The
+   block catalog is loaded per UI language.
+4. Live updates: see [../features/live-updates.md](../features/live-updates.md).
+
+## Top bar and "What's new"
+
+- `AppTopBar`: connection status (`loading` / `connected` / `failed` from `entriesStore`), live dot
+  (`isLive`), entry count, gear menu (`SettingsMenu`: technical details, language, AI access, tidy-up
+  assistant, What's new, reset pane widths).
+- `WhatsNewMenu`: after an update, a gift with a dot next to the gear and a popover with the highlights.
+  "Zeigen" leads to the feature (`utils/flash.ts` lets it light up), and only "OK" confirms.
+  `constants/whatsNew.ts` holds the highlights per release in every language. `utils/whatsNew.ts` has the
+  logic (unseen releases, test builds without a version show the newest). `stores/whatsNewStore` keeps
+  the confirmed version (`homeace.seenVersion`). `utils/earlierVisit.ts` tells a fresh install from an
+  earlier user. It is captured in `main.ts` before any store writes its defaults.
+
+## Keyboard
+
+- `↑` / `↓` walk through the open list rows and open each entry (`EntryList`, not inside inputs or dialogs).
+- `F2` renames the open entry, in its list row when that row is visible, otherwise in the detail title
+  (StudioView).
+
+## Rules
+
+- Entries with unsaved flow edits make the browser ask before closing the tab (`beforeunload` in StudioView).
+- Detail handlers run only while an entry is open. They are wrapped in `onSelected(...)`.
+- Technical details (entity IDs, domains, API keys) are hidden unless `settings.isTechnicalDetailsVisible`
+  is on. Pass the flag down; don't read the store in leaf components.

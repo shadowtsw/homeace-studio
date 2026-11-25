@@ -19,12 +19,18 @@ git-ignored.
 
 ## Wiki
 
-Read before researching the code; update when something changes.
+Read the page for the area you touch before researching the code. Update it in the same change when
+something there changes. The code wins when they disagree. Pages list where what lives, the call chain,
+rules and pitfalls, and recipes.
 
-- [docs/architecture.md](docs/architecture.md): structure, HA APIs used, data flow
-- [docs/api.md](docs/api.md): backend endpoints
-- [docs/setup.md](docs/setup.md): local dev, POC scripts, add-on install
-- [docs/decisions.md](docs/decisions.md): decision log
+- [docs/architecture.md](docs/architecture.md): parts, module map, HA APIs, and a table "which page to read"
+- [docs/api.md](docs/api.md): backend endpoints · [docs/setup.md](docs/setup.md): local dev, demo,
+  releases, add-on · [docs/decisions.md](docs/decisions.md): decision log
+- [docs/recipes.md](docs/recipes.md): new endpoint, HA command (+ demo), overlay field, component
+- Columns (Navigation · List · Detail): [docs/ui/layout.md](docs/ui/layout.md),
+  [navigation.md](docs/ui/navigation.md), [list.md](docs/ui/list.md), [detail.md](docs/ui/detail.md)
+- Features in [docs/features/](docs/features/): flow-editor, scenes, helpers, folders, areas, checkup,
+  dependencies, run-history, entry-actions, live-updates, ai-mcp, i18n
 
 ## Commands
 
