@@ -21,6 +21,7 @@ function entity(entityId: string, extra: Partial<EntityOption> = {}): EntityOpti
     domain: entityId.split(".")[0] ?? "",
     state: "on",
     unit: null,
+    deviceClass: null,
     options: null,
     deviceId: null,
     deviceName: null,

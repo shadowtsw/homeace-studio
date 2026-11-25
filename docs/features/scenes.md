@@ -13,6 +13,7 @@ afterwards.
 | "+ Gerät hinzufügen": picker placed within the window, `SCENE_DOMAINS` | `frontend/src/components/scenes/SceneDevicePicker.vue` |
 | "Vorschau", "Ausprobieren", live edits, restore on leaving and `pagehide` | `frontend/src/composables/useScenePreview.ts` |
 | Automatic saving and "Alles rückgängig" | `frontend/src/composables/useSceneAutoSave.ts` |
+| Dropping a plain entity from the list onto the devices | `frontend/src/composables/useSceneEntityDrop.ts`, what fits: `sceneMisfit` in `utils/flow/entityBlocks.ts` |
 | Controls of one device (on/off, brightness, white tone, color, position, temperature, …) | `frontend/src/components/scenes/SceneDeviceRow.vue` |
 | HA attributes ↔ controls, light capabilities, presets, "extras" the editor cannot show | `frontend/src/utils/sceneValues.ts` (`readControls`, `writeControls`, `lightCaps`, `extrasOf`) |
 | API calls, `sendBeacon` restore | `frontend/src/services/scenesService.ts` |
@@ -53,6 +54,9 @@ Alles rückgängig → PUT :id { the state before the first automatic save }
   übernehmen" takes everything the device has right now.
 - Devices offered for adding: `light`, `switch`, `cover`, `climate`, `fan`, `media_player`
   (`SCENE_DOMAINS`). Others may already be in a scene and stay as they are.
+- **Dropping an entity from the list** onto the device list adds it like "+ Gerät hinzufügen" (current
+  state, nothing switches). One already in the scene flashes instead; sensors and measured values say
+  why they cannot. Same kinds as above.
 - Edits are kept per entry in `draftsStore` (`keepScene`, with the devices added in the editor), so they
   survive switching tabs and entries, show the dot in the list, and the browser asks before closing.
 - **Automatic saving** ("Szenen automatisch speichern" in the gear menu, `settings.isSceneAutoSave`, off

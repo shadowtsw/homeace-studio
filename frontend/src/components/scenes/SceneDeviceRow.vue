@@ -1,5 +1,9 @@
 <template>
-  <div class="scene-row" :class="{ 'scene-row--trying': isTrying }">
+  <div
+    class="scene-row"
+    :class="{ 'scene-row--trying': isTrying }"
+    :data-scene-device="device.entityId"
+  >
     <div class="scene-row__head">
       <span class="scene-row__icon mdi" :class="icon" />
       <div class="scene-row__name">

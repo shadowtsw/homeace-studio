@@ -18,6 +18,8 @@ export type FlowEditing = {
   openBlockMenu: (block: DisplayBlock, anchor: HTMLElement) => void;
   /** Opens the list of block types to add to a list. */
   openTypePicker: (target: AddTarget, anchor: HTMLElement) => void;
+  /** The list a dragged entity would land in (`data-drop-key`); null while nothing drags. */
+  dropHoverKey: Ref<string | null>;
 };
 
 export const FLOW_EDITING: InjectionKey<FlowEditing> = Symbol("flowEditing");

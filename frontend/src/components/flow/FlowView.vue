@@ -1,5 +1,11 @@
 <template>
-  <div class="flow-view">
+  <!-- Plain entities from the list can be dropped on the sections and their branches. -->
+  <div
+    class="flow-view"
+    @dragover="entityDrop.onDragOver"
+    @dragleave="entityDrop.onDragLeave"
+    @drop="entityDrop.onDrop"
+  >
     <p v-if="isLoading" class="flow-view__state">{{ t("flow.loading") }}</p>
     <p v-else-if="hasError" class="flow-view__state flow-view__state--error">
       {{ t("flow.failed") }}
@@ -33,13 +39,32 @@
         v-for="section in sections"
         :key="section.key"
         class="flow-view__section"
-        :class="`flow-view__section--${section.key}`"
+        :class="[
+          `flow-view__section--${section.key}`,
+          dropSigns[section.key]
+            ? `flow-view__section--drop-${dropSigns[section.key]?.isOk ? 'ok' : 'no'}`
+            : '',
+        ]"
       >
         <div class="flow-view__head">
           <span class="flow-view__keyword">{{ section.title }}</span>
           <small>{{ section.hint }}</small>
+          <span
+            v-if="dropSigns[section.key]"
+            class="flow-view__drop-sign"
+            :class="{ 'flow-view__drop-sign--no': !dropSigns[section.key]?.isOk }"
+          >
+            <span
+              class="mdi"
+              :class="dropSigns[section.key]?.isOk ? 'mdi-plus-circle-outline' : 'mdi-cancel'"
+            />{{ dropSigns[section.key]?.text }}
+          </span>
         </div>
-        <div class="flow-view__blocks">
+        <div
+          class="flow-view__blocks"
+          :class="{ 'flow-view__blocks--drop': entityDrop.hoverKey.value === dropKey(section.add) }"
+          :data-drop-key="dropKey(section.add)"
+        >
           <FlowBlock
             v-for="block in section.blocks"
             :key="block.id"
@@ -72,6 +97,7 @@
 import { computed, provide, ref, toRef, watch } from "vue";
 import { useI18n } from "vue-i18n";
 
+import { useFlowEntityDrop } from "@/composables/useFlowEntityDrop";
 import { useFlowTexts } from "@/composables/useFlowTexts";
 import {
   FLOW_MODES,
@@ -86,6 +112,7 @@ import {
   type FlowKind,
 } from "@/types/editor";
 import { blockTypes, newBlock } from "@/utils/flow/blockTypes";
+import { dropKey } from "@/utils/flow/dropTargets";
 import { entityIdsInFlow } from "@/utils/flow/entityIdsInFlow";
 import type { BlockRunState } from "@/utils/runStates";
 
@@ -295,6 +322,14 @@ function onApply(value: unknown): void {
   closeAndEmit({ type: "set", path: current.edit.path, value });
 }
 
+const entityDrop = useFlowEntityDrop({
+  flow: toRef(props, "flow"),
+  isEditable: toRef(props, "isEditable"),
+  catalog: toRef(props, "catalog"),
+  openMenu,
+  emitChange: (change) => emit("change", change),
+});
+
 provide(
   FLOW_RUN_STATES,
   computed(() => props.runStates ?? null),
@@ -305,12 +340,20 @@ provide(FLOW_EDITING, {
   openAddMenu,
   openBlockMenu,
   openTypePicker,
+  dropHoverKey: entityDrop.hoverKey,
 });
 
 // Another entry is open: the editor would point at the old one.
 watch(
   () => props.entityId,
   () => (openEdit.value = null),
+);
+
+/** The sign of each section while an entity is dragged; none otherwise. */
+const dropSigns = computed(() =>
+  Object.fromEntries(
+    sections.value.map((section) => [section.key, entityDrop.signFor(section.add.section)]),
+  ),
 );
 
 const sections = computed((): Section[] => {
@@ -438,6 +481,48 @@ const sections = computed((): Section[] => {
 .flow-view__section--if {
   --section-color: var(--kind-helper);
   --section-soft: var(--kind-helper-soft);
+}
+
+/* While an entity is dragged: fitting sections light up, the others step back. */
+.flow-view__section--drop-ok > .flow-view__blocks {
+  outline: 2px dashed var(--section-color);
+  outline-offset: 6px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--section-soft) 60%, transparent);
+}
+
+.flow-view__section--drop-ok > .flow-view__blocks--drop {
+  outline-style: solid;
+  background: var(--section-soft);
+}
+
+.flow-view__section--drop-no > .flow-view__blocks {
+  opacity: 0.35;
+}
+
+/* The sign floats: showing or removing it never moves the blocks under the pointer. */
+.flow-view__drop-sign {
+  position: absolute;
+  top: -3px;
+  right: 0;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  max-width: calc(100% - 150px);
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--section-color);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.flow-view__drop-sign--no {
+  background: var(--sunken);
+  color: var(--muted);
+  font-weight: 500;
 }
 
 /* The spine on the left that ties the sections together. */

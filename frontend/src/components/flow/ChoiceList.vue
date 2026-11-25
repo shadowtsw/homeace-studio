@@ -23,7 +23,9 @@
         <span v-if="option.icon" class="mdi choice-list__icon" :class="option.icon" />
         <span class="choice-list__main">
           <span>{{ option.label }}</span>
-          <small v-if="option.sub">{{ option.sub }}</small>
+          <small v-if="option.sub" :class="{ 'choice-list__sub--plain': option.isSubPlain }">{{
+            option.sub
+          }}</small>
         </span>
         <span v-if="selected.includes(option.value)" class="mdi mdi-check choice-list__check" />
       </button>
@@ -139,6 +141,10 @@ onMounted(() => searchInput.value?.focus({ preventScroll: true }));
 .choice-list__main small {
   color: var(--faint);
   font: 11px var(--font-mono);
+}
+
+.choice-list__main small.choice-list__sub--plain {
+  font: 12px var(--font-body);
 }
 
 .choice-list__empty {

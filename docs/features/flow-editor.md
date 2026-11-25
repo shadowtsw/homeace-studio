@@ -28,6 +28,10 @@ saves the whole config back to HA. No YAML in the UI.
 | State suggestions for "to" / "state" fields | `utils/flow/stateSuggestions.ts` |
 | Texts the converter needs | `composables/useFlowTexts.ts` (`flow.titles`, `flow.labels`, `flow.choices` in the locales) |
 | Catalog, flow, drafts, save | `stores/editorStore.ts`, `services/editorService.ts`, `services/flowsService.ts` |
+| Dropping a plain entity from the list: signs, innermost list, "Wohin genau?", choices | `composables/useFlowEntityDrop.ts` (wired in `FlowView`), drag state in `composables/usePlainEntityDrag.ts` |
+| Every list an entity can go into (sections, branches) | `utils/flow/dropTargets.ts` (`dropTargets`, `branchesOf`, `nextBlockId`) |
+| Entity + section → choices and the new block ("Bewegung erkannt", HA's "Einschalten") | `utils/flow/entityBlocks.ts` (`entityFit`) |
+| Clicking an entity in the list (the way on a phone) | `composables/useEntityMenu.ts`, `components/common/QuickMenu.vue` |
 | Types (mirror the backend) | `types/editor.ts` |
 
 **Backend** (`backend/src/editor/`)
@@ -111,6 +115,30 @@ list (`onApplyArea`). Suggestions: entities the flow already uses, then the entr
   render it in `ChipEditorPopover.vue`, and convert input in `editValue.ts`.
 - **Block menu action:** `BLOCK_ACTION` + `blockChange` in `FlowView.vue`, a new `FlowChange` type in
   `types/editor.ts`, and its handling in `applyFlowChange`.
+
+## Dropping entities from the list
+
+With the filter "Entitäten" on, plain entities can be dragged from the list onto the flow
+(`EntityListRow` → `usePlainEntityDrag`; browsers hide the drag data until the drop, so the targets read
+the dragged entity there).
+
+- **Targets:** every section and every branch list of the same kind (`dropTargets`). The innermost list
+  under the pointer wins (`closest("[data-drop-key]")`: sections set it on `.flow-view__blocks`,
+  `FlowBlock` on its branches). A Wenn block's own conditions are no target (that would be replacing).
+- **Signs:** while dragging, each section shows what a drop does ("Loslassen: neue Aktion") or why it
+  cannot ("Ein Messwert lässt sich nicht steuern."). The signs float (absolute), so nothing moves under
+  the pointer. A branch says which one it is with its condition ("· Lawn moisture unter 20"), because
+  "Dann" of a Wenn block reads like the section "Dann".
+- **Unclear drop:** onto a section that has branches, but not into one → "Wohin genau?" lists the
+  section's end and every branch; then the choices.
+- **Choices** (`entityFit`): triggers and conditions from the entity's states (device class tells a
+  motion sensor from a door contact; passing states like "opening" are left out); a measured value
+  offers "Steigt über / Fällt unter …" with its current value as the limit, so the block is valid at
+  once. Actions only those HA describes (catalog), named by HA, with HA's defaults and `target.entity_id`.
+  Sensors say why they cannot be told anything. One choice goes in at once.
+- **The new block** goes to the end of its list (`insert`) and flashes (`data-block-id`, `nextBlockId`).
+- **Click / tap:** the list's entity menu (`useEntityMenu`) offers the same targets and choices without
+  dragging, plus "In einen Ordner verschieben …".
 
 ## Related
 

@@ -4,7 +4,7 @@ const DOMAIN_SEPARATOR = ".";
 const ON_OFF = ["on", "off"];
 
 /** The usual states per domain, as HA stores them (not translated). */
-const DOMAIN_STATES: Record<string, string[]> = {
+export const DOMAIN_STATES: Record<string, string[]> = {
   automation: ON_OFF,
   binary_sensor: ON_OFF,
   fan: ON_OFF,
@@ -29,6 +29,7 @@ const DOMAIN_STATES: Record<string, string[]> = {
   person: ["home", "not_home"],
   sun: ["above_horizon", "below_horizon"],
   timer: ["idle", "active", "paused"],
+  valve: ["open", "closed", "opening", "closing"],
   vacuum: ["cleaning", "docked", "idle", "paused", "returning", "error"],
 };
 

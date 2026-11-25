@@ -231,7 +231,12 @@ function inEntityFolder(entity: DemoEntity): DemoEntity {
 }
 
 const DEVICES: DemoEntity[] = [
-  sensor("binary_sensor.terrace_motion", "Terrace motion", "off", undefined, MOTION),
+  withAttributes(
+    sensor("binary_sensor.terrace_motion", "Terrace motion", "off", undefined, MOTION),
+    {
+      device_class: "motion",
+    },
+  ),
   sensor("sensor.terrace_motion_battery", "Terrace motion sensor Battery", "78", "%", MOTION),
   sensor(
     "sensor.terrace_motion_temperature",
@@ -240,9 +245,13 @@ const DEVICES: DemoEntity[] = [
     "°C",
     MOTION,
   ),
-  sensor("binary_sensor.front_door", "Front door", "off", undefined, DOOR),
+  withAttributes(sensor("binary_sensor.front_door", "Front door", "off", undefined, DOOR), {
+    device_class: "door",
+  }),
   sensor("sensor.front_door_battery", "Front door sensor Battery", "91", "%", DOOR),
-  sensor("binary_sensor.anyone_home", "Anyone home", "on"),
+  withAttributes(sensor("binary_sensor.anyone_home", "Anyone home", "on"), {
+    device_class: "occupancy",
+  }),
   withAttributes(
     sensor("light.terrace", "Terrace light", "off", undefined, {
       device: "Terrace light",

@@ -46,6 +46,8 @@ export type HaState = {
     icon?: string;
     options?: unknown;
     unit_of_measurement?: string;
+    /** "motion", "door", "temperature" …; set by the integration. */
+    device_class?: string;
     /** Automations and scripts: when they last ran; null when never. */
     last_triggered?: string | null;
     /** Scenes and groups: their member entities. */

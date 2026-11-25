@@ -1,6 +1,7 @@
 <template>
   <div
     class="flow-block"
+    :data-block-id="block.id"
     :class="[
       {
         'flow-block--disabled': block.isDisabled,
@@ -70,7 +71,16 @@
       rawText
     }}</pre>
 
-    <div v-for="(branch, index) in block.branches" :key="index" class="flow-block__branch">
+    <div
+      v-for="(branch, index) in block.branches"
+      :key="index"
+      class="flow-block__branch"
+      :class="{
+        'flow-block__branch--drop':
+          branchDropKey(branch) !== null && editing?.dropHoverKey.value === branchDropKey(branch),
+      }"
+      :data-drop-key="branchDropKey(branch) ?? undefined"
+    >
       <div v-if="branch.label" class="flow-block__branch-label">{{ branch.label }}</div>
       <FlowBlock
         v-for="child in branch.blocks"
@@ -97,12 +107,23 @@ import { computed, inject } from "vue";
 import { useI18n } from "vue-i18n";
 
 import { RUN_STATUS_ICON, runStatusTone, useRunTexts } from "@/composables/useRunTexts";
-import type { BlockChip, DisplayBlock } from "@/types/editor";
+import type { BlockChip, DisplayBlock, DisplayBranch } from "@/types/editor";
+import { dropKey } from "@/utils/flow/dropTargets";
 
 import AddBlockButton from "./AddBlockButton.vue";
 import { FLOW_EDITING, FLOW_RUN_STATES } from "./flowEditing";
 
 const JSON_INDENT = 2;
+
+/**
+ * A branch takes a dropped entity into its list of the block's own kind ("dann" / "sonst" of a
+ * Wenn in "Dann"); a Wenn's own conditions are no target (that would be replacing).
+ */
+function branchDropKey(branch: DisplayBranch): string | null {
+  const target = branch.add.find((item) => item.section === props.block.section);
+
+  return target ? dropKey(target) : null;
+}
 
 const props = defineProps<{
   block: DisplayBlock;
@@ -394,6 +415,13 @@ button.flow-block__chip {
   border-radius: 8px;
   background: var(--sunken);
   font: 12px/1.45 var(--font-mono);
+}
+
+.flow-block__branch--drop {
+  border-radius: 10px;
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  background: var(--accent-soft);
 }
 
 .flow-block__branch {

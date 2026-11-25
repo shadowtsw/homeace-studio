@@ -13,6 +13,7 @@ function entity(overrides: Partial<EntityOption>): EntityOption {
     domain: "light",
     state: "off",
     unit: null,
+    deviceClass: null,
     options: null,
     deviceId: null,
     deviceName: null,

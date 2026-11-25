@@ -8,6 +8,7 @@
     draggable="true"
     :title="entity.isInRegistry ? t('entityRow.hint') : t('entityRow.hintNoFolder')"
     @dragstart="startDrag"
+    @dragend="drag.end()"
     @click="open"
     @keydown.enter.prevent="open"
     @keydown.space.prevent="open"
@@ -33,6 +34,7 @@ import { useI18n } from "vue-i18n";
 
 import { DOMAIN_ICON, FALLBACK_DOMAIN_ICON } from "@/constants/domainIcons";
 import type { EntityOption } from "@/types/editor";
+import { usePlainEntityDrag } from "@/composables/usePlainEntityDrag";
 import { setDraggedPlainEntity } from "@/utils/dragDrop";
 
 const props = defineProps<{
@@ -48,6 +50,7 @@ const emit = defineEmits<{
 }>();
 
 const { t } = useI18n();
+const drag = usePlainEntityDrag();
 
 const subtitle = computed(() =>
   [props.entity.deviceName, props.isAreaShown ? props.entity.areaName : null]
@@ -63,7 +66,11 @@ function open(event: Event): void {
 }
 
 function startDrag(event: DragEvent): void {
-  if (event.dataTransfer) setDraggedPlainEntity(event.dataTransfer, props.entity.entityId);
+  if (!event.dataTransfer) return;
+
+  setDraggedPlainEntity(event.dataTransfer, props.entity.entityId);
+  // Drop targets read it here: browsers hide the drag data until the drop
+  drag.start(props.entity);
 }
 </script>
 

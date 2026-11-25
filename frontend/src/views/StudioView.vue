@@ -191,6 +191,14 @@
 
     <div class="studio-view__scrim" @click="isNavOpen = false" />
 
+    <QuickMenu
+      v-if="entityMenu.menu.value"
+      :anchor="entityMenu.menu.value.anchor"
+      :title="entityMenu.menu.value.title"
+      :items="entityMenu.menu.value.items"
+      @pick="entityMenu.pick"
+      @close="entityMenu.close"
+    />
     <StudioDialogs
       :all-paths="data.allCategoryPaths.value"
       :current-folder="data.currentFolder.value"
@@ -214,6 +222,7 @@ import { useI18n } from "vue-i18n";
 
 import CategoryTree from "@/components/categories/CategoryTree.vue";
 import CheckupList from "@/components/checkup/CheckupList.vue";
+import QuickMenu from "@/components/common/QuickMenu.vue";
 import AiPlanHint from "@/components/ai/AiPlanHint.vue";
 import AreaNav from "@/components/areas/AreaNav.vue";
 import CleanupHint from "@/components/cleanup/CleanupHint.vue";
@@ -223,6 +232,7 @@ import AppTopBar, { type ConnectionStatus } from "@/components/layout/AppTopBar.
 import PaneSplitter from "@/components/layout/PaneSplitter.vue";
 import { useAreaActions } from "@/composables/useAreaActions";
 import { useCategoryActions } from "@/composables/useCategoryActions";
+import { useEntityMenu } from "@/composables/useEntityMenu";
 import { useCreateActions } from "@/composables/useCreateActions";
 import { useEntryActions } from "@/composables/useEntryActions";
 import { useFlowTexts } from "@/composables/useFlowTexts";
@@ -490,10 +500,25 @@ async function ignoreFinding(key: string): Promise<void> {
 }
 
 /** Dropping a ticked row moves every ticked row; any other row moves alone. */
-/** A plain entity was clicked: for now its folder; step 3 adds flow and scene targets. */
-function openEntity(entity: EntityOption): void {
-  if (entity.isInRegistry) actions.startMoveEntity(entity);
-  else toasts.show(t("entityRow.hintNoFolder"));
+/** A plain entity was clicked (or tapped): where it can go in the open flow, and its folder. */
+const entityMenu = useEntityMenu({
+  displayFlow,
+  flowKind: computed(() => editorStore.flow?.kind ?? null),
+  isFlowEditable: computed(
+    () => editorStore.flow?.isEditable === true && displayFlow.value !== null,
+  ),
+  isSceneOpen: computed(() => data.selectedEntry.value?.kind === "scene"),
+  catalog: computed(() => editorStore.catalogs[settings.locale] ?? null),
+  applyChange: (change) => editorStore.applyChange(change),
+  showDetail: () => {
+    isDetailOpen.value = true;
+    settings.isDetailFolded = false;
+  },
+  startMoveEntity: (entity) => actions.startMoveEntity(entity),
+});
+
+function openEntity(entity: EntityOption, anchor: HTMLElement): void {
+  entityMenu.open(entity, anchor);
 }
 
 function dropEntry(path: string | null, entityId: string): void {

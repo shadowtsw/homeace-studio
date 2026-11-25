@@ -1,0 +1,123 @@
+import { describe, expect, it } from "vitest";
+
+import type { EditorCatalog, EntityOption } from "@/types/editor";
+
+import { entityFit, sceneMisfit } from "../flow/entityBlocks";
+
+function entity(entityId: string, overrides: Partial<EntityOption> = {}): EntityOption {
+  return {
+    entityId,
+    name: entityId,
+    shortName: entityId,
+    domain: entityId.split(".")[0] ?? "",
+    state: "off",
+    unit: null,
+    deviceClass: null,
+    options: null,
+    deviceId: null,
+    deviceName: null,
+    areaId: null,
+    areaName: null,
+    labels: [],
+    categoryPath: null,
+    isInRegistry: true,
+    ...overrides,
+  };
+}
+
+const catalog: EditorCatalog = {
+  triggers: {},
+  conditions: {},
+  actions: {
+    "light.turn_on": { name: "Einschalten", fields: {} },
+    "light.turn_off": { name: "Ausschalten", fields: {} },
+    "climate.set_temperature": {
+      name: "Zieltemperatur einstellen",
+      fields: { hvac_mode: { required: true, default: "heat" } },
+    },
+  },
+} as unknown as EditorCatalog;
+
+const labels = (fit: ReturnType<typeof entityFit>) =>
+  "choices" in fit ? fit.choices.map((choice) => choice.label) : fit;
+
+describe("entity blocks", () => {
+  it("offers a motion sensor on 'Wenn' as detected / no motion, with HA's states", () => {
+    const motion = entity("binary_sensor.flur", { deviceClass: "motion" });
+    const fit = entityFit(motion, "trigger", catalog);
+
+    expect(labels(fit)).toEqual([{ key: "motionOn" }, { key: "motionOff" }]);
+    expect("choices" in fit && fit.choices[0]?.item).toEqual({
+      trigger: "state",
+      entity_id: "binary_sensor.flur",
+      to: "on",
+    });
+  });
+
+  it("tells a door contact from a motion sensor and leaves out passing states", () => {
+    const door = entity("binary_sensor.tuer", { deviceClass: "door" });
+    const cover = entity("cover.markise");
+
+    expect(labels(entityFit(door, "condition", catalog))).toEqual([
+      { key: "isOpen" },
+      { key: "isClosed" },
+    ]);
+    expect(labels(entityFit(cover, "trigger", catalog))).toEqual([
+      { key: "opens" },
+      { key: "closes" },
+    ]);
+  });
+
+  it("starts a measured value's limit at what it shows now, so the block is valid at once", () => {
+    const wind = entity("sensor.wind", { state: "12", unit: "km/h" });
+    const fit = entityFit(wind, "trigger", catalog);
+
+    expect("choices" in fit && fit.choices.map((choice) => choice.item)).toEqual([
+      { trigger: "numeric_state", entity_id: "sensor.wind", above: 12 },
+      { trigger: "numeric_state", entity_id: "sensor.wind", below: 12 },
+    ]);
+  });
+
+  it("names unknown states as they are", () => {
+    const select = entity("input_select.modus", { options: ["Tag", "Nacht"], state: "Tag" });
+
+    expect(labels(entityFit(select, "condition", catalog))).toEqual([
+      { key: "isState", params: { state: "Tag" } },
+      { key: "isState", params: { state: "Nacht" } },
+    ]);
+  });
+
+  it("offers only the actions HA describes, named by HA, with the target and HA's defaults", () => {
+    const fit = entityFit(entity("light.flur"), "action", catalog);
+
+    expect(labels(fit)).toEqual([{ text: "Einschalten" }, { text: "Ausschalten" }]);
+    expect("choices" in fit && fit.choices[0]?.item).toEqual({
+      action: "light.turn_on",
+      target: { entity_id: "light.flur" },
+    });
+
+    const heating = entityFit(entity("climate.bad"), "action", catalog);
+    expect("choices" in heating && heating.choices[0]?.item).toEqual({
+      action: "climate.set_temperature",
+      data: { hvac_mode: "heat" },
+      target: { entity_id: "climate.bad" },
+    });
+  });
+
+  it("says why sensors cannot be told to do anything", () => {
+    expect(entityFit(entity("binary_sensor.flur"), "action", catalog)).toEqual({
+      reason: "sensor",
+    });
+    expect(entityFit(entity("sensor.wind", { state: "3" }), "action", catalog)).toEqual({
+      reason: "measure",
+    });
+    expect(entityFit(entity("weather.home"), "action", catalog)).toEqual({ reason: "noAction" });
+  });
+
+  it("knows what a scene can hold", () => {
+    expect(sceneMisfit(entity("light.flur"))).toBeNull();
+    expect(sceneMisfit(entity("binary_sensor.flur"))).toBe("sceneSensor");
+    expect(sceneMisfit(entity("sensor.wind"))).toBe("sceneMeasure");
+    expect(sceneMisfit(entity("weather.home"))).toBe("sceneOther");
+  });
+});

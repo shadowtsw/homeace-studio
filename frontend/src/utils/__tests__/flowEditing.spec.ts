@@ -226,6 +226,7 @@ describe("turning input into config values", () => {
   it("suggests states from options, the domain and the current state", () => {
     const extra = {
       unit: null,
+      deviceClass: null,
       deviceId: null,
       deviceName: null,
       areaId: null,

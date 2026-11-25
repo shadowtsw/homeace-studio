@@ -48,7 +48,10 @@ the list:
 - A row is a `div role="button"`, not a `button`: browsers (Firefox at all) do not start a drag from a
   button. Its drag allows `copyMove` (onto a folder it moves, into a flow it will copy); a browser
   silently refuses a drop whose effect the drag did not allow.
-- Clicking a row opens "in einen Ordner verschieben" (`MoveEntriesDialog` with a title of its own).
+- Clicking a row opens the entity menu (`useEntityMenu`, `QuickMenu`): where it can go in the open
+  flow (sections, branches, or why not), then what it does there; plus "In einen Ordner verschieben …"
+  (`MoveEntriesDialog` with a title of its own). This is the way on a phone. Dragging into flows and
+  scenes: [../features/flow-editor.md](../features/flow-editor.md), [../features/scenes.md](../features/scenes.md).
 - Entities without a registry entry (YAML without `unique_id`) cannot have a folder; they say so.
 
 ## Groups

@@ -42,6 +42,8 @@ export type EntityOption = {
   domain: string;
   state: string;
   unit: string | null;
+  /** HA's device class ("motion", "door" …), or null. */
+  deviceClass: string | null;
   options: string[] | null;
   deviceId: string | null;
   deviceName: string | null;
@@ -65,6 +67,8 @@ export type ChoiceOption = {
   label: string;
   /** Second line, e.g. the technical key. */
   sub?: string;
+  /** The second line is plain text (where a list goes), not a technical key in mono. */
+  isSubPlain?: boolean;
   /** mdi class shown before the label, for menus. */
   icon?: string;
   /** Shown in red, e.g. "Löschen". */

@@ -40,7 +40,28 @@
         </button>
       </div>
 
-      <div class="scene-editor__list">
+      <!-- Plain entities from the list can be dropped here; they join with their current state. -->
+      <div
+        class="scene-editor__list"
+        :class="{
+          'scene-editor__list--drop-ok': entityDrop.sign.value?.isOk,
+          'scene-editor__list--drop-no': entityDrop.sign.value && !entityDrop.sign.value.isOk,
+          'scene-editor__list--drop-over': entityDrop.isDropOver.value,
+        }"
+        @dragover="entityDrop.onDragOver"
+        @dragleave="entityDrop.onDragLeave"
+        @drop="entityDrop.onDrop"
+      >
+        <span
+          v-if="entityDrop.sign.value"
+          class="scene-editor__drop-sign"
+          :class="{ 'scene-editor__drop-sign--no': !entityDrop.sign.value.isOk }"
+        >
+          <span
+            class="mdi"
+            :class="entityDrop.sign.value.isOk ? 'mdi-plus-circle-outline' : 'mdi-cancel'"
+          />{{ entityDrop.sign.value.text }}
+        </span>
         <SceneDeviceRow
           v-for="id in order"
           :key="id"
@@ -91,6 +112,7 @@ import { useI18n } from "vue-i18n";
 import SaveFooter from "@/components/common/SaveFooter.vue";
 import { useSceneAutoSave } from "@/composables/useSceneAutoSave";
 import { useScenePreview } from "@/composables/useScenePreview";
+import { useSceneEntityDrop } from "@/composables/useSceneEntityDrop";
 import {
   fetchScene,
   fetchSceneDevice,
@@ -180,6 +202,13 @@ const autoSave = reactive(
     fail,
   }),
 );
+
+// Dragging an entity from the list onto the device list
+const entityDrop = useSceneEntityDrop({
+  isEditable: computed(() => view.value?.isEditable === true),
+  deviceIds: order,
+  add,
+});
 
 const isFooterShown = computed(() => {
   const isReady = view.value?.isEditable === true && !hasError.value && !isLoading.value;
@@ -397,8 +426,48 @@ onBeforeUnmount(() => {
 }
 
 .scene-editor__list {
+  position: relative;
   display: grid;
   gap: 10px;
+}
+
+/* While an entity is dragged: the list lights up, or steps back with the reason. */
+.scene-editor__list--drop-ok {
+  outline: 2px dashed var(--kind-scene);
+  outline-offset: 6px;
+  border-radius: 12px;
+}
+
+.scene-editor__list--drop-over {
+  outline-style: solid;
+  background: var(--kind-scene-soft);
+}
+
+.scene-editor__list--drop-no > .scene-row {
+  opacity: 0.4;
+}
+
+/* Floats above the list, so the rows never move under the pointer. */
+.scene-editor__drop-sign {
+  position: absolute;
+  top: -34px;
+  right: 0;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--kind-scene);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.scene-editor__drop-sign--no {
+  background: var(--sunken);
+  color: var(--muted);
+  font-weight: 500;
 }
 
 .scene-editor__state {

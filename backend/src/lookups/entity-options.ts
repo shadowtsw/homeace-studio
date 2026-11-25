@@ -19,6 +19,8 @@ export type EntityOption = {
   /** Current state, offered as a suggestion when a block asks for a state. */
   state: string;
   unit: string | null;
+  /** HA's device class ("motion", "door" …); tells a motion sensor from a door contact. */
+  deviceClass: string | null;
   /** The possible states of select-like entities (input_select, select, enum sensors). */
   options: string[] | null;
   deviceId: string | null;
@@ -84,6 +86,8 @@ export function toEntityOptions(sources: EntitySources): EntityOption[] {
       domain: state.entity_id.split(DOMAIN_SEPARATOR)[0] ?? "",
       state: state.state,
       unit: typeof unit === "string" ? unit : null,
+      deviceClass:
+        typeof state.attributes.device_class === "string" ? state.attributes.device_class : null,
       options: stringList(state.attributes.options),
       deviceId: device?.id ?? null,
       deviceName,
