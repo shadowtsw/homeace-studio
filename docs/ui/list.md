@@ -98,3 +98,6 @@ kind, with ignore and restore. It reloads on mount. See [../features/checkup.md]
   `studio.toggleListScope`. Don't keep a copy in the component.
 - Arrow-key navigation is a `window` listener in `EntryList`. It skips inputs and dialogs. New
   keyboard-driven UI has to do the same.
+- Drag sources show the closed hand through a class set on `pointerdown` and cleared on
+  `pointerup`, `dragstart` and `dragend` (see `EntityListRow`), never through `:active`: Chromium
+  keeps `:active` after a drag that is cancelled or dropped back on the row, so the closed hand stays.

@@ -4,11 +4,16 @@
     role="button"
     tabindex="0"
     class="entity-list-row"
+    :class="{ 'entity-list-row--pressed': isPressed }"
     :data-plain-entity-id="entity.entityId"
     draggable="true"
     :title="entity.isInRegistry ? t('entityRow.hint') : t('entityRow.hintNoFolder')"
+    @pointerdown="press"
+    @pointerup="release"
+    @pointercancel="release"
+    @pointerleave="release"
     @dragstart="startDrag"
-    @dragend="drag.end()"
+    @dragend="endDrag"
     @click="open"
     @keydown.enter.prevent="open"
     @keydown.space.prevent="open"
@@ -29,7 +34,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
 
 import { DOMAIN_ICON, FALLBACK_DOMAIN_ICON } from "@/constants/domainIcons";
@@ -51,6 +56,11 @@ const emit = defineEmits<{
 
 const { t } = useI18n();
 const drag = usePlainEntityDrag();
+/**
+ * The closed hand while the mouse button is down. Not `:active`: Chromium keeps that state after a
+ * drag that ends without a drop (or back on the row), so the closed hand would stay.
+ */
+const isPressed = ref(false);
 
 const subtitle = computed(() =>
   [props.entity.deviceName, props.isAreaShown ? props.entity.areaName : null]
@@ -65,12 +75,27 @@ function open(event: Event): void {
   emit("open", props.entity, event.currentTarget as HTMLElement);
 }
 
+function press(event: PointerEvent): void {
+  if (event.pointerType === "mouse" && event.button === 0) isPressed.value = true;
+}
+
+function release(): void {
+  isPressed.value = false;
+}
+
 function startDrag(event: DragEvent): void {
+  // From here the browser shows its own drag cursor
+  release();
   if (!event.dataTransfer) return;
 
   setDraggedPlainEntity(event.dataTransfer, props.entity.entityId);
   // Drop targets read it here: browsers hide the drag data until the drop
   drag.start(props.entity);
+}
+
+function endDrag(): void {
+  release();
+  drag.end();
 }
 </script>
 
@@ -100,7 +125,7 @@ function startDrag(event: DragEvent): void {
   background: var(--surface);
 }
 
-.entity-list-row:active {
+.entity-list-row--pressed {
   cursor: grabbing;
 }
 
