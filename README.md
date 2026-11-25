@@ -105,6 +105,24 @@ as entity IDs stay hidden until you switch them on.
 
 **Live.** Changes made in HA show up right away, without reloading.
 
+**Devices in folders, dragged into flows.** Turn on the filter *Entities* and lights, sensors and
+everything else join the list, each in its folder. Drag a device onto a folder to sort it in, or
+straight into an automation: drop the motion sensor on *When* and pick *Motion detected*, the lamp
+on *Then* and pick *Turn on*. Sections that fit light up, the others say why not. HA has no
+categories for entities, so these folders live in a category scope of HomeAce Studio's own: stored
+in Home Assistant and its backups, but not filling HA's own menus.
+
+## Good to know
+
+- **Combine filters:** Ctrl+click (⌘+click on a Mac) adds a filter, for example *Automations* and
+  *Entities* together. Right-click or a long press on a filter does the same; a plain click shows
+  only that one.
+- **Rename in place:** double click a name or press F2, in the list, the title or the folder tree.
+- **Walk the list** with the arrow keys; the details follow.
+- **Into a branch:** drop an entity right into the *then* or *else* of an if block. Dropped next to
+  it, HomeAce Studio asks where exactly.
+- **On a phone,** tap an entity instead of dragging it: it offers the same places.
+
 ## Coming next
 
 - Editing helper settings (ranges, options, durations) and a scene editor.

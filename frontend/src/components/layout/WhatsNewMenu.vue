@@ -102,6 +102,15 @@ async function show(target: WhatsNewTarget): Promise<void> {
     await nextTick();
     flashElement(document.querySelector(".entry-list__scope--active"));
   }
+
+  // Entities come on top of what is shown, so the entries stay next to them
+  if (target === "entities") {
+    if (!studio.isShowingEntities) studio.toggleListScope("entities");
+    await nextTick();
+    flashElement(
+      document.querySelector(".list-scope-tabs > .entry-list__scope--active:last-child"),
+    );
+  }
 }
 
 const root = useTemplateRef("root");

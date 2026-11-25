@@ -4,7 +4,7 @@ import type { AppLocale } from "@/i18n";
 export type LocalizedText = Record<AppLocale, string>;
 
 /** Where "Zeigen" takes the user: the gear menu, or the helpers or scenes in the list. */
-export type WhatsNewTarget = "settings" | "helpers" | "scenes";
+export type WhatsNewTarget = "settings" | "helpers" | "scenes" | "entities";
 
 export type WhatsNewItem = {
   /** MDI icon class, e.g. "mdi-gift-outline". */
@@ -58,6 +58,24 @@ export const WHATS_NEW: readonly WhatsNewRelease[] = [
           ru: "Настраивайте яркость, цвет, шторы и отопление и сохраняйте, а в гостиной ничего не меняется. Хотите увидеть? «Предпросмотр» или «Попробовать», а потом всё вернётся как было.",
         },
         show: "scenes",
+      },
+      {
+        icon: "mdi-devices",
+        title: {
+          de: "Geräte in Ordnern, per Drag & Drop in Abläufe",
+          en: "Devices in folders, dragged into flows",
+          fr: "Les appareils dans des dossiers, glissés dans les déroulements",
+          es: "Dispositivos en carpetas, arrastrados a los flujos",
+          ru: "Устройства в папках и перетаскивание в логику",
+        },
+        text: {
+          de: "Der neue Filter „Entitäten“ zeigt Lichter, Sensoren und Co. Zieh sie auf einen Ordner zum Einsortieren oder direkt in eine Automation: Aus dem Bewegungsmelder wird „Bewegung erkannt“, aus der Lampe „Einschalten“. Strg+Klick kombiniert Filter.",
+          en: "The new filter “Entities” shows lights, sensors and more. Drag them onto a folder to sort them, or straight into an automation: the motion sensor becomes “Motion detected”, the lamp “Turn on”. Ctrl+click combines filters.",
+          fr: "Le nouveau filtre « Entités » montre lumières, capteurs et le reste. Glissez-les sur un dossier pour les ranger, ou directement dans une automatisation : le détecteur de mouvement devient « Mouvement détecté », la lampe « Allumer ». Ctrl+clic combine les filtres.",
+          es: "El nuevo filtro “Entidades” muestra luces, sensores y más. Arrástralos a una carpeta para ordenarlos, o directamente a una automatización: el sensor de movimiento se convierte en “Movimiento detectado”, la lámpara en “Encender”. Ctrl+clic combina filtros.",
+          ru: "Новый фильтр «Объекты» показывает свет, датчики и остальное. Перетащите их на папку, чтобы разложить, или прямо в автоматизацию: датчик движения станет «Обнаружено движение», лампа — «Включить». Ctrl+клик объединяет фильтры.",
+        },
+        show: "entities",
       },
       {
         icon: "mdi-tune-variant",
