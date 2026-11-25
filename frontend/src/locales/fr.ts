@@ -15,6 +15,49 @@ const fr: MessageSchema = {
     failed: "Non connecté",
   },
   settings: {
+    more: "En savoir plus",
+    goodToKnow: {
+      saving: {
+        title: "Enregistrer",
+        text: "Rien n'arrive dans Home Assistant avant que vous cliquiez sur « Enregistrer dans HA ». Les entrées avec des modifications non enregistrées ont un point jaune dans la liste.",
+        more: "Vos modifications restent quand vous changez d'onglet ou d'entrée. Si vous fermez l'onglet du navigateur, HomeAce vous demande d'abord.",
+      },
+      scenes: {
+        title: "Modifier une scène n'allume rien",
+        text: "Pendant que vous modifiez une scène, les appareils restent tels quels. Ils ne changent qu'avec « Aperçu », avec « Essayer » ou quand la scène est activée.",
+        more: "Ce que HomeAce ne peut pas afficher, par exemple un effet lumineux, est conservé tel quel à l'enregistrement.",
+      },
+      folders: {
+        title: "Renommer des dossiers dans Home Assistant",
+        text: "Vos dossiers apparaissent aussi dans Home Assistant. Si vous en renommez un là-bas, il peut changer de place.",
+        more: "Le plus sûr est de renommer les dossiers ici dans HomeAce, par un double-clic sur le nom.",
+      },
+      unknownBlocks: {
+        title: "Blocs inconnus",
+        text: "Si HomeAce ne peut pas afficher une partie d'une automatisation, il l'affiche comme « Bloc inconnu ».",
+        more: "À l'enregistrement, cette partie reste exactement comme elle était.",
+      },
+      changedInHa: {
+        title: "Modifié dans Home Assistant en même temps",
+        text: "Si quelqu'un a modifié une entrée directement dans Home Assistant pendant que vous la modifiez ici, la barre du bas vous le signale avant l'enregistrement.",
+        more: "Si vous enregistrez quand même, c'est votre version de HomeAce qui compte.",
+      },
+      whereStored: {
+        title: "Ce qui est enregistré où",
+        text: "Ce que vous réglez volontairement vous suit sur tous vos appareils : langue, détails techniques, enregistrement automatique des scènes, exécutions conservées.",
+        more: "Ce que HomeAce retient de lui-même reste sur cet appareil : largeur des colonnes, détails repliés, dossiers ou pièces, filtres choisis. Si vous ouvrez HomeAce sans passer par Home Assistant, tout s'applique uniquement sur cet appareil.",
+      },
+      filters: {
+        title: "Combiner les filtres",
+        text: "Un clic sur un filtre au-dessus de la liste n'affiche que celui-ci. Ainsi, un clic vous ramène toujours en arrière.",
+        more: "Avec {key} + clic ou un clic droit, vous en ajoutez d'autres, par exemple automatisations et entités ensemble. Sur un téléphone, faites un appui long.",
+      },
+      labels: {
+        title: "Les étiquettes valent dans tout Home Assistant",
+        text: "Une étiquette que vous attribuez ici est une étiquette de Home Assistant. Vous la voyez partout là-bas, aussi sur les appareils et les pièces.",
+        more: "Si vous renommez une étiquette, elle change partout. Si vous la supprimez, elle disparaît partout, aussi là où un flux commande tous les appareils avec cette étiquette. Ce flux ne fait alors plus rien, sans prévenir.",
+      },
+    },
     open: "Paramètres",
     title: "Paramètres",
     close: "Fermer",
@@ -23,9 +66,11 @@ const fr: MessageSchema = {
       editing: "Modification",
       tools: "Outils",
       ai: "Accès IA",
+      goodToKnow: "Bon à savoir",
       about: "À propos de HomeAce",
     },
     scope: {
+      addon: "S'applique à tous dans ce Home Assistant",
       user: "S'applique à vous sur tous vos appareils",
       device: "S'applique uniquement sur cet appareil",
       noUser: "Sans connexion via Home Assistant, tout s'applique uniquement sur cet appareil.",

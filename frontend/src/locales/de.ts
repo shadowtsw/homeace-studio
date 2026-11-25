@@ -10,6 +10,49 @@ export default {
     failed: "Keine Verbindung",
   },
   settings: {
+    more: "Mehr dazu",
+    goodToKnow: {
+      saving: {
+        title: "Speichern",
+        text: "Nichts geht nach Home Assistant, bevor du „In HA speichern“ klickst. Einträge mit ungespeicherten Änderungen haben einen gelben Punkt in der Liste.",
+        more: "Deine Änderungen bleiben erhalten, wenn du den Tab oder den Eintrag wechselst. Schließt du den Browser-Tab, fragt HomeAce vorher nach.",
+      },
+      scenes: {
+        title: "Szenen bearbeiten schaltet nichts",
+        text: "Beim Bearbeiten einer Szene bleiben die Geräte, wie sie sind. Sie schalten erst bei „Vorschau“, bei „Ausprobieren“ oder wenn die Szene aktiviert wird.",
+        more: "Was HomeAce nicht anzeigen kann, zum Beispiel einen Lichteffekt, bleibt beim Speichern unverändert erhalten.",
+      },
+      folders: {
+        title: "Ordner in Home Assistant umbenennen",
+        text: "Deine Ordner siehst du auch in Home Assistant. Benennst du sie dort um, kann ein Ordner an eine andere Stelle rutschen.",
+        more: "Am sichersten benennst du Ordner hier in HomeAce um, per Doppelklick auf den Namen.",
+      },
+      unknownBlocks: {
+        title: "Unbekannte Bausteine",
+        text: "Kann HomeAce einen Teil einer Automation nicht darstellen, zeigt es ihn als „Unbekannter Baustein“.",
+        more: "Beim Speichern bleibt dieser Teil genau so, wie er war.",
+      },
+      changedInHa: {
+        title: "Gleichzeitig in Home Assistant geändert",
+        text: "Hat jemand einen Eintrag direkt in Home Assistant geändert, während du ihn hier bearbeitest, sagt dir die Fußleiste das, bevor du speicherst.",
+        more: "Speicherst du trotzdem, gilt dein Stand aus HomeAce.",
+      },
+      whereStored: {
+        title: "Was wo gespeichert wird",
+        text: "Was du bewusst einstellst, folgt dir auf jedes Gerät: Sprache, Technische Details, Szenen automatisch speichern, Durchläufe merken.",
+        more: "Was HomeAce sich von selbst merkt, bleibt auf diesem Gerät: Spaltenbreiten, eingeklappte Details, Ordner oder Bereiche, gewählte Filter. Öffnest du HomeAce ohne Home Assistant davor, gilt alles nur auf diesem Gerät.",
+      },
+      filters: {
+        title: "Filter kombinieren",
+        text: "Ein Klick auf einen Filter über der Liste zeigt nur diesen. So kommst du mit einem Klick immer zurück.",
+        more: "Mit {key} + Klick oder einem Rechtsklick schaltest du weitere dazu, zum Beispiel Automationen und Entitäten zusammen. Am Handy geht das mit langem Drücken.",
+      },
+      labels: {
+        title: "Labels gelten in ganz Home Assistant",
+        text: "Ein Label, das du hier vergibst, ist ein Label von Home Assistant. Du siehst es dort überall, auch an Geräten und Bereichen.",
+        more: "Benennst du ein Label um, ändert es sich überall. Löschst du es, verschwindet es überall, auch dort, wo ein Ablauf alle Geräte mit diesem Label schaltet. Der Ablauf tut dann still nichts mehr.",
+      },
+    },
     open: "Einstellungen",
     title: "Einstellungen",
     close: "Schließen",
@@ -18,9 +61,11 @@ export default {
       editing: "Bearbeiten",
       tools: "Werkzeuge",
       ai: "KI-Zugang",
+      goodToKnow: "Gut zu wissen",
       about: "Über HomeAce",
     },
     scope: {
+      addon: "Gilt für alle in diesem Home Assistant",
       user: "Gilt für dich auf allen Geräten",
       device: "Gilt nur auf diesem Gerät",
       noUser: "Ohne Anmeldung über Home Assistant gilt alles nur auf diesem Gerät.",

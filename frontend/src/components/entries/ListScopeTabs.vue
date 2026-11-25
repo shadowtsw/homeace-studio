@@ -42,9 +42,10 @@
 
 <script setup lang="ts">
 import { onClickOutside, useEventListener } from "@vueuse/core";
-import { computed, ref, useTemplateRef } from "vue";
+import { ref, useTemplateRef } from "vue";
 import { useI18n } from "vue-i18n";
 
+import { useModifierKey } from "@/composables/useModifierKey";
 import { LIST_SCOPES, SCOPE_ENTITIES, type ListScope } from "@/constants/entries";
 
 defineProps<{
@@ -63,8 +64,7 @@ const emit = defineEmits<{
 const LONG_PRESS_MS = 500;
 const { t } = useI18n();
 /** On a Mac, Ctrl+click is the right-click; there the Command key adds a filter. */
-const isMac = /Mac|iPhone|iPad/.test(navigator.platform);
-const modifierKey = computed(() => (isMac ? "⌘" : t("scopeMenu.ctrl")));
+const modifierKey = useModifierKey();
 const hasKeyboard = matchMedia("(hover: hover)").matches;
 
 const root = useTemplateRef("root");

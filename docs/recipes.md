@@ -62,6 +62,11 @@ Checklists for changes that touch several places. Feature-specific recipes are o
   `messages.textFor(error, t("errors.actionFailed"))`.
 - Every text in all five locales ([features/i18n.md](features/i18n.md)). Technical details only behind
   `isTechnicalDetailsVisible`.
+- User-facing texts (UI, "Was ist neu", CHANGELOG, DOCS.md) say what the user notices, never how it is
+  built. This wiki and code comments stay complete.
+- A feature with a quirk brings a "Gut zu wissen" topic: add it to `GOOD_TO_KNOW_TOPICS`
+  (`constants/settings.ts`) and its texts under `settings.goodToKnow.<topic>` in all five locales
+  ([ui/layout.md](ui/layout.md#settings-window)).
 - Everything must work on touch and narrow screens ([ui/layout.md](ui/layout.md)). Menus must be visible
   without hover on touch.
 

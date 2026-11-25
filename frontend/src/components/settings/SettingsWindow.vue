@@ -45,6 +45,7 @@
           @tidy="openTidy"
         />
         <SettingsAiTab v-else-if="settingsWindow.tab === SETTINGS_TAB.ai" />
+        <SettingsGoodToKnowTab v-else-if="settingsWindow.tab === SETTINGS_TAB.goodToKnow" />
         <SettingsAboutTab v-else @whats-new="openWhatsNew" />
       </div>
 
@@ -73,6 +74,7 @@ import SettingsAboutTab from "./SettingsAboutTab.vue";
 import SettingsAiTab from "./SettingsAiTab.vue";
 import SettingsEditingTab from "./SettingsEditingTab.vue";
 import SettingsGeneralTab from "./SettingsGeneralTab.vue";
+import SettingsGoodToKnowTab from "./SettingsGoodToKnowTab.vue";
 import SettingsToolsTab from "./SettingsToolsTab.vue";
 
 /**

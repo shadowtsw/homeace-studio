@@ -69,8 +69,8 @@ Choosing a tree node always sets `isNavOpen = false`, and opening an entry alway
 ## Settings window
 
 - The gear opens `SettingsWindow` (mounted in `StudioDialogs`). Tabs in `SETTINGS_TABS`
-  (`constants/settings.ts`): Allgemein, Bearbeiten, Werkzeuge, KI-Zugang, Über HomeAce; one component per
-  tab. It opens on the tab used last (`PREFERENCES.settingsTab`, on this device).
+  (`constants/settings.ts`): Allgemein, Bearbeiten, Werkzeuge, KI-Zugang, Gut zu wissen, Über HomeAce;
+  one component per tab. It opens on the tab used last (`PREFERENCES.settingsTab`, on this device).
 - Every setting is a `SettingsRow` with the `preference` behind it. The row shows where it applies:
   person = follows the user to every device, screen = only on this device (`PREFERENCE_SCOPE`).
   Tools and links have no preference and no symbol. The AI access belongs to the whole add-on, so its
@@ -80,6 +80,11 @@ Choosing a tree node always sets `isNavOpen = false`, and opening an entry alway
   turns on, and the footer explains both symbols.
 - Tools ("Kategorien aufräumen", "Ordnung in einem Klick") and "Was ist neu" open their own windows;
   the settings window closes for them.
+- **Gut zu wissen** (`SettingsGoodToKnowTab`): topics on the left (`GOOD_TO_KNOW_TOPICS`), text on the
+  right (`settings.goodToKnow.<topic>.title` / `.text` / optional `.more`). Where it fits, the switch sits
+  at the text. A `SettingsRow` with `moreTopic` gets a "Mehr dazu" link to its topic
+  (`settingsWindow.showTopic`). **New feature with a quirk → new topic**, in all five languages; it
+  says how HomeAce behaves, never how it is built.
 - **Rules:** a setting only exists when users really want it differently. Texts describe what the
   user notices, never how it is built (technical detail only behind "Technische Details").
 - Phone: for now the window fills the screen with the tabs on top; a list → page layout comes later.

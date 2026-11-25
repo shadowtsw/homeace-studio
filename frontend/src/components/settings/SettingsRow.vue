@@ -12,7 +12,17 @@
           role="img"
         />
       </b>
-      <small v-if="hint">{{ hint }}</small>
+      <small v-if="hint">
+        {{ hint }}
+        <button
+          v-if="moreTopic"
+          class="settings-row__more"
+          type="button"
+          @click="settingsWindow.showTopic(moreTopic)"
+        >
+          {{ t("settings.more") }}
+        </button>
+      </small>
     </div>
     <slot />
   </div>
@@ -23,6 +33,7 @@ import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 
 import { PREFERENCE_SCOPE, type Preference, type PreferenceScope } from "@/constants/preferences";
+import type { GoodToKnowTopic } from "@/constants/settings";
 import { useSettingsWindowStore } from "@/stores/settingsWindowStore";
 
 /** Person: follows the user to every device. Screen: only on this device. */
@@ -37,6 +48,8 @@ const props = defineProps<{
   hint?: string;
   /** The kept preference behind the control; without one (a tool, a link) no scope is shown. */
   preference?: Preference;
+  /** The "Gut zu wissen" topic that explains why it works this way; adds "Mehr dazu". */
+  moreTopic?: GoodToKnowTopic;
 }>();
 
 const { t } = useI18n();
@@ -79,6 +92,16 @@ const scopeText = computed(() =>
   color: var(--muted);
   font-size: 12px;
   line-height: 1.4;
+}
+
+.settings-row__more {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
 }
 
 .settings-row__scope {

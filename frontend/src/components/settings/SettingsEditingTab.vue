@@ -4,6 +4,7 @@
       :title="t('settings.autoSaveScenes')"
       :hint="t('settings.autoSaveScenesHint')"
       :preference="PREFERENCES.sceneAutoSave"
+      :more-topic="GOOD_TO_KNOW_TOPIC.scenes"
     >
       <SwitchToggle v-model="settings.isSceneAutoSave" :label="t('settings.autoSaveScenes')" />
     </SettingsRow>
@@ -33,6 +34,7 @@ import { useI18n } from "vue-i18n";
 
 import SwitchToggle from "@/components/common/SwitchToggle.vue";
 import { PREFERENCES } from "@/constants/preferences";
+import { GOOD_TO_KNOW_TOPIC } from "@/constants/settings";
 import { DEFAULT_STORED_TRACES, STORED_TRACES_CHOICES } from "@/constants/traces";
 import { useSettingsStore } from "@/stores/settingsStore";
 

@@ -15,6 +15,49 @@ const es: MessageSchema = {
     failed: "Sin conexión",
   },
   settings: {
+    more: "Más información",
+    goodToKnow: {
+      saving: {
+        title: "Guardar",
+        text: "Nada llega a Home Assistant hasta que pulsas “Guardar en HA”. Las entradas con cambios sin guardar tienen un punto amarillo en la lista.",
+        more: "Tus cambios se mantienen al cambiar de pestaña o de entrada. Si cierras la pestaña del navegador, HomeAce pregunta antes.",
+      },
+      scenes: {
+        title: "Editar escenas no enciende nada",
+        text: "Mientras editas una escena, los dispositivos se quedan como están. Solo cambian con “Vista previa”, con “Probar” o al activar la escena.",
+        more: "Lo que HomeAce no puede mostrar, por ejemplo un efecto de luz, se guarda sin cambios.",
+      },
+      folders: {
+        title: "Renombrar carpetas en Home Assistant",
+        text: "También ves tus carpetas en Home Assistant. Si renombras una allí, puede cambiar de sitio.",
+        more: "Lo más seguro es renombrar las carpetas aquí en HomeAce, con doble clic en el nombre.",
+      },
+      unknownBlocks: {
+        title: "Bloques desconocidos",
+        text: "Si HomeAce no puede mostrar una parte de una automatización, la muestra como “Bloque desconocido”.",
+        more: "Al guardar, esa parte queda exactamente como estaba.",
+      },
+      changedInHa: {
+        title: "Cambiado en Home Assistant a la vez",
+        text: "Si alguien cambió una entrada directamente en Home Assistant mientras la editas aquí, la barra inferior te lo dice antes de guardar.",
+        more: "Si guardas de todos modos, vale tu versión de HomeAce.",
+      },
+      whereStored: {
+        title: "Qué se guarda dónde",
+        text: "Lo que ajustas a propósito te sigue a todos tus dispositivos: idioma, detalles técnicos, guardar escenas automáticamente, ejecuciones guardadas.",
+        more: "Lo que HomeAce recuerda por sí solo se queda en este dispositivo: ancho de columnas, detalles plegados, carpetas o áreas, filtros elegidos. Si abres HomeAce sin pasar por Home Assistant, todo se aplica solo en este dispositivo.",
+      },
+      filters: {
+        title: "Combinar filtros",
+        text: "Un clic en un filtro sobre la lista muestra solo ese. Así un clic siempre te devuelve.",
+        more: "Con {key} + clic o con clic derecho añades más, por ejemplo automatizaciones y entidades juntas. En el móvil, con una pulsación larga.",
+      },
+      labels: {
+        title: "Las etiquetas valen en todo Home Assistant",
+        text: "Una etiqueta que asignas aquí es una etiqueta de Home Assistant. La ves en todas partes allí, también en dispositivos y áreas.",
+        more: "Si renombras una etiqueta, cambia en todas partes. Si la borras, desaparece en todas partes, también donde un flujo controla todos los dispositivos con esa etiqueta. Ese flujo deja de hacer nada sin avisar.",
+      },
+    },
     open: "Ajustes",
     title: "Ajustes",
     close: "Cerrar",
@@ -23,9 +66,11 @@ const es: MessageSchema = {
       editing: "Edición",
       tools: "Herramientas",
       ai: "Acceso de IA",
+      goodToKnow: "Conviene saber",
       about: "Acerca de HomeAce",
     },
     scope: {
+      addon: "Se aplica a todos en este Home Assistant",
       user: "Se aplica a ti en todos tus dispositivos",
       device: "Se aplica solo en este dispositivo",
       noUser:

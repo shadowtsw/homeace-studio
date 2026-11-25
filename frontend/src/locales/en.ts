@@ -11,6 +11,49 @@ const en: MessageSchema = {
     failed: "Not connected",
   },
   settings: {
+    more: "Learn more",
+    goodToKnow: {
+      saving: {
+        title: "Saving",
+        text: "Nothing reaches Home Assistant before you click “Save to HA”. Entries with unsaved changes have a yellow dot in the list.",
+        more: "Your changes stay when you switch tabs or entries. If you close the browser tab, HomeAce asks first.",
+      },
+      scenes: {
+        title: "Editing scenes switches nothing",
+        text: "While you edit a scene, the devices stay as they are. They only switch with “Preview”, with “Try” or when the scene is activated.",
+        more: "Anything HomeAce cannot show, for example a light effect, is kept unchanged when saving.",
+      },
+      folders: {
+        title: "Renaming folders in Home Assistant",
+        text: "You also see your folders in Home Assistant. If you rename one there, it may move to another place.",
+        more: "The safest way is to rename folders here in HomeAce, by double-clicking the name.",
+      },
+      unknownBlocks: {
+        title: "Unknown blocks",
+        text: "If HomeAce cannot show part of an automation, it shows it as “Unknown block”.",
+        more: "When saving, that part stays exactly as it was.",
+      },
+      changedInHa: {
+        title: "Changed in Home Assistant at the same time",
+        text: "If someone changed an entry directly in Home Assistant while you edit it here, the footer tells you before you save.",
+        more: "If you save anyway, your version from HomeAce applies.",
+      },
+      whereStored: {
+        title: "What is stored where",
+        text: "What you set on purpose follows you to every device: language, technical details, saving scenes automatically, keeping runs.",
+        more: "What HomeAce remembers by itself stays on this device: column widths, folded details, folders or areas, chosen filters. If you open HomeAce without Home Assistant in front of it, everything applies only on this device.",
+      },
+      filters: {
+        title: "Combining filters",
+        text: "A click on a filter above the list shows only that one. That way one click always takes you back.",
+        more: "With {key} + click or a right-click you add more, for example automations and entities together. On a phone, use a long press.",
+      },
+      labels: {
+        title: "Labels apply across Home Assistant",
+        text: "A label you give here is a Home Assistant label. You see it everywhere there, on devices and areas too.",
+        more: "If you rename a label, it changes everywhere. If you delete it, it disappears everywhere, also where a flow switches all devices with this label. That flow then silently does nothing.",
+      },
+    },
     open: "Settings",
     title: "Settings",
     close: "Close",
@@ -19,9 +62,11 @@ const en: MessageSchema = {
       editing: "Editing",
       tools: "Tools",
       ai: "AI access",
+      goodToKnow: "Good to know",
       about: "About HomeAce",
     },
     scope: {
+      addon: "Applies to everyone in this Home Assistant",
       user: "Applies to you on all devices",
       device: "Applies only on this device",
       noUser: "Without signing in through Home Assistant, everything applies only on this device.",

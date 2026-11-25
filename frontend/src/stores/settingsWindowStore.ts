@@ -3,7 +3,13 @@ import { computed, ref } from "vue";
 
 import { usePreference } from "@/composables/usePreference";
 import { PREFERENCE_SCOPE, PREFERENCES, type PreferenceScope } from "@/constants/preferences";
-import { SETTINGS_TAB, SETTINGS_TABS, type SettingsTab } from "@/constants/settings";
+import {
+  GOOD_TO_KNOW_TOPIC,
+  SETTINGS_TAB,
+  SETTINGS_TABS,
+  type GoodToKnowTopic,
+  type SettingsTab,
+} from "@/constants/settings";
 
 /** The settings window the gear opens: whether it is open and which tab it shows. */
 export const useSettingsWindowStore = defineStore("settingsWindow", () => {
@@ -43,5 +49,24 @@ export const useSettingsWindowStore = defineStore("settingsWindow", () => {
     storedTab.value = nextTab;
   }
 
-  return { isOpen, tab, hasHaUser, effectiveScope, open, close, selectTab };
+  /** The topic "Gut zu wissen" shows; not kept, it starts at the first one. */
+  const goodToKnowTopic = ref<GoodToKnowTopic>(GOOD_TO_KNOW_TOPIC.saving);
+
+  /** "Mehr dazu" next to a setting: the topic that explains it. */
+  function showTopic(topic: GoodToKnowTopic): void {
+    goodToKnowTopic.value = topic;
+    open(SETTINGS_TAB.goodToKnow);
+  }
+
+  return {
+    isOpen,
+    tab,
+    hasHaUser,
+    goodToKnowTopic,
+    effectiveScope,
+    open,
+    close,
+    selectTab,
+    showTopic,
+  };
 });
