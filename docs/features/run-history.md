@@ -34,4 +34,8 @@ by block, and "Im Ablauf zeigen" puts it on the flow.
   (backend max `MAX_STORED_TRACES`). It is offered only for editable flows **without unsaved edits**
   (saving the config would otherwise mix with the draft). Flows outside `automations.yaml` /
   `scripts.yaml` → `FLOW_NOT_EDITABLE`.
+- New automations and scripts keep as many runs as set under Einstellungen → Bearbeiten → "Durchläufe
+  merken" (`settings.storedTraces`, choices in `constants/traces.ts`). Right after creating, the same
+  call writes `trace.stored_traces` (`keepRunsAsSet` in `useCreateActions`). With HA's default (5)
+  nothing is written, so the config stays as HA would create it.
 - The demo has invented traces: `backend/src/demo/demo-traces.ts`.

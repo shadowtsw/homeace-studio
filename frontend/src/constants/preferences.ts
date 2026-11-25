@@ -25,6 +25,8 @@ export const PREFERENCES = {
   locale: { storageKey: "homeace.locale", scope: PREFERENCE_SCOPE.user },
   technicalDetails: { storageKey: "homeace.technicalDetails", scope: PREFERENCE_SCOPE.user },
   sceneAutoSave: { storageKey: "homeace.sceneAutoSave", scope: PREFERENCE_SCOPE.user },
+  /** How many runs new automations and scripts keep. */
+  storedTraces: { storageKey: "homeace.storedTraces", scope: PREFERENCE_SCOPE.user },
   /** The version whose "What's new" highlights the user confirmed with "OK". */
   seenVersion: { storageKey: "homeace.seenVersion", scope: PREFERENCE_SCOPE.user },
   paneWidths: { storageKey: "homeace.paneWidths", scope: PREFERENCE_SCOPE.device },

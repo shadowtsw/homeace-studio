@@ -13,7 +13,7 @@
         <div class="entry-list__title">
           <div v-if="title.crumb" class="entry-list__crumb">{{ title.crumb }} ›</div>
           <h2>{{ title.name }}</h2>
-          <div class="entry-list__subtitle">{{ title.subtitle }}</div>
+          <div v-if="title.subtitle" class="entry-list__subtitle">{{ title.subtitle }}</div>
         </div>
         <div ref="newMenu" class="entry-list__new">
           <button
@@ -390,10 +390,11 @@ const title = computed(() => {
   const segments = props.category.split(CATEGORY_SEPARATOR);
   const name = segments.pop() ?? props.category;
 
+  // How HA stores the folder is a technical detail; the user sees the folder itself.
   return {
     crumb: segments.join(BREADCRUMB_SEPARATOR),
     name,
-    subtitle: t("list.inHa", { path: props.category }),
+    subtitle: props.isTechnicalDetailsVisible ? t("list.inHa", { path: props.category }) : "",
   };
 });
 

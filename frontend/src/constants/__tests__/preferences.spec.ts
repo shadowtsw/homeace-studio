@@ -16,6 +16,7 @@ describe("PREFERENCES", () => {
       "locale",
       "sceneAutoSave",
       "seenVersion",
+      "storedTraces",
       "technicalDetails",
     ]);
   });

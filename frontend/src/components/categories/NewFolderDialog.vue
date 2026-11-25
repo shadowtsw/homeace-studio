@@ -17,7 +17,7 @@
     />
     <p v-if="problem" class="field-problem">{{ problem }}</p>
 
-    <div class="new-folder__preview">
+    <div v-if="isTechnicalDetailsVisible" class="new-folder__preview">
       <span>{{ t("folder.inHa") }}</span>
       <code>{{ path || "…" }}</code>
     </div>
@@ -47,6 +47,8 @@ const props = defineProps<{
   /** All folder paths that exist, to warn about duplicates. */
   allPaths: string[];
   isBusy: boolean;
+  /** The name HA gets is a technical detail; shown only with "Technische Details". */
+  isTechnicalDetailsVisible: boolean;
 }>();
 
 const emit = defineEmits<{

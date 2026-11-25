@@ -7,6 +7,24 @@
     >
       <SwitchToggle v-model="settings.isSceneAutoSave" :label="t('settings.autoSaveScenes')" />
     </SettingsRow>
+
+    <SettingsRow
+      :title="t('settings.storedTraces')"
+      :hint="t('settings.storedTracesHint')"
+      :preference="PREFERENCES.storedTraces"
+    >
+      <select
+        v-model.number="settings.storedTraces"
+        class="settings-select"
+        :aria-label="t('settings.storedTraces')"
+      >
+        <option v-for="count in STORED_TRACES_CHOICES" :key="count" :value="count">
+          {{
+            count === DEFAULT_STORED_TRACES ? t("settings.storedTracesDefault", { count }) : count
+          }}
+        </option>
+      </select>
+    </SettingsRow>
   </div>
 </template>
 
@@ -15,6 +33,7 @@ import { useI18n } from "vue-i18n";
 
 import SwitchToggle from "@/components/common/SwitchToggle.vue";
 import { PREFERENCES } from "@/constants/preferences";
+import { DEFAULT_STORED_TRACES, STORED_TRACES_CHOICES } from "@/constants/traces";
 import { useSettingsStore } from "@/stores/settingsStore";
 
 import SettingsRow from "./SettingsRow.vue";

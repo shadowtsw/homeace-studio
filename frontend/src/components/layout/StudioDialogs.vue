@@ -66,6 +66,7 @@
     :parent="create.folderDraft.value.parent"
     :all-paths="allPaths"
     :is-busy="create.isBusy.value"
+    :is-technical-details-visible="settings.isTechnicalDetailsVisible"
     @cancel="create.cancelFolder"
     @confirm="createFolder"
   />
@@ -207,6 +208,7 @@ import { useEntriesStore } from "@/stores/entriesStore";
 import { useEntryAreasStore } from "@/stores/entryAreasStore";
 import { useFoldersStore } from "@/stores/foldersStore";
 import { useLookupsStore } from "@/stores/lookupsStore";
+import { useSettingsStore } from "@/stores/settingsStore";
 import { useSettingsWindowStore } from "@/stores/settingsWindowStore";
 import { useToastStore } from "@/stores/toastStore";
 
@@ -242,6 +244,7 @@ const dependencies = useDependenciesStore();
 const entryAreas = useEntryAreasStore();
 const areas = useAreasStore();
 const lookups = useLookupsStore();
+const settings = useSettingsStore();
 const settingsWindow = useSettingsWindowStore();
 
 /** An area created from "Bereich setzen" is picked there when it comes back. */

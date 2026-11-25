@@ -2,6 +2,7 @@ import { defineStore } from "pinia";
 
 import { usePreference } from "@/composables/usePreference";
 import { PREFERENCES } from "@/constants/preferences";
+import { DEFAULT_STORED_TRACES } from "@/constants/traces";
 import { preferredLocale, type AppLocale } from "@/i18n";
 
 /**
@@ -30,9 +31,16 @@ export const useSettingsStore = defineStore("settings", () => {
     defaultValue: false,
   });
 
+  /** New automations and scripts keep this many runs; HA's own default keeps their config clean. */
+  const storedTraces = usePreference<number>({
+    preference: PREFERENCES.storedTraces,
+    defaultValue: DEFAULT_STORED_TRACES,
+  });
+
   return {
     isTechnicalDetailsVisible,
     locale,
     isSceneAutoSave,
+    storedTraces,
   };
 });

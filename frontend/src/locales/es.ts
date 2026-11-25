@@ -42,7 +42,11 @@ const es: MessageSchema = {
     reset: "Restablecer",
     autoSaveScenes: "Guardar escenas automáticamente",
     autoSaveScenesHint:
-      "Poco después del último cambio, con “Deshacer todo” abajo. Editar no enciende ni apaga nada.",
+      "Poco después del último cambio, con “Deshacer todo” abajo. Solo en escenas, porque editarlas no enciende ni apaga nada.",
+    storedTraces: "Ejecuciones guardadas",
+    storedTracesHint:
+      "Cuántas ejecuciones guarda Home Assistant para automatizaciones y scripts nuevos. Más ayuda a encontrar errores. Las existentes se cambian en su historial.",
+    storedTracesDefault: "{count} (predeterminado)",
     toolsNote:
       "Las herramientas abren su propia ventana porque funcionan por pasos. Nada cambia en Home Assistant hasta que confirmes la vista previa.",
     toolOpen: "Abrir",
@@ -1194,6 +1198,7 @@ const es: MessageSchema = {
     deleteAnyway: "Eliminar de todos modos",
   },
   toast: {
+    storedTracesFailed: "Creado, pero no se pudo fijar el número de ejecuciones guardadas.",
     entityMoved: "“{name}” ahora está en {path}",
     entityMovedOut: "“{name}” ya no está en ninguna carpeta",
     undo: "Deshacer",

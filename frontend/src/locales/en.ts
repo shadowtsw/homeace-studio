@@ -36,7 +36,11 @@ const en: MessageSchema = {
     reset: "Reset",
     autoSaveScenes: "Save scenes automatically",
     autoSaveScenesHint:
-      "Shortly after the last change, with “Undo all” in the footer. Editing doesn't switch anything anyway.",
+      "Shortly after the last change, with “Undo all” in the footer. Only for scenes, because editing them doesn't switch anything.",
+    storedTraces: "Keep runs",
+    storedTracesHint:
+      "How many runs Home Assistant keeps for new automations and scripts. More helps when tracking down problems. Change existing ones in their history.",
+    storedTracesDefault: "{count} (default)",
     toolsNote:
       "Tools open a window of their own because they run in steps. Nothing changes in Home Assistant until you confirm the preview.",
     toolOpen: "Open",
@@ -1177,6 +1181,7 @@ const en: MessageSchema = {
     deleteAnyway: "Delete anyway",
   },
   toast: {
+    storedTracesFailed: "Created, but the number of kept runs could not be set.",
     entityMoved: "“{name}” is now in {path}",
     entityMovedOut: "“{name}” is no longer in a folder",
     undo: "Undo",

@@ -94,5 +94,6 @@ Choosing a tree node always sets `isNavOpen = false`, and opening an entry alway
 
 - Entries with unsaved flow edits make the browser ask before closing the tab (`beforeunload` in StudioView).
 - Detail handlers run only while an entry is open. They are wrapped in `onSelected(...)`.
-- Technical details (entity IDs, domains, API keys) are hidden unless `settings.isTechnicalDetailsVisible`
-  is on. Pass the flag down; don't read the store in leaf components.
+- Technical details (entity IDs, domains, API keys, the category name HA stores for a folder) are
+  hidden unless `settings.isTechnicalDetailsVisible` is on. Pass the flag down; don't read the store in
+  leaf components.

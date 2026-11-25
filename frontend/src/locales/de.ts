@@ -36,7 +36,11 @@ export default {
     reset: "Zurücksetzen",
     autoSaveScenes: "Szenen automatisch speichern",
     autoSaveScenesHint:
-      "Kurz nach der letzten Änderung, „Alles rückgängig“ in der Fußleiste. Bearbeiten schaltet ja nichts.",
+      "Kurz nach der letzten Änderung, mit „Alles rückgängig“ in der Fußleiste. Nur bei Szenen, weil Bearbeiten dort nichts schaltet.",
+    storedTraces: "Durchläufe merken",
+    storedTracesHint:
+      "So viele Durchläufe merkt sich Home Assistant für neue Automationen und Skripte. Mehr hilft bei der Fehlersuche. Bestehende stellst du in ihrem Verlauf um.",
+    storedTracesDefault: "{count} (Standard)",
     toolsNote:
       "Werkzeuge öffnen ein eigenes Fenster, weil sie in Schritten ablaufen. In Home Assistant ändert sich erst etwas, wenn du in der Vorschau bestätigst.",
     toolOpen: "Öffnen",
@@ -1191,6 +1195,7 @@ export default {
     deleteAnyway: "Trotzdem löschen",
   },
   toast: {
+    storedTracesFailed: "Angelegt, aber die Zahl der gemerkten Durchläufe ließ sich nicht setzen.",
     entityMoved: "„{name}“ liegt jetzt in {path}",
     entityMovedOut: "„{name}“ liegt in keinem Ordner mehr",
     undo: "Rückgängig",

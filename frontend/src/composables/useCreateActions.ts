@@ -1,12 +1,15 @@
 import { ref, type Ref } from "vue";
 import { useI18n } from "vue-i18n";
 
+import { DEFAULT_STORED_TRACES } from "@/constants/traces";
 import type { NewFlow } from "@/services/flowsService";
 import type { NewHelper } from "@/services/helpersService";
 import { useEntriesStore } from "@/stores/entriesStore";
 import { useFoldersStore } from "@/stores/foldersStore";
 import { useMessagesStore } from "@/stores/messagesStore";
+import { useSettingsStore } from "@/stores/settingsStore";
 import { useToastStore } from "@/stores/toastStore";
+import { useTracesStore } from "@/stores/tracesStore";
 import type { FlowKind } from "@/types/editor";
 
 /** Where a new folder goes: below `parent`, or at the top when it is null. */
@@ -43,7 +46,9 @@ export function useCreateActions(): CreateActions {
   const entriesStore = useEntriesStore();
   const foldersStore = useFoldersStore();
   const messages = useMessagesStore();
+  const settings = useSettingsStore();
   const toasts = useToastStore();
+  const tracesStore = useTracesStore();
 
   const isBusy = ref(false);
   const folderDraft = ref<FolderDraft | null>(null);
@@ -95,11 +100,28 @@ export function useCreateActions(): CreateActions {
     return entityId;
   }
 
+  /**
+   * New flows keep as many runs as set under Einstellungen → Bearbeiten. HA's own default writes
+   * nothing, so the config stays as HA would create it. A failure here leaves the flow in place.
+   */
+  async function keepRunsAsSet(entityId: string): Promise<void> {
+    if (settings.storedTraces === DEFAULT_STORED_TRACES) return;
+
+    try {
+      await tracesStore.keepMore(entityId, settings.storedTraces);
+    } catch (error) {
+      toasts.show(messages.textFor(error, t("toast.storedTracesFailed")), "error");
+    }
+  }
+
   async function confirmFlow(flow: NewFlow): Promise<string | null> {
+    // Create the flow
     const entityId = await run(() => entriesStore.createFlow(flow));
 
     if (entityId === null) return null;
 
+    // Apply the user's default for kept runs, then report
+    await keepRunsAsSet(entityId);
     toasts.show(t("toast.flowCreated", { name: flow.name }));
     newFlowKind.value = null;
 

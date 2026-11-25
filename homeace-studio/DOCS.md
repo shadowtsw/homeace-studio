@@ -2,8 +2,8 @@
 
 A clearer UI for automations, scripts, scenes and helpers.
 
-- **Nested categories:** folders like `Haus/Terrasse` are stored as normal HA categories with `/` in the name,
-  so they stay readable in the HA UI too.
+- **Nested folders:** as deep as you like. They stay visible in Home Assistant and keep working without
+  HomeAce Studio.
 - **Move** entries by dragging them onto a folder, or with the category field in the detail view. Missing
   categories are created and emptied ones (created by HomeAce Studio) are removed automatically.
 - **Rename** a folder and everything below it in one go, with a preview.

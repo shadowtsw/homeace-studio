@@ -41,7 +41,11 @@ const fr: MessageSchema = {
     reset: "Réinitialiser",
     autoSaveScenes: "Enregistrer les scènes automatiquement",
     autoSaveScenesHint:
-      "Peu après la dernière modification, avec « Tout annuler » en bas. Modifier n'allume ni n'éteint rien de toute façon.",
+      "Peu après la dernière modification, avec « Tout annuler » en bas. Uniquement pour les scènes, car les modifier n'allume ni n'éteint rien.",
+    storedTraces: "Exécutions conservées",
+    storedTracesHint:
+      "Nombre d'exécutions que Home Assistant conserve pour les nouvelles automatisations et les nouveaux scripts. Davantage aide à trouver les erreurs. Pour ceux qui existent, changez-le dans leur historique.",
+    storedTracesDefault: "{count} (par défaut)",
     toolsNote:
       "Les outils ouvrent leur propre fenêtre, car ils se déroulent en plusieurs étapes. Rien ne change dans Home Assistant avant que vous confirmiez l'aperçu.",
     toolOpen: "Ouvrir",
@@ -1208,6 +1212,7 @@ const fr: MessageSchema = {
     deleteAnyway: "Supprimer quand même",
   },
   toast: {
+    storedTracesFailed: "Créé, mais le nombre d'exécutions conservées n'a pas pu être défini.",
     entityMoved: "« {name} » est maintenant dans {path}",
     entityMovedOut: "« {name} » n'est plus dans aucun dossier",
     undo: "Annuler",
