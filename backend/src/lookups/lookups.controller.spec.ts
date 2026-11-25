@@ -24,6 +24,24 @@ describe("LookupsController", () => {
     ]);
   });
 
+  it("lists floors in HA's order: by level, floors without one last", async () => {
+    const call = jest.fn(() =>
+      Promise.resolve([
+        { floor_id: "attic", name: "Attic", icon: null, level: null },
+        { floor_id: "og", name: "Obergeschoss", icon: "mdi:home-floor-1", level: 1 },
+        { floor_id: "eg", name: "Erdgeschoss", icon: null, level: 0 },
+      ]),
+    );
+    const controller = new LookupsController({ call } as unknown as HaConnectionService);
+
+    await expect(controller.floors()).resolves.toEqual([
+      { floorId: "eg", name: "Erdgeschoss", icon: null },
+      { floorId: "og", name: "Obergeschoss", icon: "mdi:home-floor-1" },
+      { floorId: "attic", name: "Attic", icon: null },
+    ]);
+    expect(call).toHaveBeenCalledWith("config/floor_registry/list");
+  });
+
   it("lists entities with name, domain, state, select options, device and area", async () => {
     const answers: Record<string, unknown> = {
       get_states: [

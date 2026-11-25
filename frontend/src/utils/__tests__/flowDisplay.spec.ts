@@ -183,6 +183,52 @@ describe("toDisplayFlow", () => {
     expect(flow.actions[1]?.branches[1]?.blocks[0]?.id).toBe("actions.1.then.0");
   });
 
+  it("shows floors, labels and what the target leaves out, and does not call them missing", () => {
+    const withTarget: EditorCatalog = {
+      ...catalog,
+      actions: {
+        "light.turn_off": {
+          name: "Ausschalten",
+          description: null,
+          fields: {},
+          target: { entity: [{ domain: ["light"] }] },
+        },
+      },
+    };
+    const flow = toDisplayFlow(
+      {
+        ...automation({
+          actions: [
+            {
+              action: "light.turn_off",
+              target: {
+                floor_id: "eg",
+                exclude: { area_id: "kueche", label_id: ["nacht", "unbekannt"] },
+              },
+            },
+            { action: "light.turn_off", target: { label_id: "nacht" } },
+            { action: "light.turn_off" },
+          ],
+        }),
+        entityNames: { kueche: "Küche" },
+      },
+      withTarget,
+      { ...texts, labels: { ...texts.labels, floor: "Etage", label: "Label", exclude: "ohne" } },
+      { floors: { eg: "Erdgeschoss" }, labels: { nacht: "Nachtlicht" } },
+    );
+
+    expect(flow.actions.map((block) => shown(block.chips))).toEqual([
+      [
+        { kind: "entity", label: "Etage", text: "Erdgeschoss" },
+        { kind: "entity", label: "ohne", text: "Küche, Nachtlicht, unbekannt" },
+      ],
+      [{ kind: "entity", label: "Label", text: "Nachtlicht" }],
+      // Without any target the block still asks for one.
+      [{ kind: "entity", text: "Entität" }],
+    ]);
+    expect(flow.actions[2]?.chips[0]?.isMissing).toBe(true);
+  });
+
   it("keeps blocks it does not know as unknown, and marks disabled ones", () => {
     const flow = toDisplayFlow(
       automation({ actions: [{ some_future_key: true }, { delay: 5, enabled: false }] }),

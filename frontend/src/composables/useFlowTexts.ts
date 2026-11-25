@@ -71,6 +71,9 @@ const LABEL_KEYS = [
   "timeout",
   "area",
   "device",
+  "floor",
+  "label",
+  "exclude",
   "delay",
   "stop",
 ];

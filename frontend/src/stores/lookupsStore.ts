@@ -2,13 +2,14 @@ import { defineStore } from "pinia";
 import { computed, ref } from "vue";
 
 import { fetchEntities } from "@/services/editorService";
-import { fetchAreas, fetchLabels } from "@/services/lookupsService";
+import { fetchAreas, fetchFloors, fetchLabels } from "@/services/lookupsService";
 import type { EntityOption } from "@/types/editor";
-import type { Area, Label } from "@/types/entry";
+import type { Area, Floor, Label } from "@/types/entry";
 
-/** Areas, labels and all entities from HA, for the pickers in the detail view and the editor. */
+/** Areas, floors, labels and all entities from HA, for the pickers in the detail view and the editor. */
 export const useLookupsStore = defineStore("lookups", () => {
   const areas = ref<Area[]>([]);
+  const floors = ref<Floor[]>([]);
   const labels = ref<Label[]>([]);
   const entities = ref<EntityOption[]>([]);
 
@@ -19,10 +20,14 @@ export const useLookupsStore = defineStore("lookups", () => {
 
   async function load(): Promise<void> {
     try {
-      [areas.value, labels.value] = await Promise.all([fetchAreas(), fetchLabels()]);
+      [areas.value, floors.value, labels.value] = await Promise.all([
+        fetchAreas(),
+        fetchFloors(),
+        fetchLabels(),
+      ]);
     } catch (error) {
       // The detail still shows the names that come with each entry.
-      console.error("Loading areas and labels failed", error);
+      console.error("Loading areas, floors and labels failed", error);
     }
   }
 
@@ -40,5 +45,5 @@ export const useLookupsStore = defineStore("lookups", () => {
     }
   }
 
-  return { areas, labels, entities, entityNames, load, loadEntities };
+  return { areas, floors, labels, entities, entityNames, load, loadEntities };
 });

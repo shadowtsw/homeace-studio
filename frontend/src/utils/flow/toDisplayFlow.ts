@@ -37,11 +37,20 @@ export type FlowTexts = FormatTexts & {
   entity: string;
 };
 
+/** Names for target IDs that are neither entities nor areas; IDs without a name show as they are. */
+export type TargetNames = {
+  floors: Record<string, string>;
+  labels: Record<string, string>;
+};
+
+const NO_TARGET_NAMES: TargetNames = { floors: {}, labels: {} };
+
 type Raw = Record<string, unknown>;
 
 type Context = {
   catalog: EditorCatalog | null;
   names: Record<string, string>;
+  targetNames: TargetNames;
   texts: FlowTexts;
 };
 
@@ -130,8 +139,9 @@ export function toDisplayFlow(
   flow: Flow,
   catalog: EditorCatalog | null,
   texts: FlowTexts,
+  targetNames: TargetNames = NO_TARGET_NAMES,
 ): DisplayFlow {
-  const context: Context = { catalog, names: flow.entityNames, texts };
+  const context: Context = { catalog, names: flow.entityNames, targetNames, texts };
   const config = flow.config;
   const mode = asText(config.mode) ?? DEFAULT_MODE;
 
@@ -574,7 +584,47 @@ function targetChips(
     });
   }
 
+  // Floors, labels and what the target leaves out are shown, not edited (yet); saving keeps them.
+  if (target.floor_id) {
+    chips.push({
+      kind: "entity",
+      label: context.texts.labels.floor,
+      text: formatEntities(target.floor_id, context.targetNames.floors),
+    });
+  }
+
+  if (target.label_id) {
+    chips.push({
+      kind: "entity",
+      label: context.texts.labels.label,
+      text: formatEntities(target.label_id, context.targetNames.labels),
+    });
+  }
+
+  const excluded = excludedText(asRecord(target.exclude), context);
+
+  if (excluded) {
+    chips.push({ kind: "entity", label: context.texts.labels.exclude, text: excluded });
+  }
+
   return chips;
+}
+
+/**
+ * What `target.exclude` leaves out, by name: "Küche, Nachtlicht". It has the same keys as the
+ * target itself (HA, 2026); unknown keys are ignored here and kept on save.
+ */
+function excludedText(exclude: Raw, context: Context): string {
+  const { names, targetNames } = context;
+  const parts = [
+    exclude.entity_id && formatEntities(exclude.entity_id, names),
+    exclude.area_id && formatEntities(exclude.area_id, names),
+    exclude.device_id && asList(exclude.device_id).join(", "),
+    exclude.floor_id && formatEntities(exclude.floor_id, targetNames.floors),
+    exclude.label_id && formatEntities(exclude.label_id, targetNames.labels),
+  ];
+
+  return parts.filter((part): part is string => typeof part === "string" && part !== "").join(", ");
 }
 
 /** For `…target.entity_id` the sibling `…target.area_id`; HA then acts on everything in the area. */
@@ -617,7 +667,7 @@ function fieldChips(
   });
 }
 
-/** HA says the block targets entities, but none (and no area or device) is set yet. */
+/** HA says the block targets entities, but none (and no area, device, floor or label) is set yet. */
 function missingTarget(
   raw: Raw,
   values: Raw,
@@ -627,7 +677,13 @@ function missingTarget(
 ): BlockChip[] {
   const target = asRecord(raw.target);
   const hasTarget =
-    target.entity_id || target.area_id || target.device_id || raw.entity_id || values.entity_id;
+    target.entity_id ||
+    target.area_id ||
+    target.device_id ||
+    target.floor_id ||
+    target.label_id ||
+    raw.entity_id ||
+    values.entity_id;
 
   if (!entry?.target || hasTarget) return [];
 

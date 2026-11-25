@@ -166,6 +166,8 @@ export class FakeHa {
         return structuredClone([...this.devices.values()]);
       case HA_COMMAND.areaRegistryList:
         return structuredClone(this.areas);
+      case HA_COMMAND.floorRegistryList:
+        return structuredClone(this.home.floors);
       case HA_COMMAND.traceList:
         return this.listTraces(payload);
       case HA_COMMAND.traceGet:

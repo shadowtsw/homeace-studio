@@ -55,4 +55,6 @@ export type EntryDetails = { aliases: string[] };
 
 export type Area = { areaId: string; name: string; icon: string | null };
 
+export type Floor = { floorId: string; name: string; icon: string | null };
+
 export type Label = { labelId: string; name: string; icon: string | null; color: string | null };

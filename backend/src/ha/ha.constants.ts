@@ -47,6 +47,7 @@ export const HA_COMMAND = {
   traceList: "trace/list",
   traceGet: "trace/get",
   deviceRegistryList: "config/device_registry/list",
+  floorRegistryList: "config/floor_registry/list",
   configEntriesGet: "config_entries/get",
   callService: "call_service",
   subscribeEvents: "subscribe_events",

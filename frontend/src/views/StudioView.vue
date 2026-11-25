@@ -424,10 +424,16 @@ const displayFlow = computed(() => {
   const areaNames = Object.fromEntries(lookups.areas.map((area) => [area.areaId, area.name]));
   const entityNames = { ...areaNames, ...lookups.entityNames, ...flow.entityNames };
 
+  const targetNames = {
+    floors: Object.fromEntries(lookups.floors.map((floor) => [floor.floorId, floor.name])),
+    labels: Object.fromEntries(lookups.labels.map((label) => [label.labelId, label.name])),
+  };
+
   const display = toDisplayFlow(
     { ...flow, entityNames },
     editorStore.catalogs[settings.locale] ?? null,
     flowTexts.value,
+    targetNames,
   );
   // Entities the check-up found missing show in red.
   const gone = new Set(

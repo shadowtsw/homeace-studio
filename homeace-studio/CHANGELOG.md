@@ -23,6 +23,9 @@
   zeigen" (off by default).
 - Ready for Home Assistant 2026.12, which splits plugs with several outlets into one device per
   outlet: each outlet stays in the room of its plug and is named with it ("Eve Energy Top").
+- Automations and scripts that switch a whole floor or everything with a label show it ("Etage
+  Erdgeschoss", "Label Nachtlicht") instead of asking for a device, and what such a block leaves out
+  shows as "ohne Küche".
 
 - What's new: after an update, a gift next to the gear shows the highlights of the new version in
   plain words. "Zeigen" leads to the feature, "OK" puts the gift away; the gear menu keeps

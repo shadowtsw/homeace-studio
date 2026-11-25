@@ -8,19 +8,21 @@ import type {
   HaCategory,
   HaDevice,
   HaEntityRegistryEntry,
+  HaFloor,
   HaLabel,
   HaState,
 } from "../ha/ha.types";
 import { toEntityOptions, type EntityOption } from "./entity-options";
 
 export type Area = { areaId: string; name: string; icon: string | null };
+export type Floor = { floorId: string; name: string; icon: string | null };
 export type Label = { labelId: string; name: string; icon: string | null; color: string | null };
 
 const byName = (first: { name: string }, second: { name: string }): number =>
   first.name.localeCompare(second.name, undefined, { sensitivity: "base" });
 
 /**
- * HA's areas, labels and entities, for the pickers in the detail view and the flow editor. Read-only and a plain mapping, so the
+ * HA's areas, floors, labels and entities, for the pickers in the detail view and the flow editor. Read-only and a plain mapping, so the
  * controller talks to the HA connection directly instead of going through a service.
  */
 @Controller()
@@ -57,6 +59,22 @@ export class LookupsController {
     ]);
 
     return toEntityOptions({ states, registry, devices, areas, labels, entityCategories });
+  }
+
+  /** Floors in HA's order (by level, then name), for flows that target a floor. */
+  @Get("floors")
+  async floors(): Promise<Floor[]> {
+    const floors = await this.ha.call<HaFloor[]>(HA_COMMAND.floorRegistryList);
+    const level = (floor: HaFloor): number => floor.level ?? Number.MAX_SAFE_INTEGER;
+    const sorted = [...floors].sort(
+      (first, second) => level(first) - level(second) || byName(first, second),
+    );
+
+    return sorted.map((floor) => ({
+      floorId: floor.floor_id,
+      name: floor.name,
+      icon: floor.icon,
+    }));
   }
 
   @Get("labels")

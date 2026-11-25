@@ -66,6 +66,11 @@ chip / menu → FlowChange → editorStore.applyChange → applyFlowChange(draft
   triggers/conditions (state, numeric_state, time, sun, template, …) are hand-made. Everything HA
   describes (new-style triggers like `zone.entered`, every service action) is a **generic block** from the
   catalog: title from HA, target chips, set fields, missing required fields, addable optional fields.
+- **Targets:** entities and areas are editable chips, devices, floors (`floor_id`) and labels
+  (`label_id`) show by name only, and `target.exclude` (what HA leaves out, same keys as the target)
+  is one read-only chip "ohne …". Floor and label names come from `lookupsStore` as `TargetNames`
+  (fourth argument of `toDisplayFlow`). A target counts as set when any of these keys is there;
+  otherwise the orange "missing" chip asks for an entity.
 - **Unknown blocks:** anything else becomes `isUnknown` with its raw config. It is shown and saved
   unchanged. This is a core promise of the editor (docs/decisions.md). Never drop or rewrite what you don't
   understand.

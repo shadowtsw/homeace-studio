@@ -109,9 +109,11 @@ Calls the matching HA service: run = `automation.trigger` (ignores conditions), 
 stops a running `script`. Returns `null` with `ENTRY_ACTION_DONE`;
 `400 ENTRY_ACTION_UNSUPPORTED` (`params.entityId`, `params.action`) for other domains.
 
-## GET /api/areas · GET /api/labels
+## GET /api/areas · GET /api/floors · GET /api/labels
 
 HA's areas `[{ areaId, name, icon }]` and labels `[{ labelId, name, icon, color }]`, sorted by name.
+Floors `[{ floorId, name, icon }]` come in HA's order: by `level`, floors without a level last, then by
+name. The flow editor uses floor and label names for targets (`target.floor_id`, `target.label_id`).
 
 `GET /api/entities` lists every entity HA has, for the entity picker of the flow editor and the entities
 in the list, sorted by name:
@@ -125,7 +127,8 @@ in the list, sorted by name:
 
 - `shortName` is the name within its device ("Battery"), or the full name when it does not start with
   the device name.
-- `areaId` / `areaName` are the entity's own area, otherwise its device's area, otherwise `null`.
+- `areaId` / `areaName` are the entity's own area, otherwise its device's area (for a child device:
+  its parent's), otherwise `null`. `deviceName` of a child device starts with the parent's name.
 - `labels` are label names; `unit` is `unit_of_measurement` or `null`.
 - `options` holds the possible states of select-like entities (input_select, select, enum sensors),
   otherwise `null`.

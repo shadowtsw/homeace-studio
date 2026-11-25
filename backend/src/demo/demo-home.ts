@@ -1,5 +1,5 @@
 import type { HaPlatformDescription, HaServices, HaTranslations } from "../editor/catalog.mapper";
-import type { HaArea, HaConfigEntry, HaLabel } from "../ha/ha.types";
+import type { HaArea, HaConfigEntry, HaFloor, HaLabel } from "../ha/ha.types";
 import type { Overlay } from "../overlay/overlay.model";
 import { createDemoTraces, type DemoTrace } from "./demo-traces";
 
@@ -35,6 +35,7 @@ export type DemoEntity = {
 
 export type DemoHome = {
   areas: HaArea[];
+  floors: HaFloor[];
   labels: HaLabel[];
   entities: DemoEntity[];
   helperConfigEntries: HaConfigEntry[];
@@ -681,6 +682,11 @@ const SCRIPTS: DemoEntity[] = [
         { action: "light.turn_off", target: { entity_id: "light.living_room" } },
         // Everything with the label "Lights", also lights added later
         { action: "light.turn_off", target: { label_id: "lights" } },
+        // The whole ground floor, but the hallway stays lit for the way to bed
+        {
+          action: "light.turn_off",
+          target: { floor_id: "ground_floor", exclude: { area_id: "hallway" } },
+        },
       ],
     },
   },
@@ -960,6 +966,10 @@ export function createDemoHome(now = Date.now()): DemoHome {
       { area_id: "hallway", name: "Hallway", icon: null },
       { area_id: "bathroom", name: "Bathroom", icon: null },
       { area_id: "garage", name: "Garage", icon: null },
+    ],
+    floors: [
+      { floor_id: "upstairs", name: "Upstairs", icon: null, level: 1 },
+      { floor_id: "ground_floor", name: "Ground floor", icon: null, level: 0 },
     ],
     labels: [
       { label_id: "lights", name: "Lights", icon: null, color: "amber" },

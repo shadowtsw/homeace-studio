@@ -81,6 +81,15 @@ export type HaArea = {
   labels?: string[];
 };
 
+/** A floor from `config/floor_registry/list`; flows can target it (`target.floor_id`). */
+export type HaFloor = {
+  floor_id: string;
+  name: string;
+  icon: string | null;
+  /** HA sorts floors by it (0 = ground floor); null when the user set none. */
+  level: number | null;
+};
+
 /** An event from `subscribe_events`, e.g. `state_changed`. */
 export type HaEvent = {
   event_type: string;
