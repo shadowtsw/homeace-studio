@@ -29,7 +29,8 @@ Checklists for changes that touch several places. Feature-specific recipes are o
 2. **Teach the demo:** `backend/src/demo/fake-ha.ts` must answer it in HA's shape (the `switch` in its
    command handler, or `restGet` / `restPost` / `restDelete`). Otherwise demo mode and the screenshots
    break. Add data to `demo-home.ts` if needed.
-3. Add the API to the table "HA APIs we rely on" in [architecture.md](architecture.md).
+3. Add the API to the table "HA APIs we rely on" in [architecture.md](architecture.md), and a row with
+   risk, code and quick check to [ha-compatibility.md](ha-compatibility.md#touchpoints-by-risk).
 4. If HA's answer can arrive later than the call (new entities after create or reload), poll briefly like
    `waitForEntityId` (helpers) or `FLOW_LOOKUP_ATTEMPTS` (flows).
 
@@ -74,3 +75,23 @@ Checklists for changes that touch several places. Feature-specific recipes are o
 
 See [setup.md](setup.md#releases): version in `homeace-studio/config.yaml`, a `CHANGELOG.md` section, and
 "What's new" highlights in `frontend/src/constants/whatsNew.ts`.
+
+## HA release check
+
+HA releases once a month on the first Wednesday; the beta comes out the Wednesday before. Check in that
+beta week, so a fix can be ready on release day. The areas and quick checks are in
+[ha-compatibility.md](ha-compatibility.md).
+
+1. **Read** the beta release notes, above all "Backward-incompatible changes", and the developer blog
+   (developers.home-assistant.io/blog) since the last check. Look for the words of the touchpoint table:
+   registry, category, label, area, device, entity, trace, automation, script, scene, the helper types,
+   trigger, condition, translations, frontend, WebSocket, ingress, Supervisor, apps.
+2. **Test** on a real HA, at best a throwaway one with the beta, otherwise the own HA right after the
+   release. Run the quick checks of every hit, and the 🔴 rows every time.
+3. **Write it down:** a line in the "Check log" of ha-compatibility.md, also when nothing was found. A
+   real change also goes to "Known changes" with our answer.
+4. **Fix** in a patch release; the CHANGELOG line names the HA version. If an older HA can no longer work
+   with the fix, raise `homeassistant:` (minimum HA version) in `homeace-studio/config.yaml`.
+5. **Own release:** not on HA's release day. If it comes after it, test with the new HA version first.
+
+Patch releases of HA (`2026.12.1`, …) rarely touch these interfaces: only scan their notes.

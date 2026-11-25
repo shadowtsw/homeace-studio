@@ -113,6 +113,8 @@ scripts/build-addon.mjs      copies homeace-studio/ + frontend/ + backend/ (no n
 
 ## HA APIs we rely on
 
+Risk per area, quick checks and the check per HA release: [ha-compatibility.md](ha-compatibility.md).
+
 | Purpose | API |
 | --- | --- |
 | Categories (per scope: automation, script, scene, helpers) | WS `config/category_registry/list · create · update · delete` |
@@ -154,3 +156,4 @@ scripts/build-addon.mjs      copies homeace-studio/ + frontend/ + backend/ (no n
 | AI / MCP | [features/ai-mcp.md](features/ai-mcp.md) |
 | texts, languages, error messages | [features/i18n.md](features/i18n.md) |
 | new endpoint, HA command, overlay field, component | [recipes.md](recipes.md) |
+| a new HA release, what it can break, HA interfaces at risk | [ha-compatibility.md](ha-compatibility.md) |

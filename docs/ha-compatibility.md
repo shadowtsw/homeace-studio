@@ -1,0 +1,75 @@
+# HA compatibility
+
+Where a new Home Assistant release can break HomeAce Studio, what already protects us, and how each HA
+release is checked. The list of APIs is in [architecture.md](architecture.md#ha-apis-we-rely-on); this
+page adds the risk, the code and a quick check per area. The routine is in
+[recipes.md](recipes.md#ha-release-check).
+
+## Why it can break
+
+- Most commands we use are the ones HA's own frontend uses (`config/*_registry/*`,
+  `trigger_platforms/subscribe`, `frontend/get_translations`, REST `/api/config/<kind>/config/<id>`,
+  `<helper type>/update`). They are not part of HA's documented WebSocket and REST API. HA changes them
+  together with its frontend in the same release, often only mentioned in the release notes or the
+  developer blog, sometimes not at all.
+- The format of automations and scripts grows with every release (new trigger and condition styles, new
+  keys). Old configs must keep working, new ones must not be broken by our editor.
+- **Tests and the demo do not catch it.** Unit tests and `backend/src/demo/fake-ha.ts` answer in the
+  shape HA had when we wrote them, so they stay green when HA changes. Only a real HA shows it.
+
+## Safety nets already in place
+
+| Net | Where |
+| --- | --- |
+| One place talks to HA; every command name is in `HA_COMMAND` / `HA_REST_PATH` | `backend/src/ha/ha.constants.ts` |
+| Unknown blocks are shown and saved unchanged with their raw config | [features/flow-editor.md](features/flow-editor.md#round-trip) |
+| New syntax (`triggers` / `conditions` / `actions`) is read with a fallback to the old one | `frontend/src/utils/flow/toDisplayFlow.ts` |
+| Edits change only the touched path; key order and untouched objects stay | `setAtPath`, flow editor |
+| HA validates on save; a rejection comes back as `FLOW_INVALID` instead of breaking a file | `backend/src/editor/flow-errors.ts` |
+| Saving a helper sends the whole stored helper, so unknown fields survive | [features/helpers.md](features/helpers.md) |
+| Saving a scene keeps every config key we do not edit | [features/scenes.md](features/scenes.md) |
+| `trace.stored_traces` is merged into the existing `trace` object | `backend/src/traces/traces.service.ts` |
+| HA's `null` alias (the entity's own name) is kept | [api.md](api.md#patch-apientriesentityid) |
+| Plan B if HA ever refuses the own category scope `homeace_entities`: labels with the prefix "📁 " | [decisions.md](decisions.md) (2026-11-25) |
+
+## Touchpoints by risk
+
+🔴 high: interface of HA's frontend that changes often, or a file we write. 🟠 medium: registry or
+storage interface, changed rarely, but once already. 🟢 low: documented core API or Supervisor basics.
+
+| Risk | Area | HA interface | Code | Breaks as | Quick check |
+| --- | --- | --- | --- | --- | --- |
+| 🔴 | Block catalog | WS `trigger_platforms/subscribe`, `condition_platforms/subscribe`, `get_services` | `editor/repositories/ha-editor.repository.ts`, `editor/catalog.mapper.ts` | picker empty or missing groups, generic blocks without title or fields | New automation: add a trigger, a condition and an action; groups, names and fields are there |
+| 🔴 | Texts from HA | WS `frontend/get_translations` | `editor/catalog.mapper.ts` | raw keys or English names in a German UI | Same check with the UI in German |
+| 🔴 | Flow format | keys and block shapes in automations and scripts | `frontend/src/utils/flow/toDisplayFlow.ts` | known blocks shown as unknown, wrong chips | Open a few existing flows (new-style triggers too): no unexpected unknown blocks; save one unchanged and compare in HA's YAML editor |
+| 🔴 | Flow files | REST `config/automation/config/`, `config/script/config/`; WS `automation/config`, `script/config` | `editor/repositories/ha-editor.repository.ts` | read, save, create or delete fails | Create, save and delete a test automation and a test script |
+| 🔴 | Scene file | REST `config/scene/config/`; service `scene.apply` | `scenes/repositories/ha-scene.repository.ts` | scene save or preview fails | Edit a test scene, preview, save |
+| 🔴 | Own category scope | `config/category_registry/*` with scope `homeace_entities` | `categories/categories.constants.ts`, `lookups/entity-options.ts` | entity folders refused or gone | Move an entity into a folder, reload the page |
+| 🟠 | Helpers | WS `<type>/list · create · update · delete` | `helpers/repositories/ha-helpers.repository.ts` | settings lost or save error | Change the max of a number helper; the other fields stay |
+| 🟠 | Entity registry | WS `config/entity_registry/list · get · update` | `entries/repositories/ha-entries.repository.ts`, `categories/`, `rename/` | wrong names, icons, areas, labels, aliases; rename fails | Rename an entry, add an alias, change an entity ID |
+| 🟠 | Categories, labels, areas | WS `config/category_registry/*`, `config/label_registry/*`, `config/area_registry/*` | `categories/`, `labels/labels.service.ts`, `areas/areas.service.ts` | folders, labels or areas missing or not saved | Create, rename and delete a folder, a label and an area |
+| 🟠 | Devices, config entries | WS `config/device_registry/list`, `config_entries/get` | `lookups/lookups.controller.ts`, `snapshot/home-snapshot.service.ts`, `entries/` | derived areas missing, template or group helpers missing from the list | Area view shows device areas; a template helper is listed |
+| 🟠 | Run history | WS `trace/list`, `trace/get` | `traces/traces.service.ts`, `traces/trace-mapper.ts` | history empty or steps wrong | Run an automation, open its history |
+| 🟠 | Live updates | event names `state_changed`, `*_registry_updated` | `live/live-events.ts` | list does not refresh after a change in HA | Rename something in HA; HomeAce follows without reload |
+| 🟠 | HA user | ingress headers `x-remote-user-*` | `preferences/ha-user.ts` | user not recognized (later: settings per user lost) | With technical details on, "Über HomeAce" shows the user |
+| 🟢 | Core | WS auth, `get_states`, `call_service`, `subscribe_events` | `ha/ha-connection.service.ts`, `entries/` | nothing loads, run and on/off fail | App loads; run a script |
+| 🟢 | Supervisor | proxy URLs, `SUPERVISOR_TOKEN`, ingress prefix, `config.yaml` schema, app store | `ha/ha.constants.ts`, `homeace-studio/config.yaml` | app does not start, open or update | Install or update the app, open it from the sidebar |
+
+New HA command: add a row here ([recipes.md](recipes.md#new-ha-command-or-rest-call)).
+
+## Known changes
+
+| HA version | Change | Our answer |
+| --- | --- | --- |
+| 2024.10 | `trigger:` / `condition:` / `action:` lists renamed to the plural, `platform:` in triggers became `trigger:` | Read both, write what the config has (`toDisplayFlow.ts`) |
+| unknown, seen 11/2026 | `<type>/update` replaces the stored helper instead of merging | Send the whole stored helper (decisions.md 2026-11-24) |
+| unknown, seen 11/2026 | Entity aliases can hold `null` for the entity's own name | Never shown, kept on save (api.md) |
+| 2026.11.2 | Supervisor: "Check for updates" does not always notice a new version of a local app | `ha store reload` ([setup.md](setup.md)) |
+
+## Check log
+
+One line per checked HA release (see [recipes.md](recipes.md#ha-release-check)).
+
+| HA version | Checked on | Found | Tested on |
+| --- | --- | --- | --- |
+| 2026.12 (beta) | – | – | – |
