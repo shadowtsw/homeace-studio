@@ -50,6 +50,11 @@ export const CATALOG_RU: Catalog = {
   AREA_DELETED: "Пространство удалено.",
   AREA_NAME_TAKEN: "Пространство «{name}» уже есть.",
   AREA_NOT_FOUND: "В Home Assistant нет (больше) такого пространства.",
+  LABEL_CREATED: "Метка создана.",
+  LABEL_UPDATED: "Метка сохранена.",
+  LABEL_DELETED: "Метка удалена.",
+  LABEL_NAME_TAKEN: "Метка «{name}» уже существует.",
+  LABEL_NOT_FOUND: "В Home Assistant нет (больше) такой метки.",
 
   FOLDER_CREATED: "Папка создана.",
   FOLDER_DELETED: "Папка удалена.",

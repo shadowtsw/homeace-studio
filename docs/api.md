@@ -142,6 +142,31 @@ cleaning up owned categories, message `ENTRY_MOVED`. The category lives in the s
 - Errors: `400 ENTRY_NOT_IN_REGISTRY` (`params.entityId`; also for an unknown entity),
   `400 CATEGORY_PATH_INVALID`, `400 VALIDATION_FAILED`.
 
+## Labels: POST /api/labels · PATCH /api/labels/:labelId · DELETE /api/labels/:labelId
+
+Creates, changes and deletes labels in HA's label registry (`config/label_registry/create · update ·
+delete`). Bodies: `{ "name": "Holiday", "color": "indigo", "icon": "mdi:beach" }`; for PATCH every field
+is optional, `null` clears colour or icon. Answers with the label `{ labelId, name, icon, color }`
+(DELETE: null). Messages `LABEL_CREATED`, `LABEL_UPDATED`, `LABEL_DELETED`.
+
+- Names are trimmed and unique ignoring case: `409 LABEL_NAME_TAKEN` (`params.name`), checked before HA is
+  asked. An unknown label: `404 LABEL_NOT_FOUND`.
+- `color` is one of HA's colour names (`indigo`, `light-blue` …) or a hex value; `icon` looks like
+  `mdi:name`.
+- Renaming keeps the `labelId`, so flows that target the label keep working. Deleting is done by HA: the
+  label goes from every entity, device and area; flows that name it keep the id and then do less.
+
+`GET /api/labels/:labelId/usage` says what deleting would touch, for the warning before it:
+
+```json
+{ "entries": 9, "entities": 3, "devices": 1, "areas": 0,
+  "flowsAsTarget": [{ "entityId": "script.all_off", "name": "Everything off" }] }
+```
+
+`entries` are automations, scripts, scenes and helpers; `entities` the other registry entries.
+`flowsAsTarget` are automations and scripts whose config names the label as `label_id` anywhere (also in
+branches, also in a list), from the shared snapshot (`HomeSnapshotService`).
+
 ## Areas: POST /api/areas · PATCH /api/areas/:areaId · DELETE /api/areas/:areaId
 
 Creates, changes and deletes areas in HA's area registry (`config/area_registry/create · update ·

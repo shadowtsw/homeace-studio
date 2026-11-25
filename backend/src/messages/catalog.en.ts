@@ -49,6 +49,11 @@ export const CATALOG_EN: Catalog = {
   AREA_DELETED: "Area deleted.",
   AREA_NAME_TAKEN: 'There is already an area "{name}".',
   AREA_NOT_FOUND: "Home Assistant does not have this area (any more).",
+  LABEL_CREATED: "Label created.",
+  LABEL_UPDATED: "Label saved.",
+  LABEL_DELETED: "Label deleted.",
+  LABEL_NAME_TAKEN: "The label “{name}” already exists.",
+  LABEL_NOT_FOUND: "Home Assistant does not have this label (any more).",
 
   FOLDER_CREATED: "Folder created.",
   FOLDER_DELETED: "Folder removed.",

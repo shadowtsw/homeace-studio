@@ -50,6 +50,11 @@ export const CATALOG_ES: Catalog = {
   AREA_DELETED: "Área eliminada.",
   AREA_NAME_TAKEN: "Ya existe un área “{name}”.",
   AREA_NOT_FOUND: "Home Assistant no tiene (o ya no tiene) esta área.",
+  LABEL_CREATED: "Etiqueta creada.",
+  LABEL_UPDATED: "Etiqueta guardada.",
+  LABEL_DELETED: "Etiqueta eliminada.",
+  LABEL_NAME_TAKEN: "La etiqueta “{name}” ya existe.",
+  LABEL_NOT_FOUND: "Home Assistant no tiene (o ya no tiene) esta etiqueta.",
 
   FOLDER_CREATED: "Carpeta creada.",
   FOLDER_DELETED: "Carpeta eliminada.",

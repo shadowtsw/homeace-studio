@@ -50,6 +50,11 @@ export const CATALOG_FR: Catalog = {
   AREA_DELETED: "Pièce supprimée.",
   AREA_NAME_TAKEN: "Il existe déjà une pièce « {name} ».",
   AREA_NOT_FOUND: "Home Assistant n'a pas (ou plus) cette pièce.",
+  LABEL_CREATED: "Étiquette créée.",
+  LABEL_UPDATED: "Étiquette enregistrée.",
+  LABEL_DELETED: "Étiquette supprimée.",
+  LABEL_NAME_TAKEN: "L'étiquette « {name} » existe déjà.",
+  LABEL_NOT_FOUND: "Home Assistant n'a pas (ou plus) cette étiquette.",
 
   FOLDER_CREATED: "Dossier créé.",
   FOLDER_DELETED: "Dossier supprimé.",

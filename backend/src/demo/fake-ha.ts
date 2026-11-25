@@ -156,6 +156,12 @@ export class FakeHa {
         return this.deleteCategory(payload);
       case HA_COMMAND.labelRegistryList:
         return structuredClone(this.labels);
+      case HA_COMMAND.labelRegistryCreate:
+        return this.createLabel(payload);
+      case HA_COMMAND.labelRegistryUpdate:
+        return this.updateLabel(payload);
+      case HA_COMMAND.labelRegistryDelete:
+        return this.deleteLabel(payload);
       case HA_COMMAND.deviceRegistryList:
         return structuredClone([...this.devices.values()]);
       case HA_COMMAND.areaRegistryList:
@@ -423,6 +429,71 @@ export class FakeHa {
   private requireFreeAreaName(name: string, ownId: string | null): void {
     const taken = this.areas.some(
       (area) => area.area_id !== ownId && area.name.toLowerCase() === name.toLowerCase(),
+    );
+    if (!name || taken)
+      throw new HaCommandError(ERROR_CODE.invalid, `The name "${name}" is already in use`);
+  }
+
+  private createLabel(payload: Payload): HaLabel {
+    const name = text(payload.name).trim();
+    this.requireFreeLabelName(name, null);
+
+    const base = slugify(name) || "label";
+    let labelId = base;
+    for (let n = 2; this.labels.some((label) => label.label_id === labelId); n++)
+      labelId = `${base}_${n}`;
+
+    const label: HaLabel = {
+      label_id: labelId,
+      name,
+      icon: typeof payload.icon === "string" ? payload.icon : null,
+      color: typeof payload.color === "string" ? payload.color : null,
+    };
+    this.labels.push(label);
+    this.emit("label_registry_updated", { action: "create", label_id: labelId });
+
+    return structuredClone(label);
+  }
+
+  private updateLabel(payload: Payload): HaLabel {
+    const label = this.requireLabel(payload.label_id);
+
+    if (payload.name !== undefined) {
+      const name = text(payload.name).trim();
+      this.requireFreeLabelName(name, label.label_id);
+      label.name = name;
+    }
+    if (payload.icon !== undefined)
+      label.icon = typeof payload.icon === "string" ? payload.icon : null;
+    if (payload.color !== undefined)
+      label.color = typeof payload.color === "string" ? payload.color : null;
+    this.emit("label_registry_updated", { action: "update", label_id: label.label_id });
+
+    return structuredClone(label);
+  }
+
+  /** Like HA: the label goes from every entity; flows that name it keep the id and do less. */
+  private deleteLabel(payload: Payload): null {
+    const label = this.requireLabel(payload.label_id);
+
+    this.labels.splice(this.labels.indexOf(label), 1);
+    for (const entry of this.registry.values())
+      entry.labels = entry.labels.filter((id) => id !== label.label_id);
+    this.emit("label_registry_updated", { action: "remove", label_id: label.label_id });
+
+    return null;
+  }
+
+  private requireLabel(labelId: unknown): HaLabel {
+    const label = this.labels.find((item) => item.label_id === labelId);
+    if (!label) throw new HaCommandError(ERROR_CODE.notFound, "Label not found");
+
+    return label;
+  }
+
+  private requireFreeLabelName(name: string, ownId: string | null): void {
+    const taken = this.labels.some(
+      (label) => label.label_id !== ownId && label.name.toLowerCase() === name.toLowerCase(),
     );
     if (!name || taken)
       throw new HaCommandError(ERROR_CODE.invalid, `The name "${name}" is already in use`);

@@ -54,6 +54,13 @@ export const MESSAGE_ID = {
   areaNameTaken: "AREA_NAME_TAKEN",
   areaNotFound: "AREA_NOT_FOUND",
 
+  // Labels
+  labelCreated: "LABEL_CREATED",
+  labelUpdated: "LABEL_UPDATED",
+  labelDeleted: "LABEL_DELETED",
+  labelNameTaken: "LABEL_NAME_TAKEN",
+  labelNotFound: "LABEL_NOT_FOUND",
+
   // Folders (empty folders of the tree)
   folderCreated: "FOLDER_CREATED",
   folderDeleted: "FOLDER_DELETED",

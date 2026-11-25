@@ -35,6 +35,8 @@ export type HaDevice = {
   /** Name set by the user; wins over `name`. */
   name_by_user: string | null;
   area_id: string | null;
+  /** Label ids; HA sends them, older demo data may leave them out. */
+  labels?: string[];
 };
 
 export type HaState = {
@@ -69,6 +71,8 @@ export type HaArea = {
   area_id: string;
   name: string;
   icon: string | null;
+  /** Label ids; HA sends them, older demo data may leave them out. */
+  labels?: string[];
 };
 
 /** An event from `subscribe_events`, e.g. `state_changed`. */

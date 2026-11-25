@@ -665,6 +665,8 @@ const SCRIPTS: DemoEntity[] = [
         { action: "light.turn_off", target: { entity_id: "light.terrace" } },
         { action: "light.turn_off", target: { entity_id: "light.garden_paths" } },
         { action: "light.turn_off", target: { entity_id: "light.living_room" } },
+        // Everything with the label "Lights", also lights added later
+        { action: "light.turn_off", target: { label_id: "lights" } },
       ],
     },
   },
