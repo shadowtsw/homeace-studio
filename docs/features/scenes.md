@@ -9,7 +9,10 @@ afterwards.
 
 | What | File |
 | --- | --- |
-| Tab: device rows, add device, preview, try, take current state, save footer (teleported) | `frontend/src/components/scenes/SceneEditorView.vue` |
+| Tab: load, draft (kept in `draftsStore`), device rows, take current state, save, save footer (teleported) | `frontend/src/components/scenes/SceneEditorView.vue` |
+| "+ Gerät hinzufügen": picker placed within the window, `SCENE_DOMAINS` | `frontend/src/components/scenes/SceneDevicePicker.vue` |
+| "Vorschau", "Ausprobieren", live edits, restore on leaving and `pagehide` | `frontend/src/composables/useScenePreview.ts` |
+| Automatic saving and "Alles rückgängig" | `frontend/src/composables/useSceneAutoSave.ts` |
 | Controls of one device (on/off, brightness, white tone, color, position, temperature, …) | `frontend/src/components/scenes/SceneDeviceRow.vue` |
 | HA attributes ↔ controls, light capabilities, presets, "extras" the editor cannot show | `frontend/src/utils/sceneValues.ts` (`readControls`, `writeControls`, `lightCaps`, `extrasOf`) |
 | API calls, `sendBeacon` restore | `frontend/src/services/scenesService.ts` |
@@ -54,7 +57,7 @@ Alles rückgängig → PUT :id { the state before the first automatic save }
   survive switching tabs and entries, show the dot in the list, and the browser asks before closing.
 - **Automatic saving** ("Szenen automatisch speichern" in the gear menu, `settings.isSceneAutoSave`, off
   by default): saves ~1 s after the last edit, without a toast. Leaving the scene with an edit still
-  waiting saves it right away (`flushAutoSave`). Edits made while a save runs stay in the draft and
+  waiting saves it right away (`flush`). Edits made while a save runs stay in the draft and
   follow. A failed automatic save falls back to the normal footer for this scene.
 - **"Alles rückgängig"** goes back to how the scene was before its first automatic save
   (`draftsStore.sceneUndo`), also in HA. Only while the scene stays open: StudioView forgets it when
