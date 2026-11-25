@@ -54,15 +54,16 @@
       </div>
 
       <div ref="addRoot" class="scene-editor__add">
-        <button class="btn" type="button" @click="openPicker">
+        <button ref="addButton" class="btn" type="button" @click="openPicker">
           <span class="mdi mdi-plus" /> {{ t("scene.add") }}
         </button>
-        <div v-if="isPicking" class="scene-editor__picker">
+        <div v-if="isPicking" ref="picker" class="scene-editor__picker" :style="pickerStyle">
+          <!-- Suggestions come from the scene's area; devices already in it keep their tick. -->
           <EntityPicker
             :entities="lookups.entities"
             :selected="order"
             :domains="SCENE_DOMAINS"
-            :used-ids="order"
+            :used-ids="[]"
             :area-id="entry.area?.areaId ?? null"
             :can-pick-area="false"
             :is-technical-details-visible="isTechnicalDetailsVisible"
@@ -137,7 +138,52 @@ const isPreviewing = ref(false);
 const trying = reactive(new Set<string>());
 const isPicking = ref(false);
 const addRoot = useTemplateRef("addRoot");
+const addButton = useTemplateRef("addButton");
+const picker = useTemplateRef("picker");
+const pickerStyle = ref<Record<string, string>>({});
 onClickOutside(addRoot, () => (isPicking.value = false));
+
+/** Size of the device picker and its distance to the button and the window edges. */
+const PICKER = { width: 460, maxHeight: 460, minBelow: 320, gap: 6, margin: 12 };
+
+/**
+ * Places the picker next to its button within the window: below, or above when there is more room
+ * there, never taller than the room it has (it used to run out of the window at the bottom).
+ */
+function placePicker(): void {
+  const button = addButton.value?.getBoundingClientRect();
+  if (!button) return;
+
+  const below = window.innerHeight - button.bottom - PICKER.gap - PICKER.margin;
+  const above = button.top - PICKER.gap - PICKER.margin;
+  const opensUp = below < PICKER.minBelow && above > below;
+  const width = Math.min(PICKER.width, window.innerWidth - 2 * PICKER.margin);
+  const left = Math.min(
+    Math.max(PICKER.margin, button.left),
+    window.innerWidth - width - PICKER.margin,
+  );
+
+  pickerStyle.value = {
+    left: `${left}px`,
+    width: `${width}px`,
+    maxHeight: `${Math.min(PICKER.maxHeight, opensUp ? above : below)}px`,
+    ...(opensUp
+      ? { bottom: `${window.innerHeight - button.top + PICKER.gap}px` }
+      : { top: `${button.bottom + PICKER.gap}px` }),
+  };
+}
+
+// The picker stays at its place in the window, so it closes when the details scroll or the window
+// changes size (scrolling inside the picker itself is fine).
+useEventListener(
+  document,
+  "scroll",
+  (event: Event) => {
+    if (isPicking.value && !picker.value?.contains(event.target as Node)) isPicking.value = false;
+  },
+  { capture: true, passive: true },
+);
+useEventListener(window, "resize", () => (isPicking.value = false));
 
 const entities = (): Record<string, SceneValue> =>
   Object.fromEntries(order.value.map((id) => [id, draft.value[id] ?? {}]));
@@ -257,7 +303,9 @@ async function remove(id: string): Promise<void> {
 
 async function openPicker(): Promise<void> {
   isPicking.value = !isPicking.value;
-  if (isPicking.value) await lookups.loadEntities();
+  if (!isPicking.value) return;
+  placePicker();
+  await lookups.loadEntities();
 }
 
 async function add(id: string): Promise<void> {
@@ -371,15 +419,12 @@ onBeforeUnmount(() => leave(props.entry.entityId));
   position: relative;
 }
 
+/* Fixed in the window; placePicker() sets where and how big. */
 .scene-editor__picker {
-  position: absolute;
-  left: 0;
-  top: calc(100% + 6px);
-  z-index: 20;
+  position: fixed;
+  z-index: 50;
   display: flex;
   flex-direction: column;
-  width: min(460px, calc(100vw - 32px));
-  max-height: min(460px, 60vh);
   padding: 8px;
   border-radius: 12px;
   border: 1px solid var(--line-strong);
