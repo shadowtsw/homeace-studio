@@ -52,6 +52,9 @@ backend/src/
   categories/folders.*   empty folders of the tree (overlay only), GET/POST/DELETE /api/folders
   categories/cleanup/    tidy-up assistant: cleanup-analysis.ts (pure: findCleanupProposals, planCleanup),
                          CleanupService + CleanupController under /api/categories/cleanup
+  scenes/                GET/PUT /api/scenes/:entityId (scenes.yaml via HA's config API), preview and
+                         restore with scene.apply and states kept per scene in memory (no snapshot
+                         scene in HA), GET device/:deviceId for a device joining a scene
   helpers/               POST /api/helpers: helper-payload.ts checks settings per type, then `<type>/create`,
                          wait for the entity, sort it into the folder; GET/PUT :entityId/settings:
                          helperSettingsOf (HA → form) and buildUpdatePayload (form → the whole stored
@@ -114,6 +117,17 @@ frontend/src/
                                  helper; template/group helpers get a "later" note): HelperSettingsFields
                                  from the create dialog, utils/helperSettings.ts checks while typing
                                  (never stricter than the backend) and names the fields to mark red
+  components/scenes/             SceneEditorView (the "Zustände" tab of scenes: edit without switching,
+                                 "Vorschau" and per device "Ausprobieren", restored on leaving and with
+                                 sendBeacon on pagehide; "Aktuellen Zustand übernehmen"; add devices with
+                                 the EntityPicker), SceneDeviceRow (controls per device kind);
+                                 utils/sceneValues.ts maps HA's attributes to controls and back (a new
+                                 colour or white tone removes all old colour attributes) and names what
+                                 the editor cannot show
+  components/common/SaveFooter   "Ungespeicherte Änderungen · Verwerfen · In HA speichern" for flows,
+                                 helper settings and scenes; it sits in EntryDetail's footer slot
+                                 (#entry-detail-footer), editors teleport theirs in. EntryDetail keeps
+                                 header and tabs on top, only the middle scrolls
   components/layout/WhatsNewMenu "What's new": gift with a dot next to the gear after an update, popover
                                  with the highlights; "Zeigen" leads to the feature (utils/flash.ts lets it
                                  light up), only "OK" confirms. constants/whatsNew.ts holds the highlights per

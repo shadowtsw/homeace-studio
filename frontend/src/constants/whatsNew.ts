@@ -3,8 +3,8 @@ import type { AppLocale } from "@/i18n";
 /** A text in every UI language; the type makes a missing language a build error. */
 export type LocalizedText = Record<AppLocale, string>;
 
-/** Where "Zeigen" takes the user: the gear menu, or the helpers in the list. */
-export type WhatsNewTarget = "settings" | "helpers";
+/** Where "Zeigen" takes the user: the gear menu, or the helpers or scenes in the list. */
+export type WhatsNewTarget = "settings" | "helpers" | "scenes";
 
 export type WhatsNewItem = {
   /** MDI icon class, e.g. "mdi-gift-outline". */
@@ -41,6 +41,24 @@ export const WHATS_NEW: readonly WhatsNewRelease[] = [
   {
     version: "0.14.0",
     items: [
+      {
+        icon: "mdi-palette-outline",
+        title: {
+          de: "Szenen bearbeiten, ohne dass das Licht umschaltet",
+          en: "Edit scenes without your lights changing",
+          fr: "Modifier les scènes sans que la lumière change",
+          es: "Editar escenas sin que cambien las luces",
+          ru: "Редактирование сцен без переключения света",
+        },
+        text: {
+          de: "Helligkeit, Farbe, Rollläden und Heizung einfach einstellen und speichern, das Wohnzimmer bleibt, wie es ist. Sehen willst du es? „Vorschau“ oder „Ausprobieren“, danach ist alles wieder wie vorher.",
+          en: "Set brightness, colour, covers and heating and save, while the living room stays as it is. Want to see it? “Preview” or “Try”, and afterwards everything is back to how it was.",
+          fr: "Réglez luminosité, couleur, volets et chauffage puis enregistrez, le salon reste tel quel. Vous voulez voir ? « Aperçu » ou « Essayer », et ensuite tout redevient comme avant.",
+          es: "Ajusta brillo, color, persianas y calefacción y guarda, mientras el salón se queda como está. ¿Quieres verlo? “Vista previa” o “Probar”, y después todo vuelve a estar como antes.",
+          ru: "Настраивайте яркость, цвет, шторы и отопление и сохраняйте, а в гостиной ничего не меняется. Хотите увидеть? «Предпросмотр» или «Попробовать», а потом всё вернётся как было.",
+        },
+        show: "scenes",
+      },
       {
         icon: "mdi-tune-variant",
         title: {

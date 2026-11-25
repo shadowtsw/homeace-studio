@@ -13,6 +13,14 @@
   folder, labels and area; the value starts fresh.
 - Clicking through the list keeps the tab you picked in the details (e.g. "Verlauf"), so entries
   are easy to compare. An entry without that tab opens on its first one.
+- Scene editor: edit scenes without your lights changing. Each device gets its controls (on/off,
+  brightness that runs up to the light's colour, white tones and colours as the light can do them,
+  cover position, thermostat). Nothing switches while editing; "Vorschau" shows the whole scene and
+  "Ausprobieren" one device, and both go back to how it was afterwards. "Aktuellen Zustand
+  übernehmen" reads a device without switching it. What the editor has no control for (an effect, a
+  fan speed) stays as it is and is named. Scenes outside scenes.yaml are shown read-only.
+- "In HA speichern" moved to a footer at the bottom of the details, always in view, for flows,
+  helper settings and scenes. The header and tabs of the details no longer scroll away.
 - The fold button of the details no longer covers the list's scrollbar; folded, it has a slim rail of
   its own at the right edge.
 
