@@ -23,9 +23,6 @@ export type WhatsNewRelease = {
   more?: number;
 };
 
-/** The browser key of the version whose highlights the user confirmed with "OK". */
-export const WHATS_NEW_SEEN_KEY = "homeace.seenVersion";
-
 /** Users of this version or older never saw "What's new"; their first update shows it. */
 export const LAST_VERSION_WITHOUT_WHATS_NEW = "0.13.0";
 

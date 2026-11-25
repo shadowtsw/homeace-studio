@@ -27,7 +27,7 @@ folder, with search, scope tabs, a "Neu" menu and bulk actions. A click opens th
    only that filter; Strg+Klick (Mac ⌘+Klick, because Ctrl+click is the right-click there), the
    right-click menu or a long press on touch add or remove one (`toggleScope`). "Alle" and single kinds
    exclude each other; "Alle" means all **entries**, plain entities only show with their own filter, so
-   "Alle" stays usable in a big HA. The choice is kept in the browser (`homeace.scopes`).
+   "Alle" stays usable in a big HA. The choice is kept on this device (`PREFERENCES.listScopes`, scope `device`).
 2. **Tree selection** (`isInCategory`, see the selection table in [navigation.md](navigation.md)).
 3. **Search** (`matchesSearch`): name or entity ID, case-insensitive. The search is simpler than the
    entity picker's (no umlaut folding).

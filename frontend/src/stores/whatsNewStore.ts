@@ -1,11 +1,11 @@
-import { useLocalStorage } from "@vueuse/core";
 import { defineStore } from "pinia";
 import { computed, ref } from "vue";
 
+import { usePreference } from "@/composables/usePreference";
+import { PREFERENCES } from "@/constants/preferences";
 import {
   LAST_VERSION_WITHOUT_WHATS_NEW,
   WHATS_NEW,
-  WHATS_NEW_SEEN_KEY,
   type WhatsNewRelease,
 } from "@/constants/whatsNew";
 import { hadEarlierVisit } from "@/utils/earlierVisit";
@@ -18,14 +18,19 @@ import {
 
 /**
  * "What's new" after an update: which highlights the user has not confirmed yet, and the popover.
- * The confirmed version lives in the browser for now; later per HA user like the other settings.
+ * The confirmed version follows the user (scope "user"), like the other settings.
  */
 export const useWhatsNewStore = defineStore("whatsNew", () => {
   const version = effectiveVersion(__APP_VERSION__, WHATS_NEW);
-  const seenVersion = useLocalStorage(
-    WHATS_NEW_SEEN_KEY,
-    initialSeenVersion(hadEarlierVisit(), version, LAST_VERSION_WITHOUT_WHATS_NEW),
+  const firstSeenVersion = initialSeenVersion(
+    hadEarlierVisit(),
+    version,
+    LAST_VERSION_WITHOUT_WHATS_NEW,
   );
+  const seenVersion = usePreference({
+    preference: PREFERENCES.seenVersion,
+    defaultValue: firstSeenVersion,
+  });
   const isOpen = ref(false);
   /** Opened from the gear menu: the current release only, also when it was confirmed already. */
   const isCurrentOnly = ref(false);

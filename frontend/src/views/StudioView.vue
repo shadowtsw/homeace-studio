@@ -4,11 +4,11 @@
     :class="{
       'studio-view--nav-open': isNavOpen,
       'studio-view--detail-open': isDetailOpen,
-      'studio-view--detail-folded': settings.isDetailFolded,
+      'studio-view--detail-folded': layout.isDetailFolded,
     }"
     :style="{
-      '--w-nav': `${settings.paneWidths.nav}px`,
-      '--w-list': `${settings.paneWidths.list}px`,
+      '--w-nav': `${layout.paneWidths.nav}px`,
+      '--w-list': `${layout.paneWidths.list}px`,
     }"
   >
     <AppTopBar
@@ -35,7 +35,7 @@
           :favorite-count="data.favoriteCount.value"
           :checkup-count="checkup.hasLoaded ? checkup.findings.length : null"
           :colors="foldersStore.colors"
-          :mode="settings.navMode"
+          :mode="layout.navMode"
           :renaming-path="actions.inlineRenamingPath.value"
           :has-own-order="Object.keys(foldersStore.order).length > 0"
           @reorder="reorderFolder"
@@ -80,7 +80,7 @@
         :label="t('nav.resize')"
         :min="PANE_WIDTH_LIMITS.nav.min"
         :max="PANE_WIDTH_LIMITS.nav.max"
-        @reset="settings.resetPaneWidth(PANE.nav)"
+        @reset="layout.resetPaneWidth(PANE.nav)"
       />
 
       <div class="studio-view__list">
@@ -129,19 +129,19 @@
         :label="t('list.resize')"
         :min="PANE_WIDTH_LIMITS.list.min"
         :max="PANE_WIDTH_LIMITS.list.max"
-        @reset="settings.resetPaneWidth(PANE.list)"
+        @reset="layout.resetPaneWidth(PANE.list)"
       >
         <button
           class="studio-view__fold"
           type="button"
-          :title="settings.isDetailFolded ? t('detail.unfold') : t('detail.fold')"
-          :aria-label="settings.isDetailFolded ? t('detail.unfold') : t('detail.fold')"
-          :aria-expanded="!settings.isDetailFolded"
-          @click="settings.isDetailFolded = !settings.isDetailFolded"
+          :title="layout.isDetailFolded ? t('detail.unfold') : t('detail.fold')"
+          :aria-label="layout.isDetailFolded ? t('detail.unfold') : t('detail.fold')"
+          :aria-expanded="!layout.isDetailFolded"
+          @click="layout.isDetailFolded = !layout.isDetailFolded"
         >
           <span
             class="mdi"
-            :class="settings.isDetailFolded ? 'mdi-chevron-left' : 'mdi-chevron-right'"
+            :class="layout.isDetailFolded ? 'mdi-chevron-left' : 'mdi-chevron-right'"
           />
         </button>
       </PaneSplitter>
@@ -257,6 +257,7 @@ import { useEditorStore } from "@/stores/editorStore";
 import { useEntriesStore } from "@/stores/entriesStore";
 import { useEntryAreasStore } from "@/stores/entryAreasStore";
 import { useFoldersStore } from "@/stores/foldersStore";
+import { useLayoutStore } from "@/stores/layoutStore";
 import { useLookupsStore } from "@/stores/lookupsStore";
 import { useMessagesStore } from "@/stores/messagesStore";
 import { useSettingsStore } from "@/stores/settingsStore";
@@ -279,6 +280,7 @@ const { t } = useI18n();
 const entriesStore = useEntriesStore();
 const foldersStore = useFoldersStore();
 const lookups = useLookupsStore();
+const layout = useLayoutStore();
 const settings = useSettingsStore();
 const studio = useStudioStore();
 const data = useStudioData();
@@ -316,7 +318,7 @@ function dropOnArea(areaId: string | null, entityId: string): void {
 
 /** Switching to the areas opens the first one; back to the folders, an area selection becomes "all". */
 function setNavMode(mode: NavMode): void {
-  settings.navMode = mode;
+  layout.navMode = mode;
 
   if (mode === NAV_MODE.areas) {
     const first = data.areaNav.value[0];
@@ -328,7 +330,7 @@ function setNavMode(mode: NavMode): void {
 
 /** After sorting by area the new folders are what the user wants to see. */
 function onTidied(path: string): void {
-  settings.navMode = NAV_MODE.folders;
+  layout.navMode = NAV_MODE.folders;
   selectCategory(path);
 }
 
@@ -470,12 +472,12 @@ const onSaveFlow = onSelected(async (entry) => {
 });
 
 const navWidth = computed({
-  get: () => settings.paneWidths.nav,
-  set: (width: number) => settings.setPaneWidth(PANE.nav, width),
+  get: () => layout.paneWidths.nav,
+  set: (width: number) => layout.setPaneWidth(PANE.nav, width),
 });
 const listWidth = computed({
-  get: () => settings.paneWidths.list,
-  set: (width: number) => settings.setPaneWidth(PANE.list, width),
+  get: () => layout.paneWidths.list,
+  set: (width: number) => layout.setPaneWidth(PANE.list, width),
 });
 
 const connectionStatus = computed<ConnectionStatus>(() => {
@@ -513,7 +515,7 @@ const entityMenu = useEntityMenu({
   applyChange: (change) => editorStore.applyChange(change),
   showDetail: () => {
     isDetailOpen.value = true;
-    settings.isDetailFolded = false;
+    layout.isDetailFolded = false;
   },
   startMoveEntity: (entity) => actions.startMoveEntity(entity),
 });
@@ -587,7 +589,7 @@ useEventListener(window, "keydown", (event: KeyboardEvent) => {
 function selectEntry(entityId: string): void {
   studio.selectEntry(entityId);
   isDetailOpen.value = true;
-  settings.isDetailFolded = false;
+  layout.isDetailFolded = false;
 }
 
 // Proposals follow the categories: after moves, renames and live updates from HA.

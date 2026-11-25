@@ -41,6 +41,17 @@ Checklists for changes that touch several places. Feature-specific recipes are o
 3. If keys are folder paths or entity IDs, move them along on folder rename (`CategoriesService.rename`)
    and on entity ID rename (`RenameService`), and drop them on delete.
 
+## New kept preference (a setting or a remembered view state)
+
+1. Add it to `PREFERENCES` in `frontend/src/constants/preferences.ts` with its scope. The rule: what the
+   user sets on purpose is `user` (follows them to every device, later per HA user); what HomeAce Studio
+   remembers by itself is `device` (pane widths differ per screen). Adjust the test in
+   `constants/__tests__/preferences.spec.ts`; it lists both groups on purpose.
+2. Read and write it only through `usePreference({ preference, defaultValue })`, never with
+   `useLocalStorage` directly.
+3. Settings changed on purpose go into `stores/settingsStore.ts`, the look of the columns into
+   `stores/layoutStore.ts`, list filters into `stores/studioStore.ts`.
+
 ## New UI component or text
 
 - No UI library: scoped plain CSS on the tokens in `frontend/src/styles/tokens.css` (light + dark).

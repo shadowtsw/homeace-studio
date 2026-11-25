@@ -11,7 +11,9 @@ The code calls them `nav`, `list` and `detail`. Each column has its own page:
 | The page: loads data, wires the three columns, handles their events | `views/StudioView.vue` |
 | Everything the page derives (tree, filtered entries, counts, area nav, open entry) | `composables/useStudioData.ts` |
 | What the user is looking at: tree selection, scope tab, search, open entry, ticked rows, inline rename | `stores/studioStore.ts` |
-| Per-browser UI settings: technical details, pane widths, language, nav mode, detail folded | `stores/settingsStore.ts` (localStorage keys `homeace.*`) |
+| Settings the user changes on purpose (scope `user`): technical details, language, scene auto-save | `stores/settingsStore.ts` |
+| How the columns look on this device (scope `device`): pane widths, nav mode, detail folded | `stores/layoutStore.ts` |
+| Every kept preference with its storage key and scope; read and written only through `usePreference` | `constants/preferences.ts`, `composables/usePreference.ts` (all in localStorage for now, `homeace.*`) |
 | Top bar (connection status, live dot, gear menu, What's new) | `components/layout/AppTopBar.vue`, `SettingsMenu.vue`, `WhatsNewMenu.vue` |
 | Splitters between the columns | `components/layout/PaneSplitter.vue`, limits in `constants/layout.ts` |
 | Every dialog and the toasts of the page | `components/layout/StudioDialogs.vue`, `components/common/ToastHost.vue` |
@@ -21,11 +23,11 @@ The code calls them `nav`, `list` and `detail`. Each column has its own page:
 
 - `.studio-view__panes` is a CSS grid `nav | splitter | list | splitter | detail`. The splitters have zero
   width and a wider, invisible grab area.
-- The widths are CSS variables `--w-nav` and `--w-list` from `settings.paneWidths`. `min()` keeps at least
+- The widths are CSS variables `--w-nav` and `--w-list` from `layout.paneWidths`. `min()` keeps at least
   380 px for the detail, whatever width the list was dragged to.
 - `PaneSplitter` supports dragging, arrow keys (`SPLITTER_KEYBOARD_STEP` 16 px) and double-click to reset
-  (`settings.resetPaneWidth`). `PANE_WIDTH_LIMITS`: nav 200–440, list 300–700 px.
-- **Folding the detail:** the round button on the list splitter toggles `settings.isDetailFolded`. The list
+  (`layout.resetPaneWidth`). `PANE_WIDTH_LIMITS`: nav 200–440, list 300–700 px.
+- **Folding the detail:** the round button on the list splitter toggles `layout.isDetailFolded`. The list
   then takes the whole width and the button gets a 28 px rail of its own (`--fold-rail`). Opening an entry
   unfolds the detail again (`selectEntry` in StudioView).
 
@@ -60,7 +62,7 @@ Choosing a tree node always sets `isNavOpen = false`, and opening an entry alway
   "Zeigen" leads to the feature (`utils/flash.ts` lets it light up), and only "OK" confirms.
   `constants/whatsNew.ts` holds the highlights per release in every language. `utils/whatsNew.ts` has the
   logic (unseen releases, test builds without a version show the newest). `stores/whatsNewStore` keeps
-  the confirmed version (`homeace.seenVersion`). `utils/earlierVisit.ts` tells a fresh install from an
+  the confirmed version (`PREFERENCES.seenVersion`, scope `user`). `utils/earlierVisit.ts` tells a fresh install from an
   earlier user. It is captured in `main.ts` before any store writes its defaults.
 
 ## Keyboard

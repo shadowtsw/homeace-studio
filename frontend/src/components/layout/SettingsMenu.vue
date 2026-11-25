@@ -64,7 +64,7 @@
           <b>{{ t("settings.paneWidths") }}</b>
           <small>{{ t("settings.paneWidthsHint") }}</small>
         </div>
-        <button class="btn" type="button" @click="settings.resetPaneWidths()">
+        <button class="btn" type="button" @click="layout.resetPaneWidths()">
           {{ t("settings.reset") }}
         </button>
       </div>
@@ -102,6 +102,7 @@ import SwitchToggle from "@/components/common/SwitchToggle.vue";
 import { APP_LOCALES, type AppLocale } from "@/i18n";
 import { useAiStore } from "@/stores/aiStore";
 import { useCleanupStore } from "@/stores/cleanupStore";
+import { useLayoutStore } from "@/stores/layoutStore";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { useWhatsNewStore } from "@/stores/whatsNewStore";
 
@@ -119,6 +120,7 @@ const APP_VERSION = __APP_VERSION__;
 
 const { t } = useI18n();
 const settings = useSettingsStore();
+const layout = useLayoutStore();
 // Shared with "Was ist neu", which can point at this menu.
 const { isMenuOpen: isOpen } = storeToRefs(settings);
 const cleanup = useCleanupStore();

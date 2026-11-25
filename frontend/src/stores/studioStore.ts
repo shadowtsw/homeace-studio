@@ -1,17 +1,19 @@
-import { useLocalStorage } from "@vueuse/core";
 import { defineStore } from "pinia";
 import { computed, ref, watch } from "vue";
 
+import { usePreference } from "@/composables/usePreference";
 import { CATEGORY_FILTER, SCOPE_ALL, type ListScope } from "@/constants/entries";
+import { PREFERENCES } from "@/constants/preferences";
 import { showsEntities, toggleScope, validScopes } from "@/utils/listScopes";
-
-const SCOPES_STORAGE_KEY = "homeace.scopes";
 
 /** What the user is looking at: tree selection, filters, search, the open entry and ticked rows. */
 export const useStudioStore = defineStore("studio", () => {
   const category = ref<string>(CATEGORY_FILTER.all);
-  /** The chosen filters; kept in the browser, so the list looks the same after reloading. */
-  const storedScopes = useLocalStorage<ListScope[]>(SCOPES_STORAGE_KEY, [SCOPE_ALL]);
+  /** The chosen filters; kept on this device, so the list looks the same after reloading. */
+  const storedScopes = usePreference<ListScope[]>({
+    preference: PREFERENCES.listScopes,
+    defaultValue: [SCOPE_ALL],
+  });
   const scopes = computed<ListScope[]>(() => validScopes(storedScopes.value));
   const isShowingEntities = computed(() => showsEntities(scopes.value));
   const search = ref("");

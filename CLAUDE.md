@@ -26,7 +26,8 @@ rules and pitfalls, and recipes.
 - [docs/architecture.md](docs/architecture.md): parts, module map, HA APIs, and a table "which page to read"
 - [docs/api.md](docs/api.md): backend endpoints · [docs/setup.md](docs/setup.md): local dev, demo,
   releases, add-on · [docs/decisions.md](docs/decisions.md): decision log
-- [docs/recipes.md](docs/recipes.md): new endpoint, HA command (+ demo), overlay field, component
+- [docs/recipes.md](docs/recipes.md): new endpoint, HA command (+ demo), overlay field, kept preference,
+  component
 - Columns (Navigation · List · Detail): [docs/ui/layout.md](docs/ui/layout.md),
   [navigation.md](docs/ui/navigation.md), [list.md](docs/ui/list.md), [detail.md](docs/ui/detail.md)
 - Features in [docs/features/](docs/features/): flow-editor, scenes, helpers, folders, areas, checkup,

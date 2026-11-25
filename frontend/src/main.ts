@@ -13,7 +13,7 @@ import "@fontsource/jetbrains-mono/500.css";
 
 import { i18n } from "./i18n";
 import App from "./App.vue";
-import { WHATS_NEW_SEEN_KEY } from "./constants/whatsNew";
+import { PREFERENCES } from "./constants/preferences";
 import router from "./router";
 import "./styles/tokens.css";
 import "./styles/base.css";
@@ -21,7 +21,7 @@ import { captureEarlierVisit } from "./utils/earlierVisit";
 
 // Before any store exists: the stores write their defaults at once, and "What's new" needs to know
 // whether this browser knew HomeAce Studio before (a fresh install has nothing to catch up on).
-captureEarlierVisit(WHATS_NEW_SEEN_KEY);
+captureEarlierVisit(PREFERENCES.seenVersion.storageKey);
 
 const app = createApp(App);
 
