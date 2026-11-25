@@ -15,6 +15,10 @@ const fr: MessageSchema = {
     failed: "Non connecté",
   },
   settings: {
+    haUser: "Utilisateur HA",
+    haUserFound: "Reconnu : {name} (ID {id})",
+    haUserMissing:
+      "Non reconnu. HomeAce n'a pas été ouvert depuis la barre latérale de Home Assistant.",
     more: "En savoir plus",
     goodToKnow: {
       saving: {

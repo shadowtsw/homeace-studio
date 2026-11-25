@@ -472,6 +472,14 @@ scripts.yaml.
 The backend catalog: message ID → text, for `de` (default) and `en`. Placeholders like `{path}` are filled from
 `data.params` of an error. Sent with `Cache-Control: no-cache` and an ETag, so reloads cost a `304`.
 
+## GET /api/preferences
+
+Which HA user opened HomeAce Studio: `data.user` is `{ id, name }` or `null`. Read from the headers HA's
+Supervisor adds to every ingress request (`X-Remote-User-Id`, `-Name`, `-Display-Name`;
+`backend/src/preferences/ha-user.ts`). Port 8099 is not published, so requests only arrive through
+ingress; locally and in the demo there is no user. For now nothing else: keeping settings per user
+builds on this (planned: the values per user in the overlay).
+
 ## Scenes: /api/scenes
 
 Scenes are edited without switching anything: the values go into scenes.yaml through HA's config API

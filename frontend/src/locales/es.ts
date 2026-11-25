@@ -15,6 +15,9 @@ const es: MessageSchema = {
     failed: "Sin conexión",
   },
   settings: {
+    haUser: "Usuario de HA",
+    haUserFound: "Reconocido: {name} (ID {id})",
+    haUserMissing: "No reconocido. HomeAce no se abrió desde la barra lateral de Home Assistant.",
     more: "Más información",
     goodToKnow: {
       saving: {

@@ -10,6 +10,7 @@ import {
   type GoodToKnowTopic,
   type SettingsTab,
 } from "@/constants/settings";
+import { fetchPreferences, type HaUser } from "@/services/preferencesService";
 
 /** The settings window the gear opens: whether it is open and which tab it shows. */
 export const useSettingsWindowStore = defineStore("settingsWindow", () => {
@@ -29,6 +30,19 @@ export const useSettingsWindowStore = defineStore("settingsWindow", () => {
    * everything stays in this browser, and the window says so.
    */
   const hasHaUser = ref(false);
+  /**
+   * The HA user the backend sees; shown under "Über HomeAce" with technical details. Null when
+   * HomeAce Studio was not opened through HA, undefined before the first answer.
+   */
+  const detectedHaUser = ref<HaUser | null | undefined>(undefined);
+
+  async function loadHaUser(): Promise<void> {
+    try {
+      detectedHaUser.value = (await fetchPreferences()).user;
+    } catch (error) {
+      console.error("Loading the HA user failed", error);
+    }
+  }
 
   /** Where a preference applies right now: without a HA user, everything is on this device. */
   function effectiveScope(scope: PreferenceScope): PreferenceScope {
@@ -39,6 +53,7 @@ export const useSettingsWindowStore = defineStore("settingsWindow", () => {
   function open(nextTab?: SettingsTab): void {
     if (nextTab) storedTab.value = nextTab;
     isOpen.value = true;
+    void loadHaUser();
   }
 
   function close(): void {
@@ -62,6 +77,7 @@ export const useSettingsWindowStore = defineStore("settingsWindow", () => {
     isOpen,
     tab,
     hasHaUser,
+    detectedHaUser,
     goodToKnowTopic,
     effectiveScope,
     open,

@@ -18,14 +18,23 @@
         <span class="mdi mdi-open-in-new" />{{ t("settings.toolOpen") }}
       </a>
     </SettingsRow>
+    <!-- Technical detail: which HA user the add-on sees; settings per user build on it. -->
+    <SettingsRow
+      v-if="settings.isTechnicalDetailsVisible && settingsWindow.detectedHaUser !== undefined"
+      :title="t('settings.haUser')"
+      :hint="haUserText"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
+import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 
 import { ISSUES_URL } from "@/constants/settings";
 import { RELEASES_URL } from "@/constants/whatsNew";
+import { useSettingsStore } from "@/stores/settingsStore";
+import { useSettingsWindowStore } from "@/stores/settingsWindowStore";
 import { useWhatsNewStore } from "@/stores/whatsNewStore";
 
 import SettingsRow from "./SettingsRow.vue";
@@ -40,4 +49,13 @@ const emit = defineEmits<{
 
 const { t } = useI18n();
 const whatsNew = useWhatsNewStore();
+const settings = useSettingsStore();
+const settingsWindow = useSettingsWindowStore();
+
+const haUserText = computed(() => {
+  const user = settingsWindow.detectedHaUser;
+  return user
+    ? t("settings.haUserFound", { name: user.name, id: user.id })
+    : t("settings.haUserMissing");
+});
 </script>

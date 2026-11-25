@@ -14,6 +14,9 @@ const ru: MessageSchema = {
     failed: "Нет подключения",
   },
   settings: {
+    haUser: "Пользователь HA",
+    haUserFound: "Распознан: {name} (ID {id})",
+    haUserMissing: "Не распознан. HomeAce открыт не через боковую панель Home Assistant.",
     more: "Подробнее",
     goodToKnow: {
       saving: {

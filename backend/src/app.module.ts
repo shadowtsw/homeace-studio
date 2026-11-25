@@ -22,6 +22,7 @@ import { HelpersModule } from "./helpers/helpers.module";
 import { LiveModule } from "./live/live.module";
 import { LookupsModule } from "./lookups/lookups.module";
 import { MessagesModule } from "./messages/messages.module";
+import { PreferencesModule } from "./preferences/preferences.module";
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { MessagesModule } from "./messages/messages.module";
     ScenesModule,
     RenameModule,
     DuplicateModule,
+    PreferencesModule,
   ],
   providers: [
     // Every answer uses the { message, error, data } envelope (docs/api.md).

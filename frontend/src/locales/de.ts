@@ -10,6 +10,10 @@ export default {
     failed: "Keine Verbindung",
   },
   settings: {
+    haUser: "HA-Benutzer",
+    haUserFound: "Erkannt: {name} (ID {id})",
+    haUserMissing:
+      "Nicht erkannt. HomeAce wurde nicht über die Seitenleiste von Home Assistant geöffnet.",
     more: "Mehr dazu",
     goodToKnow: {
       saving: {
