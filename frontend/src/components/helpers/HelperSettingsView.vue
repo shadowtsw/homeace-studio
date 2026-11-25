@@ -42,7 +42,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+import { computed, ref, watch, toRaw } from "vue";
 import { useI18n } from "vue-i18n";
 
 import type { HelperSettings, HelperType } from "@/constants/helpers";
@@ -123,7 +123,8 @@ async function save(): Promise<void> {
 }
 
 function discard(): void {
-  draft.value = structuredClone(saved.value);
+  // toRaw: Vue wraps refs in proxies, which structuredClone cannot copy.
+  draft.value = structuredClone(toRaw(saved.value));
 }
 
 // A newly opened helper starts with its settings from HA; unsaved edits of the previous one go.

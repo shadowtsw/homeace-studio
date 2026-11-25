@@ -73,14 +73,19 @@
     </template>
 
     <Teleport defer to="#entry-detail-footer">
-      <SaveFooter v-if="isDirty" :is-saving="isSaving" @save="save" @discard="discard" />
+      <SaveFooter
+        v-if="isDirty && view?.isEditable && !hasError && !isLoading"
+        :is-saving="isSaving"
+        @save="save"
+        @discard="discard"
+      />
     </Teleport>
   </section>
 </template>
 
 <script setup lang="ts">
 import { onClickOutside, useEventListener } from "@vueuse/core";
-import { computed, onBeforeUnmount, reactive, ref, useTemplateRef, watch } from "vue";
+import { computed, onBeforeUnmount, reactive, ref, toRaw, useTemplateRef, watch } from "vue";
 import { useI18n } from "vue-i18n";
 
 import SaveFooter from "@/components/common/SaveFooter.vue";
@@ -169,7 +174,8 @@ function show(result: SceneView): void {
   devices.clear();
   for (const device of result.devices) devices.set(device.entityId, device);
   saved.value = Object.fromEntries(result.devices.map((d) => [d.entityId, d.values ?? {}]));
-  draft.value = structuredClone(saved.value);
+  // toRaw: Vue wraps refs in proxies, which structuredClone cannot copy.
+  draft.value = structuredClone(toRaw(saved.value));
   order.value = result.devices.map((device) => device.entityId);
 }
 
@@ -283,7 +289,8 @@ async function save(): Promise<void> {
 }
 
 function discard(): void {
-  draft.value = structuredClone(saved.value);
+  // toRaw: Vue wraps refs in proxies, which structuredClone cannot copy.
+  draft.value = structuredClone(toRaw(saved.value));
   order.value = Object.keys(saved.value);
   if (isPreviewing.value) previewScene(props.entry.entityId, entities()).catch(fail);
 }
