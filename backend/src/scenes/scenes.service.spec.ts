@@ -84,6 +84,29 @@ describe("ScenesService", () => {
     expect(Object.keys(config.metadata as object)).not.toContain("light.living_room");
   });
 
+  it("leaves devices HA shows under their device without metadata", async () => {
+    const { service, fake } = setup();
+    const path = "config/scene/config/1723912301777";
+    const stored = fake.restGet(path) as Record<string, unknown>;
+    // HA's own editor writes no metadata for entities it groups under their device
+    fake.restPost(path, {
+      ...stored,
+      metadata: { "light.living_room_floor_lamp": { entity_only: true } },
+    });
+
+    await service.save("scene.cozy_evening", {
+      "light.living_room": { state: "on" },
+      "light.living_room_floor_lamp": { state: "on" },
+      "switch.wallbox": { state: "off" },
+    });
+    const config = fake.restGet(path) as Record<string, unknown>;
+
+    expect(config.metadata).toEqual({
+      "light.living_room_floor_lamp": { entity_only: true },
+      "switch.wallbox": { entity_only: true },
+    });
+  });
+
   it("previews on the devices and brings them back afterwards", async () => {
     const { service, stateOf } = setup();
 

@@ -59,8 +59,12 @@ export class ScenesService {
   }
 
   /**
-   * Saves what the scene sets. Name, icon and anything else in its config stay; devices that left
-   * the scene lose their metadata, new ones are added as single entities (like HA does it).
+   * Saves what the scene sets. Name, icon and anything else in its config stay. Devices that stay
+   * keep their metadata, devices that left the scene lose it, new ones are added as single
+   * entities (like HA does it).
+   *
+   * HA's own editor writes metadata only for single entities and shows the others under their
+   * device; giving those `entity_only` too would move them out of their device there for good.
    *
    * @throws BadRequestException `SCENE_NOT_EDITABLE` for scenes outside scenes.yaml.
    */
@@ -69,8 +73,12 @@ export class ScenesService {
     if (!found) throw notEditable(entityId);
 
     const metadata = (found.config.metadata ?? {}) as Record<string, unknown>;
+    const before = entitiesOf(found.config);
     const nextMetadata = Object.fromEntries(
-      Object.keys(entities).map((id) => [id, metadata[id] ?? ENTITY_ONLY]),
+      Object.keys(entities).flatMap((id) => {
+        const kept = metadata[id] ?? (id in before ? undefined : ENTITY_ONLY);
+        return kept === undefined ? [] : [[id, kept]];
+      }),
     );
 
     await this.scenes.saveConfig(found.id, {
