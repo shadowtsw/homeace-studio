@@ -86,6 +86,12 @@ import LabelPicker from "@/components/labels/LabelPicker.vue";
 import { useLabelActions } from "@/composables/useLabelActions";
 import { useAreasStore } from "@/stores/areasStore";
 import type { Area, Entry, EntryChanges, Label } from "@/types/entry";
+import {
+  entryFormChanges,
+  entryFormValuesOf,
+  isFormEdited,
+  type EntryFormValues,
+} from "@/utils/entryForm";
 
 const props = defineProps<{
   entry: Entry;
@@ -107,31 +113,33 @@ const icon = ref("");
 const areaId = ref<string | null>(null);
 const labelIds = ref<string[]>([]);
 
+/**
+ * What the form was filled from. "Changed" always means changed against this, never against HA
+ * now, so saving cannot undo something that changed elsewhere while the form was open.
+ */
+const base = ref<EntryFormValues>(entryFormValuesOf(props.entry));
+
+const formValues = (): EntryFormValues => ({
+  name: name.value,
+  icon: icon.value,
+  areaId: areaId.value,
+  labelIds: labelIds.value,
+});
+
 /** Fills the form from the entry; runs when another entry opens or after saving. */
 function reset(): void {
-  name.value = props.entry.name;
-  icon.value = props.entry.icon ?? "";
-  areaId.value = props.entry.area?.areaId ?? null;
-  labelIds.value = props.entry.labels.map((label) => label.labelId);
+  base.value = entryFormValuesOf(props.entry);
+  name.value = base.value.name;
+  icon.value = base.value.icon;
+  areaId.value = base.value.areaId;
+  labelIds.value = [...base.value.labelIds];
 }
 
 /** Set by save(): the next entry from HA is the saved one, so the form takes it over. */
 let isSaving = false;
 
-/** Whether the form differs from an entry: the user changed something since it was filled. */
-function isEditedAgainst(entry: Entry): boolean {
-  const labels = (ids: string[]): string => [...ids].sort().join();
-
-  return (
-    name.value.trim() !== entry.name ||
-    icon.value.trim() !== (entry.icon ?? "") ||
-    areaId.value !== (entry.area?.areaId ?? null) ||
-    labels(labelIds.value) !== labels(entry.labels.map((label) => label.labelId))
-  );
-}
-
 // Live updates and changes from elsewhere (renaming in the list) bring a new entry object. The form
-// takes it over unless the user is editing it: compared with the entry the form was filled from.
+// takes it over unless the user is editing it.
 watch(
   () => props.entry,
   (next, previous) => {
@@ -139,7 +147,7 @@ watch(
       !previous ||
       next.entityId !== previous.entityId ||
       isSaving ||
-      !isEditedAgainst(previous)
+      !isFormEdited(formValues(), base.value)
     ) {
       reset();
     }
@@ -196,20 +204,7 @@ watch(areaId, (next, previous) => {
   areasStore.startCreate((area) => (areaId.value = area.areaId));
 });
 
-const originalLabelIds = computed(() => props.entry.labels.map((label) => label.labelId));
-const hasLabelChanges = computed(() => {
-  const original = [...originalLabelIds.value].sort().join();
-  const current = [...labelIds.value].sort().join();
-
-  return original !== current;
-});
-const isDirty = computed(
-  () =>
-    name.value.trim() !== props.entry.name ||
-    icon.value.trim() !== (props.entry.icon ?? "") ||
-    areaId.value !== (props.entry.area?.areaId ?? null) ||
-    hasLabelChanges.value,
-);
+const isDirty = computed(() => isFormEdited(formValues(), base.value));
 
 function toggleLabel(labelId: string): void {
   labelIds.value = labelIds.value.includes(labelId)
@@ -217,17 +212,20 @@ function toggleLabel(labelId: string): void {
     : [...labelIds.value, labelId];
 }
 
-/** Sends only what changed, so a save never overwrites something else by accident. */
+/**
+ * Sends only what the user changed since the form was filled, so a save never undoes a change made
+ * elsewhere meanwhile; ticked and unticked labels are applied to the labels the entry has now.
+ */
 function save(): void {
-  const changes: EntryChanges = {};
   isSaving = true;
-
-  if (name.value.trim() !== props.entry.name) changes.name = name.value;
-  if (icon.value.trim() !== (props.entry.icon ?? "")) changes.icon = icon.value;
-  if (areaId.value !== (props.entry.area?.areaId ?? null)) changes.areaId = areaId.value;
-  if (hasLabelChanges.value) changes.labelIds = labelIds.value;
-
-  emit("save", changes);
+  emit(
+    "save",
+    entryFormChanges({
+      form: formValues(),
+      base: base.value,
+      currentLabelIds: props.entry.labels.map((label) => label.labelId),
+    }),
+  );
 }
 </script>
 

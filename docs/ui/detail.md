@@ -31,8 +31,11 @@ badge with uses + users.
 Top to bottom:
 
 1. `CategoryMoveField`: folder with suggestions from every scope.
-2. `EntryEditForm`: name, icon, area (with "+ Neuer Bereich …"), labels. It sends only the changed
-   fields (`EntryChanges`) → `PATCH /api/entries/:id`. The icon is an `IconField` (preview, text,
+2. `EntryEditForm`: name, icon, area (with "+ Neuer Bereich …"), labels. It sends only the fields
+   the user changed since the form was filled (`EntryChanges`, `utils/entryForm.ts`) →
+   `PATCH /api/entries/:id`; ticked and unticked labels are applied to the labels the entry has now.
+   Comparing with the entry as it is now instead would undo, on saving, a change made elsewhere while
+   the form was open (a label set in HA, the entry dragged onto an area). The icon is an `IconField` (preview, text,
    "Auswählen …" for the icon search, see [icons](../features/icons.md)). Labels show as chips of the given ones plus
    "+ Label", which opens the `LabelPicker` (search, tick, create, edit, delete). Ticking changes the
    draft; changes to a label itself act at once, see [labels](../features/labels.md).
@@ -76,6 +79,7 @@ Every store drops answers that arrive for an entry that is no longer open.
   `unsavedIds` for the dot in the list and the `beforeunload` prompt. A new editor tab needs the same,
   or its edits are lost silently. A scene preview is restored on leaving.
 - Form components take over a new `entry` object from live updates only while the user is not editing
-  (`EntryEditForm` compares with the entry it was filled from). New forms should follow the same pattern.
+  (`EntryEditForm` compares with the values it was filled from, its `base`), and save only what the
+  user changed against that base. New forms should follow the same pattern.
 - A new tab needs: a key in `TAB`, the `tabs` list per kind, a `detail.tabs.<key>` text in every locale,
   and a body `v-else-if`.
