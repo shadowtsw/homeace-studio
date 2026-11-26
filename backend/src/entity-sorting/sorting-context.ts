@@ -40,10 +40,16 @@ export type SortingSources = {
 const DOMAIN_SEPARATOR = ".";
 const ENTITY_CATEGORIES = new Set(["config", "diagnostic"]);
 
-/** The name HA shows when there is no state (disabled entities): user name, else device + own name. */
+/**
+ * The name for an entity without state (disabled): user name, else device name + own name, like most
+ * integrations name them today. HA 2026.11 leaves `has_entity_name` out of the list, so it is only
+ * used when present (tested on a throwaway HA).
+ */
 function registryName(entry: HaEntityRegistryEntry, deviceName: string | null): string {
   if (entry.name) return entry.name;
-  if (entry.has_entity_name && deviceName)
+
+  const usesDeviceName = entry.has_entity_name ?? deviceName !== null;
+  if (usesDeviceName && deviceName)
     return entry.original_name ? `${deviceName} ${entry.original_name}` : deviceName;
 
   return entry.original_name ?? entry.entity_id;
@@ -117,6 +123,7 @@ export function buildSortingContext(sources: SortingSources): SortingContext {
       areaId: deviceContext.areaIdOf(device),
       manufacturer: device.manufacturer ?? null,
       model: device.model ?? null,
+      isService: device.entry_type === "service",
     }));
 
   return {

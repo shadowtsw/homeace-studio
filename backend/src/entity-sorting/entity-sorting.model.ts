@@ -80,6 +80,8 @@ export type SortingDevice = {
   areaId: string | null;
   manufacturer: string | null;
   model: string | null;
+  /** A service rather than hardware (Sun, Backup …): the tool proposes "System/…" for it. */
+  isService: boolean;
 };
 
 export type SortingArea = { areaId: string; name: string; floorId: string | null };

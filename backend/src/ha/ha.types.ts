@@ -23,7 +23,10 @@ export type HaEntityRegistryEntry = {
   hidden_by: string | null;
   /** "diagnostic" (battery, signal …) or "config" (restart button, offset …); null for regular ones. */
   entity_category?: "config" | "diagnostic" | null;
-  /** True when the name is "device name + original_name", like most integrations do it today. */
+  /**
+   * True when the name is "device name + original_name". Not in `config/entity_registry/list` of HA
+   * 2026.11 (only in `get`), so expect it missing.
+   */
   has_entity_name?: boolean;
   /**
    * When HA registered the entity, in seconds since 1970. Missing before HA 2024.7; entities older
@@ -54,6 +57,8 @@ export type HaDevice = {
   labels?: string[];
   manufacturer?: string | null;
   model?: string | null;
+  /** "service" for devices that are a service, not hardware (Sun, Backup, a weather service). */
+  entry_type?: "service" | null;
 };
 
 export type HaState = {
