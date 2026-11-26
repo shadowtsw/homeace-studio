@@ -34,7 +34,7 @@ page stays complete.
 | Session state: memory, options, ticks, engine results; recompute vs. reorder | `frontend/src/stores/entitySortingStore.ts` |
 | Apply and undo in batches of 50, result, hints for automations without folder | `composables/useSortingRun.ts` |
 | Reasons, confidences, origins, rule conditions and the rule preview as text; placeholders `{Bereich}` ↔ `{area}` | `composables/texts/useSortingTexts.ts`, `utils/entitySorting/placeholders.ts` |
-| Window and steps: overview (funnel), rules (editor, ideas), proposals (groups, rows, phone sheet), apply, result | `components/entitySorting/` |
+| Window and steps: overview (funnel, options; in `overview/`), rules (editor, ideas), proposals (groups, rows, folder pick, entities, phone sheet; in `suggestions/`), apply, result | `components/entitySorting/` |
 | Adding, replacing, moving and deleting own rules (with "Rückgängig") | `composables/actions/useSortingRuleActions.ts` |
 | Entry in the tools tab with beta label and count | `components/settings/SettingsToolsTab.vue`, `components/common/BetaBadge.vue` |
 | Folder path to type (own suggestion list, ↑↓ Enter) or pick from the tree; the tree panel alone for "Anderer Ordner …" in step 3 | `components/common/FolderPathField.vue`, `FolderTreePanel.vue` |

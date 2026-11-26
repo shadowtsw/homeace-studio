@@ -108,11 +108,11 @@ import { useToastStore } from "@/stores/toastStore";
 
 import SortingApplyStep from "./SortingApplyStep.vue";
 import SortingFooter from "./SortingFooter.vue";
-import SortingOverviewStep from "./SortingOverviewStep.vue";
+import SortingOverviewStep from "./overview/SortingOverviewStep.vue";
 import SortingResultStep from "./SortingResultStep.vue";
 import SortingRulesStep from "./SortingRulesStep.vue";
 import SortingStepper from "./SortingStepper.vue";
-import SortingSuggestionsStep from "./SortingSuggestionsStep.vue";
+import SortingSuggestionsStep from "./suggestions/SortingSuggestionsStep.vue";
 
 /**
  * The tool "Entitäten einsortieren": a window with five steps (docs/features/entity-sorting.md).
