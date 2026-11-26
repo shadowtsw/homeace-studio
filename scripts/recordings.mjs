@@ -350,6 +350,10 @@ const CLIPS = [
     stored: ONLY_ENTITIES,
     prepare: async (page) => {
       await click(page, ".category-tree__special", "Uncategorized");
+      // The demo has many loose entities (the sorting tool's work); the search finds the three
+      await evaluate(page, `document.querySelector(".entry-list__search input")?.focus()`);
+      await page.send("Input.insertText", { text: "Living room" });
+      await sleep(600);
       // The toast sits in the middle of the page and the crop would cut it in half; opening the
       // folder at the end shows the result anyway.
       await evaluate(
