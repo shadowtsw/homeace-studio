@@ -1600,6 +1600,7 @@ const ru: MessageSchema = {
       originDeviceClass: "один класс устройства",
       folderName: "Имя новой папки",
       wholeGroup: "Вся группа",
+      toggleGroup: "Развернуть или свернуть группу",
       hintRule: "Правило",
       hintFlow: "Автоматизации",
       hintArea: "Помещение",

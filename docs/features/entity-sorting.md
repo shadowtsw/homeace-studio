@@ -116,6 +116,9 @@ texts; reasons come back as data (`SortingReason`) and are written by the UI.
   own handlers.
 - Phone (≤ 640 px): a group opens as a sheet from below (`sheetGroupKey`); the stepper shows numbers
   and the current label only. Keyboard: ↑↓ between rows, Space ticks, Enter opens the entities.
+  A group opens and closes with the arrow button in its head (`.group-card__chevron`, Tab then
+  Enter or Space), which tells screen readers its state with `aria-expanded`; a click on the rest of
+  the head does the same for the mouse. Only the first group starts open.
 - Entity IDs only with "Technische Details" on.
 - Filters start with "Regel" + "sicher" (what is pre-ticked). **Ticked rows always show**, whatever the filter; filters only add the rest, so everything that is applied is in sight. Empty sections hide; with nothing left, a hint offers "wahrscheinlich" or all.
 - Rule stats also say when entries (automations, scripts, scenes, helpers) or already sorted entities match (`ruleSideHits`): a rule aimed at a helper otherwise silently catches nothing (owner, test9).

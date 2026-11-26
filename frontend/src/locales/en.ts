@@ -1554,6 +1554,7 @@ const en: MessageSchema = {
       originDeviceClass: "same device class",
       folderName: "Name of the new folder",
       wholeGroup: "Whole group",
+      toggleGroup: "Expand or collapse the group",
       hintRule: "Rule",
       hintFlow: "Flows",
       hintArea: "Area",

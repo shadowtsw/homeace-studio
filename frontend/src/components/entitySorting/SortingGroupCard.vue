@@ -51,7 +51,17 @@
         />
       </span>
       <span class="group-card__hints">{{ hintSummary }}</span>
-      <span v-if="!isInSheet" class="mdi mdi-chevron-right group-card__chevron" />
+      <!-- A real button, so the group opens with the keyboard and screen readers hear its state -->
+      <button
+        v-if="!isInSheet"
+        type="button"
+        class="group-card__chevron"
+        :aria-expanded="isOpen"
+        :aria-label="t('entitySorting.suggestions.toggleGroup')"
+        @click.stop="onHeadClick"
+      >
+        <span class="mdi mdi-chevron-right" aria-hidden="true" />
+      </button>
     </div>
 
     <div v-if="isOpen || isInSheet" class="group-card__rows">
@@ -263,12 +273,30 @@ function toggleBundle(key: string): void {
   font-size: 12.5px;
 }
 
+/* As small as the plain arrow it replaces, so the head keeps its height */
 .group-card__chevron {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  padding: 2px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
   color: var(--faint);
+  font: inherit;
+  cursor: pointer;
+}
+
+.group-card__chevron:hover {
+  background: var(--sunken);
+  color: var(--fg);
+}
+
+.group-card__chevron .mdi {
   transition: transform 0.15s;
 }
 
-.group-card--open .group-card__chevron {
+.group-card--open .group-card__chevron .mdi {
   transform: rotate(90deg);
 }
 </style>

@@ -1603,6 +1603,7 @@ const fr: MessageSchema = {
       originDeviceClass: "même classe d’appareil",
       folderName: "Nom du nouveau dossier",
       wholeGroup: "Tout le groupe",
+      toggleGroup: "Déplier ou replier le groupe",
       hintRule: "Règle",
       hintFlow: "Automatisations",
       hintArea: "Pièce",

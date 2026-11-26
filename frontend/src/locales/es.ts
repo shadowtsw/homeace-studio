@@ -1586,6 +1586,7 @@ const es: MessageSchema = {
       originDeviceClass: "misma clase de dispositivo",
       folderName: "Nombre de la carpeta nueva",
       wholeGroup: "Todo el grupo",
+      toggleGroup: "Expandir o contraer el grupo",
       hintRule: "Regla",
       hintFlow: "Automatizaciones",
       hintArea: "Área",

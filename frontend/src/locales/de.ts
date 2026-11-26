@@ -1578,6 +1578,7 @@ export default {
       originDeviceClass: "gleiche Geräteklasse",
       folderName: "Name des neuen Ordners",
       wholeGroup: "Ganze Gruppe",
+      toggleGroup: "Gruppe auf- oder zuklappen",
       hintRule: "Regel",
       hintFlow: "Abläufe",
       hintArea: "Bereich",
