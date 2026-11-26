@@ -4,6 +4,11 @@ The app is one page with three columns: **Navigation** (left), **List** (middle)
 The code calls them `nav`, `list` and `detail`. Each column has its own page:
 [navigation.md](navigation.md), [list.md](list.md), [detail.md](detail.md).
 
+**Names users see:** Navigation · Liste · **Details** (en Navigation · List · Details, fr Navigation ·
+Liste · Détails, es Navegación · Lista · Detalles, ru Навигация · Список · Подробности). The topic
+"Was ist was" in "Gut zu wissen" shows them in a sketch, so users name the columns the same way when
+they help each other. Use exactly these words in every user text (app, README, DOCS.md, posts).
+
 ## Where what lives
 
 | What | File |
@@ -91,7 +96,11 @@ Choosing a tree node always sets `isNavOpen = false`, and opening an entry alway
   right (`settings.goodToKnow.<topic>.title` / `.text` / optional `.more`). Where it fits, the switch sits
   at the text. A `SettingsRow` with `moreTopic` gets a "Mehr dazu" link to its topic
   (`settingsWindow.showTopic`). **New feature with a quirk → new topic**, in all five languages; it
-  says how HomeAce behaves, never how it is built.
+  says how HomeAce behaves, never how it is built. The first topic, "Was ist was" (`columns`), is the
+  one exception to "quirks only": it names the columns with a drawn sketch (`SettingsColumnsSketch`,
+  CSS on the tokens, so it follows light/dark and the language; no screenshot to keep up to date). The
+  sketch reuses the app's own words (`areas.viewFolders`, `detail.tabs.*`, `save.save`); change the
+  sketch when the top bar, the detail tabs or the save footer move. The window opens on this topic.
 - **Rules:** a setting only exists when users really want it differently. Texts describe what the
   user notices, never how it is built (technical detail only behind "Technische Details").
 - Phone: for now the window fills the screen with the tabs on top; a list → page layout comes later.

@@ -53,7 +53,7 @@ export const useSettingsWindowStore = defineStore("settingsWindow", () => {
   }
 
   /** The topic "Gut zu wissen" shows; not kept, it starts at the first one. */
-  const goodToKnowTopic = ref<GoodToKnowTopic>(GOOD_TO_KNOW_TOPIC.saving);
+  const goodToKnowTopic = ref<GoodToKnowTopic>(GOOD_TO_KNOW_TOPIC.columns);
 
   /** "Mehr dazu" next to a setting: the topic that explains it. */
   function showTopic(topic: GoodToKnowTopic): void {

@@ -16,6 +16,18 @@ const en: MessageSchema = {
     haUserMissing: "Not recognized. HomeAce was not opened from Home Assistant's sidebar.",
     more: "Learn more",
     goodToKnow: {
+      columns: {
+        title: "What's what",
+        text: "HomeAce has three columns: the Navigation on the left with your folders or areas, the List in the middle with the entries, and the Details of the open entry on the right.",
+        more: "Drag the lines between the columns to resize them, and fold the Details away when you need room. On narrow screens the Navigation sits behind ☰; on a phone the Details slide in over the List.",
+        navigation: "Navigation",
+        list: "List",
+        details: "Details",
+        gear: "Gear: settings and this window",
+        tabs: "Tabs: everything about the open entry",
+        footer: "Footer: appears as soon as you change something",
+        sketch: "Sketch: Navigation on the left, List in the middle, Details on the right",
+      },
       saving: {
         title: "Saving",
         text: "Nothing reaches Home Assistant before you click “Save to HA”. Entries with unsaved changes have a yellow dot in the list.",

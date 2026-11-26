@@ -27,6 +27,7 @@ export const ISSUES_URL = "https://github.com/shadowtsw/homeace-studio/issues";
  * feature with a quirk brings its topic, in all five languages (settings.goodToKnow.<topic>).
  */
 export const GOOD_TO_KNOW_TOPIC = {
+  columns: "columns",
   saving: "saving",
   scenes: "scenes",
   folders: "folders",
@@ -40,6 +41,7 @@ export const GOOD_TO_KNOW_TOPIC = {
 export type GoodToKnowTopic = (typeof GOOD_TO_KNOW_TOPIC)[keyof typeof GOOD_TO_KNOW_TOPIC];
 
 export const GOOD_TO_KNOW_TOPICS: readonly { topic: GoodToKnowTopic; icon: string }[] = [
+  { topic: GOOD_TO_KNOW_TOPIC.columns, icon: "mdi-view-column-outline" },
   { topic: GOOD_TO_KNOW_TOPIC.saving, icon: "mdi-cloud-upload-outline" },
   { topic: GOOD_TO_KNOW_TOPIC.scenes, icon: "mdi-lightbulb-off-outline" },
   { topic: GOOD_TO_KNOW_TOPIC.folders, icon: "mdi-folder-outline" },

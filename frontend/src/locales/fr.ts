@@ -21,6 +21,18 @@ const fr: MessageSchema = {
       "Non reconnu. HomeAce n'a pas été ouvert depuis la barre latérale de Home Assistant.",
     more: "En savoir plus",
     goodToKnow: {
+      columns: {
+        title: "Où est quoi",
+        text: "HomeAce a trois colonnes : à gauche la Navigation avec vos dossiers ou pièces, au milieu la Liste avec les entrées, à droite les Détails de l'entrée ouverte.",
+        more: "Faites glisser les lignes entre les colonnes pour changer leur largeur, et repliez les Détails si vous avez besoin de place. Sur un écran étroit, la Navigation se trouve derrière ☰ ; sur un téléphone, les Détails glissent par-dessus la Liste.",
+        navigation: "Navigation",
+        list: "Liste",
+        details: "Détails",
+        gear: "Roue dentée : paramètres et cette fenêtre",
+        tabs: "Onglets : tout sur l'entrée ouverte",
+        footer: "Barre du bas : apparaît dès que vous modifiez quelque chose",
+        sketch: "Croquis : Navigation à gauche, Liste au milieu, Détails à droite",
+      },
       saving: {
         title: "Enregistrer",
         text: "Rien n'arrive dans Home Assistant avant que vous cliquiez sur « Enregistrer dans HA ». Les entrées avec des modifications non enregistrées ont un point jaune dans la liste.",

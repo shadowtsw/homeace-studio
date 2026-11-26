@@ -17,6 +17,7 @@
 
     <article class="good-to-know__text">
       <h3>{{ t(`settings.goodToKnow.${topic}.title`) }}</h3>
+      <SettingsColumnsSketch v-if="topic === GOOD_TO_KNOW_TOPIC.columns" />
       <p>{{ t(`settings.goodToKnow.${topic}.text`, { key: modifierKey }) }}</p>
       <p v-if="te(`settings.goodToKnow.${topic}.more`)">
         {{ t(`settings.goodToKnow.${topic}.more`, { key: modifierKey }) }}
@@ -53,6 +54,7 @@ import { GOOD_TO_KNOW_TOPIC, GOOD_TO_KNOW_TOPICS } from "@/constants/settings";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { useSettingsWindowStore } from "@/stores/settingsWindowStore";
 
+import SettingsColumnsSketch from "./SettingsColumnsSketch.vue";
 import SettingsRow from "./SettingsRow.vue";
 
 /**

@@ -20,6 +20,18 @@ const es: MessageSchema = {
     haUserMissing: "No reconocido. HomeAce no se abrió desde la barra lateral de Home Assistant.",
     more: "Más información",
     goodToKnow: {
+      columns: {
+        title: "Qué es qué",
+        text: "HomeAce tiene tres columnas: a la izquierda la Navegación con tus carpetas o áreas, en el centro la Lista con las entradas y a la derecha los Detalles de la entrada abierta.",
+        more: "Arrastra las líneas entre las columnas para cambiar su ancho y pliega los Detalles cuando necesites espacio. En pantallas estrechas la Navegación está detrás de ☰; en el móvil los Detalles se deslizan sobre la Lista.",
+        navigation: "Navegación",
+        list: "Lista",
+        details: "Detalles",
+        gear: "Rueda dentada: ajustes y esta ventana",
+        tabs: "Pestañas: todo sobre la entrada abierta",
+        footer: "Barra inferior: aparece en cuanto cambias algo",
+        sketch: "Esquema: Navegación a la izquierda, Lista en el centro, Detalles a la derecha",
+      },
       saving: {
         title: "Guardar",
         text: "Nada llega a Home Assistant hasta que pulsas “Guardar en HA”. Las entradas con cambios sin guardar tienen un punto amarillo en la lista.",

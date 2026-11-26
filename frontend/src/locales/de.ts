@@ -16,6 +16,18 @@ export default {
       "Nicht erkannt. HomeAce wurde nicht über die Seitenleiste von Home Assistant geöffnet.",
     more: "Mehr dazu",
     goodToKnow: {
+      columns: {
+        title: "Was ist was",
+        text: "HomeAce hat drei Spalten: links die Navigation mit deinen Ordnern oder Bereichen, in der Mitte die Liste mit den Einträgen, rechts die Details zum geöffneten Eintrag.",
+        more: "Die Linien zwischen den Spalten kannst du ziehen, die Details lassen sich einklappen. Auf schmalen Bildschirmen liegt die Navigation hinter ☰, am Handy schieben sich die Details über die Liste.",
+        navigation: "Navigation",
+        list: "Liste",
+        details: "Details",
+        gear: "Zahnrad: Einstellungen und dieses Fenster",
+        tabs: "Tabs: alles zum geöffneten Eintrag",
+        footer: "Fußleiste: erscheint, sobald du etwas änderst",
+        sketch: "Skizze: Navigation links, Liste in der Mitte, Details rechts",
+      },
       saving: {
         title: "Speichern",
         text: "Nichts geht nach Home Assistant, bevor du „In HA speichern“ klickst. Einträge mit ungespeicherten Änderungen haben einen gelben Punkt in der Liste.",
