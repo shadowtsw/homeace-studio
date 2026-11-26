@@ -1,0 +1,47 @@
+/* The rows of controls in a scene device row, shared by SceneDeviceRow and SceneLightControls. */
+.scene-row__line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding-left: 42px;
+}
+
+.scene-row__line input[type="range"] {
+  flex: 1;
+  min-width: 140px;
+  accent-color: var(--accent);
+}
+
+.scene-row__label {
+  width: 84px;
+  color: var(--muted);
+  font-size: 12.5px;
+}
+
+.scene-row__value {
+  min-width: 52px;
+  text-align: right;
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.scene-row__note {
+  margin: 0 0 0 42px;
+  color: var(--faint);
+  font-size: 12px;
+}
+
+@media (max-width: 820px) {
+  .scene-row__line,
+  .scene-row__note {
+    padding-left: 0;
+    margin-left: 0;
+  }
+
+  .scene-row__label {
+    flex-basis: 100%;
+    width: auto;
+  }
+}
