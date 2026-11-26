@@ -28,7 +28,7 @@
       @click="isRenaming || emit('select', entry.entityId)"
     >
       <span class="entry-list-row__icon" :class="`kind-${entry.kind}`">
-        <span class="mdi" :class="iconClass" />
+        <AppIcon :icon="entry.icon" :fallback="ENTRY_KIND_ICON[entry.kind]" />
       </span>
       <span class="entry-list-row__main">
         <span class="entry-list-row__name">
@@ -121,7 +121,7 @@ import { usePlainEntityDrag } from "@/composables/usePlainEntityDrag";
 import { useLookupsStore } from "@/stores/lookupsStore";
 import { setDraggedEntity } from "@/utils/dragDrop";
 import { canToggle, isOn, supportsAction, toggleAction } from "@/utils/entryActions";
-import { mdiIconClass } from "@/utils/text";
+import AppIcon from "@/components/common/AppIcon.vue";
 
 /** HA's state for a switched-off automation or script. */
 const STATE_OFF = "off";
@@ -168,9 +168,6 @@ const { t } = useI18n();
 const canDuplicate = computed(() => canDuplicateEntry(props.entry));
 
 const isOff = computed(() => props.entry.isDisabled || props.entry.state === STATE_OFF);
-const iconClass = computed(
-  () => mdiIconClass(props.entry.icon) ?? ENTRY_KIND_ICON[props.entry.kind],
-);
 /** Without technical details: kind and area, e.g. "Automation · Terrasse". */
 const subtitle = computed(() => {
   const where = props.areaNote === undefined ? props.entry.area?.name : props.areaNote;

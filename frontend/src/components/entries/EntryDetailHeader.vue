@@ -9,7 +9,7 @@
       <span class="mdi mdi-arrow-left" />
     </button>
     <span class="entry-detail-header__icon" :class="`kind-${entry.kind}`">
-      <span class="mdi" :class="mdiIconClass(entry.icon) ?? ENTRY_KIND_ICON[entry.kind]" />
+      <AppIcon :icon="entry.icon" :fallback="ENTRY_KIND_ICON[entry.kind]" />
     </span>
     <div class="entry-detail-header__title">
       <div class="entry-detail-header__kind">
@@ -118,7 +118,7 @@ import SwitchToggle from "@/components/common/SwitchToggle.vue";
 import { ENTRY_ACTION, ENTRY_KIND_ICON, type EntryAction } from "@/constants/entries";
 import type { Entry } from "@/types/entry";
 import { canDelete, canToggle, isOn, supportsAction, toggleAction } from "@/utils/entryActions";
-import { mdiIconClass } from "@/utils/text";
+import AppIcon from "@/components/common/AppIcon.vue";
 
 const props = defineProps<{
   entry: Entry;

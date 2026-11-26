@@ -586,8 +586,32 @@ const fr: MessageSchema = {
     name: "Nom",
     folder: "Dossier (facultatif)",
   },
+  icons: {
+    title: "Choisir une icône",
+    cancel: "Annuler",
+    choose: "Choisir …",
+    search: "Rechercher, p. ex. lamp, fan, robot",
+    all: "Toutes",
+    standardPack: "Standard",
+    more: "… et {count} autres. Précisez la recherche.",
+    none: "Aucune icône trouvée. Les noms sont en anglais, p. ex. « lamp » pour « lampe ».",
+    standard: "Icône standard",
+    remove: "Retirer",
+    removeHint: "Revenir à l'icône standard",
+    apply: "Appliquer",
+    hintOutsideHa:
+      "Les icônes des packs sont disponibles quand vous ouvrez HomeAce depuis la barre latérale de Home Assistant.",
+    hintOpenDashboard:
+      "Icônes de pack manquantes ? Ouvrez une fois un tableau de bord dans Home Assistant, puis HomeAce à nouveau.",
+    malformed:
+      "« {icon} » n'est pas un nom d'icône. Les icônes s'écrivent « pack:nom », p. ex. mdi:lamp.",
+    unknown: "« {icon} » n'existe pas. En attendant, HomeAce affiche l'icône standard.",
+    packMissing:
+      "« {icon} » vient du pack d'icônes « {pack} », qui n'est pas chargé en ce moment. Elle reste enregistrée.",
+  },
   labels: {
     title: "Étiquettes",
+    done: "Terminé",
     search: "Rechercher ou nouvelle étiquette …",
     create: "Créer l'étiquette « {name} »",
     createSub: "et l'attribuer tout de suite",

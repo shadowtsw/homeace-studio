@@ -12,7 +12,7 @@
     @drop="onDrop"
   >
     <button type="button" class="area-node__main" @click="emit('select')">
-      <span class="mdi" :class="iconClass" />
+      <AppIcon :icon="icon" :fallback="iconClass" />
       <InlineNameInput
         v-if="isRenaming"
         :value="name"
@@ -57,6 +57,7 @@
 import { ref } from "vue";
 import { useI18n } from "vue-i18n";
 
+import AppIcon from "@/components/common/AppIcon.vue";
 import InlineNameInput from "@/components/common/InlineNameInput.vue";
 
 import { useEntryDropTarget } from "@/composables/useEntryDropTarget";
@@ -65,6 +66,9 @@ import { useEntryDropTarget } from "@/composables/useEntryDropTarget";
 defineProps<{
   name: string;
   count: number;
+  /** The area's own icon in HA ("mdi:sofa", also from an icon pack); without one, iconClass. */
+  icon?: string | null;
+  /** MDI class shown without an own icon. */
   iconClass: string;
   isActive: boolean;
   /** Edit and delete; not for "Ohne Bereich". */

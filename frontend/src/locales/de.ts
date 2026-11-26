@@ -577,8 +577,31 @@ export default {
     name: "Name",
     folder: "Ordner (optional)",
   },
+  icons: {
+    title: "Icon wählen",
+    cancel: "Abbrechen",
+    choose: "Auswählen …",
+    search: "Suchen, z. B. lamp, fan, robot",
+    all: "Alle",
+    standardPack: "Standard",
+    more: "… und {count} weitere. Genauer suchen.",
+    none: "Kein Icon gefunden. Die Namen sind englisch, z. B. „lamp“ statt „Lampe“.",
+    standard: "Standard-Icon",
+    remove: "Entfernen",
+    removeHint: "Zurück auf das Standard-Icon",
+    apply: "Übernehmen",
+    hintOutsideHa:
+      "Icons aus Paketen gibt es, wenn du HomeAce über die Seitenleiste von Home Assistant öffnest.",
+    hintOpenDashboard:
+      "Paket-Icons fehlen? Öffne einmal ein Dashboard in Home Assistant und dann HomeAce wieder.",
+    malformed: "„{icon}“ ist kein Icon-Name. Icons heißen „Paket:Name“, z. B. mdi:lamp.",
+    unknown: "„{icon}“ gibt es nicht. Bis dahin zeigt HomeAce das Standard-Icon.",
+    packMissing:
+      "„{icon}“ kommt aus dem Icon-Paket „{pack}“, das gerade nicht geladen ist. Gespeichert bleibt es trotzdem.",
+  },
   labels: {
     title: "Labels",
+    done: "Fertig",
     search: "Suchen oder neues Label …",
     create: "Label „{name}“ anlegen",
     createSub: "und gleich vergeben",

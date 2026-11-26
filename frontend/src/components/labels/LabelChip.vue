@@ -1,6 +1,11 @@
 <template>
   <span class="label-chip" :style="{ '--label-color': color }">
-    <span v-if="iconClass" class="mdi label-chip__icon" :class="iconClass" />
+    <AppIcon
+      v-if="label.icon"
+      class="label-chip__icon"
+      :icon="label.icon"
+      fallback="mdi-label-outline"
+    />
     <span v-else class="label-chip__dot" />
     <span class="label-chip__name">{{ label.name }}</span>
     <button
@@ -21,9 +26,9 @@
 import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 
+import AppIcon from "@/components/common/AppIcon.vue";
 import type { Label } from "@/types/entry";
 import { labelColorCss } from "@/utils/labelColors";
-import { mdiIconClass } from "@/utils/text";
 
 const props = defineProps<{
   label: Pick<Label, "name" | "icon" | "color">;
@@ -37,7 +42,6 @@ const { t } = useI18n();
 
 /** A label without a colour stays quiet grey, like in HA. */
 const color = computed(() => labelColorCss(props.label.color) ?? "var(--line-strong)");
-const iconClass = computed(() => mdiIconClass(props.label.icon));
 </script>
 
 <style scoped>

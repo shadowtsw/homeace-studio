@@ -36,7 +36,8 @@
           :key="area.areaId"
           :name="area.name"
           :count="area.count"
-          :icon-class="mdiIconClass(area.icon) ?? 'mdi-map-marker-outline'"
+          :icon="area.icon"
+          icon-class="mdi-map-marker-outline"
           :is-active="selected === areaFilter(area.areaId)"
           has-actions
           @select="emit('select', areaFilter(area.areaId))"
@@ -69,7 +70,6 @@ import { useI18n } from "vue-i18n";
 
 import type { AreaNavItem } from "@/composables/useStudioData";
 import { areaFilter } from "@/utils/entryFilter";
-import { mdiIconClass } from "@/utils/text";
 
 import AreaNavNode from "./AreaNavNode.vue";
 

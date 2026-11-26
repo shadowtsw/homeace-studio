@@ -69,7 +69,12 @@
         <button class="btn" type="button" @click="emit('setAreaChecked')">
           <span class="mdi mdi-map-marker-outline" />{{ t("areas.set.button") }}
         </button>
-        <button class="btn" type="button" @click="bulkBar && emit('labelChecked', bulkBar)">
+        <button
+          class="btn"
+          type="button"
+          data-label-toggle
+          @click="bulkBar && emit('labelChecked', bulkBar)"
+        >
           <span class="mdi mdi-label-outline" />{{ t("labels.add") }}
         </button>
         <button class="btn" type="button" @click="emit('uncategorizeChecked')">

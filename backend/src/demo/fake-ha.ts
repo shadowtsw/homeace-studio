@@ -168,6 +168,9 @@ export class FakeHa {
         return structuredClone(this.areas);
       case HA_COMMAND.floorRegistryList:
         return structuredClone(this.home.floors);
+      // A card, no icon pack: the demo runs outside HA, where packs cannot load anyway
+      case HA_COMMAND.lovelaceResources:
+        return [{ id: "1", type: "module", url: "/local/community/lovelace-mushroom/mushroom.js" }];
       case HA_COMMAND.traceList:
         return this.listTraces(payload);
       case HA_COMMAND.traceGet:

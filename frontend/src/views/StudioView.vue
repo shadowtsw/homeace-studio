@@ -119,7 +119,7 @@
           @uncategorize-checked="actions.moveEntries([...studio.checkedIds], null)"
           @set-area-checked="areas.startSetArea([...studio.checkedIds])"
           @act="entryActions.act"
-          @label-checked="(bar) => (bulkLabelField = bar)"
+          @label-checked="(bar) => (bulkLabelField = bulkLabelField ? null : bar)"
           @select-scope="studio.selectScope"
           @toggle-scope="studio.toggleListScope"
           @open-entity="openEntity"

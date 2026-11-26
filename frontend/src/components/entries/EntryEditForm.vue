@@ -5,19 +5,15 @@
         <span class="field-label">{{ t("detail.name") }}</span>
         <input v-model="name" class="field-input" autocomplete="off" :disabled="isBusy" />
       </label>
-      <label class="entry-edit__field">
+      <div class="entry-edit__field">
         <span class="field-label">{{ t("detail.icon") }}</span>
-        <span class="entry-edit__icon-row">
-          <span class="mdi entry-edit__icon-preview" :class="mdiIconClass(icon) ?? fallbackIcon" />
-          <input
-            v-model="icon"
-            class="field-input"
-            placeholder="mdi:lightbulb"
-            autocomplete="off"
-            :disabled="isBusy"
-          />
-        </span>
-      </label>
+        <IconField
+          v-model="icon"
+          :fallback="fallbackIcon"
+          :label="t('detail.icon')"
+          :is-disabled="isBusy"
+        />
+      </div>
       <label class="entry-edit__field">
         <span class="field-label">{{ t("detail.area") }}</span>
         <select v-model="areaId" class="field-input" :disabled="isBusy">
@@ -47,6 +43,7 @@
           type="button"
           :disabled="isBusy"
           :aria-expanded="isPickerOpen"
+          data-label-toggle
           @click="isPickerOpen = !isPickerOpen"
         >
           <span class="mdi mdi-plus" />{{ t("labels.add") }}
@@ -83,12 +80,12 @@
 import { computed, ref, useTemplateRef, watch } from "vue";
 import { useI18n } from "vue-i18n";
 
+import IconField from "@/components/icons/IconField.vue";
 import LabelChip from "@/components/labels/LabelChip.vue";
 import LabelPicker from "@/components/labels/LabelPicker.vue";
 import { useLabelActions } from "@/composables/useLabelActions";
 import { useAreasStore } from "@/stores/areasStore";
 import type { Area, Entry, EntryChanges, Label } from "@/types/entry";
-import { mdiIconClass } from "@/utils/text";
 
 const props = defineProps<{
   entry: Entry;
@@ -253,17 +250,6 @@ function save(): void {
 .entry-edit__field {
   display: grid;
   gap: 5px;
-}
-
-.entry-edit__icon-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.entry-edit__icon-preview {
-  color: var(--muted);
-  font-size: 22px;
 }
 
 .entry-edit__labels {

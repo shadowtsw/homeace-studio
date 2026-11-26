@@ -33,19 +33,16 @@
       </div>
     </div>
 
-    <label class="label-edit__field">
+    <div class="label-edit__field">
       <span>{{ t("labels.icon") }}</span>
-      <span class="label-edit__icon-row">
-        <span class="mdi" :class="mdiIconClass(icon) ?? 'mdi-label-outline'" />
-        <input
-          v-model="icon"
-          class="field-input"
-          placeholder="mdi:lightbulb"
-          autocomplete="off"
-          :disabled="isBusy"
-        />
-      </span>
-    </label>
+      <IconField
+        v-model="icon"
+        fallback="mdi-label-outline"
+        :label="t('labels.icon')"
+        :is-disabled="isBusy"
+        is-compact
+      />
+    </div>
 
     <div class="label-edit__preview">
       {{ t("labels.preview") }}
@@ -77,10 +74,10 @@
 import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
 
+import IconField from "@/components/icons/IconField.vue";
 import type { LabelFields } from "@/services/labelsService";
 import type { Label } from "@/types/entry";
 import { LABEL_COLORS } from "@/utils/labelColors";
-import { mdiIconClass } from "@/utils/text";
 
 import LabelChip from "./LabelChip.vue";
 
@@ -175,17 +172,6 @@ function save(): void {
   box-shadow:
     0 0 0 2px var(--surface),
     0 0 0 4px var(--fg);
-}
-
-.label-edit__icon-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.label-edit__icon-row .mdi {
-  color: var(--muted);
-  font-size: 18px;
 }
 
 .label-edit__preview {

@@ -48,6 +48,8 @@ export const HA_COMMAND = {
   traceGet: "trace/get",
   deviceRegistryList: "config/device_registry/list",
   floorRegistryList: "config/floor_registry/list",
+  /** Dashboard resources; icon packs like custom-brand-icons are among them. */
+  lovelaceResources: "lovelace/resources",
   configEntriesGet: "config_entries/get",
   callService: "call_service",
   subscribeEvents: "subscribe_events",

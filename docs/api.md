@@ -136,6 +136,13 @@ in the list, sorted by name:
   (see [features/folders.md](features/folders.md)), else `null`. `isInRegistry` is `false` for entities
   without a registry entry; they cannot be put into a folder.
 
+## GET /api/icon-packs/resources
+
+The dashboard resources that look like icon packs: scripts (`module`, `js`) whose file name contains
+"icon", e.g. `["/local/community/custom-brand-icons/custom-brand-icons.js?v=3"]`. Read from HA's
+`lovelace/resources`; an empty list when HA has no dashboards set up. The frontend loads these when HA
+has not loaded them yet (see [features/icons.md](features/icons.md)); cards are never listed.
+
 ## POST /api/entities/:entityId/move
 
 Puts a plain entity (light, sensor, …) into a folder, like `POST /api/entries/:entityId/move` does it for

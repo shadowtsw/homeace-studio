@@ -571,8 +571,31 @@ const en: MessageSchema = {
     name: "Name",
     folder: "Folder (optional)",
   },
+  icons: {
+    title: "Choose an icon",
+    cancel: "Cancel",
+    choose: "Choose …",
+    search: "Search, e.g. lamp, fan, robot",
+    all: "All",
+    standardPack: "Standard",
+    more: "… and {count} more. Search more precisely.",
+    none: "No icon found. Icon names are English, e.g. “lamp”.",
+    standard: "Standard icon",
+    remove: "Remove",
+    removeHint: "Back to the standard icon",
+    apply: "Apply",
+    hintOutsideHa:
+      "Icons from icon packs are there when you open HomeAce from the Home Assistant sidebar.",
+    hintOpenDashboard:
+      "Pack icons missing? Open a dashboard in Home Assistant once, then HomeAce again.",
+    malformed: "“{icon}” is not an icon name. Icons are called “pack:name”, e.g. mdi:lamp.",
+    unknown: "“{icon}” does not exist. Until then HomeAce shows the standard icon.",
+    packMissing:
+      "“{icon}” comes from the icon pack “{pack}”, which is not loaded right now. It stays saved anyway.",
+  },
   labels: {
     title: "Labels",
+    done: "Done",
     search: "Search or new label …",
     create: "Create label “{name}”",
     createSub: "and give it right away",

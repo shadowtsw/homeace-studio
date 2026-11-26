@@ -113,18 +113,18 @@ export const WHATS_NEW: readonly WhatsNewRelease[] = [
       {
         icon: "mdi-label-multiple-outline",
         title: {
-          de: "Labels verwalten",
-          en: "Manage labels",
-          fr: "Gérer les étiquettes",
-          es: "Gestionar etiquetas",
-          ru: "Управление метками",
+          de: "Labels und Icons",
+          en: "Labels and icons",
+          fr: "Étiquettes et icônes",
+          es: "Etiquetas e iconos",
+          ru: "Метки и значки",
         },
         text: {
-          de: "Labels anlegen, umbenennen, einfärben und vielen Einträgen auf einmal geben. Vor dem Löschen siehst du, wo ein Label noch gebraucht wird.",
-          en: "Create, rename and colour labels and give them to many entries at once. Before deleting one, you see where it is still used.",
-          fr: "Créez, renommez et colorez des étiquettes et attribuez-les à de nombreuses entrées d'un coup. Avant d'en supprimer une, vous voyez où elle sert encore.",
-          es: "Crea, renombra y colorea etiquetas y asígnalas a muchas entradas a la vez. Antes de eliminar una, ves dónde se sigue usando.",
-          ru: "Создавайте, переименовывайте и раскрашивайте метки и назначайте их сразу многим элементам. Перед удалением видно, где метка ещё используется.",
+          de: "Labels anlegen, umbenennen, einfärben und vielen Einträgen auf einmal geben. Vor dem Löschen siehst du, wo ein Label noch gebraucht wird. Und neu: Icons aus Paketen wie custom-brand-icons zeigen und auswählen.",
+          en: "Create, rename and colour labels and give them to many entries at once. Before deleting one, you see where it is still used. Also new: show and pick icons from packs like custom-brand-icons.",
+          fr: "Créez, renommez et colorez des étiquettes et attribuez-les à de nombreuses entrées d'un coup. Avant d'en supprimer une, vous voyez où elle sert encore. Nouveau aussi : afficher et choisir des icônes de packs comme custom-brand-icons.",
+          es: "Crea, renombra y colorea etiquetas y asígnalas a muchas entradas a la vez. Antes de eliminar una, ves dónde se sigue usando. También nuevo: mostrar y elegir iconos de paquetes como custom-brand-icons.",
+          ru: "Создавайте, переименовывайте и раскрашивайте метки и назначайте их сразу многим элементам. Перед удалением видно, где метка ещё используется. А ещё: значки из пакетов вроде custom-brand-icons видны и доступны для выбора.",
         },
       },
       {

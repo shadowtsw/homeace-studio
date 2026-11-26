@@ -90,6 +90,14 @@ export type HaFloor = {
   level: number | null;
 };
 
+/** A dashboard resource (`lovelace/resources`): a card, a theme helper or an icon pack. */
+export type HaLovelaceResource = {
+  id: string;
+  /** "module", "js", "css" or "html". */
+  type: string;
+  url: string;
+};
+
 /** An event from `subscribe_events`, e.g. `state_changed`. */
 export type HaEvent = {
   event_type: string;

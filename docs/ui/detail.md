@@ -32,7 +32,8 @@ Top to bottom:
 
 1. `CategoryMoveField`: folder with suggestions from every scope.
 2. `EntryEditForm`: name, icon, area (with "+ Neuer Bereich …"), labels. It sends only the changed
-   fields (`EntryChanges`) → `PATCH /api/entries/:id`. Labels show as chips of the given ones plus
+   fields (`EntryChanges`) → `PATCH /api/entries/:id`. The icon is an `IconField` (preview, text,
+   "Auswählen …" for the icon search, see [icons](../features/icons.md)). Labels show as chips of the given ones plus
    "+ Label", which opens the `LabelPicker` (search, tick, create, edit, delete). Ticking changes the
    draft; changes to a label itself act at once, see [labels](../features/labels.md).
 3. `EntityIdField`: entity ID with "Ändern …" and a suggestion when it no longer fits the name, see

@@ -148,6 +148,7 @@ Risk per area, quick checks and the check per HA release: [ha-compatibility.md](
 | helpers | [features/helpers.md](features/helpers.md) |
 | folders, HA categories, tidy-up assistant | [features/folders.md](features/folders.md) |
 | labels: assign, manage, uses before delete | [features/labels.md](features/labels.md) |
+| icons, icon packs, icon search | [features/icons.md](features/icons.md) |
 | areas | [features/areas.md](features/areas.md) |
 | check-up | [features/checkup.md](features/checkup.md) |
 | dependencies | [features/dependencies.md](features/dependencies.md) |

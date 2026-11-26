@@ -580,8 +580,32 @@ const es: MessageSchema = {
     name: "Nombre",
     folder: "Carpeta (opcional)",
   },
+  icons: {
+    title: "Elegir un icono",
+    cancel: "Cancelar",
+    choose: "Elegir …",
+    search: "Buscar, p. ej. lamp, fan, robot",
+    all: "Todos",
+    standardPack: "Estándar",
+    more: "… y {count} más. Busca con más precisión.",
+    none: "No se encontró ningún icono. Los nombres están en inglés, p. ej. “lamp” para “lámpara”.",
+    standard: "Icono estándar",
+    remove: "Quitar",
+    removeHint: "Volver al icono estándar",
+    apply: "Aplicar",
+    hintOutsideHa:
+      "Los iconos de paquetes están disponibles cuando abres HomeAce desde la barra lateral de Home Assistant.",
+    hintOpenDashboard:
+      "¿Faltan iconos de paquetes? Abre una vez un panel en Home Assistant y luego HomeAce de nuevo.",
+    malformed:
+      "“{icon}” no es un nombre de icono. Los iconos se escriben “paquete:nombre”, p. ej. mdi:lamp.",
+    unknown: "“{icon}” no existe. Mientras tanto HomeAce muestra el icono estándar.",
+    packMissing:
+      "“{icon}” viene del paquete de iconos “{pack}”, que ahora no está cargado. Se queda guardado igualmente.",
+  },
   labels: {
     title: "Etiquetas",
+    done: "Listo",
     search: "Buscar o nueva etiqueta …",
     create: "Crear la etiqueta “{name}”",
     createSub: "y asignarla enseguida",

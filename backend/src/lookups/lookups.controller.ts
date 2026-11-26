@@ -10,9 +10,11 @@ import type {
   HaEntityRegistryEntry,
   HaFloor,
   HaLabel,
+  HaLovelaceResource,
   HaState,
 } from "../ha/ha.types";
 import { toEntityOptions, type EntityOption } from "./entity-options";
+import { iconResourceUrls } from "./icon-resources";
 
 export type Area = { areaId: string; name: string; icon: string | null };
 export type Floor = { floorId: string; name: string; icon: string | null };
@@ -75,6 +77,20 @@ export class LookupsController {
       name: floor.name,
       icon: floor.icon,
     }));
+  }
+
+  /**
+   * Dashboard resources that look like icon packs, for the frontend to load when HA has not yet
+   * (see icon-resources.ts). Without dashboards set up HA refuses the command: then there are none.
+   */
+  @Get("icon-packs/resources")
+  async iconPackResources(): Promise<string[]> {
+    try {
+      const resources = await this.ha.call<HaLovelaceResource[]>(HA_COMMAND.lovelaceResources);
+      return iconResourceUrls(resources);
+    } catch {
+      return [];
+    }
   }
 
   @Get("labels")

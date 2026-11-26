@@ -21,6 +21,9 @@
   in the selection bar. Before a label is deleted, HomeAce Studio shows where it is used, including
   automations and scripts that switch everything with that label. New setting "Labels in der Liste
   zeigen" (off by default).
+- Icons from icon packs: icons of packs like custom-brand-icons now show in the list, the details and
+  on labels and areas. "Auswählen …" next to the icon of an entry or label opens a search over HA's
+  standard icons and your packs. It also works when HomeAce Studio is opened before any dashboard.
 - Ready for Home Assistant 2026.12, which splits plugs with several outlets into one device per
   outlet: each outlet stays in the room of its plug and is named with it ("Eve Energy Top").
 - Automations and scripts that switch a whole floor or everything with a label show it ("Etage

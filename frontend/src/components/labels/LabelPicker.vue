@@ -28,7 +28,7 @@
         autocomplete="off"
         @keydown.enter.prevent="onEnter"
       />
-      <div class="label-picker__list">
+      <div class="label-picker__list" data-own-scroll>
         <div v-for="label in shown" :key="label.labelId" class="label-picker__row">
           <button type="button" class="label-picker__pick" @click="emit('toggle', label.labelId)">
             <span class="mdi label-picker__check" :class="checkIcon(label.labelId)" />
@@ -59,6 +59,10 @@
       <p class="label-picker__foot">
         <span class="mdi mdi-information-outline" />{{ t("labels.footer") }}
       </p>
+      <!-- Clicking next to it closes too, but beginners look for a button. Ticks act at once, so "Fertig", not "Schließen". -->
+      <div class="label-picker__done">
+        <button type="button" class="btn" @click="emit('close')">{{ t("labels.done") }}</button>
+      </div>
     </template>
   </div>
 </template>
@@ -68,6 +72,7 @@ import { onClickOutside, onKeyStroke, useEventListener } from "@vueuse/core";
 import { computed, nextTick, onMounted, ref, toRef, useTemplateRef, watch } from "vue";
 import { useI18n } from "vue-i18n";
 
+import { useCloseWhenFieldScrolls } from "@/composables/useCloseWhenFieldScrolls";
 import { useNoCoverPlacement } from "@/composables/useNoCoverPlacement";
 import { usePageScrollLock } from "@/composables/usePageScrollLock";
 import type { LabelFields } from "@/services/labelsService";
@@ -153,25 +158,24 @@ watch(
 onMounted(async () => {
   await nextTick();
   placement.place();
-  search.value?.focus();
+  // Without scrolling: the page behind would move, and an open label picker would take that for
+  // the user scrolling away
+  search.value?.focus({ preventScroll: true });
 });
 
-// The field itself (its "+ Label" button toggles the picker) does not count as outside
-const fieldRef = computed(() => props.field);
-onClickOutside(panel, () => emit("close"), { ignore: [fieldRef] });
+// Only the button that opens it is not "outside" (it toggles); the rest of the field is, so a click
+// next to the chips closes it (owner's feedback: the whole label row used to keep it open)
+onClickOutside(panel, () => emit("close"), { ignore: ["[data-label-toggle]"] });
 onKeyStroke("Escape", () => (editing.value ? (editing.value = null) : emit("close")));
 useEventListener(window, "resize", () => emit("close"));
 // The page behind does not scroll with wheel or finger while it is open; only its list does
-usePageScrollLock({ panel, scrollable: ".label-picker__list" });
-// Fixed in the window: scrolled away anyway (scrollbar, keyboard), it closes (not when we scroll ourselves)
-useEventListener(
-  document,
-  "scroll",
-  (event: Event) => {
-    if (!panel.value?.contains(event.target as Node) && !placement.isOwnScroll()) emit("close");
-  },
-  { capture: true, passive: true },
-);
+usePageScrollLock();
+// Fixed in the window: when its field scrolls away anyway (scrollbar, keyboard), it closes
+useCloseWhenFieldScrolls({
+  field: toRef(props, "field"),
+  isOwnScroll: placement.isOwnScroll,
+  onClose: () => emit("close"),
+});
 </script>
 
 <style scoped>
@@ -298,6 +302,12 @@ useEventListener(
   margin: 10px 8px;
   color: var(--muted);
   font-size: 13px;
+}
+
+.label-picker__done {
+  display: flex;
+  justify-content: flex-end;
+  padding: 8px 2px 0;
 }
 
 .label-picker__foot {

@@ -55,8 +55,13 @@ v33). `useNoCoverPlacement(field, panel)`:
 3. While it is open, the page behind does not scroll with wheel or finger (`usePageScrollLock`); only its
    list does, and with `overscroll-behavior: contain` it does not hand the scroll on to the page at its
    ends (owner's feedback on dummy v34: a mouse slipping off the list moved the page while the picker
-   stayed). It closes on Escape, a click outside (the field itself does not count), a window resize and a
-   scroll by scrollbar or keyboard. Its own scroll from step 1 is ignored (`isOwnScroll`).
+   stayed). The list carries `data-own-scroll`, so the icon search inside it can scroll its grid too.
+4. It closes with "Fertig" (owner's wish: beginners look for a button; ticks act at once, so not
+   "Schließen"), on Escape, on a window resize, on a click outside and when its field scrolls away
+   (scrollbar, keyboard; `useCloseWhenFieldScrolls`). Only the button that opens it (`data-label-toggle`:
+   "+ Label", "Label" in the bulk bar) is not "outside"; the whole label row used to be, so a click
+   next to the chips did nothing (owner's feedback). Scrolls by a panel itself (step 1, also by the icon
+   search inside it) are ignored (`isOwnScroll`, shared by all panels).
 
 ## Usage check
 

@@ -24,6 +24,24 @@ describe("LookupsController", () => {
     ]);
   });
 
+  it("lists icon pack resources, and none when HA has no dashboards set up", async () => {
+    const resources = [
+      { id: "1", type: "module", url: "/local/community/custom-brand-icons/custom-brand-icons.js" },
+      { id: "2", type: "module", url: "/local/community/lovelace-mushroom/mushroom.js" },
+    ];
+    const working = new LookupsController({
+      call: jest.fn(() => Promise.resolve(resources)),
+    } as unknown as HaConnectionService);
+    const refusing = new LookupsController({
+      call: jest.fn(() => Promise.reject(new Error("unknown command"))),
+    } as unknown as HaConnectionService);
+
+    await expect(working.iconPackResources()).resolves.toEqual([
+      "/local/community/custom-brand-icons/custom-brand-icons.js",
+    ]);
+    await expect(refusing.iconPackResources()).resolves.toEqual([]);
+  });
+
   it("lists floors in HA's order: by level, floors without one last", async () => {
     const call = jest.fn(() =>
       Promise.resolve([

@@ -8,6 +8,12 @@ const MIN_HEIGHT = 200;
 type Side = "below" | "above";
 
 /**
+ * Until when a panel scrolls its field itself. Shared by all panels: the icon search inside the label
+ * picker scrolls too, and the label picker must not take that for the user scrolling away.
+ */
+let ownScrollUntil = 0;
+
+/**
  * Places a fixed panel next to a field it must never cover (the chips of the label picker): below
  * it, else above it; when neither fits, the field's scroll container moves it up and the panel opens
  * below, shorter if need be. Called again after the field grew (a new chip row), the panel stays on
@@ -19,8 +25,6 @@ export function useNoCoverPlacement(
 ) {
   const style = ref<Record<string, string>>({});
   let side: Side | null = null;
-  /** Set while we scroll ourselves, so the owner does not take it for the user scrolling away. */
-  let ownScrollUntil = 0;
 
   function place(): void {
     const fieldEl = field.value;
@@ -45,12 +49,16 @@ export function useNoCoverPlacement(
     if (height <= roomBelow) return setBelow(box, roomBelow);
     if (height <= roomAbove) return setAbove(box, roomAbove, height);
 
+    // Up to the top of its scroll area, not of the window: above it there may be a fixed header
+    // (the detail's), which would then cover the field
     const scroller = scrollParentOf(fieldEl);
-    if (scroller) {
-      ownScrollUntil = Date.now() + 600;
-      scroller.scrollTop += box.top - (MARGIN + 56);
-      box = fieldEl.getBoundingClientRect();
+    // Nothing to scroll (inside a fixed panel): the side with more room, shorter
+    if (!scroller) {
+      return roomAbove > roomBelow ? setAbove(box, roomAbove, height) : setBelow(box, roomBelow);
     }
+    ownScrollUntil = Date.now() + 600;
+    scroller.scrollTop += box.top - (scroller.getBoundingClientRect().top + GAP);
+    box = fieldEl.getBoundingClientRect();
     setBelow(box, window.innerHeight - MARGIN - (box.bottom + GAP));
   }
 
@@ -83,9 +91,14 @@ export function useNoCoverPlacement(
   };
 }
 
+/**
+ * The area that scrolls the field; null inside a fixed panel (the icon field in the label picker):
+ * scrolling the page behind would not move the field, only the page.
+ */
 function scrollParentOf(element: HTMLElement): HTMLElement | null {
   for (let parent = element.parentElement; parent; parent = parent.parentElement) {
-    const { overflowY } = getComputedStyle(parent);
+    const { overflowY, position } = getComputedStyle(parent);
+    if (position === "fixed") return null;
     if (
       (overflowY === "auto" || overflowY === "scroll") &&
       parent.scrollHeight > parent.clientHeight
