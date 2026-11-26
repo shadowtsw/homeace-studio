@@ -97,7 +97,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, useTemplateRef } from "vue";
+import { computed, nextTick, ref, useTemplateRef } from "vue";
 import { useI18n } from "vue-i18n";
 
 import FolderPathField from "@/components/common/FolderPathField.vue";
@@ -227,11 +227,17 @@ function setType(index: number, type: SortingConditionType): void {
   conditions.value[index] = { type, value: "" };
 }
 
-function insert(word: string): void {
+/** Like typing: replaces marked text, and the cursor ends up behind the placeholder. */
+async function insert(word: string): Promise<void> {
   const input = targetField.value?.input;
-  const position = input?.selectionStart ?? target.value.length;
-  target.value = `${target.value.slice(0, position)}{${word}}${target.value.slice(position)}`;
+  const start = input?.selectionStart ?? target.value.length;
+  const end = input?.selectionEnd ?? start;
+  const token = `{${word}}`;
+
+  target.value = `${target.value.slice(0, start)}${token}${target.value.slice(end)}`;
+  await nextTick();
   input?.focus();
+  input?.setSelectionRange(start + token.length, start + token.length);
 }
 
 function save(): void {
