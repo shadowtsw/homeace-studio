@@ -92,17 +92,9 @@ import { computed, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 
 import SwitchToggle from "@/components/common/SwitchToggle.vue";
+import { useMcpActions } from "@/composables/actions/useMcpActions";
 import { useAiStore } from "@/stores/aiStore";
-import { useMessagesStore } from "@/stores/messagesStore";
-import { useToastStore } from "@/stores/toastStore";
-import {
-  MCP_CLIENT,
-  copyText,
-  maskToken,
-  mcpSnippet,
-  mcpUrl,
-  type McpClient,
-} from "@/utils/aiPlan";
+import { MCP_CLIENT, maskToken, mcpSnippet, mcpUrl, type McpClient } from "@/utils/aiPlan";
 
 import McpAccessRules from "./McpAccessRules.vue";
 
@@ -116,16 +108,14 @@ const TOKEN_PLACEHOLDER = "<TOKEN>";
 const { t, locale } = useI18n();
 const ai = useAiStore();
 const { mcp } = storeToRefs(ai);
-const messages = useMessagesStore();
-const toasts = useToastStore();
 
 // Fresh on every open: the port or the last connection may have changed meanwhile.
 onMounted(() => {
   void ai.loadMcp().catch((error: unknown) => console.error("Loading MCP access failed", error));
 });
 
-const isBusy = ref(false);
 const isTokenShown = ref(false);
+const { isBusy, setEnabled, renew, copy } = useMcpActions({ isTokenShown });
 const selectedClient = ref<McpClient>(MCP_CLIENT.claudeCode);
 
 const isPortOpen = computed(() => mcp.value?.hostPort != null);
@@ -165,42 +155,6 @@ const connectionText = computed(() => {
     ? t("ai.lastConnectionClient", { time, client: last.client })
     : t("ai.lastConnection", { time });
 });
-
-function showError(error: unknown): void {
-  toasts.show({
-    text: messages.textFor({ error, fallback: t("errors.actionFailed") }),
-    tone: "error",
-  });
-}
-
-async function setEnabled(isEnabled: boolean): Promise<void> {
-  isBusy.value = true;
-  try {
-    await ai.setEnabled(isEnabled);
-    toasts.show({ text: isEnabled ? t("toast.mcpOn") : t("toast.mcpOff") });
-  } catch (error) {
-    showError(error);
-  } finally {
-    isBusy.value = false;
-  }
-}
-
-async function renew(): Promise<void> {
-  isBusy.value = true;
-  try {
-    await ai.renewToken();
-    isTokenShown.value = true;
-    toasts.show({ text: t("toast.mcpRenewed") });
-  } catch (error) {
-    showError(error);
-  } finally {
-    isBusy.value = false;
-  }
-}
-
-async function copy(text: string): Promise<void> {
-  toasts.show({ text: (await copyText(text)) ? t("toast.copied") : t("toast.copyFailed") });
-}
 </script>
 
 <style scoped>
