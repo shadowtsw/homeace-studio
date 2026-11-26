@@ -126,13 +126,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { toRef } from "vue";
 import { useI18n } from "vue-i18n";
 
 import { useEntryDropTarget } from "@/composables/dragDrop/useEntryDropTarget";
-import { CATEGORY_FILTER, CATEGORY_SEPARATOR, NAV_MODE, type NavMode } from "@/constants/entries";
+import { useExpandedFolders } from "@/composables/useExpandedFolders";
+import { CATEGORY_FILTER, NAV_MODE, type NavMode } from "@/constants/entries";
 import type { CategoryNode } from "@/utils/categories/categoryTree";
-import { isSpecialCategory } from "@/utils/entries/entryFilter";
 
 import CategoryTreeNode from "./CategoryTreeNode.vue";
 
@@ -188,41 +188,18 @@ const {
   onPlainEntityDropped: (entityId) => emit("dropEntity", null, entityId),
 });
 
-/** Which folders are open is pure UI state of this tree. */
-const expandedPaths = ref(new Set<string>());
-
-function toggleNode(path: string): void {
-  const next = new Set(expandedPaths.value);
-
-  if (next.has(path)) {
-    next.delete(path);
-  } else {
-    next.add(path);
-  }
-
-  expandedPaths.value = next;
-}
-
-/** A folder selected from elsewhere (a new folder, the list) opens the tree down to it. */
-watch(
-  () => props.selected,
-  (path) => {
-    if (isSpecialCategory(path)) return;
-
-    const levels = path.split(CATEGORY_SEPARATOR);
-    const next = new Set(expandedPaths.value);
-
-    for (let depth = 1; depth <= levels.length; depth++) {
-      next.add(levels.slice(0, depth).join(CATEGORY_SEPARATOR));
-    }
-
-    expandedPaths.value = next;
-  },
-);
+/** Which folders are open; a folder selected from elsewhere opens the tree down to it. */
+const {
+  expandedPaths,
+  toggle: toggleNode,
+  expand,
+} = useExpandedFolders({
+  selected: toRef(props, "selected"),
+});
 
 /** Selecting a folder also opens it, so its subfolders become visible. */
 function selectNode(path: string): void {
-  expandedPaths.value = new Set(expandedPaths.value).add(path);
+  expand(path);
   emit("select", path);
 }
 </script>

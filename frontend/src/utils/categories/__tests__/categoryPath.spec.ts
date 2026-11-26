@@ -7,6 +7,7 @@ import {
   renameLastLevel,
   replacePathPrefix,
   cleanFolderPath,
+  pathAndAncestors,
 } from "../categoryPath";
 
 describe("category path helpers", () => {
@@ -39,5 +40,16 @@ describe("cleanFolderPath", () => {
     expect(cleanFolderPath("Küche/")).toBe("Küche");
     expect(cleanFolderPath(" /Haus // Küche / ")).toBe("Haus/Küche");
     expect(cleanFolderPath(" / ")).toBe("");
+  });
+});
+
+describe("pathAndAncestors", () => {
+  it("lists every folder from the top down to the path", () => {
+    expect(pathAndAncestors("Haus/Terrasse/Licht")).toEqual([
+      "Haus",
+      "Haus/Terrasse",
+      "Haus/Terrasse/Licht",
+    ]);
+    expect(pathAndAncestors("Haus")).toEqual(["Haus"]);
   });
 });

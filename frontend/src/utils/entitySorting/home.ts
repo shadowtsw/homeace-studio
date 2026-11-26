@@ -6,7 +6,7 @@ import type {
   SortingFlow,
   SortingRole,
 } from "@/types/entitySorting";
-import { lastLevel } from "@/utils/categories/categoryPath";
+import { lastLevel, pathAndAncestors } from "@/utils/categories/categoryPath";
 
 import { ROLE_WEIGHT } from "./constants";
 import { wordKey } from "./words";
@@ -62,8 +62,7 @@ export function existingFolders(paths: Iterable<string>): Set<string> {
   const folders = new Set<string>();
 
   for (const path of paths) {
-    const levels = path.split("/");
-    levels.forEach((_, index) => folders.add(levels.slice(0, index + 1).join("/")));
+    pathAndAncestors(path).forEach((folder) => folders.add(folder));
   }
 
   return folders;

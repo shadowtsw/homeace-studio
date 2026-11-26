@@ -1,4 +1,4 @@
-import { isSameOrBelow } from "@/utils/categories/categoryPath";
+import { isSameOrBelow, pathAndAncestors } from "@/utils/categories/categoryPath";
 
 import {
   COMMON_PARENT_SHARE,
@@ -55,10 +55,6 @@ export type Decision = {
 const MAX_REASONS = 2;
 const MAX_ALTERNATIVES = 2;
 
-const levelsOf = (path: string): string[] => {
-  const levels = path.split("/");
-  return levels.map((_, index) => levels.slice(0, index + 1).join("/"));
-};
 const depthOf = (path: string): number => path.split("/").length;
 const sumOf = (votes: Vote[]): number => votes.reduce((sum, vote) => sum + vote.weight, 0);
 
@@ -76,7 +72,9 @@ export function decide(votes: FolderVotes): Decision | null {
 
   const mass = new Map<string, number>();
   entries.forEach(([folder, list]) =>
-    levelsOf(folder).forEach((level) => mass.set(level, (mass.get(level) ?? 0) + sumOf(list))),
+    pathAndAncestors(folder).forEach((level) =>
+      mass.set(level, (mass.get(level) ?? 0) + sumOf(list)),
+    ),
   );
   const massOf = (path: string): number => mass.get(path) ?? 0;
 
@@ -109,7 +107,8 @@ export function decide(votes: FolderVotes): Decision | null {
   entries.forEach(([folder, list]) => {
     if (isRelated(folder)) return;
 
-    const level = levelsOf(folder)[Math.min(depthOf(folder), depthOf(target)) - 1] ?? folder;
+    const level =
+      pathAndAncestors(folder)[Math.min(depthOf(folder), depthOf(target)) - 1] ?? folder;
     if (!isRelated(level)) competitors.set(level, (competitors.get(level) ?? 0) + sumOf(list));
   });
 

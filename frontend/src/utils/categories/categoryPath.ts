@@ -87,3 +87,14 @@ export function cleanFolderPath(path: string): string {
     .filter(Boolean)
     .join(CATEGORY_SEPARATOR);
 }
+
+/**
+ * The path and every folder above it, from the top.
+ *
+ * @example pathAndAncestors("Haus/Terrasse/Licht") // ["Haus", "Haus/Terrasse", "Haus/Terrasse/Licht"]
+ */
+export function pathAndAncestors(path: string): string[] {
+  const levels = path.split(CATEGORY_SEPARATOR);
+
+  return levels.map((_, index) => levels.slice(0, index + 1).join(CATEGORY_SEPARATOR));
+}
