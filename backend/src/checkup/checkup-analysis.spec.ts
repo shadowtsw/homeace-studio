@@ -1,6 +1,6 @@
 import type { Entry } from "../entries/entry.model";
 import type { HaState } from "../ha/ha.types";
-import { analyzeCheckup, collectEntityRefs } from "./checkup-analysis";
+import { analyzeCheckup, collectEntityRefs, createdTimes } from "./checkup-analysis";
 
 function entry(entityId: string, overrides: Partial<Entry> = {}): Entry {
   const domain = entityId.split(".")[0];
@@ -92,6 +92,7 @@ describe("check-up", () => {
         ["automation.alt", { actions: [] }],
       ]),
       lastRuns: new Map(),
+      createdAt: new Map(),
       now: NOW,
       ignored: new Set(),
     });
@@ -123,6 +124,7 @@ describe("check-up", () => {
       scriptKeys: new Set(),
       configs: new Map(),
       lastRuns: new Map(),
+      createdAt: new Map(),
       now: NOW,
       ignored: new Set(),
     });
@@ -138,6 +140,7 @@ describe("check-up", () => {
       scriptKeys: new Set(),
       configs: new Map(),
       lastRuns: new Map(),
+      createdAt: new Map(),
       now: NOW,
       ignored: new Set(["unused:input_boolean.a"]),
     });
@@ -161,6 +164,7 @@ describe("check-up", () => {
         ["automation.pv", failedRun],
         ["script.ok", { startedAt: "2026-11-20T10:00:00Z", result: "finished", error: null }],
       ]),
+      createdAt: new Map(),
       now: NOW,
       ignored: new Set<string>(),
     };
@@ -175,5 +179,53 @@ describe("check-up", () => {
       error: "Entity switch.wallbox is unavailable",
     });
     expect(failed(new Set([finding?.key ?? ""]))).toEqual([]);
+  });
+  it("gives new automations and helpers time before they count as idle or unused", () => {
+    const days = (count: number): number => NOW.getTime() - count * 24 * 60 * 60 * 1000;
+    const findings = analyzeCheckup({
+      entries: [
+        entry("automation.new"),
+        entry("automation.month_old"),
+        entry("automation.ran_long_ago"),
+        entry("input_boolean.new"),
+        entry("input_boolean.week_old"),
+      ],
+      states: [
+        state("automation.new"),
+        state("automation.month_old"),
+        state("automation.ran_long_ago", "on", {
+          attributes: { friendly_name: "x", last_triggered: "2026-10-01T10:00:00Z" },
+        }),
+      ],
+      registryIds: new Set(),
+      scriptKeys: new Set(),
+      configs: new Map(),
+      lastRuns: new Map(),
+      createdAt: new Map([
+        ["automation.new", days(3)],
+        ["automation.month_old", days(31)],
+        // Created recently, but it ran 50 days ago: the run counts
+        ["automation.ran_long_ago", days(1)],
+        ["input_boolean.new", days(6)],
+        ["input_boolean.week_old", days(8)],
+      ]),
+      now: NOW,
+      ignored: new Set(),
+    });
+
+    expect(findings.map((finding) => finding.key)).toEqual([
+      "unused:input_boolean.week_old",
+      "stale:automation.month_old",
+      "stale:automation.ran_long_ago",
+    ]);
+  });
+
+  it("reads the creation time from the registry in milliseconds", () => {
+    const times = createdTimes([
+      { entity_id: "automation.a", created_at: 1_700_000_000.5 },
+      { entity_id: "automation.old" },
+    ]);
+
+    expect([...times]).toEqual([["automation.a", 1_700_000_000_500]]);
   });
 });

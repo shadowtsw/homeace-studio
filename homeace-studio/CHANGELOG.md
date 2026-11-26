@@ -71,6 +71,10 @@
   automations and scripts, they show a dot in the list, and the browser asks before closing the tab.
 - The fold button of the details no longer covers the list's scrollbar; folded, it has a slim rail of
   its own at the right edge.
+- Check-up: an automation counts as "Lange nicht gelaufen" after 30 days without a run instead of 90.
+  A new automation gets these 30 days from when it was created, and a new helper gets a week before
+  "Wird nirgends benutzt", so neither shows up right after creating it.
+- Helpers and scripts you just created can be dragged into a flow right away, without reloading.
 
 ## 0.13.0
 

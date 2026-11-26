@@ -4,7 +4,7 @@ import { FLOW_KIND } from "../editor/editor.model";
 import { OVERLAY_REPOSITORY } from "../overlay/overlay.constants";
 import type { OverlayRepository } from "../overlay/repositories/overlay.repository";
 import { HomeSnapshotService, type HomeSnapshot } from "../snapshot/home-snapshot.service";
-import { analyzeCheckup, type CheckupFinding } from "./checkup-analysis";
+import { analyzeCheckup, createdTimes, type CheckupFinding } from "./checkup-analysis";
 
 export type CheckupOverview = {
   findings: CheckupFinding[];
@@ -61,6 +61,7 @@ export class CheckupService {
       ),
       configs: snapshot.configs,
       lastRuns: snapshot.lastRuns,
+      createdAt: createdTimes(snapshot.registry),
       now: new Date(snapshot.at),
       ignored: new Set(),
     });

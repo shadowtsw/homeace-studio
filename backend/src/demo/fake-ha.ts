@@ -126,6 +126,8 @@ export class FakeHa {
   private readonly areas: HaArea[];
   private readonly labels: HaLabel[];
   private nextId = 1;
+  /** The demo home's own entities count as old, like a home in use; later ones are new. */
+  private isSeeded = false;
 
   constructor(private readonly home: DemoHome) {
     this.areas = home.areas;
@@ -133,6 +135,7 @@ export class FakeHa {
 
     for (const scope of Object.values(CATEGORY_SCOPE)) this.categories.set(scope, []);
     for (const entity of home.entities) this.addEntity(entity);
+    this.isSeeded = true;
   }
 
   /** Answers one WebSocket command like HA would, or throws {@link HaCommandError}. */
@@ -313,6 +316,7 @@ export class FakeHa {
       device_id: device?.id ?? null,
       disabled_by: entity.isDisabled ? "user" : null,
       hidden_by: null,
+      created_at: this.isSeeded ? Date.now() / 1000 : 0,
       // Like newer HA versions: null stands for the entity's own name.
       aliases: [null],
     });
@@ -321,7 +325,10 @@ export class FakeHa {
       state: entity.state,
       attributes: {
         friendly_name: entity.name,
-        ...(domainOf(entity.entityId) === "automation" ? { last_triggered: hoursAgo(3) } : {}),
+        // Like HA: a new automation has never run
+        ...(domainOf(entity.entityId) === "automation"
+          ? { last_triggered: this.isSeeded ? null : hoursAgo(3) }
+          : {}),
         ...entity.attributes,
       },
       last_changed: entity.lastChanged ?? now(),

@@ -389,8 +389,10 @@ name, entryKind, refs: [{ entityId, name, since }], lastTriggered, isOn, failedA
   start, `error` HA's text. The key carries the start (`failed:automation.x:2026-…`), so ignoring hides
   this failure only and a later one shows again; a newer run that went fine makes it go away;
 - `unused`: an HA-managed helper (input_*, counter, timer, schedule) whose entity ID appears in no
-  automation or script config (templates included) and in no scene or group; dashboards are not checked;
-- `stale`: an automation whose `last_triggered` is older than 90 days, or null.
+  automation or script config (templates included) and in no scene or group; dashboards are not checked.
+  A helper created less than 7 days ago is not reported (registry `created_at`);
+- `stale`: an automation whose `last_triggered` is older than 30 days; one that never ran counts from
+  its registry `created_at` (unknown: reported).
 Disabled entries are skipped. The data comes from a shared snapshot (`snapshot/`), cached 20 s and
 dropped on every live change.
 `POST /ignore` `{ key }` hides a finding (overlay `checkupIgnored`, `CHECKUP_IGNORED`), `DELETE /ignore`

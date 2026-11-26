@@ -1,5 +1,5 @@
 import type { Entry, EntryKind } from "../entries/entry.model";
-import type { HaState } from "../ha/ha.types";
+import type { HaEntityRegistryEntry, HaState } from "../ha/ha.types";
 
 /** What the check-up reports, in the order the UI shows it. */
 export const CHECKUP_KIND = {
@@ -57,6 +57,8 @@ export type CheckupInput = {
   configs: ReadonlyMap<string, unknown>;
   /** Newest kept run per automation or script. */
   lastRuns: ReadonlyMap<string, { startedAt: string; result: string; error: string | null }>;
+  /** When each entity was created (ms since 1970), from the registry; new ones get some grace. */
+  createdAt: ReadonlyMap<string, number>;
   now: Date;
   ignored: ReadonlySet<string>;
 };
@@ -84,7 +86,10 @@ const CHECKED_HELPER_DOMAINS = new Set([
   "timer",
   "schedule",
 ]);
-export const STALE_AFTER_DAYS = 90;
+/** An automation that has not run for this long (or never, since it was created) is reported. */
+export const STALE_AFTER_DAYS = 30;
+/** A new helper is not reported as unused before it had this long to get into a flow. */
+export const UNUSED_GRACE_DAYS = 7;
 const DAY_MS = 24 * 60 * 60 * 1000;
 const KIND_ORDER: CheckupKind[] = Object.values(CHECKUP_KIND);
 
@@ -126,14 +131,30 @@ export function collectEntityRefs(config: unknown): Set<string> {
   return refs;
 }
 
+/** Creation time per entity in ms, for the entries that have one (HA 2024.7 and newer). */
+export function createdTimes(
+  registry: readonly Pick<HaEntityRegistryEntry, "entity_id" | "created_at">[],
+): Map<string, number> {
+  const times = new Map<string, number>();
+
+  for (const entry of registry) {
+    if (typeof entry.created_at === "number") times.set(entry.entity_id, entry.created_at * 1000);
+  }
+
+  return times;
+}
+
 /**
  * Finds what needs a look, without any setup: flows pointing at entities that are gone or
- * unavailable, helpers nothing uses, automations that have not run for months.
+ * unavailable, helpers nothing uses, automations that have not run for weeks.
  */
 export function analyzeCheckup(input: CheckupInput): CheckupFinding[] {
   const stateById = new Map(input.states.map((state) => [state.entity_id, state]));
   const nameOf = (id: string): string | null => stateById.get(id)?.attributes.friendly_name ?? null;
   const findings: CheckupFinding[] = [];
+  const ageOf = (timeMs: number): number => input.now.getTime() - timeMs;
+  /** Unknown creation time counts as old: no grace. */
+  const createdAgo = (id: string): number => ageOf(input.createdAt.get(id) ?? 0);
   const add = (entry: Entry, kind: CheckupKind, extra: Partial<CheckupFinding> = {}): void => {
     findings.push({
       key: `${kind}:${entry.entityId}`,
@@ -200,12 +221,14 @@ export function analyzeCheckup(input: CheckupInput): CheckupFinding[] {
     }
 
     if (entry.kind === "helper" && CHECKED_HELPER_DOMAINS.has(entry.domain)) {
-      if (!allConfigText.includes(entry.entityId)) add(entry, CHECKUP_KIND.unused);
+      const isNew = createdAgo(entry.entityId) < UNUSED_GRACE_DAYS * DAY_MS;
+      if (!isNew && !allConfigText.includes(entry.entityId)) add(entry, CHECKUP_KIND.unused);
     }
 
     if (entry.kind === "automation") {
       const lastTriggered = stateById.get(entry.entityId)?.attributes.last_triggered ?? null;
-      const age = lastTriggered ? input.now.getTime() - Date.parse(lastTriggered) : Infinity;
+      // Never ran: counted from its creation, so a new automation is not reported right away
+      const age = lastTriggered ? ageOf(Date.parse(lastTriggered)) : createdAgo(entry.entityId);
 
       if (age > STALE_AFTER_DAYS * DAY_MS) add(entry, CHECKUP_KIND.stale, { lastTriggered });
     }

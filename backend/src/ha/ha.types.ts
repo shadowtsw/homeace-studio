@@ -22,6 +22,11 @@ export type HaEntityRegistryEntry = {
   disabled_by: string | null;
   hidden_by: string | null;
   /**
+   * When HA registered the entity, in seconds since 1970. Missing before HA 2024.7; entities older
+   * than that carry the time of HA's update or 0.
+   */
+  created_at?: number;
+  /**
    * Only in `config/entity_registry/get`, not in the list: other names for Assist. Newer HA versions
    * keep a `null` in it that stands for the entity's own name.
    */

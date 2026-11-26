@@ -939,7 +939,7 @@ const es: MessageSchema = {
       failed: "La última ejecución se detuvo con un error. El historial muestra dónde y por qué.",
       unused:
         "Ninguna automatización ni ningún script usa este ayudante. HomeAce Studio no revisa los paneles de control.",
-      stale: "Sin desencadenarse desde hace más de 90 días, o nunca. ¿Todavía hace falta?",
+      stale: "Sin desencadenarse desde hace más de 30 días, o nunca. ¿Todavía hace falta?",
     },
     rows: {
       gone: "Usa lo que ya no existe:",

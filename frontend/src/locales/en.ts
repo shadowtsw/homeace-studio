@@ -923,7 +923,7 @@ const en: MessageSchema = {
       unavailable: "Uses a device that cannot be reached right now (empty battery, offline).",
       failed: "The last run stopped with an error. The history shows where and why.",
       unused: "No automation or script uses this helper. HomeAce Studio does not check dashboards.",
-      stale: "Not triggered for more than 90 days, or never. Is it still needed?",
+      stale: "Not triggered for more than 30 days, or never. Is it still needed?",
     },
     rows: {
       gone: "Uses what no longer exists:",

@@ -933,7 +933,7 @@ export default {
         "Der letzte Durchlauf ist mit einem Fehler abgebrochen. Der Verlauf zeigt, an welcher Stelle und warum.",
       unused:
         "Kein Ablauf und kein Skript benutzt diesen Helfer. Dashboards prüft HomeAce Studio nicht.",
-      stale: "Seit mehr als 90 Tagen nicht ausgelöst, oder noch nie. Wird sie noch gebraucht?",
+      stale: "Seit mehr als 30 Tagen nicht ausgelöst, oder noch nie. Wird sie noch gebraucht?",
     },
     rows: {
       gone: "Benutzt, was es nicht mehr gibt:",

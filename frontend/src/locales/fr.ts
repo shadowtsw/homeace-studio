@@ -948,7 +948,7 @@ const fr: MessageSchema = {
         "La dernière exécution s'est arrêtée sur une erreur. L'historique montre où et pourquoi.",
       unused:
         "Aucune automatisation ni aucun script n'utilise cette entrée. HomeAce Studio ne vérifie pas les tableaux de bord.",
-      stale: "Pas déclenchée depuis plus de 90 jours, ou jamais. Est-elle encore utile ?",
+      stale: "Pas déclenchée depuis plus de 30 jours, ou jamais. Est-elle encore utile ?",
     },
     rows: {
       gone: "Utilise ce qui n'existe plus :",
