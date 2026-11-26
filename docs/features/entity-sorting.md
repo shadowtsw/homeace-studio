@@ -28,7 +28,7 @@ page stays complete.
 | Votes, common parent, confidence | `utils/entitySorting/votes.ts` |
 | One proposal per bundle | `utils/entitySorting/suggest.ts` |
 | Groups, the four stages for the rest, pre-ticks | `utils/entitySorting/layout.ts` |
-| Target of a bundle, computation, moves, changes | `utils/entitySorting/targets.ts`, `compute.ts` |
+| Target of a bundle, the sections of step 3, folders for "Anderer Ordner …"; computation, moves, changes | `utils/entitySorting/targets.ts`, `compute.ts` |
 | Types and API calls | `frontend/src/types/entitySorting.ts`, `services/entitySortingService.ts` |
 | Tests with a small home like the dummy's | `utils/entitySorting/__tests__/entitySorting.spec.ts`, `entitySortingFixture.ts` |
 | Session state: memory, options, ticks, engine results; recompute vs. reorder | `frontend/src/stores/entitySortingStore.ts` |

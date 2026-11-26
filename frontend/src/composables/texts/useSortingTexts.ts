@@ -27,6 +27,8 @@ type SortingTexts = {
   rulePreview: (preview: RulePreview) => string;
   /** The line under a rule in the list: "passt auf 23 · 2 entscheidet eine andere Regel · …". */
   ruleLine: (options: { stats: RuleStats; sideHits: RuleSideHits }) => string;
+  /** "3 sicherer, 1 neues Ziel": how the proposals changed since the list was last ordered. */
+  liveChanges: (changes: ReadonlyMap<string, SuggestionChange>) => string;
 };
 
 /** The engine returns reasons as data; this writes them in the UI language. */
@@ -157,6 +159,20 @@ export function useSortingTexts(): SortingTexts {
     return parts.join(" · ");
   }
 
+  function liveChanges(changes: ReadonlyMap<string, SuggestionChange>): string {
+    const counts = { surer: 0, newTarget: 0, lessSure: 0 };
+    changes.forEach((change) => counts[change]++);
+
+    return [
+      counts.surer &&
+        t("entitySorting.suggestions.liveSurer", { count: counts.surer }, counts.surer),
+      counts.newTarget && t("entitySorting.suggestions.liveNew", { count: counts.newTarget }),
+      counts.lessSure && t("entitySorting.suggestions.liveLess", { count: counts.lessSure }),
+    ]
+      .filter(Boolean)
+      .join(", ");
+  }
+
   return {
     reason,
     confidence: (value) => t(CONFIDENCE_KEY[value]),
@@ -169,5 +185,6 @@ export function useSortingTexts(): SortingTexts {
     target: (target) => toDisplayTarget({ target, words: placeholderWords() }),
     rulePreview,
     ruleLine,
+    liveChanges,
   };
 }

@@ -9,6 +9,7 @@ import { sortingOverview } from "../overview";
 import { fromDisplayTarget, toDisplayTarget } from "../placeholders";
 import { conditionValues, ruleIdeas } from "../ruleIdeas";
 import { ruleCoverage, ruleFor, rulePreview, ruleScope, ruleSideHits, ruleStats } from "../rules";
+import { allGroups, folderChoices, suggestionSections } from "../targets";
 import { meaningfulWords, wordKey } from "../words";
 import { NAMES, sampleHome, sampleState } from "./entitySortingFixture";
 
@@ -324,6 +325,29 @@ describe("layout", () => {
     const choices = pretick(opened);
 
     expect(choices.get("dKitchenLight")?.isOn).toBe(false);
+  });
+});
+
+describe("step 3 sections", () => {
+  it("lists the sections that have a visible row, every group once, and new folders to pick", () => {
+    const { layout, computation } = open();
+    const everything = suggestionSections({ layout, isVisible: () => true });
+    const nothing = suggestionSections({ layout, isVisible: () => false });
+    const groupCount =
+      layout.folder.length + layout.fresh.length + (layout.system ? 1 : 0) + (layout.rest ? 1 : 0);
+
+    expect(everything.map((section) => section.key)).toEqual(
+      expect.arrayContaining(["folder", "fresh", "system"]),
+    );
+    expect(nothing).toEqual([]);
+    expect(allGroups(layout)).toHaveLength(groupCount);
+    expect(
+      folderChoices({
+        folders: computation.folders,
+        freshGroups: layout.fresh,
+        groupNames: new Map(),
+      }),
+    ).toEqual(expect.arrayContaining(["Google Cast", "Rauchmelder"]));
   });
 });
 

@@ -104,9 +104,15 @@ import { onKeyStroke, useMediaQuery } from "@vueuse/core";
 import { computed, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 
+import { useSortingTexts } from "@/composables/texts/useSortingTexts";
 import { useEntitySortingStore } from "@/stores/entitySortingStore";
-import type { Confidence, SortingGroup } from "@/utils/entitySorting/model";
-import { groupTarget } from "@/utils/entitySorting/targets";
+import type { Confidence } from "@/utils/entitySorting/model";
+import {
+  allGroups,
+  folderChoices,
+  groupTarget,
+  suggestionSections,
+} from "@/utils/entitySorting/targets";
 
 import SortingGroupCard from "./SortingGroupCard.vue";
 
@@ -120,57 +126,16 @@ const FILTERS: { key: Confidence; label: string }[] = [
 
 const { t } = useI18n();
 const sorting = useEntitySortingStore();
+const texts = useSortingTexts();
 const isPhone = useMediaQuery("(max-width: 640px)");
 const openGroups = ref(new Set<string>());
 
-const sections = computed(() => {
-  const layout = sorting.layout;
-  if (!layout) return [];
-
-  return (
-    [
-      {
-        key: "folder",
-        title: "entitySorting.suggestions.sectionFolder",
-        note: "entitySorting.suggestions.sectionFolderNote",
-        groups: layout.folder,
-      },
-      {
-        key: "fresh",
-        title: "entitySorting.suggestions.sectionNew",
-        note: "entitySorting.suggestions.sectionNewNote",
-        groups: layout.fresh,
-      },
-      {
-        key: "system",
-        title: "entitySorting.suggestions.sectionSystem",
-        note: "entitySorting.suggestions.sectionSystemNote",
-        groups: layout.system ? [layout.system] : [],
-      },
-      {
-        key: "rest",
-        title: "entitySorting.suggestions.sectionRest",
-        note: "entitySorting.suggestions.sectionRestNote",
-        groups: layout.rest ? [layout.rest] : [],
-      },
-    ]
-      // A section shows only with a row the filters and the search let through.
-      .map((section) => ({
-        ...section,
-        groups: section.groups.filter((group) => group.bundles.some(sorting.isVisible)),
-      }))
-      .filter((section) => section.groups.length)
-  );
-});
-
-const allGroups = computed<SortingGroup[]>(() => {
-  const layout = sorting.layout;
-  if (!layout) return [];
-
-  return [...layout.folder, ...layout.fresh, layout.system, layout.rest].filter(
-    (group): group is SortingGroup => !!group,
-  );
-});
+const sections = computed(() =>
+  sorting.layout
+    ? suggestionSections({ layout: sorting.layout, isVisible: sorting.isVisible })
+    : [],
+);
+const everyGroup = computed(() => (sorting.layout ? allGroups(sorting.layout) : []));
 
 function showAll(): void {
   sorting.filters = { rule: true, sure: true, likely: true, unclear: true };
@@ -178,32 +143,20 @@ function showAll(): void {
 }
 
 /** Existing folders and the new ones of this session, for "Anderer Ordner …". */
-const folderOptions = computed(() => {
-  const paths = new Set(sorting.computation?.folders ?? []);
-  sorting.layout?.fresh.forEach((group) => {
-    const target = groupTarget({ group, groupNames: sorting.groupNames });
-    if (target) paths.add(target);
-  });
+const folderOptions = computed(() =>
+  folderChoices({
+    folders: sorting.computation?.folders ?? [],
+    freshGroups: sorting.layout?.fresh ?? [],
+    groupNames: sorting.groupNames,
+  }),
+);
 
-  return [...paths].sort((first, second) => first.localeCompare(second));
-});
+const changeSummary = computed(() => texts.liveChanges(sorting.changes));
 
-const changeSummary = computed(() => {
-  const counts = { surer: 0, newTarget: 0, lessSure: 0 };
-  sorting.changes.forEach((change) => counts[change]++);
-
-  return [
-    counts.surer && t("entitySorting.suggestions.liveSurer", { count: counts.surer }, counts.surer),
-    counts.newTarget && t("entitySorting.suggestions.liveNew", { count: counts.newTarget }),
-    counts.lessSure && t("entitySorting.suggestions.liveLess", { count: counts.lessSure }),
-  ]
-    .filter(Boolean)
-    .join(", ");
-});
-
+// The group in the sheet on phones
 const sheetGroup = computed(() =>
   isPhone.value && sorting.sheetGroupKey
-    ? (allGroups.value.find((group) => group.key === sorting.sheetGroupKey) ?? null)
+    ? (everyGroup.value.find((group) => group.key === sorting.sheetGroupKey) ?? null)
     : null,
 );
 const sheetTitle = computed(() => {

@@ -1,4 +1,4 @@
-import type { BundleChoice, SortingGroup, Suggestion } from "./model";
+import type { BundleChoice, SortingBundle, SortingGroup, SortingLayout, Suggestion } from "./model";
 
 export type GroupTargetOptions = {
   group: SortingGroup;
@@ -43,4 +43,92 @@ export function effectiveTarget(input: {
   if (group.type === "rest") return null;
 
   return groupTarget({ group, groupNames });
+}
+
+export type FolderChoicesOptions = {
+  /** The folders HA has. */
+  folders: Iterable<string>;
+  /** The groups that propose a new folder. */
+  freshGroups: SortingGroup[];
+  groupNames: ReadonlyMap<string, string>;
+};
+
+/** Existing folders and the new ones of this session, sorted, for "Anderer Ordner …". */
+export function folderChoices({
+  folders,
+  freshGroups,
+  groupNames,
+}: FolderChoicesOptions): string[] {
+  const paths = new Set(folders);
+  freshGroups.forEach((group) => {
+    const target = groupTarget({ group, groupNames });
+    if (target) paths.add(target);
+  });
+
+  return [...paths].sort((first, second) => first.localeCompare(second));
+}
+
+export type SuggestionSection = {
+  key: "folder" | "fresh" | "system" | "rest";
+  /** i18n key of the heading. */
+  title: string;
+  /** i18n key of the line under it. */
+  note: string;
+  groups: SortingGroup[];
+};
+
+export type SuggestionSectionsOptions = {
+  layout: SortingLayout;
+  /** Whether the filters and the search let a bundle through. */
+  isVisible: (bundle: SortingBundle) => boolean;
+};
+
+/**
+ * The four sections of step 3: existing folders, new folders, system, and the rest. A section
+ * shows only with a row the filters and the search let through.
+ */
+export function suggestionSections({
+  layout,
+  isVisible,
+}: SuggestionSectionsOptions): SuggestionSection[] {
+  const sections: SuggestionSection[] = [
+    {
+      key: "folder",
+      title: "entitySorting.suggestions.sectionFolder",
+      note: "entitySorting.suggestions.sectionFolderNote",
+      groups: layout.folder,
+    },
+    {
+      key: "fresh",
+      title: "entitySorting.suggestions.sectionNew",
+      note: "entitySorting.suggestions.sectionNewNote",
+      groups: layout.fresh,
+    },
+    {
+      key: "system",
+      title: "entitySorting.suggestions.sectionSystem",
+      note: "entitySorting.suggestions.sectionSystemNote",
+      groups: layout.system ? [layout.system] : [],
+    },
+    {
+      key: "rest",
+      title: "entitySorting.suggestions.sectionRest",
+      note: "entitySorting.suggestions.sectionRestNote",
+      groups: layout.rest ? [layout.rest] : [],
+    },
+  ];
+
+  return sections
+    .map((section) => ({
+      ...section,
+      groups: section.groups.filter((group) => group.bundles.some(isVisible)),
+    }))
+    .filter((section) => section.groups.length);
+}
+
+/** Every group of the layout, in the order of the sections. */
+export function allGroups(layout: SortingLayout): SortingGroup[] {
+  return [...layout.folder, ...layout.fresh, layout.system, layout.rest].filter(
+    (group): group is SortingGroup => !!group,
+  );
 }
