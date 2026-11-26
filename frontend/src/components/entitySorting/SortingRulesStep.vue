@@ -88,6 +88,7 @@
         }}
         →
         {{ texts.target(idea.target) }}
+        <span class="rules__idea-count">{{ ideaCount(idea) }}</span>
       </button>
     </template>
   </div>
@@ -173,6 +174,14 @@ const ideas = computed(() =>
     ? ruleIdeas({ home: sorting.home, computation: sorting.computation, rules: sorting.rules })
     : [],
 );
+
+/** "42 Entitäten": what an idea would catch, so the user sees what it is worth. */
+function ideaCount(idea: SortingRule): string {
+  if (!sorting.home) return "";
+
+  const { matches } = ruleStats(idea, null, sorting.rules, scope.value, sorting.home);
+  return t("entitySorting.entities", { count: matches }, matches);
+}
 
 function statsText(rule: SortingRule, index: number): string {
   if (!sorting.home) return "";
@@ -322,6 +331,12 @@ async function remove(index: number): Promise<void> {
   background: transparent;
   cursor: pointer;
   font-size: 12.5px;
+}
+
+.rules__idea-count {
+  margin-left: 4px;
+  color: var(--muted);
+  font-weight: 600;
 }
 
 .rules__idea:hover {

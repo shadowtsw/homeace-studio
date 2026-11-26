@@ -2,16 +2,23 @@
   <template v-if="sorting.step === SORTING_STEP.overview">
     <span class="sorting-footer__info">{{ t("entitySorting.overview.nothingChanges") }}</span>
     <button class="btn" type="button" @click="emit('close')">{{ t("entitySorting.close") }}</button>
+    <!-- Without rules, the rules come first: a few of them make the rest far more precise. -->
     <button
       class="btn"
+      :class="{ 'btn--primary': !hasRules }"
       type="button"
       :disabled="!sorting.home"
       @click="sorting.goTo(SORTING_STEP.rules)"
     >
-      {{ t("entitySorting.overview.toRules") }}
+      {{
+        hasRules
+          ? t("entitySorting.overview.toRulesCount", { count: sorting.rules.length })
+          : t("entitySorting.overview.toRules")
+      }}
     </button>
     <button
-      class="btn btn--primary"
+      class="btn"
+      :class="{ 'btn--primary': hasRules }"
       type="button"
       :disabled="!sorting.home"
       @click="sorting.goTo(SORTING_STEP.suggestions)"
@@ -90,6 +97,7 @@ const emit = defineEmits<{
 const { t } = useI18n();
 const sorting = useEntitySortingStore();
 const texts = useSortingTexts();
+const hasRules = computed(() => sorting.rules.length > 0);
 
 const placeholderHint = computed(() => {
   const words = texts.placeholderWords();
