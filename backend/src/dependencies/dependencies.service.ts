@@ -53,7 +53,7 @@ export class DependenciesService {
       ...snapshot.registry.map((entry) => entry.entity_id),
     ]);
     const nameOf = (id: string): string | null => entryNames.get(id) ?? names.get(id) ?? null;
-    const usersOf = (id: string, except: string): DependencyUser[] =>
+    const usersOf = ({ id, except }: { id: string; except: string }): DependencyUser[] =>
       [...index]
         .filter(([userId, refs]) => userId !== except && refs.has(id))
         .map(([userId, refs]) => ({
@@ -68,10 +68,10 @@ export class DependenciesService {
       name: nameOf(id),
       roles: sortedRoles(roles),
       exists: known.has(id),
-      alsoUsedBy: usersOf(id, entityId),
+      alsoUsedBy: usersOf({ id, except: entityId }),
     }));
 
-    return { entityId, uses, usedBy: usersOf(entityId, entityId) };
+    return { entityId, uses, usedBy: usersOf({ id: entityId, except: entityId }) };
   }
 
   /** The same snapshot gives the same index; built once (also used by the area view). */

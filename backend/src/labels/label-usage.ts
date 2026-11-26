@@ -25,8 +25,8 @@ export type LabelUsageSources = {
 const LABEL_ID_KEY = "label_id";
 
 /** Whether a config names the label anywhere as `label_id` (a string or a list of them). */
-function namesLabel(value: unknown, labelId: string): boolean {
-  if (Array.isArray(value)) return value.some((item) => namesLabel(item, labelId));
+function namesLabel({ value, labelId }: { value: unknown; labelId: string }): boolean {
+  if (Array.isArray(value)) return value.some((item) => namesLabel({ value: item, labelId }));
   if (!value || typeof value !== "object") return false;
 
   return Object.entries(value).some(([key, inner]) => {
@@ -34,12 +34,17 @@ function namesLabel(value: unknown, labelId: string): boolean {
       const ids = Array.isArray(inner) ? inner : [inner];
       if (ids.includes(labelId)) return true;
     }
-    return namesLabel(inner, labelId);
+    return namesLabel({ value: inner, labelId });
   });
 }
 
+export type LabelUsageOptions = {
+  labelId: string;
+  sources: LabelUsageSources;
+};
+
 /** Everything a label is attached to or used by, counted from one snapshot of HA. */
-export function labelUsage(labelId: string, sources: LabelUsageSources): LabelUsage {
+export function labelUsage({ labelId, sources }: LabelUsageOptions): LabelUsage {
   // Entries count on their own; the remaining registry entries are plain entities
   const entryIds = new Set(sources.entries.map((entry) => entry.entityId));
   const entries = sources.entries.filter((entry) =>
@@ -56,7 +61,7 @@ export function labelUsage(labelId: string, sources: LabelUsageSources): LabelUs
   // Flows that name it as a target
   const names = new Map(sources.entries.map((entry) => [entry.entityId, entry.name]));
   const flowsAsTarget = [...sources.configs.entries()]
-    .filter(([, config]) => namesLabel(config, labelId))
+    .filter(([, config]) => namesLabel({ value: config, labelId }))
     .map(([entityId]) => ({ entityId, name: names.get(entityId) ?? entityId }))
     .sort((first, second) => first.name.localeCompare(second.name));
 

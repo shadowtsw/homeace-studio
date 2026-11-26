@@ -42,18 +42,21 @@ describe("PreferencesService", () => {
   it("imports the first browser's values; a later device does not overwrite them", async () => {
     const service = createService();
 
-    await service.importFirst(ALEX, { technicalDetails: true, locale: "de" });
-    const afterSecondDevice = await service.importFirst(ALEX, { technicalDetails: false });
+    await service.importFirst({ user: ALEX, values: { technicalDetails: true, locale: "de" } });
+    const afterSecondDevice = await service.importFirst({
+      user: ALEX,
+      values: { technicalDetails: false },
+    });
 
     expect(afterSecondDevice).toEqual({ technicalDetails: true, locale: "de" });
   });
 
   it("sets one value and keeps the others, separately per user", async () => {
     const service = createService();
-    await service.importFirst(ALEX, { locale: "de", technicalDetails: true });
+    await service.importFirst({ user: ALEX, values: { locale: "de", technicalDetails: true } });
 
-    await service.set(ALEX, "locale", "en");
-    await service.set(SAM, "locale", "fr");
+    await service.set({ user: ALEX, name: "locale", value: "en" });
+    await service.set({ user: SAM, name: "locale", value: "fr" });
 
     expect((await service.read(ALEX)).values).toEqual({ locale: "en", technicalDetails: true });
     expect((await service.read(SAM)).values).toEqual({ locale: "fr" });
@@ -62,10 +65,18 @@ describe("PreferencesService", () => {
   it("refuses bad values and requests without a user", async () => {
     const service = createService();
 
-    await expect(service.set(ALEX, "locale", { lang: "de" })).rejects.toThrow(BadRequestException);
-    await expect(service.set(ALEX, "bad name", true)).rejects.toThrow(BadRequestException);
-    await expect(service.set(null, "locale", "de")).rejects.toThrow(BadRequestException);
-    await expect(service.importFirst(null, {})).rejects.toThrow(BadRequestException);
+    await expect(
+      service.set({ user: ALEX, name: "locale", value: { lang: "de" } }),
+    ).rejects.toThrow(BadRequestException);
+    await expect(service.set({ user: ALEX, name: "bad name", value: true })).rejects.toThrow(
+      BadRequestException,
+    );
+    await expect(service.set({ user: null, name: "locale", value: "de" })).rejects.toThrow(
+      BadRequestException,
+    );
+    await expect(service.importFirst({ user: null, values: {} })).rejects.toThrow(
+      BadRequestException,
+    );
   });
 
   it("does not add more names once a user has the maximum", async () => {
@@ -73,9 +84,9 @@ describe("PreferencesService", () => {
     const many = Object.fromEntries(
       Array.from({ length: MAX_PREFERENCES_PER_USER }, (_, index) => [`setting${index}`, true]),
     );
-    await service.importFirst(ALEX, many);
+    await service.importFirst({ user: ALEX, values: many });
 
-    const after = await service.set(ALEX, "oneMore", true);
+    const after = await service.set({ user: ALEX, name: "oneMore", value: true });
 
     expect(after.oneMore).toBeUndefined();
     expect(Object.keys(after)).toHaveLength(MAX_PREFERENCES_PER_USER);

@@ -53,9 +53,9 @@ describe("scriptKeyFor and firstFreeKey", () => {
   it("adds _2, _3, … while a key is taken", async () => {
     const taken = new Set(["licht", "licht_2"]);
 
-    await expect(firstFreeKey("licht", (key) => Promise.resolve(taken.has(key)))).resolves.toBe(
-      "licht_3",
-    );
+    await expect(
+      firstFreeKey({ base: "licht", isTaken: (key) => Promise.resolve(taken.has(key)) }),
+    ).resolves.toBe("licht_3");
   });
 });
 
@@ -68,7 +68,9 @@ describe("FlowsService", () => {
     const { service, saveConfig, categories } = setup();
 
     await expect(
-      service.create({ kind: "automation", name: " Licht Flur ", categoryPath: "Haus/Flur" }),
+      service.create({
+        dto: { kind: "automation", name: " Licht Flur ", categoryPath: "Haus/Flur" },
+      }),
     ).resolves.toEqual({ entityId: "automation.neu" });
 
     expect(saveConfig).toHaveBeenCalledWith("automation", String(NOW), {
@@ -94,7 +96,7 @@ describe("FlowsService", () => {
     );
     const { service, saveConfig } = setup({ findEntityId });
 
-    await service.create({ kind: "script", name: "Gute Nacht" });
+    await service.create({ dto: { kind: "script", name: "Gute Nacht" } });
 
     expect(saveConfig).toHaveBeenCalledWith("script", "gute_nacht_2", {
       alias: "Gute Nacht",
@@ -108,7 +110,7 @@ describe("FlowsService", () => {
       saveConfig: jest.fn().mockRejectedValue(new HaRestError(400, "Message malformed: x")),
     });
 
-    await expect(service.create({ kind: "automation", name: "A" })).rejects.toMatchObject({
+    await expect(service.create({ dto: { kind: "automation", name: "A" } })).rejects.toMatchObject({
       response: { message: "FLOW_INVALID" },
     });
   });
@@ -122,7 +124,7 @@ describe("FlowsService", () => {
 
     expect(deleteConfig).toHaveBeenCalledWith("automation", "17");
     expect(overlay.update).toHaveBeenCalled();
-    expect(categories.cleanUp).toHaveBeenCalledWith("automation", "cat-1");
+    expect(categories.cleanUp).toHaveBeenCalledWith({ scope: "automation", categoryId: "cat-1" });
   });
 
   it("refuses to delete flows outside automations.yaml / scripts.yaml", async () => {

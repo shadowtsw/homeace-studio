@@ -83,13 +83,17 @@ describe("EntitySortingService", () => {
   it("applies a run in batches and undoes all of it", async () => {
     const { service } = setup();
 
-    await service.applyMoves("run-1", [
-      { entityId: "light.kitchen_ceiling_light", categoryPath: "House/Kitchen" },
-      { entityId: "switch.coffee_machine", categoryPath: "House/Kitchen" },
-    ]);
-    const second = await service.applyMoves("run-1", [
-      { entityId: "sensor.old_meter", categoryPath: "House/Kitchen" },
-    ]);
+    await service.applyMoves({
+      runId: "run-1",
+      moves: [
+        { entityId: "light.kitchen_ceiling_light", categoryPath: "House/Kitchen" },
+        { entityId: "switch.coffee_machine", categoryPath: "House/Kitchen" },
+      ],
+    });
+    const second = await service.applyMoves({
+      runId: "run-1",
+      moves: [{ entityId: "sensor.old_meter", categoryPath: "House/Kitchen" }],
+    });
 
     expect(second).toEqual([
       { entityId: "sensor.old_meter", status: ENTITY_MOVE_STATUS.notInRegistry, from: null },
@@ -103,7 +107,10 @@ describe("EntitySortingService", () => {
       afterApply.entities.find((e) => e.entityId === "switch.coffee_machine")?.categoryPath,
     ).toBe("House/Kitchen");
 
-    await service.undo("run-1", ["light.kitchen_ceiling_light", "switch.coffee_machine"]);
+    await service.undo({
+      runId: "run-1",
+      entityIds: ["light.kitchen_ceiling_light", "switch.coffee_machine"],
+    });
 
     const afterUndo = await service.context();
     expect(afterUndo.memory.lastRun).toBeNull();
@@ -116,17 +123,19 @@ describe("EntitySortingService", () => {
   it("leaves an entity alone on undo when its folder changed since the run", async () => {
     const { service } = setup();
 
-    await service.applyMoves("run-1", [
-      { entityId: "switch.coffee_machine", categoryPath: "Kitchen" },
-    ]);
-    await service.applyMoves("run-2", [
-      { entityId: "switch.coffee_machine", categoryPath: "Coffee" },
-    ]);
+    await service.applyMoves({
+      runId: "run-1",
+      moves: [{ entityId: "switch.coffee_machine", categoryPath: "Kitchen" }],
+    });
+    await service.applyMoves({
+      runId: "run-2",
+      moves: [{ entityId: "switch.coffee_machine", categoryPath: "Coffee" }],
+    });
 
-    await expect(service.undo("run-1", ["switch.coffee_machine"])).rejects.toBeInstanceOf(
-      NotFoundException,
-    );
-    const results = await service.undo("run-2", ["switch.coffee_machine"]);
+    await expect(
+      service.undo({ runId: "run-1", entityIds: ["switch.coffee_machine"] }),
+    ).rejects.toBeInstanceOf(NotFoundException);
+    const results = await service.undo({ runId: "run-2", entityIds: ["switch.coffee_machine"] });
 
     expect(results[0]?.status).toBe(ENTITY_MOVE_STATUS.moved);
     expect(results[0]?.from).toBe("Coffee");
@@ -134,9 +143,10 @@ describe("EntitySortingService", () => {
 
   it("keeps rules, turned-down folders and kept-out bundles, but never lets them drop the last run", async () => {
     const { service } = setup();
-    await service.applyMoves("run-1", [
-      { entityId: "switch.coffee_machine", categoryPath: "Kitchen" },
-    ]);
+    await service.applyMoves({
+      runId: "run-1",
+      moves: [{ entityId: "switch.coffee_machine", categoryPath: "Kitchen" }],
+    });
 
     await service.saveMemory({
       rules: [{ conditions: [{ type: "label", value: "lights" }], target: "Lights/{area}" }],

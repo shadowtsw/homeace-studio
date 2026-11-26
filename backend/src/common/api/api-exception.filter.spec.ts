@@ -30,7 +30,7 @@ function captureResponse(exception: unknown) {
 describe("ApiExceptionFilter", () => {
   it("keeps the message ID and details of apiError payloads", () => {
     const exception = new NotFoundException(
-      apiError(MESSAGE_ID.notFound, { params: { id: "booking-1" } }),
+      apiError({ message: MESSAGE_ID.notFound, details: { params: { id: "booking-1" } } }),
     );
 
     expect(captureResponse(exception)).toEqual({
@@ -44,7 +44,7 @@ describe("ApiExceptionFilter", () => {
   });
 
   it("sends data null when the payload has no details", () => {
-    const exception = new ConflictException(apiError(MESSAGE_ID.conflict));
+    const exception = new ConflictException(apiError({ message: MESSAGE_ID.conflict }));
 
     expect(captureResponse(exception).body).toEqual({
       message: "CONFLICT",

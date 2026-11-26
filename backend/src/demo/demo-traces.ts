@@ -47,7 +47,15 @@ type Run = {
   userId?: string | null;
 };
 
-const stateTrigger = (entityId: string, from: string, to: string): Step => [
+const stateTrigger = ({
+  entityId,
+  from,
+  to,
+}: {
+  entityId: string;
+  from: string;
+  to: string;
+}): Step => [
   "trigger/0",
   0,
   {
@@ -65,7 +73,7 @@ const stateTrigger = (entityId: string, from: string, to: string): Step => [
   },
 ];
 
-const numericTrigger = (entityId: string, value: string): Step => [
+const numericTrigger = ({ entityId, value }: { entityId: string; value: string }): Step => [
   "trigger/0",
   0,
   {
@@ -92,23 +100,33 @@ const timeTrigger: Step = [
   },
 ];
 
-const passed = (path: string, at: number, extra: Record<string, unknown> = {}): Step => [
+const passed = ({
   path,
   at,
-  { result: { result: true, ...extra } },
-];
-const failed = (path: string, at: number, extra: Record<string, unknown> = {}): Step => [
+  extra = {},
+}: {
+  path: string;
+  at: number;
+  extra?: Record<string, unknown>;
+}): Step => [path, at, { result: { result: true, ...extra } }];
+const failed = ({
   path,
   at,
-  { result: { result: false, ...extra } },
-];
-const service = (
-  path: string,
-  at: number,
-  domain: string,
-  name: string,
-  entityId: string,
-): Step => [
+  extra = {},
+}: {
+  path: string;
+  at: number;
+  extra?: Record<string, unknown>;
+}): Step => [path, at, { result: { result: false, ...extra } }];
+type ServiceOptions = {
+  path: string;
+  at: number;
+  domain: string;
+  name: string;
+  entityId: string;
+};
+
+const service = ({ path, at, domain, name, entityId }: ServiceOptions): Step => [
   path,
   at,
   {
@@ -125,11 +143,21 @@ const GARDEN = "1719211800442";
 const SOLAR = "1721300022100";
 
 const terraceStart: Step[] = [
-  stateTrigger("binary_sensor.terrace_motion", "off", "on"),
-  passed("condition/0", 0.01),
-  passed("condition/1", 0.02),
-  passed("condition/1/entity_id/0", 0.02, { state: "off", wanted_state: "off" }),
-  service("action/0", 0.05, "light", "turn_on", "light.terrace"),
+  stateTrigger({ entityId: "binary_sensor.terrace_motion", from: "off", to: "on" }),
+  passed({ path: "condition/0", at: 0.01 }),
+  passed({ path: "condition/1", at: 0.02 }),
+  passed({
+    path: "condition/1/entity_id/0",
+    at: 0.02,
+    extra: { state: "off", wanted_state: "off" },
+  }),
+  service({
+    path: "action/0",
+    at: 0.05,
+    domain: "light",
+    name: "turn_on",
+    entityId: "light.terrace",
+  }),
 ];
 
 const RUNS: Run[] = [
@@ -161,7 +189,13 @@ const RUNS: Run[] = [
     steps: [
       ...terraceStart,
       ["action/1", 0.06, { result: { delay: 300, done: true } }],
-      service("action/2", 300.3, "light", "turn_off", "light.terrace"),
+      service({
+        path: "action/2",
+        at: 300.3,
+        domain: "light",
+        name: "turn_off",
+        entityId: "light.terrace",
+      }),
     ],
   },
   {
@@ -171,7 +205,10 @@ const RUNS: Run[] = [
     durationSeconds: 0.03,
     execution: "failed_conditions",
     trigger: "state of binary_sensor.terrace_motion",
-    steps: [stateTrigger("binary_sensor.terrace_motion", "off", "on"), failed("condition/0", 0.01)],
+    steps: [
+      stateTrigger({ entityId: "binary_sensor.terrace_motion", from: "off", to: "on" }),
+      failed({ path: "condition/0", at: 0.01 }),
+    ],
   },
   {
     domain: "automation",
@@ -180,7 +217,7 @@ const RUNS: Run[] = [
     durationSeconds: 0,
     execution: "failed_single",
     trigger: "numeric state of sensor.wind_speed",
-    steps: [numericTrigger("sensor.wind_speed", "47")],
+    steps: [numericTrigger({ entityId: "sensor.wind_speed", value: "47" })],
   },
   {
     domain: "automation",
@@ -190,10 +227,20 @@ const RUNS: Run[] = [
     execution: "finished",
     trigger: "numeric state of sensor.wind_speed",
     steps: [
-      numericTrigger("sensor.wind_speed", "46"),
-      passed("condition/0", 0.01),
-      passed("condition/0/entity_id/0", 0.01, { state: "open", wanted_state: "open" }),
-      service("action/0", 0.05, "cover", "close_cover", "cover.awning"),
+      numericTrigger({ entityId: "sensor.wind_speed", value: "46" }),
+      passed({ path: "condition/0", at: 0.01 }),
+      passed({
+        path: "condition/0/entity_id/0",
+        at: 0.01,
+        extra: { state: "open", wanted_state: "open" },
+      }),
+      service({
+        path: "action/0",
+        at: 0.05,
+        domain: "cover",
+        name: "close_cover",
+        entityId: "cover.awning",
+      }),
       [
         "action/1",
         1.1,
@@ -215,17 +262,29 @@ const RUNS: Run[] = [
     trigger: "time",
     steps: [
       timeTrigger,
-      service("action/0", 0.02, "valve", "open_valve", "valve.lawn_irrigation"),
+      service({
+        path: "action/0",
+        at: 0.02,
+        domain: "valve",
+        name: "open_valve",
+        entityId: "valve.lawn_irrigation",
+      }),
       ["action/1", 0.03, { result: { choice: "else" } }],
-      failed("action/1/if", 0.03),
-      failed("action/1/if/condition/0", 0.03),
+      failed({ path: "action/1/if", at: 0.03 }),
+      failed({ path: "action/1/if/condition/0", at: 0.03 }),
       [
         "action/1/if/condition/0/entity_id/0",
         0.03,
         { result: { result: false, state: 34, wanted_state_below: 20 } },
       ],
       ["action/1/else/0", 0.04, { result: { delay: 900, done: true } }],
-      service("action/2", 900.1, "valve", "close_valve", "valve.lawn_irrigation"),
+      service({
+        path: "action/2",
+        at: 900.1,
+        domain: "valve",
+        name: "close_valve",
+        entityId: "valve.lawn_irrigation",
+      }),
     ],
   },
   {
@@ -237,17 +296,29 @@ const RUNS: Run[] = [
     trigger: "time",
     steps: [
       timeTrigger,
-      service("action/0", 0.02, "valve", "open_valve", "valve.lawn_irrigation"),
+      service({
+        path: "action/0",
+        at: 0.02,
+        domain: "valve",
+        name: "open_valve",
+        entityId: "valve.lawn_irrigation",
+      }),
       ["action/1", 0.03, { result: { choice: "then" } }],
-      passed("action/1/if", 0.03),
-      passed("action/1/if/condition/0", 0.03),
+      passed({ path: "action/1/if", at: 0.03 }),
+      passed({ path: "action/1/if/condition/0", at: 0.03 }),
       [
         "action/1/if/condition/0/entity_id/0",
         0.03,
         { result: { result: true, state: 14, wanted_state_below: 20 } },
       ],
       ["action/1/then/0", 0.04, { result: { delay: 1800, done: true } }],
-      service("action/2", 1800.1, "valve", "close_valve", "valve.lawn_irrigation"),
+      service({
+        path: "action/2",
+        at: 1800.1,
+        domain: "valve",
+        name: "close_valve",
+        entityId: "valve.lawn_irrigation",
+      }),
     ],
   },
   {
@@ -259,9 +330,13 @@ const RUNS: Run[] = [
     trigger: "numeric state of sensor.solar_surplus",
     error: "Entity switch.wallbox is unavailable",
     steps: [
-      numericTrigger("sensor.solar_surplus", "1840"),
-      passed("condition/0", 0.01),
-      passed("condition/0/entity_id/0", 0.01, { state: "off", wanted_state: "off" }),
+      numericTrigger({ entityId: "sensor.solar_surplus", value: "1840" }),
+      passed({ path: "condition/0", at: 0.01 }),
+      passed({
+        path: "condition/0/entity_id/0",
+        at: 0.01,
+        extra: { state: "off", wanted_state: "off" },
+      }),
       ["action/0", 0.3, { error: "Entity switch.wallbox is unavailable" }],
     ],
   },
@@ -273,11 +348,27 @@ const RUNS: Run[] = [
     execution: "finished",
     trigger: "numeric state of sensor.solar_surplus",
     steps: [
-      numericTrigger("sensor.solar_surplus", "2120"),
-      passed("condition/0", 0.01),
-      passed("condition/0/entity_id/0", 0.01, { state: "off", wanted_state: "off" }),
-      service("action/0", 0.3, "switch", "turn_on", "switch.wallbox"),
-      service("action/1", 0.5, "counter", "increment", "counter.solar_surplus_days"),
+      numericTrigger({ entityId: "sensor.solar_surplus", value: "2120" }),
+      passed({ path: "condition/0", at: 0.01 }),
+      passed({
+        path: "condition/0/entity_id/0",
+        at: 0.01,
+        extra: { state: "off", wanted_state: "off" },
+      }),
+      service({
+        path: "action/0",
+        at: 0.3,
+        domain: "switch",
+        name: "turn_on",
+        entityId: "switch.wallbox",
+      }),
+      service({
+        path: "action/1",
+        at: 0.5,
+        domain: "counter",
+        name: "increment",
+        entityId: "counter.solar_surplus_days",
+      }),
     ],
   },
   {
@@ -288,10 +379,28 @@ const RUNS: Run[] = [
     execution: "finished",
     userId: "demo-user",
     steps: [
-      service("sequence/0", 0, "light", "turn_on", "light.terrace"),
-      service("sequence/1", 0.1, "light", "turn_on", "light.garden_paths"),
+      service({
+        path: "sequence/0",
+        at: 0,
+        domain: "light",
+        name: "turn_on",
+        entityId: "light.terrace",
+      }),
+      service({
+        path: "sequence/1",
+        at: 0.1,
+        domain: "light",
+        name: "turn_on",
+        entityId: "light.garden_paths",
+      }),
       ["sequence/2", 0.2, { result: { delay: 2, done: true } }],
-      service("sequence/3", 2.3, "cover", "open_cover", "cover.awning"),
+      service({
+        path: "sequence/3",
+        at: 2.3,
+        domain: "cover",
+        name: "open_cover",
+        entityId: "cover.awning",
+      }),
     ],
   },
 ];

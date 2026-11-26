@@ -13,6 +13,21 @@ const FALLBACK_TEMPERATURE_UNIT = "°C";
 /** HA's metadata for a device added to a scene on its own, not with its whole device. */
 const ENTITY_ONLY = { entity_only: true };
 
+export type SaveOptions = {
+  entityId: string;
+  entities: Record<string, SceneValue>;
+};
+
+export type PreviewOptions = {
+  sceneId: string;
+  entities: Record<string, SceneValue>;
+};
+
+export type RestoreOptions = {
+  sceneId: string;
+  deviceIds?: readonly string[];
+};
+
 /**
  * Scenes edited without switching anything: the values go straight into scenes.yaml through HA's
  * config API (HA's own editor "photographs" the devices instead, so it switches them).
@@ -42,7 +57,9 @@ export class ScenesService {
       return {
         entityId,
         isEditable: true,
-        devices: Object.entries(entities).map(([id, values]) => device(id, values, stateOf)),
+        devices: Object.entries(entities).map(([id, values]) =>
+          device({ entityId: id, values, stateOf }),
+        ),
         temperatureUnit,
       };
     }
@@ -53,7 +70,7 @@ export class ScenesService {
     return {
       entityId,
       isEditable: false,
-      devices: ids.map((id) => device(id, null, stateOf)),
+      devices: ids.map((id) => device({ entityId: id, values: null, stateOf })),
       temperatureUnit,
     };
   }
@@ -76,7 +93,7 @@ export class ScenesService {
     const stateOf = new Map(states.map((state) => [state.entity_id, state]));
     const state = stateOf.get(deviceId);
 
-    return device(deviceId, state ? valueOf(state) : null, stateOf);
+    return device({ entityId: deviceId, values: state ? valueOf(state) : null, stateOf });
   }
 
   /**
@@ -89,7 +106,7 @@ export class ScenesService {
    *
    * @throws BadRequestException `SCENE_NOT_EDITABLE` for scenes outside scenes.yaml.
    */
-  async save(entityId: string, entities: Record<string, SceneValue>): Promise<SceneView> {
+  async save({ entityId, entities }: SaveOptions): Promise<SceneView> {
     const found = await this.findConfig(entityId);
     if (!found) throw notEditable(entityId);
 
@@ -116,7 +133,7 @@ export class ScenesService {
    * Shows the given values on the devices now. The first time a device is touched, its state is
    * kept, so restore() can bring it back; later calls (live edits) only apply.
    */
-  async preview(sceneId: string, entities: Record<string, SceneValue>): Promise<void> {
+  async preview({ sceneId, entities }: PreviewOptions): Promise<void> {
     const snapshot = this.snapshots.get(sceneId) ?? new Map<string, SceneValue>();
     const missing = Object.keys(entities).filter((id) => !snapshot.has(id));
 
@@ -135,7 +152,7 @@ export class ScenesService {
    * Brings devices back to how they were before the preview: the given ones (trying one device),
    * or all of the scene's.
    */
-  async restore(sceneId: string, deviceIds?: readonly string[]): Promise<void> {
+  async restore({ sceneId, deviceIds }: RestoreOptions): Promise<void> {
     const snapshot = this.snapshots.get(sceneId);
     if (!snapshot) return;
 
@@ -175,16 +192,22 @@ function entitiesOf(config: Record<string, unknown>): Record<string, SceneValue>
   );
 }
 
-/** A device's state as scene values: the state with all its attributes, as HA would photograph it. */
+/**
+ * A device's state as scene values: the state with all its attributes, as HA would photograph it.
+ */
 function valueOf(state: HaState): SceneValue {
   return { state: state.state, ...(state.attributes as Record<string, unknown>) };
 }
 
-function device(
-  entityId: string,
-  values: SceneValue | null,
-  stateOf: Map<string, HaState>,
-): SceneDevice {
+function device({
+  entityId,
+  values,
+  stateOf,
+}: {
+  entityId: string;
+  values: SceneValue | null;
+  stateOf: Map<string, HaState>;
+}): SceneDevice {
   const state = stateOf.get(entityId);
   const name = state?.attributes.friendly_name;
 
@@ -198,5 +221,7 @@ function device(
 }
 
 function notEditable(entityId: string): BadRequestException {
-  return new BadRequestException(apiError(MESSAGE_ID.sceneNotEditable, { params: { entityId } }));
+  return new BadRequestException(
+    apiError({ message: MESSAGE_ID.sceneNotEditable, details: { params: { entityId } } }),
+  );
 }

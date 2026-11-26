@@ -18,9 +18,11 @@ export interface ApiErrorPayload {
   fields?: { field: string; message: MessageId }[];
 }
 
-export function apiError(
-  message: MessageId,
-  details: Omit<ApiErrorPayload, "message"> = {},
-): ApiErrorPayload {
+export type ApiErrorOptions = {
+  message: MessageId;
+  details?: Omit<ApiErrorPayload, "message">;
+};
+
+export function apiError({ message, details = {} }: ApiErrorOptions): ApiErrorPayload {
   return { message, ...details };
 }

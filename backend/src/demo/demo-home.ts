@@ -10,7 +10,10 @@ import {
 } from "./demo-sorting-home";
 import { createDemoTraces, type DemoTrace } from "./demo-traces";
 
-/** One entity of the demo home, in a compact form the fake HA turns into registry entries and states. */
+/**
+ * One entity of the demo home, in a compact form the fake HA turns into registry entries and
+ * states.
+ */
 export type DemoEntity = {
   entityId: string;
   name: string;
@@ -66,7 +69,13 @@ export type DemoHome = {
 };
 
 /** HA's editor stores durations like this. */
-function duration(minutes: number, seconds = 0): Record<string, number> {
+function duration({
+  minutes,
+  seconds = 0,
+}: {
+  minutes: number;
+  seconds?: number;
+}): Record<string, number> {
   return { hours: 0, minutes, seconds, milliseconds: 0 };
 }
 
@@ -188,7 +197,9 @@ const SERVICE_TEXTS: Record<string, Record<string, string>> = {
   },
 };
 
-/** "light.turn_on.brightness_pct" → "component.light.services.turn_on.fields.brightness_pct.name". */
+/**
+ * "light.turn_on.brightness_pct" → "component.light.services.turn_on.fields.brightness_pct.name".
+ */
 function toTranslationKeys(texts: Record<string, string>): HaTranslations {
   return Object.fromEntries(
     Object.entries(texts).map(([key, text]) => {
@@ -205,13 +216,15 @@ function daysAgo(days: number): string {
   return new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
 }
 
-function sensor(
-  entityId: string,
-  name: string,
-  state: string,
-  unit?: string,
-  place?: { device: string; parentDevice?: string; areaId?: string },
-): DemoEntity {
+type SensorOptions = {
+  entityId: string;
+  name: string;
+  state: string;
+  unit?: string;
+  place?: { device: string; parentDevice?: string; areaId?: string };
+};
+
+function sensor({ entityId, name, state, unit, place }: SensorOptions): DemoEntity {
   return {
     entityId,
     name,
@@ -236,7 +249,13 @@ const WHITE_LIGHT = {
   max_color_temp_kelvin: 6500,
 };
 
-function withAttributes(entity: DemoEntity, attributes: Record<string, unknown>): DemoEntity {
+function withAttributes({
+  entity,
+  attributes,
+}: {
+  entity: DemoEntity;
+  attributes: Record<string, unknown>;
+}): DemoEntity {
   return { ...entity, attributes: { ...entity.attributes, ...attributes } };
 }
 
@@ -276,81 +295,193 @@ function inEntityFolder(entity: DemoEntity): DemoEntity {
 }
 
 const DEVICES: DemoEntity[] = [
-  withAttributes(
-    sensor("binary_sensor.terrace_motion", "Terrace motion", "off", undefined, MOTION),
-    {
+  withAttributes({
+    entity: sensor({
+      entityId: "binary_sensor.terrace_motion",
+      name: "Terrace motion",
+      state: "off",
+      place: MOTION,
+    }),
+    attributes: {
       device_class: "motion",
     },
-  ),
-  sensor("sensor.terrace_motion_battery", "Terrace motion sensor Battery", "78", "%", MOTION),
-  sensor(
-    "sensor.terrace_motion_temperature",
-    "Terrace motion sensor Temperature",
-    "12.4",
-    "°C",
-    MOTION,
-  ),
-  withAttributes(sensor("binary_sensor.front_door", "Front door", "off", undefined, DOOR), {
-    device_class: "door",
   }),
-  sensor("sensor.front_door_battery", "Front door sensor Battery", "91", "%", DOOR),
-  withAttributes(sensor("binary_sensor.anyone_home", "Anyone home", "on"), {
-    device_class: "occupancy",
+  sensor({
+    entityId: "sensor.terrace_motion_battery",
+    name: "Terrace motion sensor Battery",
+    state: "78",
+    unit: "%",
+    place: MOTION,
   }),
-  withAttributes(
-    sensor("light.terrace", "Terrace light", "off", undefined, {
-      device: "Terrace light",
+  sensor({
+    entityId: "sensor.terrace_motion_temperature",
+    name: "Terrace motion sensor Temperature",
+    state: "12.4",
+    unit: "°C",
+    place: MOTION,
+  }),
+  withAttributes({
+    entity: sensor({
+      entityId: "binary_sensor.front_door",
+      name: "Front door",
+      state: "off",
+      place: DOOR,
+    }),
+    attributes: {
+      device_class: "door",
+    },
+  }),
+  sensor({
+    entityId: "sensor.front_door_battery",
+    name: "Front door sensor Battery",
+    state: "91",
+    unit: "%",
+    place: DOOR,
+  }),
+  withAttributes({
+    entity: sensor({ entityId: "binary_sensor.anyone_home", name: "Anyone home", state: "on" }),
+    attributes: {
+      device_class: "occupancy",
+    },
+  }),
+  withAttributes({
+    entity: sensor({
+      entityId: "light.terrace",
+      name: "Terrace light",
+      state: "off",
+      place: {
+        device: "Terrace light",
+        areaId: "terrace",
+      },
+    }),
+    attributes: { ...COLOR_LIGHT, effect_list: ["none", "candle", "rainbow"] },
+  }),
+  withAttributes({
+    entity: sensor({
+      entityId: "light.garden_paths",
+      name: "Garden path lights",
+      state: "off",
+      place: {
+        device: "Garden path lights",
+        areaId: "garden",
+      },
+    }),
+    attributes: { supported_color_modes: ["brightness"] },
+  }),
+  withAttributes({
+    entity: sensor({
+      entityId: "light.living_room",
+      name: "Living room light",
+      state: "on",
+      place: {
+        device: "Ceiling light",
+        areaId: "living_room",
+      },
+    }),
+    attributes: {
+      ...WHITE_LIGHT,
+      brightness: 255,
+      color_mode: "color_temp",
+      color_temp_kelvin: 4000,
+    },
+  }),
+  withAttributes({
+    entity: sensor({
+      entityId: "light.living_room_floor_lamp",
+      name: "Floor lamp",
+      state: "off",
+      place: {
+        device: "Floor lamp",
+        areaId: "living_room",
+      },
+    }),
+    attributes: COLOR_LIGHT,
+  }),
+  withAttributes({
+    entity: sensor({
+      entityId: "cover.awning",
+      name: "Awning",
+      state: "open",
+      place: { device: "Awning", areaId: "terrace" },
+    }),
+    attributes: { current_position: 100 },
+  }),
+  sensor({
+    entityId: "sensor.wind_speed",
+    name: "Wind speed",
+    state: "12",
+    unit: "km/h",
+    place: {
+      device: "Weather station",
       areaId: "terrace",
-    }),
-    { ...COLOR_LIGHT, effect_list: ["none", "candle", "rainbow"] },
-  ),
-  withAttributes(
-    sensor("light.garden_paths", "Garden path lights", "off", undefined, {
-      device: "Garden path lights",
-      areaId: "garden",
-    }),
-    { supported_color_modes: ["brightness"] },
-  ),
-  withAttributes(
-    sensor("light.living_room", "Living room light", "on", undefined, {
-      device: "Ceiling light",
-      areaId: "living_room",
-    }),
-    { ...WHITE_LIGHT, brightness: 255, color_mode: "color_temp", color_temp_kelvin: 4000 },
-  ),
-  withAttributes(
-    sensor("light.living_room_floor_lamp", "Floor lamp", "off", undefined, {
-      device: "Floor lamp",
-      areaId: "living_room",
-    }),
-    COLOR_LIGHT,
-  ),
-  withAttributes(
-    sensor("cover.awning", "Awning", "open", undefined, { device: "Awning", areaId: "terrace" }),
-    { current_position: 100 },
-  ),
-  sensor("sensor.wind_speed", "Wind speed", "12", "km/h", {
-    device: "Weather station",
-    areaId: "terrace",
+    },
   }),
-  sensor("sensor.lawn_moisture", "Lawn moisture", "34", "%", IRRIGATION),
-  sensor("valve.lawn_irrigation", "Lawn irrigation", "closed", undefined, IRRIGATION),
-  sensor("sensor.solar_power", "Solar power", "3420", "W", INVERTER),
-  sensor("sensor.house_consumption", "House consumption", "1580", "W", INVERTER),
-  sensor("switch.wallbox", "Wallbox", "off", undefined, { device: "Wallbox", areaId: "garage" }),
+  sensor({
+    entityId: "sensor.lawn_moisture",
+    name: "Lawn moisture",
+    state: "34",
+    unit: "%",
+    place: IRRIGATION,
+  }),
+  sensor({
+    entityId: "valve.lawn_irrigation",
+    name: "Lawn irrigation",
+    state: "closed",
+    place: IRRIGATION,
+  }),
+  sensor({
+    entityId: "sensor.solar_power",
+    name: "Solar power",
+    state: "3420",
+    unit: "W",
+    place: INVERTER,
+  }),
+  sensor({
+    entityId: "sensor.house_consumption",
+    name: "House consumption",
+    state: "1580",
+    unit: "W",
+    place: INVERTER,
+  }),
+  sensor({
+    entityId: "switch.wallbox",
+    name: "Wallbox",
+    state: "off",
+    place: { device: "Wallbox", areaId: "garage" },
+  }),
   // Like HA 2026.12 splits multi-outlet plugs: each outlet is a child device named on its own.
-  sensor("switch.power_strip_outlet_1", "Outlet 1", "on", undefined, powerStripOutlet(1)),
-  sensor("switch.power_strip_outlet_2", "Outlet 2", "off", undefined, powerStripOutlet(2)),
+  sensor({
+    entityId: "switch.power_strip_outlet_1",
+    name: "Outlet 1",
+    state: "on",
+    place: powerStripOutlet(1),
+  }),
+  sensor({
+    entityId: "switch.power_strip_outlet_2",
+    name: "Outlet 2",
+    state: "off",
+    place: powerStripOutlet(2),
+  }),
   {
-    ...sensor("sensor.washing_machine_power", "Washing machine power", "unavailable", "W"),
+    ...sensor({
+      entityId: "sensor.washing_machine_power",
+      name: "Washing machine power",
+      state: "unavailable",
+      unit: "W",
+    }),
     lastChanged: daysAgo(3),
   },
-  withAttributes(
-    sensor("climate.bathroom", "Bathroom heating", "heat", undefined, {
-      device: "Bathroom thermostat",
-      areaId: "bathroom",
+  withAttributes({
+    entity: sensor({
+      entityId: "climate.bathroom",
+      name: "Bathroom heating",
+      state: "heat",
+      place: {
+        device: "Bathroom thermostat",
+        areaId: "bathroom",
+      },
     }),
-    {
+    attributes: {
       hvac_modes: ["off", "heat", "auto"],
       temperature: 22,
       current_temperature: 21.5,
@@ -358,10 +489,15 @@ const DEVICES: DemoEntity[] = [
       max_temp: 30,
       target_temp_step: 0.5,
     },
-  ),
-  sensor("alarm_control_panel.home", "Alarm system", "disarmed", undefined, {
-    device: "Alarm panel",
-    areaId: "hallway",
+  }),
+  sensor({
+    entityId: "alarm_control_panel.home",
+    name: "Alarm system",
+    state: "disarmed",
+    place: {
+      device: "Alarm panel",
+      areaId: "hallway",
+    },
   }),
 ];
 
@@ -391,7 +527,7 @@ const AUTOMATIONS: DemoEntity[] = [
           target: { entity_id: "light.terrace" },
           data: { brightness_pct: 70 },
         },
-        { delay: duration(5) },
+        { delay: duration({ minutes: 5 }) },
         { action: "light.turn_off", target: { entity_id: "light.terrace" } },
       ],
     },
@@ -415,7 +551,7 @@ const AUTOMATIONS: DemoEntity[] = [
           trigger: "numeric_state",
           entity_id: "sensor.wind_speed",
           above: 40,
-          for: duration(1),
+          for: duration({ minutes: 1 }),
         },
       ],
       conditions: [{ condition: "state", entity_id: "cover.awning", state: "open" }],
@@ -448,8 +584,8 @@ const AUTOMATIONS: DemoEntity[] = [
         { action: "valve.open_valve", target: { entity_id: "valve.lawn_irrigation" } },
         {
           if: [{ condition: "numeric_state", entity_id: "sensor.lawn_moisture", below: 20 }],
-          then: [{ delay: duration(30) }],
-          else: [{ delay: duration(15) }],
+          then: [{ delay: duration({ minutes: 30 }) }],
+          else: [{ delay: duration({ minutes: 15 }) }],
         },
         { action: "valve.close_valve", target: { entity_id: "valve.lawn_irrigation" } },
       ],
@@ -470,7 +606,12 @@ const AUTOMATIONS: DemoEntity[] = [
       description: "",
       mode: "single",
       triggers: [
-        { trigger: "state", entity_id: "binary_sensor.front_door", to: "on", for: duration(5) },
+        {
+          trigger: "state",
+          entity_id: "binary_sensor.front_door",
+          to: "on",
+          for: duration({ minutes: 5 }),
+        },
       ],
       conditions: [],
       actions: [
@@ -500,7 +641,7 @@ const AUTOMATIONS: DemoEntity[] = [
           trigger: "numeric_state",
           entity_id: "sensor.solar_surplus",
           above: 1500,
-          for: duration(10),
+          for: duration({ minutes: 10 }),
         },
       ],
       conditions: [{ condition: "state", entity_id: "switch.wallbox", state: "off" }],
@@ -528,7 +669,7 @@ const AUTOMATIONS: DemoEntity[] = [
           trigger: "numeric_state",
           entity_id: "sensor.washing_machine_power",
           below: 5,
-          for: duration(3),
+          for: duration({ minutes: 3 }),
         },
       ],
       conditions: [
@@ -591,7 +732,7 @@ const AUTOMATIONS: DemoEntity[] = [
           trigger: "state",
           entity_id: "binary_sensor.anyone_home",
           to: "off",
-          for: duration(10),
+          for: duration({ minutes: 10 }),
         },
       ],
       conditions: [{ condition: "state", entity_id: "input_boolean.guest_mode", state: "off" }],
@@ -649,7 +790,7 @@ const BROKEN: DemoEntity[] = [
           target: { entity_id: "light.hallway_ceiling_old" },
           data: { brightness_pct: 20 },
         },
-        { delay: duration(2) },
+        { delay: duration({ minutes: 2 }) },
         { action: "light.turn_off", target: { entity_id: "light.hallway_ceiling_old" } },
       ],
     },
@@ -677,7 +818,7 @@ const SCRIPTS: DemoEntity[] = [
           data: { brightness_pct: "{{ states('input_number.terrace_brightness') | int }}" },
         },
         { action: "light.turn_on", target: { entity_id: "light.garden_paths" } },
-        { delay: duration(0, 2) },
+        { delay: duration({ minutes: 0, seconds: 2 }) },
         { action: "cover.open_cover", target: { entity_id: "cover.awning" } },
       ],
     },
@@ -890,7 +1031,7 @@ const LEGACY: DemoEntity[] = [
       mode: "single",
       sequence: [
         { action: "light.turn_on", target: { entity_id: "light.living_room" } },
-        { delay: duration(10) },
+        { delay: duration({ minutes: 10 }) },
         { action: "light.turn_off", target: { entity_id: "light.living_room" } },
       ],
     },

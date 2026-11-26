@@ -54,7 +54,7 @@ export class CleanupService {
     const ignored = new Set(overlay.cleanupIgnored);
 
     return {
-      proposals: findCleanupProposals(categories, assignments, ignored),
+      proposals: findCleanupProposals({ categories, assignments, ignored }),
       ignoredCount: ignored.size,
     };
   }
@@ -62,7 +62,7 @@ export class CleanupService {
   async preview(changes: CleanupChange[]): Promise<CleanupStep[]> {
     const { categories, assignments } = await this.loadState();
 
-    return planCleanup(this.normalize(changes), categories, assignments).map(toStep);
+    return planCleanup({ changes: this.normalize(changes), categories, assignments }).map(toStep);
   }
 
   /**
@@ -72,7 +72,7 @@ export class CleanupService {
   async apply(changes: CleanupChange[]): Promise<CleanupResult> {
     const normalized = this.normalize(changes);
     const { categories, assignments } = await this.loadState();
-    const operations = planCleanup(normalized, categories, assignments);
+    const operations = planCleanup({ changes: normalized, categories, assignments });
     const deletedIds: string[] = [];
 
     for (const operation of operations) {
@@ -99,7 +99,7 @@ export class CleanupService {
       folderColors: Object.fromEntries(
         Object.entries(overlay.folderColors).map(([path, color]) => [movePath(path), color]),
       ),
-      folderOrder: moveFolderOrder(overlay.folderOrder, movePath),
+      folderOrder: moveFolderOrder({ order: overlay.folderOrder, movePath }),
     }));
 
     const categoryCount = new Set(operations.map((operation) => operation.from)).size;
@@ -125,7 +125,7 @@ export class CleanupService {
     return changes.map(({ from, to }) => {
       if (seen.has(from)) {
         throw new BadRequestException(
-          apiError(MESSAGE_ID.cleanupDuplicate, { params: { path: from } }),
+          apiError({ message: MESSAGE_ID.cleanupDuplicate, details: { params: { path: from } } }),
         );
       }
       seen.add(from);

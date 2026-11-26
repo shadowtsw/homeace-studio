@@ -52,9 +52,12 @@ describe("ScenesService", () => {
     const { service, stateOf } = setup();
     const before = await stateOf("light.living_room_floor_lamp");
 
-    const view = await service.save("scene.cozy_evening", {
-      "light.living_room_floor_lamp": { state: "on", brightness: 25, color_temp_kelvin: 2700 },
-      "switch.wallbox": { state: "off" },
+    const view = await service.save({
+      entityId: "scene.cozy_evening",
+      entities: {
+        "light.living_room_floor_lamp": { state: "on", brightness: 25, color_temp_kelvin: 2700 },
+        "switch.wallbox": { state: "off" },
+      },
     });
 
     expect(await stateOf("light.living_room_floor_lamp")).toBe(before);
@@ -67,9 +70,12 @@ describe("ScenesService", () => {
   it("keeps HA's metadata and marks new devices as single entities", async () => {
     const { service, fake } = setup();
 
-    await service.save("scene.cozy_evening", {
-      "light.living_room_floor_lamp": { state: "on" },
-      "switch.wallbox": { state: "off" },
+    await service.save({
+      entityId: "scene.cozy_evening",
+      entities: {
+        "light.living_room_floor_lamp": { state: "on" },
+        "switch.wallbox": { state: "off" },
+      },
     });
     const config = fake.restGet("config/scene/config/1723912301777") as Record<string, unknown>;
 
@@ -89,15 +95,21 @@ describe("ScenesService", () => {
     const path = "config/scene/config/1723912301777";
     const stored = fake.restGet(path) as Record<string, unknown>;
     // HA's own editor writes no metadata for entities it groups under their device
-    fake.restPost(path, {
-      ...stored,
-      metadata: { "light.living_room_floor_lamp": { entity_only: true } },
+    fake.restPost({
+      path,
+      body: {
+        ...stored,
+        metadata: { "light.living_room_floor_lamp": { entity_only: true } },
+      },
     });
 
-    await service.save("scene.cozy_evening", {
-      "light.living_room": { state: "on" },
-      "light.living_room_floor_lamp": { state: "on" },
-      "switch.wallbox": { state: "off" },
+    await service.save({
+      entityId: "scene.cozy_evening",
+      entities: {
+        "light.living_room": { state: "on" },
+        "light.living_room_floor_lamp": { state: "on" },
+        "switch.wallbox": { state: "off" },
+      },
     });
     const config = fake.restGet(path) as Record<string, unknown>;
 
@@ -119,14 +131,17 @@ describe("ScenesService", () => {
   it("previews on the devices and brings them back afterwards", async () => {
     const { service, stateOf } = setup();
 
-    await service.preview("scene.cozy_evening", {
-      "light.living_room": { state: "off" },
-      "light.living_room_floor_lamp": { state: "on", brightness: 64 },
+    await service.preview({
+      sceneId: "scene.cozy_evening",
+      entities: {
+        "light.living_room": { state: "off" },
+        "light.living_room_floor_lamp": { state: "on", brightness: 64 },
+      },
     });
     expect(await stateOf("light.living_room")).toBe("off");
     expect(await stateOf("light.living_room_floor_lamp")).toBe("on");
 
-    await service.restore("scene.cozy_evening");
+    await service.restore({ sceneId: "scene.cozy_evening" });
     expect(await stateOf("light.living_room")).toBe("on");
     expect(await stateOf("light.living_room_floor_lamp")).toBe("off");
   });
@@ -134,10 +149,19 @@ describe("ScenesService", () => {
   it("keeps the first state of a device through live edits during the preview", async () => {
     const { service, stateOf } = setup();
 
-    await service.preview("scene.cozy_evening", { "light.living_room": { state: "off" } });
-    await service.preview("scene.cozy_evening", { "light.living_room": { state: "on" } });
-    await service.preview("scene.cozy_evening", { "light.living_room": { state: "off" } });
-    await service.restore("scene.cozy_evening");
+    await service.preview({
+      sceneId: "scene.cozy_evening",
+      entities: { "light.living_room": { state: "off" } },
+    });
+    await service.preview({
+      sceneId: "scene.cozy_evening",
+      entities: { "light.living_room": { state: "on" } },
+    });
+    await service.preview({
+      sceneId: "scene.cozy_evening",
+      entities: { "light.living_room": { state: "off" } },
+    });
+    await service.restore({ sceneId: "scene.cozy_evening" });
 
     expect(await stateOf("light.living_room")).toBe("on");
   });
@@ -145,11 +169,17 @@ describe("ScenesService", () => {
   it("brings back only the device that was tried", async () => {
     const { service, stateOf } = setup();
 
-    await service.preview("scene.cozy_evening", {
-      "light.living_room": { state: "off" },
-      "light.living_room_floor_lamp": { state: "on" },
+    await service.preview({
+      sceneId: "scene.cozy_evening",
+      entities: {
+        "light.living_room": { state: "off" },
+        "light.living_room_floor_lamp": { state: "on" },
+      },
     });
-    await service.restore("scene.cozy_evening", ["light.living_room_floor_lamp"]);
+    await service.restore({
+      sceneId: "scene.cozy_evening",
+      deviceIds: ["light.living_room_floor_lamp"],
+    });
 
     expect(await stateOf("light.living_room_floor_lamp")).toBe("off");
     expect(await stateOf("light.living_room")).toBe("off");
@@ -164,7 +194,9 @@ describe("ScenesService", () => {
       devices: [],
       temperatureUnit: "°C",
     });
-    await expect(service.save("scene.unknown", {})).rejects.toBeInstanceOf(BadRequestException);
+    await expect(service.save({ entityId: "scene.unknown", entities: {} })).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
   });
 
   it("offers a new device with its current state as the starting values", async () => {

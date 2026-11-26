@@ -15,7 +15,7 @@ export class EntityFoldersController {
   @HttpCode(HttpStatus.OK)
   @ResponseMessage(MESSAGE_ID.entryMoved)
   async move(@Param("entityId") entityId: string, @Body() dto: MoveEntityDto): Promise<null> {
-    await this.categoriesService.moveEntity(entityId, dto.categoryPath);
+    await this.categoriesService.moveEntity({ entityId, targetPath: dto.categoryPath });
 
     return null;
   }

@@ -30,7 +30,7 @@ export class HaRestService {
    * @returns The JSON answer, or null when HA does not know the resource (404).
    */
   async get<TResult>(path: string): Promise<TResult | null> {
-    const response = await this.send("GET", path);
+    const response = await this.send({ method: "GET", path });
 
     if (response.status === HTTP_NOT_FOUND) return null;
 
@@ -38,16 +38,24 @@ export class HaRestService {
   }
 
   async post<TResult>(path: string, body: unknown): Promise<TResult> {
-    const response = await this.send("POST", path, body);
+    const response = await this.send({ method: "POST", path, body });
 
     return (await this.readOrThrow(response)) as TResult;
   }
 
   async delete(path: string): Promise<void> {
-    await this.readOrThrow(await this.send("DELETE", path));
+    await this.readOrThrow(await this.send({ method: "DELETE", path }));
   }
 
-  private send(method: string, path: string, body?: unknown): Promise<Response> {
+  private send({
+    method,
+    path,
+    body,
+  }: {
+    method: string;
+    path: string;
+    body?: unknown;
+  }): Promise<Response> {
     return fetch(this.endpoint.restUrl + PATH_SEPARATOR + path, {
       method,
       headers: {

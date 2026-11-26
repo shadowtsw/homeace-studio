@@ -11,6 +11,16 @@ export type AreaChanges = { name?: string; icon?: string | null };
 
 const toArea = (area: HaArea): Area => ({ areaId: area.area_id, name: area.name, icon: area.icon });
 
+export type CreateOptions = {
+  name: string;
+  icon: string | null;
+};
+
+export type UpdateOptions = {
+  areaId: string;
+  changes: AreaChanges;
+};
+
 /**
  * Creates, changes and deletes areas in HA's area registry. Names are checked here first (ignoring
  * case, like HA), so the user gets our message instead of HA's English one.
@@ -19,9 +29,9 @@ const toArea = (area: HaArea): Area => ({ areaId: area.area_id, name: area.name,
 export class AreasService {
   constructor(private readonly ha: HaConnectionService) {}
 
-  async create(name: string, icon: string | null): Promise<Area> {
+  async create({ name, icon }: CreateOptions): Promise<Area> {
     const trimmed = name.trim();
-    await this.requireFreeName(trimmed, null);
+    await this.requireFreeName({ name: trimmed, ownId: null });
 
     const created = await this.ha.call<HaArea>(HA_COMMAND.areaRegistryCreate, {
       name: trimmed,
@@ -30,13 +40,13 @@ export class AreasService {
     return toArea(created);
   }
 
-  async update(areaId: string, changes: AreaChanges): Promise<Area> {
+  async update({ areaId, changes }: UpdateOptions): Promise<Area> {
     await this.requireArea(areaId);
 
     const payload: Record<string, unknown> = { area_id: areaId };
     if (changes.name !== undefined) {
       payload.name = changes.name.trim();
-      await this.requireFreeName(changes.name.trim(), areaId);
+      await this.requireFreeName({ name: changes.name.trim(), ownId: areaId });
     }
     if (changes.icon !== undefined) payload.icon = changes.icon;
 
@@ -55,17 +65,25 @@ export class AreasService {
 
   private async requireArea(areaId: string): Promise<void> {
     if (!(await this.list()).some((area) => area.area_id === areaId)) {
-      throw new NotFoundException(apiError(MESSAGE_ID.areaNotFound));
+      throw new NotFoundException(apiError({ message: MESSAGE_ID.areaNotFound }));
     }
   }
 
-  private async requireFreeName(name: string, ownId: string | null): Promise<void> {
+  private async requireFreeName({
+    name,
+    ownId,
+  }: {
+    name: string;
+    ownId: string | null;
+  }): Promise<void> {
     const lower = name.toLocaleLowerCase();
     const taken = (await this.list()).some(
       (area) => area.area_id !== ownId && area.name.toLocaleLowerCase() === lower,
     );
 
     if (taken)
-      throw new ConflictException(apiError(MESSAGE_ID.areaNameTaken, { params: { name } }));
+      throw new ConflictException(
+        apiError({ message: MESSAGE_ID.areaNameTaken, details: { params: { name } } }),
+      );
   }
 }

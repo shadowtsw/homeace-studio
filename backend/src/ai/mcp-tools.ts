@@ -79,7 +79,7 @@ export function createMcpServer(deps: McpToolDeps): McpServer {
     },
     async () => {
       const [entries, overlay] = await Promise.all([deps.entries.findAll(), deps.overlay.read()]);
-      const folders = [...collectFolders(entries, overlay.folders)].sort((a, b) =>
+      const folders = [...collectFolders({ entries, savedFolders: overlay.folders })].sort((a, b) =>
         a.localeCompare(b),
       );
 
@@ -121,7 +121,7 @@ export function createMcpServer(deps: McpToolDeps): McpServer {
         if (!entry.categoryPath) return false;
         return includeSubfolders === false
           ? entry.categoryPath === folder
-          : isSameOrBelow(entry.categoryPath, folder);
+          : isSameOrBelow({ path: entry.categoryPath, ancestor: folder });
       };
       const matching = entries.filter((entry) => inFolder(entry) && (!kind || entry.kind === kind));
 
@@ -162,7 +162,7 @@ export function createMcpServer(deps: McpToolDeps): McpServer {
     },
     async (input) => {
       try {
-        const plan = await deps.plans.propose(input, deps.client);
+        const plan = await deps.plans.propose({ input, client: deps.client });
 
         return json({
           planId: plan.id,

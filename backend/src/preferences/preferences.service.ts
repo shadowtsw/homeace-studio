@@ -20,6 +20,17 @@ export type PreferencesAnswer = {
   values: UserPreferences | null;
 };
 
+export type SetOptions = {
+  user: HaUser | null;
+  name: string;
+  value: unknown;
+};
+
+export type ImportFirstOptions = {
+  user: HaUser | null;
+  values: unknown;
+};
+
 /** Settings that follow a HA user to every device, kept in the overlay by HA user ID. */
 @Injectable()
 export class PreferencesService {
@@ -34,12 +45,14 @@ export class PreferencesService {
   }
 
   /** Sets one setting of the user; the others stay. */
-  async set(user: HaUser | null, name: string, value: unknown): Promise<UserPreferences> {
+  async set({ user, name, value }: SetOptions): Promise<UserPreferences> {
     // Check the request
     const knownUser = requireUser(user);
     const isValid = isPreferenceName(name) && isPreferenceValue(value);
     if (!isValid) {
-      throw new BadRequestException(apiError(MESSAGE_ID.preferenceInvalid, { params: { name } }));
+      throw new BadRequestException(
+        apiError({ message: MESSAGE_ID.preferenceInvalid, details: { params: { name } } }),
+      );
     }
 
     // Write it, unless the user already has too many others
@@ -62,7 +75,7 @@ export class PreferencesService {
    *
    * @returns The user's settings after the import.
    */
-  async importFirst(user: HaUser | null, values: unknown): Promise<UserPreferences> {
+  async importFirst({ user, values }: ImportFirstOptions): Promise<UserPreferences> {
     const knownUser = requireUser(user);
     const cleanValues = cleanPreferences(values);
 
@@ -82,7 +95,7 @@ export class PreferencesService {
 
 /** Without a HA user there is nobody to keep settings for (opened locally, in the demo). */
 function requireUser(user: HaUser | null): HaUser {
-  if (!user) throw new BadRequestException(apiError(MESSAGE_ID.preferencesNoUser));
+  if (!user) throw new BadRequestException(apiError({ message: MESSAGE_ID.preferencesNoUser }));
 
   return user;
 }

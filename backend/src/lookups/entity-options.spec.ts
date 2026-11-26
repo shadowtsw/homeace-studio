@@ -21,14 +21,19 @@ function registry(entityId: string, extra: Partial<HaEntityRegistryEntry>): HaEn
 
 describe("entity options", () => {
   it("takes the name within the device, or the full name", () => {
-    expect(nameWithinDevice("Bewegungsmelder Flur Batterie", "Bewegungsmelder Flur")).toBe(
-      "Batterie",
+    expect(
+      nameWithinDevice({
+        name: "Bewegungsmelder Flur Batterie",
+        deviceName: "Bewegungsmelder Flur",
+      }),
+    ).toBe("Batterie");
+    expect(nameWithinDevice({ name: "Flurlicht", deviceName: "Bewegungsmelder Flur" })).toBe(
+      "Flurlicht",
     );
-    expect(nameWithinDevice("Flurlicht", "Bewegungsmelder Flur")).toBe("Flurlicht");
-    expect(nameWithinDevice("Bewegungsmelder Flur", "Bewegungsmelder Flur")).toBe(
-      "Bewegungsmelder Flur",
-    );
-    expect(nameWithinDevice("Gästemodus", null)).toBe("Gästemodus");
+    expect(
+      nameWithinDevice({ name: "Bewegungsmelder Flur", deviceName: "Bewegungsmelder Flur" }),
+    ).toBe("Bewegungsmelder Flur");
+    expect(nameWithinDevice({ name: "Gästemodus", deviceName: null })).toBe("Gästemodus");
   });
 
   it("adds device, area (own or the device's), labels and unit", () => {

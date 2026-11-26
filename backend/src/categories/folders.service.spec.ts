@@ -32,9 +32,9 @@ describe("FoldersService", () => {
 
   it("sets and removes a folder color, and drops it when the folder is deleted", async () => {
     await service.create("Haus/Pool");
-    await service.setColor("Haus/Pool", "#e3a64e");
-    await service.setColor("Garage", "#2f9b68");
-    await service.setColor("Garage", null);
+    await service.setColor({ path: "Haus/Pool", color: "#e3a64e" });
+    await service.setColor({ path: "Garage", color: "#2f9b68" });
+    await service.setColor({ path: "Garage", color: null });
 
     expect(overlay.data.folderColors).toEqual({ "Haus/Pool": "#e3a64e" });
 
@@ -43,17 +43,17 @@ describe("FoldersService", () => {
   });
 
   it("keeps an own order of subfolders per parent; an empty list goes back to A-Z", async () => {
-    await service.setOrder("", ["Haus", "Energie"]);
-    await service.setOrder("Haus", ["Haus/Terrasse", "Haus/Garten"]);
+    await service.setOrder({ parent: "", order: ["Haus", "Energie"] });
+    await service.setOrder({ parent: "Haus", order: ["Haus/Terrasse", "Haus/Garten"] });
 
     expect((await service.findAll()).order).toEqual({
       "": ["Haus", "Energie"],
       Haus: ["Haus/Terrasse", "Haus/Garten"],
     });
 
-    await service.setOrder("Haus", []);
+    await service.setOrder({ parent: "Haus", order: [] });
     expect(overlay.data.folderOrder).toEqual({ "": ["Haus", "Energie"] });
-    await expect(service.setOrder("Haus", ["Energie"])).rejects.toMatchObject({
+    await expect(service.setOrder({ parent: "Haus", order: ["Energie"] })).rejects.toMatchObject({
       response: { message: "CATEGORY_PATH_INVALID" },
     });
   });

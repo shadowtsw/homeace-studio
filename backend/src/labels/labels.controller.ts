@@ -8,7 +8,10 @@ import { UpdateLabelDto } from "./dto/update-label.dto";
 import type { LabelUsage } from "./label-usage";
 import { LabelsService } from "./labels.service";
 
-/** HA's labels: create, change, delete, and where one is used (the list is GET /api/labels in lookups). */
+/**
+ * HA's labels: create, change, delete, and where one is used (the list is GET /api/labels in
+ * lookups).
+ */
 @Controller("labels")
 export class LabelsController {
   constructor(private readonly labels: LabelsService) {}
@@ -22,7 +25,7 @@ export class LabelsController {
   @Patch(":labelId")
   @ResponseMessage(MESSAGE_ID.labelUpdated)
   update(@Param("labelId") labelId: string, @Body() dto: UpdateLabelDto): Promise<Label> {
-    return this.labels.update(labelId, dto);
+    return this.labels.update({ labelId, fields: dto });
   }
 
   @Delete(":labelId")

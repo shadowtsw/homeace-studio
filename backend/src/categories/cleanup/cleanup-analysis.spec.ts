@@ -47,7 +47,7 @@ describe("clean-up analysis", () => {
       helpers: { "Büro-Heizung": ["input_number.x"], "Klima-Sensoren": ["sensor.y"] },
     });
 
-    const proposals = findCleanupProposals(categories, assignments, new Set());
+    const proposals = findCleanupProposals({ categories, assignments, ignored: new Set() });
 
     expect(proposals).toEqual([
       expect.objectContaining({
@@ -66,11 +66,15 @@ describe("clean-up analysis", () => {
       script: { Routine: ["script.a"], Routinen: ["script.b", "script.c"], Bad: [], Bade: [] },
     });
 
-    expect(findCleanupProposals(categories, assignments, new Set())).toEqual([
+    expect(findCleanupProposals({ categories, assignments, ignored: new Set() })).toEqual([
       expect.objectContaining({ kind: "merge", names: ["Routine", "Routinen"], to: "Routinen" }),
     ]);
     expect(
-      findCleanupProposals(categories, assignments, new Set(["merge:Routine|Routinen"])),
+      findCleanupProposals({
+        categories,
+        assignments,
+        ignored: new Set(["merge:Routine|Routinen"]),
+      }),
     ).toEqual([]);
   });
 
@@ -87,7 +91,7 @@ describe("clean-up analysis", () => {
     });
 
     // "Büro - Alt" is empty: HA keeps it, but the tree does not show it, so it is not proposed.
-    const merges = findCleanupProposals(categories, assignments, new Set());
+    const merges = findCleanupProposals({ categories, assignments, ignored: new Set() });
 
     expect(merges).toEqual([
       expect.objectContaining({ names: ["Routine", "Routinen", "Routines"] }),
@@ -100,14 +104,14 @@ describe("clean-up analysis", () => {
       helpers: { "Haus-Personen": ["input_boolean.c"] },
     });
 
-    const steps = planCleanup(
-      [
+    const steps = planCleanup({
+      changes: [
         { from: "Haus - Personen", to: "Haus/Personen" },
         { from: "Haus-Personen", to: "Haus/Personen" },
       ],
       categories,
       assignments,
-    );
+    });
 
     expect(steps.map(({ scope, kind, from }) => `${scope} ${kind} ${from}`)).toEqual([
       "automation rename Haus - Personen",

@@ -70,7 +70,9 @@ describe("TracesService", () => {
   it("lets HA keep more runs by writing trace.stored_traces into the config", async () => {
     const service = setup();
 
-    await expect(service.keepRuns("automation.terrace_light_on_motion", 20)).resolves.toEqual({
+    await expect(
+      service.keepRuns({ entityId: "automation.terrace_light_on_motion", count: 20 }),
+    ).resolves.toEqual({
       storedTraces: 20,
     });
     expect((await service.forEntity("automation.terrace_light_on_motion")).storedTraces).toBe(20);

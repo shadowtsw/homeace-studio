@@ -17,11 +17,14 @@ function setup() {
   const service = new CleanupService(new HaCategoriesRepository(ha), overlay);
 
   const create = (scope: string, name: string) =>
-    fake.call(HA_COMMAND.categoryRegistryCreate, { scope, name }) as HaCategory;
+    fake.call({ type: HA_COMMAND.categoryRegistryCreate, payload: { scope, name } }) as HaCategory;
   const assign = (entityId: string, scope: string, category: HaCategory) =>
-    fake.call(HA_COMMAND.entityRegistryUpdate, {
-      entity_id: entityId,
-      categories: { [scope]: category.category_id },
+    fake.call({
+      type: HA_COMMAND.entityRegistryUpdate,
+      payload: {
+        entity_id: entityId,
+        categories: { [scope]: category.category_id },
+      },
     });
 
   assign("automation.preheat_bathroom", "automation", create("automation", "Büro - Licht"));
@@ -29,9 +32,12 @@ function setup() {
   assign("input_boolean.guest_mode", "helpers", create("helpers", "Büro-Licht"));
 
   const categoryOf = (entityId: string, scope: string): string | undefined => {
-    const entries = fake.call(HA_COMMAND.entityRegistryList) as HaEntityRegistryEntry[];
+    const entries = fake.call({ type: HA_COMMAND.entityRegistryList }) as HaEntityRegistryEntry[];
     const id = entries.find((entry) => entry.entity_id === entityId)?.categories[scope];
-    const list = fake.call(HA_COMMAND.categoryRegistryList, { scope }) as HaCategory[];
+    const list = fake.call({
+      type: HA_COMMAND.categoryRegistryList,
+      payload: { scope },
+    }) as HaCategory[];
 
     return list.find((category) => category.category_id === id)?.name;
   };
@@ -82,7 +88,10 @@ describe("CleanupService", () => {
     expect(categoryOf("automation.old_light_switch_test", "automation")).toBe("Büro/Licht");
     expect(categoryOf("input_boolean.guest_mode", "helpers")).toBe("Büro/Licht");
     const automationNames = (
-      fake.call(HA_COMMAND.categoryRegistryList, { scope: "automation" }) as HaCategory[]
+      fake.call({
+        type: HA_COMMAND.categoryRegistryList,
+        payload: { scope: "automation" },
+      }) as HaCategory[]
     ).map((category) => category.name);
     expect(automationNames.filter((name) => name.startsWith("Büro"))).toEqual(["Büro/Licht"]);
     expect((await overlay.read()).folderColors["Büro/Licht"]).toBe("#3a80c2");

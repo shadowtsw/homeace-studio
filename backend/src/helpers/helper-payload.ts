@@ -29,22 +29,29 @@ const DEFAULTS = {
   timerDuration: "00:00:00",
 } as const;
 
+export type BuildHelperPayloadOptions = {
+  /** Which helper to create. */
+  type: HelperType;
+  /** Display name; HA derives the entity ID from it. */
+  name: string;
+  /** Optional "mdi:…" icon. */
+  icon: string | undefined;
+  /** Type-specific settings, e.g. `{ min: 0, max: 100 }` for input_number. */
+  settings: HelperSettings;
+};
+
 /**
  * Builds the body for HA's `<type>/create` command from what the user entered.
  *
- * @param type - Which helper to create.
- * @param name - Display name; HA derives the entity ID from it.
- * @param icon - Optional "mdi:…" icon.
- * @param settings - Type-specific settings, e.g. `{ min: 0, max: 100 }` for input_number.
  * @returns The payload in HA's field names (snake_case).
  * @throws HelperSettingsError naming the first invalid setting.
  */
-export function buildHelperPayload(
-  type: HelperType,
-  name: string,
-  icon: string | undefined,
-  settings: HelperSettings,
-): HaPayload {
+export function buildHelperPayload({
+  type,
+  name,
+  icon,
+  settings,
+}: BuildHelperPayloadOptions): HaPayload {
   const common: HaPayload = icon ? { name, icon } : { name };
 
   return { ...common, ...TYPE_PAYLOADS[type](settings) };
@@ -62,11 +69,16 @@ const TYPE_PAYLOADS: Record<HelperType, (settings: HelperSettings) => HaPayload>
 };
 
 function inputNumberPayload(settings: HelperSettings): HaPayload {
-  const min = readNumber(settings, "min");
-  const max = readNumber(settings, "max");
-  const step = readNumber(settings, "step", DEFAULTS.numberStep);
-  const mode = readChoice(settings, "mode", INPUT_NUMBER_MODES, "slider");
-  const unit = readOptionalString(settings, "unitOfMeasurement");
+  const min = readNumber({ settings, field: "min" });
+  const max = readNumber({ settings, field: "max" });
+  const step = readNumber({ settings, field: "step", fallback: DEFAULTS.numberStep });
+  const mode = readChoice({
+    settings,
+    field: "mode",
+    choices: INPUT_NUMBER_MODES,
+    fallback: "slider",
+  });
+  const unit = readOptionalString({ settings, field: "unitOfMeasurement" });
 
   if (max <= min) throw new HelperSettingsError("max");
   if (step <= 0) throw new HelperSettingsError("step");
@@ -75,10 +87,10 @@ function inputNumberPayload(settings: HelperSettings): HaPayload {
 }
 
 function inputTextPayload(settings: HelperSettings): HaPayload {
-  const min = readInteger(settings, "min", DEFAULTS.textMin);
-  const max = readInteger(settings, "max", DEFAULTS.textMax);
-  const mode = readChoice(settings, "mode", INPUT_TEXT_MODES, "text");
-  const pattern = readOptionalString(settings, "pattern");
+  const min = readInteger({ settings, field: "min", fallback: DEFAULTS.textMin });
+  const max = readInteger({ settings, field: "max", fallback: DEFAULTS.textMax });
+  const mode = readChoice({ settings, field: "mode", choices: INPUT_TEXT_MODES, fallback: "text" });
+  const pattern = readOptionalString({ settings, field: "pattern" });
 
   if (min < 0) throw new HelperSettingsError("min");
   if (max < min || max > INPUT_TEXT_MAX_LIMIT) throw new HelperSettingsError("max");
@@ -101,8 +113,8 @@ function inputSelectPayload(settings: HelperSettings): HaPayload {
 }
 
 function inputDatetimePayload(settings: HelperSettings): HaPayload {
-  const hasDate = readBoolean(settings, "hasDate", true);
-  const hasTime = readBoolean(settings, "hasTime", true);
+  const hasDate = readBoolean({ settings, field: "hasDate", fallback: true });
+  const hasTime = readBoolean({ settings, field: "hasTime", fallback: true });
 
   // HA needs at least one of the two.
   if (!hasDate && !hasTime) throw new HelperSettingsError("hasDate");
@@ -111,11 +123,11 @@ function inputDatetimePayload(settings: HelperSettings): HaPayload {
 }
 
 function counterPayload(settings: HelperSettings): HaPayload {
-  const initial = readInteger(settings, "initial", DEFAULTS.counterInitial);
-  const step = readInteger(settings, "step", DEFAULTS.counterStep);
-  const minimum = readOptionalInteger(settings, "minimum");
-  const maximum = readOptionalInteger(settings, "maximum");
-  const restore = readBoolean(settings, "restore", true);
+  const initial = readInteger({ settings, field: "initial", fallback: DEFAULTS.counterInitial });
+  const step = readInteger({ settings, field: "step", fallback: DEFAULTS.counterStep });
+  const minimum = readOptionalInteger({ settings, field: "minimum" });
+  const maximum = readOptionalInteger({ settings, field: "maximum" });
+  const restore = readBoolean({ settings, field: "restore", fallback: true });
 
   if (step <= 0) throw new HelperSettingsError("step");
   if (minimum !== undefined && maximum !== undefined && maximum < minimum) {
@@ -132,8 +144,8 @@ function counterPayload(settings: HelperSettings): HaPayload {
 }
 
 function timerPayload(settings: HelperSettings): HaPayload {
-  const duration = readOptionalString(settings, "duration") ?? DEFAULTS.timerDuration;
-  const restore = readBoolean(settings, "restore", false);
+  const duration = readOptionalString({ settings, field: "duration" }) ?? DEFAULTS.timerDuration;
+  const restore = readBoolean({ settings, field: "restore", fallback: false });
 
   if (!DURATION_PATTERN.test(duration)) throw new HelperSettingsError("duration");
 
@@ -146,7 +158,15 @@ function isMissing(value: unknown): boolean {
   return value === undefined || value === null || value === "";
 }
 
-function readNumber(settings: HelperSettings, field: string, fallback?: number): number {
+function readNumber({
+  settings,
+  field,
+  fallback,
+}: {
+  settings: HelperSettings;
+  field: string;
+  fallback?: number;
+}): number {
   const value = settings[field];
 
   if (isMissing(value) && fallback !== undefined) return fallback;
@@ -155,19 +175,41 @@ function readNumber(settings: HelperSettings, field: string, fallback?: number):
   return value;
 }
 
-function readInteger(settings: HelperSettings, field: string, fallback?: number): number {
-  const value = readNumber(settings, field, fallback);
+function readInteger({
+  settings,
+  field,
+  fallback,
+}: {
+  settings: HelperSettings;
+  field: string;
+  fallback?: number;
+}): number {
+  const value = readNumber({ settings, field, fallback });
 
   if (!Number.isInteger(value)) throw new HelperSettingsError(field);
 
   return value;
 }
 
-function readOptionalInteger(settings: HelperSettings, field: string): number | undefined {
-  return isMissing(settings[field]) ? undefined : readInteger(settings, field);
+function readOptionalInteger({
+  settings,
+  field,
+}: {
+  settings: HelperSettings;
+  field: string;
+}): number | undefined {
+  return isMissing(settings[field]) ? undefined : readInteger({ settings, field });
 }
 
-function readBoolean(settings: HelperSettings, field: string, fallback: boolean): boolean {
+function readBoolean({
+  settings,
+  field,
+  fallback,
+}: {
+  settings: HelperSettings;
+  field: string;
+  fallback: boolean;
+}): boolean {
   const value = settings[field];
 
   if (value === undefined) return fallback;
@@ -176,7 +218,13 @@ function readBoolean(settings: HelperSettings, field: string, fallback: boolean)
   return value;
 }
 
-function readOptionalString(settings: HelperSettings, field: string): string | undefined {
+function readOptionalString({
+  settings,
+  field,
+}: {
+  settings: HelperSettings;
+  field: string;
+}): string | undefined {
   const value = settings[field];
 
   if (isMissing(value)) return undefined;
@@ -185,13 +233,15 @@ function readOptionalString(settings: HelperSettings, field: string): string | u
   return value.trim() || undefined;
 }
 
-function readChoice(
-  settings: HelperSettings,
-  field: string,
-  choices: readonly string[],
-  fallback: string,
-): string {
-  const value = readOptionalString(settings, field) ?? fallback;
+type ReadChoiceOptions = {
+  settings: HelperSettings;
+  field: string;
+  choices: readonly string[];
+  fallback: string;
+};
+
+function readChoice({ settings, field, choices, fallback }: ReadChoiceOptions): string {
+  const value = readOptionalString({ settings, field }) ?? fallback;
 
   if (!choices.includes(value)) throw new HelperSettingsError(field);
 
@@ -222,13 +272,17 @@ const SETTING_FIELDS: Record<HelperType, readonly string[]> = {
 const STORED_DURATION = /^(\d+):([0-5]\d):([0-5]\d)$/;
 const DURATION_HOUR_DIGITS = 2;
 
+export type HelperSettingsOfOptions = {
+  type: HelperType;
+  /** One entry of HA's `<type>/list`. */
+  item: Record<string, unknown>;
+};
+
 /**
  * The settings of a stored helper as the form shows them (camelCase, "" for unset optional fields),
  * the reverse of buildHelperPayload.
- *
- * @param item - One entry of HA's `<type>/list`.
  */
-export function helperSettingsOf(type: HelperType, item: Record<string, unknown>): HelperSettings {
+export function helperSettingsOf({ type, item }: HelperSettingsOfOptions): HelperSettings {
   const optional = (value: unknown): unknown => value ?? "";
 
   switch (type) {
@@ -266,25 +320,36 @@ export function helperSettingsOf(type: HelperType, item: Record<string, unknown>
   }
 }
 
+export type BuildUpdatePayloadOptions = {
+  type: HelperType;
+  stored: Record<string, unknown>;
+  settings: HelperSettings;
+};
+
 /**
  * The body for `<type>/update`. HA replaces the stored helper with it, so it carries everything the
  * form does not edit unchanged, plus the settings, checked like for creating.
  *
  * @throws HelperSettingsError naming the first invalid setting.
  */
-export function buildUpdatePayload(
-  type: HelperType,
-  stored: Record<string, unknown>,
-  settings: HelperSettings,
-): HaPayload {
+export function buildUpdatePayload({
+  type,
+  stored,
+  settings,
+}: BuildUpdatePayloadOptions): HaPayload {
   const edited = new Set([STORAGE_ID_FIELD, ...SETTING_FIELDS[type]]);
   const kept = Object.fromEntries(Object.entries(stored).filter(([field]) => !edited.has(field)));
 
   return { ...kept, ...TYPE_PAYLOADS[type](settings) };
 }
 
+export type BuildCopyPayloadOptions = {
+  stored: Record<string, unknown>;
+  name: string;
+};
+
 /** The body for `<type>/create` of a copy: everything of the stored helper with a new name. */
-export function buildCopyPayload(stored: Record<string, unknown>, name: string): HaPayload {
+export function buildCopyPayload({ stored, name }: BuildCopyPayloadOptions): HaPayload {
   const kept = Object.entries(stored).filter(([field]) => field !== STORAGE_ID_FIELD);
 
   return { ...Object.fromEntries(kept), name };

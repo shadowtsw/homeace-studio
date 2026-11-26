@@ -62,9 +62,9 @@ describe("EditorService", () => {
   it("builds the catalog once and serves it from the cache until it expires", async () => {
     const { service, loadCatalogSources } = setup();
 
-    const first = await service.getCatalog("de", 0);
-    await service.getCatalog("de", CATALOG_CACHE_MS - 1);
-    await service.getCatalog("de", CATALOG_CACHE_MS + 1);
+    const first = await service.getCatalog({ language: "de", now: 0 });
+    await service.getCatalog({ language: "de", now: CATALOG_CACHE_MS - 1 });
+    await service.getCatalog({ language: "de", now: CATALOG_CACHE_MS + 1 });
 
     expect(first.triggers["button.pressed"]?.name).toBe("Taste gedrückt");
     expect(loadCatalogSources).toHaveBeenCalledTimes(2);
@@ -73,7 +73,7 @@ describe("EditorService", () => {
   it("falls back to German for unsupported languages", async () => {
     const { service, loadCatalogSources } = setup();
 
-    await service.getCatalog("it");
+    await service.getCatalog({ language: "it" });
 
     expect(loadCatalogSources).toHaveBeenCalledWith("de");
   });
@@ -120,7 +120,7 @@ describe("EditorService", () => {
     const { service, saveConfig } = setup();
     const edited = { ...CONFIG, id: "changed", alias: "Licht neu", unknown_field: { a: 1 } };
 
-    const flow = await service.saveFlow("automation.licht", edited);
+    const flow = await service.saveFlow({ entityId: "automation.licht", config: edited });
 
     expect(saveConfig).toHaveBeenCalledWith("automation", "1718034411822", {
       ...edited,
@@ -137,7 +137,7 @@ describe("EditorService", () => {
       loadStorageKey: jest.fn().mockResolvedValue("gute_nacht"),
     });
 
-    await service.saveFlow("script.gute_nacht", script);
+    await service.saveFlow({ entityId: "script.gute_nacht", config: script });
 
     expect(saveConfig).toHaveBeenCalledWith("script", "gute_nacht", script);
   });
@@ -145,7 +145,9 @@ describe("EditorService", () => {
   it("refuses to save flows HA does not keep in its files", async () => {
     const { service, saveConfig } = setup({ loadStoredConfig: jest.fn().mockResolvedValue(null) });
 
-    await expect(service.saveFlow("automation.licht", CONFIG)).rejects.toMatchObject({
+    await expect(
+      service.saveFlow({ entityId: "automation.licht", config: CONFIG }),
+    ).rejects.toMatchObject({
       response: { message: "FLOW_NOT_EDITABLE" },
     });
     expect(saveConfig).not.toHaveBeenCalled();
@@ -158,7 +160,9 @@ describe("EditorService", () => {
         .mockRejectedValue(new HaRestError(400, "Message malformed: required key not provided")),
     });
 
-    await expect(service.saveFlow("automation.licht", CONFIG)).rejects.toMatchObject({
+    await expect(
+      service.saveFlow({ entityId: "automation.licht", config: CONFIG }),
+    ).rejects.toMatchObject({
       response: {
         message: "FLOW_INVALID",
         params: { reason: "Message malformed: required key not provided" },

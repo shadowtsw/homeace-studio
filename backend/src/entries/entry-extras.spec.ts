@@ -30,19 +30,31 @@ function entry(entityId: string): Entry {
 
 describe("entry extras", () => {
   it("adds favorite and note from the overlay", () => {
-    const [withNote, plain] = withExtras(
-      [entry("script.gute_nacht"), entry("script.alles_aus")],
+    const [withNote, plain] = withExtras({
+      entries: [entry("script.gute_nacht"), entry("script.alles_aus")],
       overlay,
-    );
+    });
 
     expect(withNote).toMatchObject({ isFavorite: true, note: "Vor dem Schlafen" });
     expect(plain).toMatchObject({ isFavorite: false, note: null });
   });
 
   it("changes only the given fields and drops blank notes", () => {
-    const unfavored = applyExtras(overlay, "script.gute_nacht", { isFavorite: false });
-    const noteCleared = applyExtras(overlay, "script.gute_nacht", { note: "  " });
-    const added = applyExtras(EMPTY_OVERLAY, "scene.kino", { isFavorite: true, note: " Popcorn " });
+    const unfavored = applyExtras({
+      overlay,
+      entityId: "script.gute_nacht",
+      extras: { isFavorite: false },
+    });
+    const noteCleared = applyExtras({
+      overlay,
+      entityId: "script.gute_nacht",
+      extras: { note: "  " },
+    });
+    const added = applyExtras({
+      overlay: EMPTY_OVERLAY,
+      entityId: "scene.kino",
+      extras: { isFavorite: true, note: " Popcorn " },
+    });
 
     expect(unfavored.favorites).toEqual([]);
     expect(unfavored.notes).toEqual(overlay.notes);
@@ -52,6 +64,9 @@ describe("entry extras", () => {
   });
 
   it("removes everything of a deleted entity", () => {
-    expect(removeExtras(overlay, "script.gute_nacht")).toMatchObject({ favorites: [], notes: {} });
+    expect(removeExtras({ overlay, entityId: "script.gute_nacht" })).toMatchObject({
+      favorites: [],
+      notes: {},
+    });
   });
 });

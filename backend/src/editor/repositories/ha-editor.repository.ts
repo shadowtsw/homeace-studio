@@ -46,9 +46,9 @@ export class HaEditorRepository implements EditorRepository {
           HA_COMMAND.conditionPlatformsSubscribe,
         ),
         this.ha.call<HaServices>(HA_COMMAND.getServices),
-        this.loadTranslations(language, TRANSLATION_CATEGORY.triggers),
-        this.loadTranslations(language, TRANSLATION_CATEGORY.conditions),
-        this.loadTranslations(language, TRANSLATION_CATEGORY.services),
+        this.loadTranslations({ language, category: TRANSLATION_CATEGORY.triggers }),
+        this.loadTranslations({ language, category: TRANSLATION_CATEGORY.conditions }),
+        this.loadTranslations({ language, category: TRANSLATION_CATEGORY.services }),
       ]);
 
     return {
@@ -122,7 +122,13 @@ export class HaEditorRepository implements EditorRepository {
     }
   }
 
-  private async loadTranslations(language: string, category: string): Promise<HaTranslations> {
+  private async loadTranslations({
+    language,
+    category,
+  }: {
+    language: string;
+    category: string;
+  }): Promise<HaTranslations> {
     const result = await this.ha.call<{ resources: HaTranslations }>(HA_COMMAND.getTranslations, {
       language,
       category,

@@ -71,7 +71,7 @@ describe("EntriesService", () => {
       entry({ entityId: "input_boolean.gaeste", kind: "helper", categoryId: "cat-1" }),
     ]);
 
-    await service.moveToCategory("input_boolean.gaeste", "Haus/Pool");
+    await service.moveToCategory({ entityId: "input_boolean.gaeste", categoryPath: "Haus/Pool" });
 
     expect(assign).toHaveBeenCalledWith({
       entityId: "input_boolean.gaeste",
@@ -84,9 +84,9 @@ describe("EntriesService", () => {
   it("throws NotFoundException for an unknown entity", async () => {
     const { service } = setup([]);
 
-    await expect(service.moveToCategory("script.nope", null)).rejects.toBeInstanceOf(
-      NotFoundException,
-    );
+    await expect(
+      service.moveToCategory({ entityId: "script.nope", categoryPath: null }),
+    ).rejects.toBeInstanceOf(NotFoundException);
   });
 
   it("refuses to change YAML entities without registry entry", async () => {
@@ -94,12 +94,12 @@ describe("EntriesService", () => {
       entry({ entityId: "script.yaml", isInRegistry: false }),
     ]);
 
-    await expect(service.moveToCategory("script.yaml", "Haus")).rejects.toBeInstanceOf(
-      BadRequestException,
-    );
-    await expect(service.update("script.yaml", { name: "X" })).rejects.toBeInstanceOf(
-      BadRequestException,
-    );
+    await expect(
+      service.moveToCategory({ entityId: "script.yaml", categoryPath: "Haus" }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    await expect(
+      service.update({ entityId: "script.yaml", changes: { name: "X" } }),
+    ).rejects.toBeInstanceOf(BadRequestException);
     expect(assign).not.toHaveBeenCalled();
     expect(update).not.toHaveBeenCalled();
   });
@@ -107,7 +107,10 @@ describe("EntriesService", () => {
   it("sends a blank name and icon as null, so HA goes back to its defaults", async () => {
     const { service, update } = setup([entry({})]);
 
-    await service.update("script.example", { name: "  ", icon: "", labelIds: ["licht"] });
+    await service.update({
+      entityId: "script.example",
+      changes: { name: "  ", icon: "", labelIds: ["licht"] },
+    });
 
     expect(update).toHaveBeenCalledWith("script.example", {
       name: null,
@@ -119,7 +122,10 @@ describe("EntriesService", () => {
   it("cleans aliases: trimmed, no blanks, each name once", async () => {
     const { service, update } = setup([entry({})]);
 
-    await service.update("script.example", { aliases: [" Licht ", "", "licht", "Lampe"] });
+    await service.update({
+      entityId: "script.example",
+      changes: { aliases: [" Licht ", "", "licht", "Lampe"] },
+    });
 
     expect(update).toHaveBeenCalledWith(
       "script.example",
@@ -133,8 +139,8 @@ describe("EntriesService", () => {
       entry({ entityId: "input_button.klingel", domain: "input_button", kind: "helper" }),
     ]);
 
-    await service.runAction("automation.licht", "turnOff");
-    await service.runAction("input_button.klingel", "run");
+    await service.runAction({ entityId: "automation.licht", action: "turnOff" });
+    await service.runAction({ entityId: "input_button.klingel", action: "run" });
 
     expect(callService).toHaveBeenNthCalledWith(1, "automation", "turn_off", "automation.licht");
     expect(callService).toHaveBeenNthCalledWith(2, "input_button", "press", "input_button.klingel");
@@ -143,16 +149,19 @@ describe("EntriesService", () => {
   it("rejects actions the domain does not have", async () => {
     const { service, callService } = setup([entry({ entityId: "scene.kino", domain: "scene" })]);
 
-    await expect(service.runAction("scene.kino", "turnOff")).rejects.toBeInstanceOf(
-      BadRequestException,
-    );
+    await expect(
+      service.runAction({ entityId: "scene.kino", action: "turnOff" }),
+    ).rejects.toBeInstanceOf(BadRequestException);
     expect(callService).not.toHaveBeenCalled();
   });
 
   it("stores favorite and note in the overlay", async () => {
     const { service, overlay } = setup([entry({})]);
 
-    await service.updateExtras("script.example", { isFavorite: true, note: "Wichtig" });
+    await service.updateExtras({
+      entityId: "script.example",
+      extras: { isFavorite: true, note: "Wichtig" },
+    });
 
     expect(overlay.data).toMatchObject({
       favorites: ["script.example"],

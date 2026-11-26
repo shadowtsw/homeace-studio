@@ -37,6 +37,21 @@ export type EntityMove = {
 
 type PlannedRename = { scope: CategoryScope; categoryId: string; newName: string };
 
+export type MoveEntityOptions = {
+  entityId: string;
+  targetPath: string | null;
+};
+
+export type RenameOptions = {
+  from: string;
+  to: string;
+};
+
+export type CleanUpOptions = {
+  scope: CategoryScope;
+  categoryId: string;
+};
+
 /**
  * Keeps HA categories in step with the folder tree.
  *
@@ -57,14 +72,15 @@ export class CategoriesService {
     const { entityId, scope, currentCategoryId } = assignment;
     const targetPath =
       assignment.targetPath === null ? null : requireCategoryPath(assignment.targetPath);
-    const targetId = targetPath === null ? null : await this.findOrCreate(scope, targetPath);
+    const targetId =
+      targetPath === null ? null : await this.findOrCreate({ scope, path: targetPath });
 
     if (targetId === currentCategoryId) return;
 
     await this.categories.assign(entityId, scope, targetId);
 
     if (currentCategoryId) {
-      await this.cleanUp(scope, currentCategoryId);
+      await this.cleanUp({ scope, categoryId: currentCategoryId });
     }
   }
 
@@ -74,13 +90,13 @@ export class CategoriesService {
    *
    * @throws BadRequestException `ENTRY_NOT_IN_REGISTRY` when HA has no registry entry for it.
    */
-  async moveEntity(entityId: string, targetPath: string | null): Promise<void> {
+  async moveEntity({ entityId, targetPath }: MoveEntityOptions): Promise<void> {
     const scope = CATEGORY_SCOPE.entities;
     const currentCategoryId = await this.categories.findEntityCategory(entityId, scope);
 
     if (currentCategoryId === undefined) {
       throw new BadRequestException(
-        apiError(MESSAGE_ID.entryNotInRegistry, { params: { entityId } }),
+        apiError({ message: MESSAGE_ID.entryNotInRegistry, details: { params: { entityId } } }),
       );
     }
 
@@ -123,7 +139,8 @@ export class CategoriesService {
         let targetId: string | null = null;
 
         if (targetPath !== null) {
-          targetId = idByName.get(targetPath) ?? (await this.createOwned(scope, targetPath));
+          targetId =
+            idByName.get(targetPath) ?? (await this.createOwned({ scope, path: targetPath }));
           idByName.set(targetPath, targetId);
           nameById.set(targetId, targetPath);
         }
@@ -147,7 +164,7 @@ export class CategoriesService {
       }
     }
 
-    for (const categoryId of emptied) await this.cleanUp(scope, categoryId);
+    for (const categoryId of emptied) await this.cleanUp({ scope, categoryId });
 
     return results;
   }
@@ -158,19 +175,19 @@ export class CategoriesService {
    * @returns How many HA categories were renamed.
    * @throws ConflictException when a new name already exists in a scope; nothing is renamed then.
    */
-  async rename(from: string, to: string): Promise<number> {
+  async rename({ from, to }: RenameOptions): Promise<number> {
     const source = requireCategoryPath(from);
     const target = requireCategoryPath(to);
 
     if (source === target) return 0;
 
-    if (isSameOrBelow(target, source)) {
-      throw new BadRequestException(apiError(MESSAGE_ID.categoryMoveIntoItself));
+    if (isSameOrBelow({ path: target, ancestor: source })) {
+      throw new BadRequestException(apiError({ message: MESSAGE_ID.categoryMoveIntoItself }));
     }
 
     // Plan all scopes first, so a conflict in one scope stops everything before HA changes.
     const plans = await Promise.all(
-      CATEGORY_SCOPES.map((scope) => this.planRename(scope, source, target)),
+      CATEGORY_SCOPES.map((scope) => this.planRename({ scope, source, target })),
     );
     const renames = plans.flat();
 
@@ -180,7 +197,9 @@ export class CategoriesService {
 
     // Empty folders and folder colors move along, so the folder keeps its subfolders and looks.
     const movePath = (path: string): string =>
-      isSameOrBelow(path, source) ? replacePathPrefix(path, source, target) : path;
+      isSameOrBelow({ path, ancestor: source })
+        ? replacePathPrefix({ path, from: source, to: target })
+        : path;
 
     await this.overlay.update((overlay) => ({
       ...overlay,
@@ -188,8 +207,8 @@ export class CategoriesService {
       folderColors: Object.fromEntries(
         Object.entries(overlay.folderColors).map(([path, color]) => [movePath(path), color]),
       ),
-      folderOrder: moveFolderOrder(overlay.folderOrder, movePath),
-      entitySorting: moveSortingPaths(overlay.entitySorting, movePath),
+      folderOrder: moveFolderOrder({ order: overlay.folderOrder, movePath }),
+      entitySorting: moveSortingPaths({ memory: overlay.entitySorting, movePath }),
     }));
 
     this.logger.log(`Renamed "${source}" to "${target}" (${renames.length} categories)`);
@@ -197,43 +216,64 @@ export class CategoriesService {
     return renames.length;
   }
 
-  private async planRename(
-    scope: CategoryScope,
-    source: string,
-    target: string,
-  ): Promise<PlannedRename[]> {
+  private async planRename({
+    scope,
+    source,
+    target,
+  }: {
+    scope: CategoryScope;
+    source: string;
+    target: string;
+  }): Promise<PlannedRename[]> {
     const existing = await this.categories.list(scope);
-    const affected = existing.filter((category) => isSameOrBelow(category.name, source));
+    const affected = existing.filter((category) =>
+      isSameOrBelow({ path: category.name, ancestor: source }),
+    );
     const untouched = existing.filter((category) => !affected.includes(category));
     const untouchedNames = new Set(untouched.map((category) => category.name));
 
     const planned = affected.map((category) => ({
       scope,
       categoryId: category.categoryId,
-      newName: replacePathPrefix(category.name, source, target),
+      newName: replacePathPrefix({ path: category.name, from: source, to: target }),
     }));
     const conflict = planned.find((rename) => untouchedNames.has(rename.newName));
 
     if (conflict) {
       throw new ConflictException(
-        apiError(MESSAGE_ID.categoryNameTaken, { params: { path: conflict.newName } }),
+        apiError({
+          message: MESSAGE_ID.categoryNameTaken,
+          details: { params: { path: conflict.newName } },
+        }),
       );
     }
 
     return planned;
   }
 
-  private async findOrCreate(scope: CategoryScope, path: string): Promise<string> {
+  private async findOrCreate({
+    scope,
+    path,
+  }: {
+    scope: CategoryScope;
+    path: string;
+  }): Promise<string> {
     const existing = await this.categories.list(scope);
     const match = existing.find((category) => category.name === path);
 
     if (match) return match.categoryId;
 
-    return this.createOwned(scope, path);
+    return this.createOwned({ scope, path });
   }
 
   /** Creates the category and remembers that HomeAce Studio owns it (so it may delete it later). */
-  private async createOwned(scope: CategoryScope, path: string): Promise<string> {
+  private async createOwned({
+    scope,
+    path,
+  }: {
+    scope: CategoryScope;
+    path: string;
+  }): Promise<string> {
     const created = await this.categories.create(scope, path);
     await this.overlay.update((overlay) => ({
       ...overlay,
@@ -248,7 +288,7 @@ export class CategoriesService {
    * Deletes a category if HomeAce Studio created it and nobody uses it anymore.
    * Call it after an entity left the category (moved, deleted).
    */
-  async cleanUp(scope: CategoryScope, categoryId: string): Promise<void> {
+  async cleanUp({ scope, categoryId }: CleanUpOptions): Promise<void> {
     const overlay = await this.overlay.read();
 
     if (!overlay.ownedCategoryIds.includes(categoryId)) return;

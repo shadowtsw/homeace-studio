@@ -14,7 +14,9 @@ export function requireCategoryPath(path: string): string {
   const normalized = normalizeCategoryPath(path);
 
   if (normalized === null) {
-    throw new BadRequestException(apiError(MESSAGE_ID.categoryPathInvalid, { params: { path } }));
+    throw new BadRequestException(
+      apiError({ message: MESSAGE_ID.categoryPathInvalid, details: { params: { path } } }),
+    );
   }
 
   return normalized;

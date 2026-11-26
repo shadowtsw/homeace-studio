@@ -21,7 +21,7 @@ const haus = (path: string): string =>
 
 describe("moveSortingPaths", () => {
   it("moves rule targets, turned-down folders and the last run along, on whole levels", () => {
-    const moved = moveSortingPaths(MEMORY, haus);
+    const moved = moveSortingPaths({ memory: MEMORY, movePath: haus });
 
     expect(moved.rules.map((rule) => rule.target)).toEqual(["Heim/{area}", "Hausflur"]);
     expect(moved.rejected[0]?.paths).toEqual(["Heim/Küche", "Klima"]);
@@ -32,7 +32,7 @@ describe("moveSortingPaths", () => {
 
 describe("renameSortingEntity", () => {
   it("carries the bundle key of an entity without a device and its last move", () => {
-    const renamed = renameSortingEntity(MEMORY, "sensor.x", "sensor.y");
+    const renamed = renameSortingEntity({ memory: MEMORY, from: "sensor.x", to: "sensor.y" });
 
     expect(renamed.ignored).toEqual(["entity:sensor.y", "dev1"]);
     expect(renamed.rejected[0]?.bundleKey).toBe("entity:sensor.y");

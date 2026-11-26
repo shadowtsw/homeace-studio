@@ -10,8 +10,8 @@ const roles = (refs: Map<string, Set<DependencyRole>>) =>
 
 describe("collectRoleRefs", () => {
   it("tells triggers, conditions, actions and calls apart", () => {
-    const refs = collectRoleRefs(
-      {
+    const refs = collectRoleRefs({
+      config: {
         triggers: [{ trigger: "state", entity_id: "binary_sensor.motion", to: "on" }],
         conditions: [{ condition: "state", entity_id: "light.terrace", state: "off" }],
         actions: [
@@ -21,8 +21,8 @@ describe("collectRoleRefs", () => {
           { action: "script.turn_on", target: { entity_id: "script.all_off" } },
         ],
       },
-      known(),
-    );
+      isKnown: known(),
+    });
 
     expect(roles(refs)).toEqual({
       "binary_sensor.motion": ["trigger"],
@@ -35,8 +35,8 @@ describe("collectRoleRefs", () => {
   });
 
   it("counts what if, choose, repeat and wait check as conditions", () => {
-    const refs = collectRoleRefs(
-      {
+    const refs = collectRoleRefs({
+      config: {
         sequence: [
           { condition: "state", entity_id: "input_boolean.guest", state: "off" },
           {
@@ -54,8 +54,8 @@ describe("collectRoleRefs", () => {
           { wait_for_trigger: [{ trigger: "state", entity_id: "binary_sensor.door" }] },
         ],
       },
-      known(),
-    );
+      isKnown: known(),
+    });
 
     expect(roles(refs)).toEqual({
       "input_boolean.guest": ["condition"],
@@ -68,8 +68,8 @@ describe("collectRoleRefs", () => {
   });
 
   it("reads known entities from templates as values, and skips words that only look like IDs", () => {
-    const refs = collectRoleRefs(
-      {
+    const refs = collectRoleRefs({
+      config: {
         actions: [
           {
             action: "light.turn_on",
@@ -79,8 +79,8 @@ describe("collectRoleRefs", () => {
           { action: "notify.phone", data: { message: "{{ states.sensor.power.state }} W" } },
         ],
       },
-      known("input_number.brightness", "sensor.power", "light.terrace"),
-    );
+      isKnown: known("input_number.brightness", "sensor.power", "light.terrace"),
+    });
 
     expect(roles(refs)).toEqual({
       "light.terrace": ["action"],

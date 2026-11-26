@@ -85,7 +85,13 @@ function slugify(name: string): string {
   );
 }
 
-function scopeOf(entityId: string, configEntryId: string | null): CategoryScope | null {
+function scopeOf({
+  entityId,
+  configEntryId,
+}: {
+  entityId: string;
+  configEntryId: string | null;
+}): CategoryScope | null {
   const domain = domainOf(entityId);
 
   if (domain === "automation" || domain === "script" || domain === "scene") return domain;
@@ -101,6 +107,28 @@ function now(): string {
 function hoursAgo(hours: number): string {
   return new Date(Date.now() - hours * 60 * 60 * 1000).toISOString();
 }
+
+export type CallOptions = {
+  type: string;
+  payload?: Payload;
+};
+
+export type SubscribeOptions = {
+  eventType: string;
+  handler: EventHandler;
+};
+
+export type RestPostOptions = {
+  path: string;
+  body: unknown;
+};
+
+type EnsureDeviceOptions = {
+  name: string;
+  areaId: string | null;
+  parentId?: string;
+  info?: Pick<DemoEntity, "manufacturer" | "model">;
+};
 
 /**
  * A small Home Assistant in memory for demo mode.
@@ -141,7 +169,7 @@ export class FakeHa {
   }
 
   /** Answers one WebSocket command like HA would, or throws {@link HaCommandError}. */
-  call(type: string, payload: Payload = {}): unknown {
+  call({ type, payload = {} }: CallOptions): unknown {
     switch (type) {
       case HA_COMMAND.getStates:
         return structuredClone([...this.states.values()]);
@@ -197,15 +225,19 @@ export class FakeHa {
       case HA_COMMAND.getTranslations:
         return { resources: this.translations(payload) };
       case HA_COMMAND.automationConfig:
-        return { config: this.flowConfigOf("automation", String(payload.entity_id)) };
+        return {
+          config: this.flowConfigOf({ kind: "automation", entityId: String(payload.entity_id) }),
+        };
       case HA_COMMAND.scriptConfig:
-        return { config: this.flowConfigOf("script", String(payload.entity_id)) };
+        return {
+          config: this.flowConfigOf({ kind: "script", entityId: String(payload.entity_id) }),
+        };
       case HA_COMMAND.getConfig:
         return { unit_system: { temperature: this.temperatureUnit } };
       case HA_COMMAND.unsubscribeEvents:
         return null;
       default:
-        return this.helperCommand(type, payload);
+        return this.helperCommand({ type, payload });
     }
   }
 
@@ -221,7 +253,7 @@ export class FakeHa {
     throw new HaCommandError(ERROR_CODE.unknownCommand, `Unknown command ${type}`);
   }
 
-  subscribe(eventType: string, handler: EventHandler): void {
+  subscribe({ eventType, handler }: SubscribeOptions): void {
     this.handlers.set(eventType, [...(this.handlers.get(eventType) ?? []), handler]);
   }
 
@@ -241,8 +273,8 @@ export class FakeHa {
   }
 
   /** REST POST below `/api`: saves an automation or script; a new key creates its entity. */
-  restPost(path: string, body: unknown): unknown {
-    if (path.startsWith(HA_REST_PATH.sceneConfig)) return this.saveScene(path, body);
+  restPost({ path, body }: RestPostOptions): unknown {
+    if (path.startsWith(HA_REST_PATH.sceneConfig)) return this.saveScene({ path, body });
 
     const { kind, key } = this.parseFlowPath(path);
     const config = structuredClone(body) as Payload;
@@ -258,19 +290,23 @@ export class FakeHa {
     );
 
     if (existing) {
-      this.setState(existing.entity_id, this.states.get(existing.entity_id)?.state ?? "on", {
-        friendly_name: name,
+      this.setState({
+        entityId: existing.entity_id,
+        value: this.states.get(existing.entity_id)?.state ?? "on",
+        attributes: {
+          friendly_name: name,
+        },
       });
     } else {
       const objectId = kind === "script" ? key : slugify(name);
       this.addEntity({
-        entityId: this.freeEntityId(kind, objectId),
+        entityId: this.freeEntityId({ domain: kind, objectId }),
         name,
         state: kind === "automation" ? "on" : "off",
         platform: kind,
         uniqueId: key,
       });
-      this.emit("entity_registry_updated", { action: "create" });
+      this.emit({ eventType: "entity_registry_updated", data: { action: "create" } });
     }
 
     return { result: "ok" };
@@ -294,18 +330,25 @@ export class FakeHa {
   private addEntity(entity: DemoEntity): void {
     const configEntryId = entity.configEntryId ?? null;
     // Plain entities (lights, sensors) keep their folder in HomeAce Studio's own scope.
-    const scope = scopeOf(entity.entityId, configEntryId) ?? CATEGORY_SCOPE.entities;
+    const scope = scopeOf({ entityId: entity.entityId, configEntryId }) ?? CATEGORY_SCOPE.entities;
     const categories: Partial<Record<string, string>> = {};
 
     if (scope && entity.category) {
-      categories[scope] = this.ensureCategory(scope, entity.category).category_id;
+      categories[scope] = this.ensureCategory({ scope, name: entity.category }).category_id;
     }
 
     // Like HA: a device carries the area, its entities inherit it.
     const areaId = entity.areaId ?? null;
-    const parent = entity.parentDevice ? this.ensureDevice(entity.parentDevice, areaId) : null;
+    const parent = entity.parentDevice
+      ? this.ensureDevice({ name: entity.parentDevice, areaId })
+      : null;
     const device = entity.device
-      ? this.ensureDevice(entity.device, parent ? null : areaId, parent?.id, entity)
+      ? this.ensureDevice({
+          name: entity.device,
+          areaId: parent ? null : areaId,
+          parentId: parent?.id,
+          info: entity,
+        })
       : null;
 
     if (!entity.isStateOnly)
@@ -351,12 +394,7 @@ export class FakeHa {
   }
 
   /** A child device (`parentId`) has no area of its own; HA then shows the parent's. */
-  private ensureDevice(
-    name: string,
-    areaId: string | null,
-    parentId?: string,
-    info?: Pick<DemoEntity, "manufacturer" | "model">,
-  ): HaDevice {
+  private ensureDevice({ name, areaId, parentId, info }: EnsureDeviceOptions): HaDevice {
     const existing = [...this.devices.values()].find(
       (device) => device.name === name && (device.parent_device_id ?? undefined) === parentId,
     );
@@ -407,7 +445,7 @@ export class FakeHa {
   /** Like HA: names are unique (ignoring case), the ID comes from the name. */
   private createArea(payload: Payload): HaArea {
     const name = text(payload.name).trim();
-    this.requireFreeAreaName(name, null);
+    this.requireFreeAreaName({ name, ownId: null });
 
     const base = slugify(name) || "area";
     let areaId = base;
@@ -420,7 +458,7 @@ export class FakeHa {
       icon: typeof payload.icon === "string" ? payload.icon : null,
     };
     this.areas.push(area);
-    this.emit("area_registry_updated", { action: "create", area_id: areaId });
+    this.emit({ eventType: "area_registry_updated", data: { action: "create", area_id: areaId } });
 
     return structuredClone(area);
   }
@@ -430,13 +468,16 @@ export class FakeHa {
 
     if (payload.name !== undefined) {
       const name = text(payload.name).trim();
-      this.requireFreeAreaName(name, area.area_id);
+      this.requireFreeAreaName({ name, ownId: area.area_id });
       area.name = name;
     }
     if (payload.icon !== undefined)
       area.icon = typeof payload.icon === "string" ? payload.icon : null;
 
-    this.emit("area_registry_updated", { action: "update", area_id: area.area_id });
+    this.emit({
+      eventType: "area_registry_updated",
+      data: { action: "update", area_id: area.area_id },
+    });
 
     return structuredClone(area);
   }
@@ -450,7 +491,10 @@ export class FakeHa {
       if (device.area_id === area.area_id) device.area_id = null;
     for (const entry of this.registry.values())
       if (entry.area_id === area.area_id) entry.area_id = null;
-    this.emit("area_registry_updated", { action: "remove", area_id: area.area_id });
+    this.emit({
+      eventType: "area_registry_updated",
+      data: { action: "remove", area_id: area.area_id },
+    });
 
     return null;
   }
@@ -461,7 +505,7 @@ export class FakeHa {
     return area;
   }
 
-  private requireFreeAreaName(name: string, ownId: string | null): void {
+  private requireFreeAreaName({ name, ownId }: { name: string; ownId: string | null }): void {
     const taken = this.areas.some(
       (area) => area.area_id !== ownId && area.name.toLowerCase() === name.toLowerCase(),
     );
@@ -471,7 +515,7 @@ export class FakeHa {
 
   private createLabel(payload: Payload): HaLabel {
     const name = text(payload.name).trim();
-    this.requireFreeLabelName(name, null);
+    this.requireFreeLabelName({ name, ownId: null });
 
     const base = slugify(name) || "label";
     let labelId = base;
@@ -485,7 +529,10 @@ export class FakeHa {
       color: typeof payload.color === "string" ? payload.color : null,
     };
     this.labels.push(label);
-    this.emit("label_registry_updated", { action: "create", label_id: labelId });
+    this.emit({
+      eventType: "label_registry_updated",
+      data: { action: "create", label_id: labelId },
+    });
 
     return structuredClone(label);
   }
@@ -495,14 +542,17 @@ export class FakeHa {
 
     if (payload.name !== undefined) {
       const name = text(payload.name).trim();
-      this.requireFreeLabelName(name, label.label_id);
+      this.requireFreeLabelName({ name, ownId: label.label_id });
       label.name = name;
     }
     if (payload.icon !== undefined)
       label.icon = typeof payload.icon === "string" ? payload.icon : null;
     if (payload.color !== undefined)
       label.color = typeof payload.color === "string" ? payload.color : null;
-    this.emit("label_registry_updated", { action: "update", label_id: label.label_id });
+    this.emit({
+      eventType: "label_registry_updated",
+      data: { action: "update", label_id: label.label_id },
+    });
 
     return structuredClone(label);
   }
@@ -514,7 +564,10 @@ export class FakeHa {
     this.labels.splice(this.labels.indexOf(label), 1);
     for (const entry of this.registry.values())
       entry.labels = entry.labels.filter((id) => id !== label.label_id);
-    this.emit("label_registry_updated", { action: "remove", label_id: label.label_id });
+    this.emit({
+      eventType: "label_registry_updated",
+      data: { action: "remove", label_id: label.label_id },
+    });
 
     return null;
   }
@@ -526,7 +579,7 @@ export class FakeHa {
     return label;
   }
 
-  private requireFreeLabelName(name: string, ownId: string | null): void {
+  private requireFreeLabelName({ name, ownId }: { name: string; ownId: string | null }): void {
     const taken = this.labels.some(
       (label) => label.label_id !== ownId && label.name.toLowerCase() === name.toLowerCase(),
     );
@@ -539,11 +592,17 @@ export class FakeHa {
 
     this.registry.delete(entityId);
     this.states.delete(entityId);
-    this.emit("entity_registry_updated", { action: "remove", entity_id: entityId });
-    this.emit("state_changed", { entity_id: entityId, old_state: oldState, new_state: null });
+    this.emit({
+      eventType: "entity_registry_updated",
+      data: { action: "remove", entity_id: entityId },
+    });
+    this.emit({
+      eventType: "state_changed",
+      data: { entity_id: entityId, old_state: oldState, new_state: null },
+    });
   }
 
-  private freeEntityId(domain: string, objectId: string): string {
+  private freeEntityId({ domain, objectId }: { domain: string; objectId: string }): string {
     let candidate = `${domain}.${objectId}`;
 
     for (let suffix = 2; this.states.has(candidate); suffix++) {
@@ -571,13 +630,13 @@ export class FakeHa {
 
     // Like HA: a new entity ID moves registry entry and state; the unique_id stays.
     if (typeof payload.new_entity_id === "string" && payload.new_entity_id !== entry.entity_id) {
-      this.moveEntity(entry, payload.new_entity_id);
+      this.moveEntity({ entry, next: payload.new_entity_id });
     }
 
     // Like HA: a disabled entity is not loaded, so it has no state until it is enabled again.
     if (payload.disabled_by !== undefined && payload.disabled_by !== entry.disabled_by) {
       entry.disabled_by = payload.disabled_by as string | null;
-      this.setLoaded(entry.entity_id, entry.disabled_by === null);
+      this.setLoaded({ entityId: entry.entity_id, isLoaded: entry.disabled_by === null });
     }
 
     // HA merges the categories per scope; null removes a scope's category.
@@ -595,12 +654,15 @@ export class FakeHa {
       if (state) state.attributes.friendly_name = name;
     }
 
-    this.emit("entity_registry_updated", { action: "update", entity_id: entry.entity_id });
+    this.emit({
+      eventType: "entity_registry_updated",
+      data: { action: "update", entity_id: entry.entity_id },
+    });
 
     return structuredClone(entry);
   }
 
-  private moveEntity(entry: HaEntityRegistryEntry, next: string): void {
+  private moveEntity({ entry, next }: { entry: HaEntityRegistryEntry; next: string }): void {
     if (this.registry.has(next) || this.states.has(next)) {
       throw new HaCommandError(ERROR_CODE.invalid, "Entity with this ID is already registered");
     }
@@ -615,21 +677,30 @@ export class FakeHa {
       this.states.delete(previous);
       const moved = { ...state, entity_id: next };
       this.states.set(next, moved);
-      this.emit("state_changed", { entity_id: previous, old_state: state, new_state: null });
-      this.emit("state_changed", { entity_id: next, old_state: null, new_state: moved });
+      this.emit({
+        eventType: "state_changed",
+        data: { entity_id: previous, old_state: state, new_state: null },
+      });
+      this.emit({
+        eventType: "state_changed",
+        data: { entity_id: next, old_state: null, new_state: moved },
+      });
     }
   }
 
   /** States of disabled entities wait here until they are enabled again. */
   private readonly unloaded = new Map<string, HaState>();
 
-  private setLoaded(entityId: string, isLoaded: boolean): void {
+  private setLoaded({ entityId, isLoaded }: { entityId: string; isLoaded: boolean }): void {
     if (isLoaded) {
       const state = this.unloaded.get(entityId);
       if (!state) return;
       this.unloaded.delete(entityId);
       this.states.set(entityId, state);
-      this.emit("state_changed", { entity_id: entityId, old_state: null, new_state: state });
+      this.emit({
+        eventType: "state_changed",
+        data: { entity_id: entityId, old_state: null, new_state: state },
+      });
       return;
     }
 
@@ -637,7 +708,10 @@ export class FakeHa {
     if (!state) return;
     this.unloaded.set(entityId, state);
     this.states.delete(entityId);
-    this.emit("state_changed", { entity_id: entityId, old_state: state, new_state: null });
+    this.emit({
+      eventType: "state_changed",
+      data: { entity_id: entityId, old_state: state, new_state: null },
+    });
   }
 
   private categoryList(scope: unknown): HaCategory[] {
@@ -648,7 +722,7 @@ export class FakeHa {
     return list;
   }
 
-  private ensureCategory(scope: CategoryScope, name: string): HaCategory {
+  private ensureCategory({ scope, name }: { scope: CategoryScope; name: string }): HaCategory {
     const list = this.categoryList(scope);
     const existing = list.find((category) => category.name === name);
 
@@ -668,8 +742,11 @@ export class FakeHa {
       throw new HaCommandError(ERROR_CODE.invalid, `The name "${name}" is already in use`);
     }
 
-    const category = this.ensureCategory(payload.scope as CategoryScope, name);
-    this.emit("category_registry_updated", { action: "create", scope: payload.scope });
+    const category = this.ensureCategory({ scope: payload.scope as CategoryScope, name });
+    this.emit({
+      eventType: "category_registry_updated",
+      data: { action: "create", scope: payload.scope },
+    });
 
     return structuredClone(category);
   }
@@ -685,7 +762,10 @@ export class FakeHa {
     }
 
     category.name = name;
-    this.emit("category_registry_updated", { action: "update", scope: payload.scope });
+    this.emit({
+      eventType: "category_registry_updated",
+      data: { action: "update", scope: payload.scope },
+    });
 
     return structuredClone(category);
   }
@@ -703,13 +783,13 @@ export class FakeHa {
       if (entry.categories[scope] === payload.category_id) delete entry.categories[scope];
     }
 
-    this.emit("category_registry_updated", { action: "remove", scope });
+    this.emit({ eventType: "category_registry_updated", data: { action: "remove", scope } });
 
     return null;
   }
 
   /** POST scenes.yaml: the scene takes over the new config, like after HA's scene reload. */
-  private saveScene(path: string, body: unknown): unknown {
+  private saveScene({ path, body }: { path: string; body: unknown }): unknown {
     const id = decodeURIComponent(path.slice(HA_REST_PATH.sceneConfig.length));
     const config = structuredClone(body) as Payload;
 
@@ -723,13 +803,17 @@ export class FakeHa {
     );
     const entities = Object.keys(config.entities ?? {});
     if (entry) {
-      this.setState(entry.entity_id, this.states.get(entry.entity_id)?.state ?? now(), {
-        entity_id: entities,
+      this.setState({
+        entityId: entry.entity_id,
+        value: this.states.get(entry.entity_id)?.state ?? now(),
+        attributes: {
+          entity_id: entities,
+        },
       });
     } else {
       // A new scene: HA registers it under a slug of its name, never activated yet
       const name = typeof config.name === "string" && config.name ? config.name : id;
-      const entityId = this.freeEntityId("scene", slugify(name));
+      const entityId = this.freeEntityId({ domain: "scene", objectId: slugify(name) });
       this.addEntity({
         entityId,
         name,
@@ -738,7 +822,10 @@ export class FakeHa {
         uniqueId: id,
         attributes: { entity_id: entities },
       });
-      this.emit("entity_registry_updated", { action: "create", entity_id: entityId });
+      this.emit({
+        eventType: "entity_registry_updated",
+        data: { action: "create", entity_id: entityId },
+      });
     }
 
     return { result: "ok" };
@@ -751,7 +838,7 @@ export class FakeHa {
     for (const [entityId, raw] of Object.entries(data.entities ?? {})) {
       const value = (raw && typeof raw === "object" ? raw : { state: raw }) as Payload;
       const { state, ...attributes } = value;
-      this.setState(entityId, typeof state === "string" ? state : "on", attributes);
+      this.setState({ entityId, value: typeof state === "string" ? state : "on", attributes });
     }
 
     return null;
@@ -779,14 +866,22 @@ export class FakeHa {
 
       // "trigger" and "script.turn_on" run something but keep the state, like in HA.
       if (next && !(domainOf(entityId) === "script" && service === "turn_on")) {
-        this.setState(entityId, next);
+        this.setState({ entityId, value: next });
       }
     }
 
     return null;
   }
 
-  private setState(entityId: string, value: string, attributes: Payload = {}): void {
+  private setState({
+    entityId,
+    value,
+    attributes = {},
+  }: {
+    entityId: string;
+    value: string;
+    attributes?: Payload;
+  }): void {
     const oldState = this.states.get(entityId);
 
     if (!oldState) return;
@@ -797,7 +892,10 @@ export class FakeHa {
       attributes: { ...oldState.attributes, ...attributes },
     };
     this.states.set(entityId, newState);
-    this.emit("state_changed", { entity_id: entityId, old_state: oldState, new_state: newState });
+    this.emit({
+      eventType: "state_changed",
+      data: { entity_id: entityId, old_state: oldState, new_state: newState },
+    });
   }
 
   private translations(payload: Payload): Record<string, string> {
@@ -809,7 +907,7 @@ export class FakeHa {
     return structuredClone(byLanguage[String(payload.category)] ?? {});
   }
 
-  private flowConfigOf(kind: FlowKind, entityId: string): Payload {
+  private flowConfigOf({ kind, entityId }: { kind: FlowKind; entityId: string }): Payload {
     const entry = this.requireEntity(entityId);
     const config = this.flowConfigs.get(kind)?.get(entry.unique_id);
 
@@ -819,7 +917,7 @@ export class FakeHa {
   }
 
   /** `input_boolean/create`, `counter/delete`, …: HA-managed helpers. */
-  private helperCommand(type: string, payload: Payload): unknown {
+  private helperCommand({ type, payload }: { type: string; payload: Payload }): unknown {
     const match = HELPER_COMMAND.exec(type);
     const helperType = match?.[1] ?? "";
 
@@ -828,7 +926,7 @@ export class FakeHa {
     }
 
     if (match[2] === "list") return this.listHelpers(helperType);
-    if (match[2] === "update") return this.updateHelper(helperType, payload);
+    if (match[2] === "update") return this.updateHelper({ type: helperType, payload });
 
     if (match[2] === "delete") {
       const helperId = String(payload[`${helperType}_id`]);
@@ -845,7 +943,7 @@ export class FakeHa {
 
     const name = text(payload.name).trim();
     const helperId = slugify(name);
-    const entityId = this.freeEntityId(helperType, helperId);
+    const entityId = this.freeEntityId({ domain: helperType, objectId: helperId });
 
     this.addEntity({
       entityId,
@@ -855,7 +953,10 @@ export class FakeHa {
       uniqueId: entityId.split(DOMAIN_SEPARATOR)[1],
       icon: typeof payload.icon === "string" ? payload.icon : undefined,
     });
-    this.emit("entity_registry_updated", { action: "create", entity_id: entityId });
+    this.emit({
+      eventType: "entity_registry_updated",
+      data: { action: "create", entity_id: entityId },
+    });
 
     const id = entityId.split(DOMAIN_SEPARATOR)[1];
     this.helperItems.set(`${helperType}.${id}`, { ...payload });
@@ -867,11 +968,11 @@ export class FakeHa {
   private listHelpers(type: string): Payload[] {
     return [...this.registry.values()]
       .filter((entry) => entry.platform === type)
-      .map((entry) => ({ id: entry.unique_id, ...this.storedHelper(type, entry) }));
+      .map((entry) => ({ id: entry.unique_id, ...this.storedHelper({ type, entry }) }));
   }
 
   /** `<type>/update`: replaces the stored helper, like HA; the state takes over the settings. */
-  private updateHelper(type: string, payload: Payload): Payload {
+  private updateHelper({ type, payload }: { type: string; payload: Payload }): Payload {
     const idField = `${type}_id`;
     const id = String(payload[idField]);
     const entry = [...this.registry.values()].find(
@@ -886,12 +987,16 @@ export class FakeHa {
     const settings = Object.fromEntries(
       (HELPER_SETTING_ATTRIBUTES[type] ?? []).map((key) => [key, item[key]]),
     );
-    this.setState(entry.entity_id, this.states.get(entry.entity_id)?.state ?? "unknown", settings);
+    this.setState({
+      entityId: entry.entity_id,
+      value: this.states.get(entry.entity_id)?.state ?? "unknown",
+      attributes: settings,
+    });
 
     return { id, ...item };
   }
 
-  private storedHelper(type: string, entry: HaEntityRegistryEntry): Payload {
+  private storedHelper({ type, entry }: { type: string; entry: HaEntityRegistryEntry }): Payload {
     const stored = this.helperItems.get(`${type}.${entry.unique_id}`);
     if (stored) return structuredClone(stored);
 
@@ -923,7 +1028,7 @@ export class FakeHa {
     throw new HaRestError(HTTP_NOT_FOUND, "Resource not found");
   }
 
-  private emit(eventType: string, data: Payload): void {
+  private emit({ eventType, data }: { eventType: string; data: Payload }): void {
     const handlers = this.handlers.get(eventType) ?? [];
 
     if (handlers.length === 0) return;

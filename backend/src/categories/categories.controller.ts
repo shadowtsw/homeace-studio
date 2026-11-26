@@ -14,7 +14,7 @@ export class CategoriesController {
   @HttpCode(HttpStatus.OK)
   @ResponseMessage(MESSAGE_ID.categoryRenamed)
   async rename(@Body() dto: RenameCategoryDto): Promise<{ renamedCount: number }> {
-    const renamedCount = await this.categoriesService.rename(dto.from, dto.to);
+    const renamedCount = await this.categoriesService.rename({ from: dto.from, to: dto.to });
 
     return { renamedCount };
   }

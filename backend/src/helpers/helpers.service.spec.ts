@@ -104,7 +104,7 @@ describe("HelpersService", () => {
     await service.delete("input_boolean.gaestemodus");
 
     expect(remove).toHaveBeenCalledWith("input_boolean", "gaestemodus");
-    expect(cleanUp).toHaveBeenCalledWith("helpers", "cat-1");
+    expect(cleanUp).toHaveBeenCalledWith({ scope: "helpers", categoryId: "cat-1" });
     expect(overlay.data.favorites).toEqual([]);
   });
 
@@ -150,12 +150,15 @@ describe("HelpersService", () => {
     it("saves the whole helper: unchanged fields go along, the id goes as <type>_id", async () => {
       const { service, update } = setup(1, numberHelper, stored);
 
-      await service.updateSettings("input_number.helligkeit", {
-        min: 0,
-        max: 255,
-        step: 1,
-        mode: "box",
-        unitOfMeasurement: "",
+      await service.updateSettings({
+        entityId: "input_number.helligkeit",
+        settings: {
+          min: 0,
+          max: 255,
+          step: 1,
+          mode: "box",
+          unitOfMeasurement: "",
+        },
       });
 
       expect(update).toHaveBeenCalledWith("input_number", "helligkeit", {
@@ -173,7 +176,10 @@ describe("HelpersService", () => {
       const { service, update } = setup(1, numberHelper, stored);
 
       await expect(
-        service.updateSettings("input_number.helligkeit", { min: 50, max: 20 }),
+        service.updateSettings({
+          entityId: "input_number.helligkeit",
+          settings: { min: 50, max: 20 },
+        }),
       ).rejects.toMatchObject({
         response: { message: "HELPER_SETTINGS_INVALID", params: { field: "max" } },
       });
@@ -191,7 +197,11 @@ describe("HelpersService", () => {
     it("copies a helper with all its settings and a new name into the folder", async () => {
       const { service, create, assign } = setup(1, numberHelper, stored);
 
-      await service.copy("input_number.helligkeit", "Helligkeit (Kopie)", "Haus/Terrasse");
+      await service.copy({
+        entityId: "input_number.helligkeit",
+        name: "Helligkeit (Kopie)",
+        categoryPath: "Haus/Terrasse",
+      });
 
       expect(create).toHaveBeenCalledWith("input_number", {
         name: "Helligkeit (Kopie)",

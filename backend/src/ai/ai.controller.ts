@@ -58,7 +58,7 @@ export class AiController {
   @HttpCode(HttpStatus.OK)
   @ResponseMessage(MESSAGE_ID.aiPlanApplied)
   apply(@Param("planId") planId: string, @Body() dto: ApplyPlanDto): Promise<ApplyResult> {
-    return this.plans.apply(planId, dto.operationIds);
+    return this.plans.apply({ planId, operationIds: dto.operationIds });
   }
 
   @Post("ai-plans/:planId/reject")

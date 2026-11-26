@@ -47,8 +47,13 @@ export function createMcpToken(): string {
   return token;
 }
 
+export type IsSameTokenOptions = {
+  given: string;
+  expected: string;
+};
+
 /** Compares in constant time, so the answer time tells nothing about the token. */
-export function isSameToken(given: string, expected: string): boolean {
+export function isSameToken({ given, expected }: IsSameTokenOptions): boolean {
   const a = Buffer.from(given);
   const b = Buffer.from(expected);
 
@@ -116,7 +121,9 @@ export class McpAccessService {
     if (!mcp.isEnabled) return "off";
     if (!mcp.token || !header?.startsWith(BEARER_PREFIX)) return "denied";
 
-    return isSameToken(header.slice(BEARER_PREFIX.length).trim(), mcp.token) ? "ok" : "denied";
+    return isSameToken({ given: header.slice(BEARER_PREFIX.length).trim(), expected: mcp.token })
+      ? "ok"
+      : "denied";
   }
 
   /** Client of the latest connection; tool calls come without a name, only the handshake has it. */

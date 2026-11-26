@@ -63,7 +63,7 @@ export class HaConnectionService implements OnModuleDestroy {
   async call<TResult>(type: string, payload: Record<string, unknown> = {}): Promise<TResult> {
     await this.ensureConnected();
 
-    const result = await this.request(this.nextId++, type, payload);
+    const result = await this.request({ id: this.nextId++, type, payload });
 
     return result as TResult;
   }
@@ -89,7 +89,7 @@ export class HaConnectionService implements OnModuleDestroy {
     });
 
     try {
-      await this.request(id, type, payload);
+      await this.request({ id, type, payload });
     } catch (error) {
       this.snapshotWaiters.delete(id);
       // The waiter's timer still fires later; its rejection is not needed anymore.
@@ -105,10 +105,21 @@ export class HaConnectionService implements OnModuleDestroy {
   }
 
   /** Sends one command with a given id and resolves with its `result`. */
-  private request(id: number, type: string, payload: Record<string, unknown>): Promise<unknown> {
+  private request({
+    id,
+    type,
+    payload,
+  }: {
+    id: number;
+    type: string;
+    payload: Record<string, unknown>;
+  }): Promise<unknown> {
     return new Promise<unknown>((resolve, reject) => {
       const timeoutError = new Error(`Home Assistant command "${type}" timed out`);
-      const timer = setTimeout(() => this.failRequest(id, timeoutError), HA_REQUEST_TIMEOUT_MS);
+      const timer = setTimeout(
+        () => this.failRequest({ id, error: timeoutError }),
+        HA_REQUEST_TIMEOUT_MS,
+      );
 
       this.pending.set(id, { resolve, reject, timer });
       this.send({ id, type, ...payload });
@@ -156,7 +167,7 @@ export class HaConnectionService implements OnModuleDestroy {
       this.socket = socket;
 
       socket.addEventListener("message", (event) => {
-        this.handleMessage(String(event.data), resolve, reject);
+        this.handleMessage({ raw: String(event.data), onLoggedIn: resolve, onLoginFailed: reject });
       });
       socket.addEventListener("error", () => {
         reject(new Error(`Cannot reach Home Assistant at ${this.endpoint.websocketUrl}`));
@@ -169,11 +180,15 @@ export class HaConnectionService implements OnModuleDestroy {
     });
   }
 
-  private handleMessage(
-    raw: string,
-    onLoggedIn: () => void,
-    onLoginFailed: (error: Error) => void,
-  ): void {
+  private handleMessage({
+    raw,
+    onLoggedIn,
+    onLoginFailed,
+  }: {
+    raw: string;
+    onLoggedIn: () => void;
+    onLoginFailed: (error: Error) => void;
+  }): void {
     const message = JSON.parse(raw) as HaMessage;
 
     switch (message.type) {
@@ -277,7 +292,7 @@ export class HaConnectionService implements OnModuleDestroy {
     request.reject(new HaCommandError(code, message.error?.message ?? code));
   }
 
-  private failRequest(id: number, error: Error): void {
+  private failRequest({ id, error }: { id: number; error: Error }): void {
     const request = this.pending.get(id);
 
     if (!request) {
@@ -295,7 +310,9 @@ export class HaConnectionService implements OnModuleDestroy {
     this.connection = null;
 
     const openRequestIds = [...this.pending.keys()];
-    openRequestIds.forEach((id) => this.failRequest(id, new Error("Home Assistant disconnected")));
+    openRequestIds.forEach((id) =>
+      this.failRequest({ id, error: new Error("Home Assistant disconnected") }),
+    );
 
     if (wasConnected && !this.isShuttingDown) {
       this.logger.warn("Connection to Home Assistant closed; reconnecting");

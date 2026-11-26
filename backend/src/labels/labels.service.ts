@@ -18,6 +18,11 @@ const toLabel = (label: HaLabel): Label => ({
   color: label.color,
 });
 
+export type UpdateOptions = {
+  labelId: string;
+  fields: LabelFields;
+};
+
 /**
  * Creates, changes and deletes labels in HA's label registry, and tells where a label is used
  * before it goes. Names are checked here first (ignoring case, like HA), so the user gets our
@@ -32,7 +37,7 @@ export class LabelsService {
 
   async create(fields: LabelFields & { name: string }): Promise<Label> {
     const name = fields.name.trim();
-    await this.requireFreeName(name, null);
+    await this.requireFreeName({ name, ownId: null });
 
     const created = await this.ha.call<HaLabel>(HA_COMMAND.labelRegistryCreate, {
       name,
@@ -42,14 +47,14 @@ export class LabelsService {
     return toLabel(created);
   }
 
-  async update(labelId: string, fields: LabelFields): Promise<Label> {
+  async update({ labelId, fields }: UpdateOptions): Promise<Label> {
     await this.requireLabel(labelId);
 
     // Only what was sent changes; null clears colour or icon
     const payload: Record<string, unknown> = { label_id: labelId };
     if (fields.name !== undefined) {
       payload.name = fields.name.trim();
-      await this.requireFreeName(fields.name.trim(), labelId);
+      await this.requireFreeName({ name: fields.name.trim(), ownId: labelId });
     }
     if (fields.color !== undefined) payload.color = fields.color;
     if (fields.icon !== undefined) payload.icon = fields.icon;
@@ -66,7 +71,7 @@ export class LabelsService {
   /** What deleting the label would touch, for the warning before it goes. */
   async usage(labelId: string): Promise<LabelUsage> {
     await this.requireLabel(labelId);
-    return labelUsage(labelId, await this.snapshot.get());
+    return labelUsage({ labelId, sources: await this.snapshot.get() });
   }
 
   private list(): Promise<HaLabel[]> {
@@ -75,17 +80,25 @@ export class LabelsService {
 
   private async requireLabel(labelId: string): Promise<void> {
     if (!(await this.list()).some((label) => label.label_id === labelId)) {
-      throw new NotFoundException(apiError(MESSAGE_ID.labelNotFound));
+      throw new NotFoundException(apiError({ message: MESSAGE_ID.labelNotFound }));
     }
   }
 
-  private async requireFreeName(name: string, ownId: string | null): Promise<void> {
+  private async requireFreeName({
+    name,
+    ownId,
+  }: {
+    name: string;
+    ownId: string | null;
+  }): Promise<void> {
     const lower = name.toLocaleLowerCase();
     const taken = (await this.list()).some(
       (label) => label.label_id !== ownId && label.name.toLocaleLowerCase() === lower,
     );
 
     if (taken)
-      throw new ConflictException(apiError(MESSAGE_ID.labelNameTaken, { params: { name } }));
+      throw new ConflictException(
+        apiError({ message: MESSAGE_ID.labelNameTaken, details: { params: { name } } }),
+      );
   }
 }

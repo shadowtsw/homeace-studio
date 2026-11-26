@@ -14,15 +14,17 @@ describe("normalizeCategoryPath", () => {
 
 describe("isSameOrBelow", () => {
   it("compares whole levels", () => {
-    expect(isSameOrBelow("Haus", "Haus")).toBe(true);
-    expect(isSameOrBelow("Haus/Terrasse", "Haus")).toBe(true);
-    expect(isSameOrBelow("Hausflur", "Haus")).toBe(false);
+    expect(isSameOrBelow({ path: "Haus", ancestor: "Haus" })).toBe(true);
+    expect(isSameOrBelow({ path: "Haus/Terrasse", ancestor: "Haus" })).toBe(true);
+    expect(isSameOrBelow({ path: "Hausflur", ancestor: "Haus" })).toBe(false);
   });
 });
 
 describe("replacePathPrefix", () => {
   it("swaps the leading part and keeps the rest", () => {
-    expect(replacePathPrefix("Haus/Terrasse/Licht", "Haus", "Heim")).toBe("Heim/Terrasse/Licht");
-    expect(replacePathPrefix("Haus", "Haus", "Heim")).toBe("Heim");
+    expect(replacePathPrefix({ path: "Haus/Terrasse/Licht", from: "Haus", to: "Heim" })).toBe(
+      "Heim/Terrasse/Licht",
+    );
+    expect(replacePathPrefix({ path: "Haus", from: "Haus", to: "Heim" })).toBe("Heim");
   });
 });

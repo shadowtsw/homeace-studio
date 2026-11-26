@@ -52,19 +52,35 @@ export function buildCatalog(sources: CatalogSources): EditorCatalog {
   }
 
   return {
-    triggers: mapEntries(sources.triggers, "triggers", sources.translations.triggers),
-    conditions: mapEntries(sources.conditions, "conditions", sources.translations.conditions),
-    actions: mapEntries(actionDescriptions, "services", sources.translations.services),
+    triggers: mapEntries({
+      descriptions: sources.triggers,
+      category: "triggers",
+      translations: sources.translations.triggers,
+    }),
+    conditions: mapEntries({
+      descriptions: sources.conditions,
+      category: "conditions",
+      translations: sources.translations.conditions,
+    }),
+    actions: mapEntries({
+      descriptions: actionDescriptions,
+      category: "services",
+      translations: sources.translations.services,
+    }),
   };
 }
 
-function mapEntries(
-  descriptions: Record<string, HaPlatformDescription>,
-  category: string,
-  translations: HaTranslations,
-): Record<string, CatalogEntry> {
+function mapEntries({
+  descriptions,
+  category,
+  translations,
+}: {
+  descriptions: Record<string, HaPlatformDescription>;
+  category: string;
+  translations: HaTranslations;
+}): Record<string, CatalogEntry> {
   const entries = Object.entries(descriptions).map(([key, description]): [string, CatalogEntry] => {
-    const prefix = translationPrefix(key, category);
+    const prefix = translationPrefix({ key, category });
     const fields = flattenFields(description.fields ?? {});
     const mappedFields = Object.fromEntries(
       Object.entries(fields).map(([fieldKey, field]): [string, CatalogField] => [
@@ -104,7 +120,7 @@ const filled = (value: string | undefined): string | null => (value?.trim() ? va
  * Where HA keeps the texts of a key: "zone.entered" → "component.zone.triggers.entered".
  * A key without a dot is the domain's default ("component.sun.triggers._").
  */
-function translationPrefix(key: string, category: string): string {
+function translationPrefix({ key, category }: { key: string; category: string }): string {
   const [domain, ...rest] = key.split(KEY_SEPARATOR);
   const name = rest.length > 0 ? rest.join(KEY_SEPARATOR) : "_";
 

@@ -23,6 +23,6 @@ export class TracesController {
     @Param("entityId") entityId: string,
     @Body() dto: KeepRunsDto,
   ): Promise<{ storedTraces: number }> {
-    return this.traces.keepRuns(entityId, dto.count);
+    return this.traces.keepRuns({ entityId, count: dto.count });
   }
 }

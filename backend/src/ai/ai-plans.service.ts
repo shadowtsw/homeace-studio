@@ -53,8 +53,13 @@ export class PlanInputError extends Error {
 
 type PlanContext = { entries: Map<string, Entry>; folders: ReadonlySet<string> };
 
+export type CollectFoldersOptions = {
+  entries: Entry[];
+  savedFolders: string[];
+};
+
 /** Every folder path that exists: category names, the user's empty folders, and their parents. */
-export function collectFolders(entries: Entry[], savedFolders: string[]): Set<string> {
+export function collectFolders({ entries, savedFolders }: CollectFoldersOptions): Set<string> {
   const folders = new Set<string>();
   const add = (path: string): void => {
     const levels = path.split(CATEGORY_SEPARATOR);
@@ -69,7 +74,12 @@ export function collectFolders(entries: Entry[], savedFolders: string[]): Set<st
   return folders;
 }
 
-export function operationState(operation: AiPlanOperation, context: PlanContext): AiOperationState {
+export type OperationStateOptions = {
+  operation: AiPlanOperation;
+  context: PlanContext;
+};
+
+export function operationState({ operation, context }: OperationStateOptions): AiOperationState {
   if (operation.type === AI_OPERATION_TYPE.renameFolder) {
     if (!context.folders.has(operation.from)) return AI_OPERATION_STATE.gone;
     if (operation.from === operation.to) return AI_OPERATION_STATE.done;
@@ -84,6 +94,16 @@ export function operationState(operation: AiPlanOperation, context: PlanContext)
   if (entry.categoryPath === operation.to) return AI_OPERATION_STATE.done;
   return AI_OPERATION_STATE.ok;
 }
+
+export type ProposeOptions = {
+  input: ProposedPlan;
+  client: string | null;
+};
+
+export type ApplyOptions = {
+  planId: string;
+  operationIds: string[];
+};
 
 /**
  * Folder plans an AI proposes over MCP. The AI never changes HA itself: a plan waits here until the
@@ -102,7 +122,7 @@ export class AiPlansService {
   ) {}
 
   /** @throws PlanInputError with every problem found, so the AI can fix them in one go. */
-  async propose(input: ProposedPlan, client: string | null): Promise<AiPlan> {
+  async propose({ input, client }: ProposeOptions): Promise<AiPlan> {
     const [context, overlay] = await Promise.all([this.loadContext(), this.overlay.read()]);
     const problems: string[] = [];
     const operations: AiPlanOperation[] = [];
@@ -153,7 +173,7 @@ export class AiPlansService {
 
       if (from === null || !context.folders.has(from)) {
         problems.push(`${label}: there is no folder "${proposed.from}".`);
-      } else if (isSameOrBelow(to, from)) {
+      } else if (isSameOrBelow({ path: to, ancestor: from })) {
         problems.push(`${label}: "${from}" cannot be moved into itself ("${to}").`);
       } else if (context.folders.has(to)) {
         problems.push(`${label}: the folder "${to}" exists already; move its entries instead.`);
@@ -192,7 +212,7 @@ export class AiPlansService {
   async list(): Promise<AiPlanView[]> {
     const [context, overlay] = await Promise.all([this.loadContext(), this.overlay.read()]);
 
-    return overlay.aiPlans.map((plan) => toView(plan, context));
+    return overlay.aiPlans.map((plan) => toView({ plan, context }));
   }
 
   async find(planId: string): Promise<AiPlan | null> {
@@ -206,16 +226,16 @@ export class AiPlansService {
    * operation does not stop the others. Operations that were already true count as done, so the
    * plan is "applied" when everything it asked for is true afterwards.
    */
-  async apply(planId: string, operationIds: string[]): Promise<ApplyResult> {
+  async apply({ planId, operationIds }: ApplyOptions): Promise<ApplyResult> {
     const plan = await this.requireOpen(planId);
     const context = await this.loadContext();
     const alreadyDone = plan.operations
-      .filter((operation) => operationState(operation, context) === AI_OPERATION_STATE.done)
+      .filter((operation) => operationState({ operation, context }) === AI_OPERATION_STATE.done)
       .map((operation) => operation.id);
     const chosen = plan.operations.filter(
       (operation) =>
         operationIds.includes(operation.id) &&
-        operationState(operation, context) === AI_OPERATION_STATE.ok,
+        operationState({ operation, context }) === AI_OPERATION_STATE.ok,
     );
     const ordered = [
       ...chosen.filter((operation) => operation.type === AI_OPERATION_TYPE.renameFolder),
@@ -227,9 +247,12 @@ export class AiPlansService {
     for (const operation of ordered) {
       try {
         if (operation.type === AI_OPERATION_TYPE.renameFolder) {
-          await this.categories.rename(operation.from, operation.to);
+          await this.categories.rename({ from: operation.from, to: operation.to });
         } else {
-          await this.entries.moveToCategory(operation.entityId, operation.to);
+          await this.entries.moveToCategory({
+            entityId: operation.entityId,
+            categoryPath: operation.to,
+          });
         }
         appliedIds.push(operation.id);
       } catch (error) {
@@ -240,25 +263,29 @@ export class AiPlansService {
 
     const fulfilledIds = [...alreadyDone, ...appliedIds];
     const isComplete = fulfilledIds.length === plan.operations.length;
-    await this.decide(
+    await this.decide({
       planId,
-      isComplete ? AI_PLAN_STATUS.applied : AI_PLAN_STATUS.partial,
-      fulfilledIds,
-    );
+      status: isComplete ? AI_PLAN_STATUS.applied : AI_PLAN_STATUS.partial,
+      appliedIds: fulfilledIds,
+    });
 
     return { appliedCount: appliedIds.length, failed };
   }
 
   async reject(planId: string): Promise<void> {
     await this.requireOpen(planId);
-    await this.decide(planId, AI_PLAN_STATUS.rejected, []);
+    await this.decide({ planId, status: AI_PLAN_STATUS.rejected, appliedIds: [] });
   }
 
-  private async decide(
-    planId: string,
-    status: AiPlan["status"],
-    appliedIds: string[],
-  ): Promise<void> {
+  private async decide({
+    planId,
+    status,
+    appliedIds,
+  }: {
+    planId: string;
+    status: AiPlan["status"];
+    appliedIds: string[];
+  }): Promise<void> {
     const decidedAt = new Date().toISOString();
 
     await this.overlay.update((current) => ({
@@ -273,9 +300,9 @@ export class AiPlansService {
   private async requireOpen(planId: string): Promise<AiPlan> {
     const plan = await this.find(planId);
 
-    if (!plan) throw new NotFoundException(apiError(MESSAGE_ID.aiPlanNotFound));
+    if (!plan) throw new NotFoundException(apiError({ message: MESSAGE_ID.aiPlanNotFound }));
     if (plan.status !== AI_PLAN_STATUS.open) {
-      throw new ConflictException(apiError(MESSAGE_ID.aiPlanClosed));
+      throw new ConflictException(apiError({ message: MESSAGE_ID.aiPlanClosed }));
     }
 
     return plan;
@@ -286,19 +313,19 @@ export class AiPlansService {
 
     return {
       entries: new Map(entries.map((entry) => [entry.entityId, entry])),
-      folders: collectFolders(entries, overlay.folders),
+      folders: collectFolders({ entries, savedFolders: overlay.folders }),
     };
   }
 }
 
-function toView(plan: AiPlan, context: PlanContext): AiPlanView {
+function toView({ plan, context }: { plan: AiPlan; context: PlanContext }): AiPlanView {
   return {
     ...plan,
     operations: plan.operations.map((operation): AiOperationView => {
       // Decided plans show what happened; their states would only describe today.
       const state =
         plan.status === AI_PLAN_STATUS.open
-          ? operationState(operation, context)
+          ? operationState({ operation, context })
           : AI_OPERATION_STATE.done;
 
       if (operation.type === AI_OPERATION_TYPE.renameFolder) return { ...operation, state };

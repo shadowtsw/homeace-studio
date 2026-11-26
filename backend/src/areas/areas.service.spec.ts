@@ -14,7 +14,7 @@ describe("AreasService", () => {
   it("creates an area with name and icon", async () => {
     const { ha, service } = setup();
 
-    const area = await service.create("  Bedroom ", "mdi:bed");
+    const area = await service.create({ name: "  Bedroom ", icon: "mdi:bed" });
 
     expect(area).toEqual({ areaId: "bedroom", name: "Bedroom", icon: "mdi:bed" });
     expect(
@@ -23,7 +23,7 @@ describe("AreasService", () => {
   });
 
   it("refuses a name that exists, ignoring case", async () => {
-    await expect(setup().service.create("terrace", null)).rejects.toMatchObject({
+    await expect(setup().service.create({ name: "terrace", icon: null })).rejects.toMatchObject({
       response: { message: "AREA_NAME_TAKEN", params: { name: "terrace" } },
     });
   });
@@ -31,16 +31,22 @@ describe("AreasService", () => {
   it("renames an area and changes its icon, but not into another area's name", async () => {
     const { service } = setup();
 
-    expect(await service.update("garage", { name: "Carport", icon: "mdi:garage" })).toEqual({
+    expect(
+      await service.update({ areaId: "garage", changes: { name: "Carport", icon: "mdi:garage" } }),
+    ).toEqual({
       areaId: "garage",
       name: "Carport",
       icon: "mdi:garage",
     });
-    await expect(service.update("garage", { name: "Garden" })).rejects.toMatchObject({
+    await expect(
+      service.update({ areaId: "garage", changes: { name: "Garden" } }),
+    ).rejects.toMatchObject({
       response: { message: "AREA_NAME_TAKEN" },
     });
     // Its own name in another case is fine.
-    await expect(service.update("garage", { name: "CARPORT" })).resolves.toMatchObject({
+    await expect(
+      service.update({ areaId: "garage", changes: { name: "CARPORT" } }),
+    ).resolves.toMatchObject({
       name: "CARPORT",
     });
   });

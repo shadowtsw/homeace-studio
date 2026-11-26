@@ -22,6 +22,10 @@ export class RenameController {
     @Param("entityId") entityId: string,
     @Body() dto: RenameEntityDto,
   ): Promise<RenameResult> {
-    return this.rename.rename(entityId, dto.newEntityId, dto.withReferences);
+    return this.rename.rename({
+      entityId,
+      newEntityId: dto.newEntityId,
+      withReferences: dto.withReferences,
+    });
   }
 }

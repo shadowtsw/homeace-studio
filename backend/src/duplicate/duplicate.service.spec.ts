@@ -43,10 +43,10 @@ describe("DuplicateService", () => {
   it("copies an automation with folder, labels and area, switched off", async () => {
     const { service, entries, editor } = setup();
 
-    const { entityId } = await service.duplicate(
-      "automation.terrace_light_on_motion",
-      "Terrace light on motion (Kopie)",
-    );
+    const { entityId } = await service.duplicate({
+      entityId: "automation.terrace_light_on_motion",
+      name: "Terrace light on motion (Kopie)",
+    });
 
     const all = await entries.findAll();
     const original = all.find((entry) => entry.entityId === "automation.terrace_light_on_motion");
@@ -68,7 +68,10 @@ describe("DuplicateService", () => {
   it("copies a script under a new key", async () => {
     const { service, editor } = setup();
 
-    const { entityId } = await service.duplicate("script.terrace_evening_mood", "Evening mood 2");
+    const { entityId } = await service.duplicate({
+      entityId: "script.terrace_evening_mood",
+      name: "Evening mood 2",
+    });
 
     expect(entityId).not.toBe("script.terrace_evening_mood");
     const config = await editor.loadConfig("script", entityId);
@@ -79,10 +82,10 @@ describe("DuplicateService", () => {
   it("copies a storage helper with its settings, folder, labels and area", async () => {
     const { service, entries, helpers } = setup();
 
-    const { entityId } = await service.duplicate(
-      "input_number.terrace_brightness",
-      "Terrace brightness late",
-    );
+    const { entityId } = await service.duplicate({
+      entityId: "input_number.terrace_brightness",
+      name: "Terrace brightness late",
+    });
 
     const all = await entries.findAll();
     const original = all.find((entry) => entry.entityId === "input_number.terrace_brightness");

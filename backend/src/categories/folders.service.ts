@@ -22,6 +22,16 @@ export type FolderOverview = {
   order: Record<string, string[]>;
 };
 
+export type SetOrderOptions = {
+  parent: string;
+  order: string[];
+};
+
+export type SetColorOptions = {
+  path: string;
+  color: string | null;
+};
+
 /**
  * Empty folders the user creates in the tree. HA gets no category for them (no empty categories);
  * the HA category appears automatically when the first entry moves in.
@@ -42,8 +52,6 @@ export class FoldersService {
 
   /**
    * Gives a folder its own color (only in the overlay; HA categories have no color).
-   *
-   * @param color - "#rrggbb", or null to go back to the default.
    */
   /**
    * Sets the own order of a folder's direct subfolders (or of the top level); an empty list goes
@@ -51,12 +59,15 @@ export class FoldersService {
    *
    * @throws BadRequestException `CATEGORY_PATH_INVALID` for a path that is not a direct child.
    */
-  async setOrder(parent: string, order: string[]): Promise<void> {
+  async setOrder({ parent, order }: SetOrderOptions): Promise<void> {
     const parentPath = parent === "" ? "" : requireCategoryPath(parent);
     const children = order.map((path) => requireCategoryPath(path));
     if (children.some((path) => parentOf(path) !== parentPath)) {
       throw new BadRequestException(
-        apiError(MESSAGE_ID.categoryPathInvalid, { params: { path: parent } }),
+        apiError({
+          message: MESSAGE_ID.categoryPathInvalid,
+          details: { params: { path: parent } },
+        }),
       );
     }
 
@@ -68,7 +79,7 @@ export class FoldersService {
     });
   }
 
-  async setColor(path: string, color: string | null): Promise<void> {
+  async setColor({ path, color }: SetColorOptions): Promise<void> {
     const folder = requireCategoryPath(path);
 
     await this.overlay.update((overlay) => {
@@ -90,7 +101,9 @@ export class FoldersService {
     const overlay = await this.overlay.read();
 
     if (overlay.folders.includes(folder)) {
-      throw new ConflictException(apiError(MESSAGE_ID.folderExists, { params: { path: folder } }));
+      throw new ConflictException(
+        apiError({ message: MESSAGE_ID.folderExists, details: { params: { path: folder } } }),
+      );
     }
 
     await this.overlay.update((current) => ({ ...current, folders: [...current.folders, folder] }));
@@ -98,14 +111,16 @@ export class FoldersService {
     return folder;
   }
 
-  /** Forgets an empty folder. HA categories are not touched; they disappear with their last entry. */
+  /**
+   * Forgets an empty folder. HA categories are not touched; they disappear with their last entry.
+   */
   async delete(path: string): Promise<void> {
     const folder = requireCategoryPath(path);
     const overlay = await this.overlay.read();
 
     if (!overlay.folders.includes(folder)) {
       throw new NotFoundException(
-        apiError(MESSAGE_ID.folderNotFound, { params: { path: folder } }),
+        apiError({ message: MESSAGE_ID.folderNotFound, details: { params: { path: folder } } }),
       );
     }
 
@@ -113,6 +128,6 @@ export class FoldersService {
       ...current,
       folders: current.folders.filter((item) => item !== folder),
     }));
-    await this.setColor(folder, null);
+    await this.setColor({ path: folder, color: null });
   }
 }

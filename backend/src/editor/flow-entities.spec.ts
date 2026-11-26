@@ -17,7 +17,7 @@ describe("collectEntityIds", () => {
     };
     const known = new Set(["person.mara", "zone.home", "light.terrasse", "input_boolean.gaeste"]);
 
-    expect(collectEntityIds(config, known).sort()).toEqual([
+    expect(collectEntityIds({ config, knownEntityIds: known }).sort()).toEqual([
       "input_boolean.gaeste",
       "light.terrasse",
       "person.mara",

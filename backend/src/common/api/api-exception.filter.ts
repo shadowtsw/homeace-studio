@@ -39,10 +39,16 @@ export class ApiExceptionFilter implements ExceptionFilter {
       this.logger.error(exception);
     }
 
-    response.status(status).json(this.toApiResponse(exception, status));
+    response.status(status).json(this.toApiResponse({ exception, status }));
   }
 
-  private toApiResponse(exception: unknown, status: number): ApiResponse {
+  private toApiResponse({
+    exception,
+    status,
+  }: {
+    exception: unknown;
+    status: number;
+  }): ApiResponse {
     const payload = exception instanceof HttpException ? exception.getResponse() : null;
 
     if (!hasKnownMessageId(payload)) {

@@ -13,7 +13,7 @@ export class FlowsController {
   @Post()
   @ResponseMessage(MESSAGE_ID.flowCreated)
   create(@Body() dto: CreateFlowDto): Promise<{ entityId: string }> {
-    return this.flowsService.create(dto);
+    return this.flowsService.create({ dto });
   }
 
   @Delete(":entityId")

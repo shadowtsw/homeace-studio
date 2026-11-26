@@ -19,6 +19,24 @@ type CachedCatalog = { catalog: EditorCatalog; loadedAt: number };
 const DOMAIN_SEPARATOR = ".";
 const BLUEPRINT_KEY = "use_blueprint";
 
+export type GetCatalogOptions = {
+  /** One of CATALOG_LANGUAGES; anything else falls back to German. */
+  language: string | undefined;
+  now?: number;
+};
+
+export type SaveFlowOptions = {
+  entityId: string;
+  config: Record<string, unknown>;
+};
+
+type DescribeOptions = {
+  entityId: string;
+  kind: FlowKind;
+  config: Record<string, unknown>;
+  isEditable: boolean;
+};
+
 /** Reads what the visual editor needs: the block catalog and the flow of one entry. */
 @Injectable()
 export class EditorService {
@@ -30,10 +48,8 @@ export class EditorService {
   /**
    * The catalog of all trigger, condition and action types in one language. Cached for a while,
    * because it only changes when integrations are added or HA is updated.
-   *
-   * @param language - One of CATALOG_LANGUAGES; anything else falls back to German.
    */
-  async getCatalog(language: string | undefined, now = Date.now()): Promise<EditorCatalog> {
+  async getCatalog({ language, now = Date.now() }: GetCatalogOptions): Promise<EditorCatalog> {
     const supported = CATALOG_LANGUAGES.find((code) => code === language);
     const code = supported ?? DEFAULT_CATALOG_LANGUAGE;
     const cached = this.catalogs.get(code);
@@ -56,9 +72,9 @@ export class EditorService {
   async getFlow(entityId: string): Promise<Flow> {
     const kind = requireFlowKind(entityId);
     const config = await this.editor.loadConfig(kind, entityId);
-    const storageKey = await this.findStorageKey(kind, entityId, config);
+    const storageKey = await this.findStorageKey({ kind, entityId, config });
 
-    return this.describe(entityId, kind, config, storageKey !== null);
+    return this.describe({ entityId, kind, config, isEditable: storageKey !== null });
   }
 
   /**
@@ -69,11 +85,13 @@ export class EditorService {
    * @throws BadRequestException `FLOW_NOT_EDITABLE` when the flow is not stored in those files
    *   or comes from a blueprint; `FLOW_INVALID` when HA rejects the config.
    */
-  async saveFlow(entityId: string, config: Record<string, unknown>): Promise<Flow> {
+  async saveFlow({ entityId, config }: SaveFlowOptions): Promise<Flow> {
     const { kind, key: storageKey } = await this.requireStoredFlow(entityId);
 
     if (isFromBlueprint(config)) {
-      throw new BadRequestException(apiError(MESSAGE_ID.flowNotEditable, { params: { entityId } }));
+      throw new BadRequestException(
+        apiError({ message: MESSAGE_ID.flowNotEditable, details: { params: { entityId } } }),
+      );
     }
 
     // The id ties the automation to its entity; it must not change through an edit.
@@ -87,7 +105,7 @@ export class EditorService {
 
     // HA reloads the flow in the background, so reading it back right away could still return
     // the old version; the saved config is what HA runs once the reload is done.
-    return this.describe(entityId, kind, toSave, true);
+    return this.describe({ entityId, kind, config: toSave, isEditable: true });
   }
 
   /**
@@ -99,21 +117,27 @@ export class EditorService {
   async requireStoredFlow(entityId: string): Promise<{ kind: FlowKind; key: string }> {
     const kind = requireFlowKind(entityId);
     const current = await this.editor.loadConfig(kind, entityId);
-    const key = await this.findStorageKey(kind, entityId, current);
+    const key = await this.findStorageKey({ kind, entityId, config: current });
 
     if (key === null) {
-      throw new BadRequestException(apiError(MESSAGE_ID.flowNotEditable, { params: { entityId } }));
+      throw new BadRequestException(
+        apiError({ message: MESSAGE_ID.flowNotEditable, details: { params: { entityId } } }),
+      );
     }
 
     return { kind, key };
   }
 
   /** The storage key when the flow can be written, otherwise null. */
-  private async findStorageKey(
-    kind: FlowKind,
-    entityId: string,
-    config: Record<string, unknown>,
-  ): Promise<string | null> {
+  private async findStorageKey({
+    kind,
+    entityId,
+    config,
+  }: {
+    kind: FlowKind;
+    entityId: string;
+    config: Record<string, unknown>;
+  }): Promise<string | null> {
     if (isFromBlueprint(config)) return null;
 
     const key = await this.editor.loadStorageKey(kind, entityId, config);
@@ -125,15 +149,10 @@ export class EditorService {
     return stored === null ? null : key;
   }
 
-  private async describe(
-    entityId: string,
-    kind: FlowKind,
-    config: Record<string, unknown>,
-    isEditable: boolean,
-  ): Promise<Flow> {
+  private async describe({ entityId, kind, config, isEditable }: DescribeOptions): Promise<Flow> {
     const states = await this.editor.loadStates();
     const statesById = new Map(states.map((state) => [state.entity_id, state]));
-    const mentioned = collectEntityIds(config, new Set(statesById.keys()));
+    const mentioned = collectEntityIds({ config, knownEntityIds: new Set(statesById.keys()) });
     const entityNames = Object.fromEntries(
       mentioned.map((id) => [id, statesById.get(id)?.attributes.friendly_name ?? id]),
     );
@@ -149,7 +168,9 @@ export function requireFlowKind(entityId: string): FlowKind {
   if (domain === FLOW_KIND.automation) return FLOW_KIND.automation;
   if (domain === FLOW_KIND.script) return FLOW_KIND.script;
 
-  throw new BadRequestException(apiError(MESSAGE_ID.flowUnsupported, { params: { entityId } }));
+  throw new BadRequestException(
+    apiError({ message: MESSAGE_ID.flowUnsupported, details: { params: { entityId } } }),
+  );
 }
 
 /** Blueprint automations only hold inputs; the blueprint editor (step 7) will handle them. */

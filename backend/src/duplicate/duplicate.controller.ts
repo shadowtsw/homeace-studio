@@ -16,6 +16,6 @@ export class DuplicateController {
     @Param("entityId") entityId: string,
     @Body() dto: DuplicateEntryDto,
   ): Promise<{ entityId: string }> {
-    return this.duplicates.duplicate(entityId, dto.name.trim());
+    return this.duplicates.duplicate({ entityId, name: dto.name.trim() });
   }
 }

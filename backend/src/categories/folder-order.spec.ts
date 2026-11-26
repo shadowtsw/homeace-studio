@@ -5,7 +5,10 @@ describe("folder order", () => {
     const move = (path: string): string => path.replace(/^Haus/, "Heim");
 
     expect(
-      moveFolderOrder({ "": ["Haus", "Garage"], Haus: ["Haus/Bad", "Haus/Flur"] }, move),
+      moveFolderOrder({
+        order: { "": ["Haus", "Garage"], Haus: ["Haus/Bad", "Haus/Flur"] },
+        movePath: move,
+      }),
     ).toEqual({
       "": ["Heim", "Garage"],
       Heim: ["Heim/Bad", "Heim/Flur"],

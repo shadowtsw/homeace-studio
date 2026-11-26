@@ -5,11 +5,11 @@ import { createDemoHome } from "./demo-home";
 import { FakeHa } from "./fake-ha";
 
 function registry(fake: FakeHa): HaEntityRegistryEntry[] {
-  return fake.call(HA_COMMAND.entityRegistryList) as HaEntityRegistryEntry[];
+  return fake.call({ type: HA_COMMAND.entityRegistryList }) as HaEntityRegistryEntry[];
 }
 
 function categories(fake: FakeHa, scope: string): HaCategory[] {
-  return fake.call(HA_COMMAND.categoryRegistryList, { scope }) as HaCategory[];
+  return fake.call({ type: HA_COMMAND.categoryRegistryList, payload: { scope } }) as HaCategory[];
 }
 
 describe("FakeHa (demo mode)", () => {
@@ -31,23 +31,32 @@ describe("FakeHa (demo mode)", () => {
     const fake = new FakeHa(createDemoHome());
 
     expect(() =>
-      fake.call(HA_COMMAND.categoryRegistryCreate, { scope: "automation", name: "Security" }),
+      fake.call({
+        type: HA_COMMAND.categoryRegistryCreate,
+        payload: { scope: "automation", name: "Security" },
+      }),
     ).toThrow(HaCommandError);
     expect(
-      fake.call(HA_COMMAND.categoryRegistryCreate, { scope: "scene", name: "Garden" }),
+      fake.call({
+        type: HA_COMMAND.categoryRegistryCreate,
+        payload: { scope: "scene", name: "Garden" },
+      }),
     ).toMatchObject({ name: "Garden" });
   });
 
   it("registers the entity of a newly saved automation and fires an event", async () => {
     const fake = new FakeHa(createDemoHome());
     const handler = jest.fn();
-    fake.subscribe("entity_registry_updated", handler);
+    fake.subscribe({ eventType: "entity_registry_updated", handler });
 
-    fake.restPost(HA_REST_PATH.automationConfig + "1800000000000", {
-      id: "1800000000000",
-      alias: "Hallway light",
-      triggers: [],
-      actions: [],
+    fake.restPost({
+      path: HA_REST_PATH.automationConfig + "1800000000000",
+      body: {
+        id: "1800000000000",
+        alias: "Hallway light",
+        triggers: [],
+        actions: [],
+      },
     });
 
     const created = registry(fake).find((entry) => entry.unique_id === "1800000000000");
@@ -63,19 +72,25 @@ describe("FakeHa (demo mode)", () => {
   it("switches states through services and creates and deletes helpers", () => {
     const fake = new FakeHa(createDemoHome());
     const stateOf = (entityId: string): string | undefined =>
-      (fake.call(HA_COMMAND.getStates) as HaState[]).find((s) => s.entity_id === entityId)?.state;
+      (fake.call({ type: HA_COMMAND.getStates }) as HaState[]).find((s) => s.entity_id === entityId)
+        ?.state;
 
-    fake.call(HA_COMMAND.callService, {
-      domain: "input_boolean",
-      service: "turn_on",
-      target: { entity_id: "input_boolean.guest_mode" },
+    fake.call({
+      type: HA_COMMAND.callService,
+      payload: {
+        domain: "input_boolean",
+        service: "turn_on",
+        target: { entity_id: "input_boolean.guest_mode" },
+      },
     });
     expect(stateOf("input_boolean.guest_mode")).toBe("on");
 
-    const created = fake.call("counter/create", { name: "Coffee cups" }) as { id: string };
+    const created = fake.call({ type: "counter/create", payload: { name: "Coffee cups" } }) as {
+      id: string;
+    };
     expect(stateOf("counter.coffee_cups")).toBeDefined();
 
-    fake.call("counter/delete", { counter_id: created.id });
+    fake.call({ type: "counter/delete", payload: { counter_id: created.id } });
     expect(stateOf("counter.coffee_cups")).toBeUndefined();
   });
 });

@@ -27,15 +27,16 @@ export function scriptKeyFor(name: string): string {
   return key || FALLBACK_KEY;
 }
 
+export type FirstFreeKeyOptions = {
+  base: string;
+  /** Asks HA whether a key is in use. */
+  isTaken: (key: string) => Promise<boolean>;
+};
+
 /**
  * The first key that is not taken yet: "gute_nacht", then "gute_nacht_2", "gute_nacht_3", …
- *
- * @param isTaken - Asks HA whether a key is in use.
  */
-export async function firstFreeKey(
-  base: string,
-  isTaken: (key: string) => Promise<boolean>,
-): Promise<string> {
+export async function firstFreeKey({ base, isTaken }: FirstFreeKeyOptions): Promise<string> {
   let key = base;
 
   for (let suffix = FIRST_SUFFIX; await isTaken(key); suffix++) {

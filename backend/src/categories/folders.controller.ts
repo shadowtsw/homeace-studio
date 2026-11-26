@@ -21,7 +21,7 @@ export class FoldersController {
   @Put("order")
   @ResponseMessage(MESSAGE_ID.folderOrderSaved)
   async setOrder(@Body() dto: SetFolderOrderDto): Promise<null> {
-    await this.foldersService.setOrder(dto.parent, dto.order);
+    await this.foldersService.setOrder({ parent: dto.parent, order: dto.order });
 
     return null;
   }
@@ -30,7 +30,7 @@ export class FoldersController {
   @Put("color")
   @ResponseMessage(MESSAGE_ID.folderColorSaved)
   async setColor(@Body() dto: SetFolderColorDto): Promise<null> {
-    await this.foldersService.setColor(dto.path, dto.color);
+    await this.foldersService.setColor({ path: dto.path, color: dto.color });
 
     return null;
   }

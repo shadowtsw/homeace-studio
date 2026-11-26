@@ -4,11 +4,13 @@
  */
 export type FolderOrder = Record<string, string[]>;
 
+export type MoveFolderOrderOptions = {
+  order: FolderOrder;
+  movePath: (path: string) => string;
+};
+
 /** The order after folders moved (rename, clean-up): parents and children follow the new paths. */
-export function moveFolderOrder(
-  order: FolderOrder,
-  movePath: (path: string) => string,
-): FolderOrder {
+export function moveFolderOrder({ order, movePath }: MoveFolderOrderOptions): FolderOrder {
   return Object.fromEntries(
     Object.entries(order).map(([parent, children]) => [
       parent === "" ? "" : movePath(parent),

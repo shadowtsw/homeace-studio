@@ -12,6 +12,11 @@ import type { Run, RunHistory } from "./traces.model";
 
 const FLOW_KINDS: readonly string[] = [FLOW_KIND.automation, FLOW_KIND.script];
 
+export type KeepRunsOptions = {
+  entityId: string;
+  count: number;
+};
+
 /** The runs HA kept of an automation or script (docs/api.md). */
 @Injectable()
 export class TracesService {
@@ -26,7 +31,7 @@ export class TracesService {
    *
    * @throws BadRequestException `FLOW_NOT_EDITABLE` for flows outside automations.yaml / scripts.yaml.
    */
-  async keepRuns(entityId: string, count: number): Promise<{ storedTraces: number }> {
+  async keepRuns({ entityId, count }: KeepRunsOptions): Promise<{ storedTraces: number }> {
     const { kind, key } = await this.flows.requireStoredFlow(entityId);
     const stored = (await this.editor.loadStoredConfig(kind, key)) ?? {};
     const trace =
@@ -56,7 +61,9 @@ export class TracesService {
       domain: kind,
       item_id: itemId,
     });
-    const runs = await Promise.all(summaries.map((summary) => this.loadRun(kind, itemId, summary)));
+    const runs = await Promise.all(
+      summaries.map((summary) => this.loadRun({ domain: kind, itemId, summary })),
+    );
 
     return {
       entityId,
@@ -66,7 +73,15 @@ export class TracesService {
   }
 
   /** The full run; when HA dropped it meanwhile, the summary has to do. */
-  private async loadRun(domain: string, itemId: string, summary: HaTrace): Promise<Run> {
+  private async loadRun({
+    domain,
+    itemId,
+    summary,
+  }: {
+    domain: string;
+    itemId: string;
+    summary: HaTrace;
+  }): Promise<Run> {
     try {
       const trace = await this.ha.call<HaTrace>(HA_COMMAND.traceGet, {
         domain,

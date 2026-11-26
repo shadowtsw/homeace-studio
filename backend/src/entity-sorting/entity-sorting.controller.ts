@@ -30,13 +30,13 @@ export class EntitySortingController {
   @HttpCode(HttpStatus.OK)
   @ResponseMessage(MESSAGE_ID.entitySortingMoved)
   moves(@Body() dto: SortingMovesDto): Promise<EntityMoveResult[]> {
-    return this.sorting.applyMoves(dto.runId, dto.moves);
+    return this.sorting.applyMoves({ runId: dto.runId, moves: dto.moves });
   }
 
   @Post("undo")
   @HttpCode(HttpStatus.OK)
   @ResponseMessage(MESSAGE_ID.entitySortingUndone)
   undo(@Body() dto: SortingUndoDto): Promise<EntityMoveResult[]> {
-    return this.sorting.undo(dto.runId, dto.entityIds);
+    return this.sorting.undo({ runId: dto.runId, entityIds: dto.entityIds });
   }
 }

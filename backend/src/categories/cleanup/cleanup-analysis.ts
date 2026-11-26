@@ -97,7 +97,13 @@ function groupSimilar(names: string[]): string[][] {
 }
 
 /** Entries per scope and category name. */
-function countByName(categories: ScopeCategories, assignments: ScopeAssignments) {
+function countByName({
+  categories,
+  assignments,
+}: {
+  categories: ScopeCategories;
+  assignments: ScopeAssignments;
+}) {
   const counts = new Map<string, ScopeCounts>();
 
   for (const scope of CATEGORY_SCOPES) {
@@ -115,6 +121,13 @@ function countByName(categories: ScopeCategories, assignments: ScopeAssignments)
 const total = (counts: ScopeCounts): number =>
   Object.values(counts).reduce((sum, count) => sum + count, 0);
 
+export type FindCleanupProposalsOptions = {
+  categories: ScopeCategories;
+  assignments: ScopeAssignments;
+  /** Keys the user hid ("split:…", "merge:…"). */
+  ignored: ReadonlySet<string>;
+};
+
 /**
  * Finds old flat categories that fake nesting with dashes, and near-duplicate names.
  *
@@ -122,15 +135,13 @@ const total = (counts: ScopeCounts): number =>
  * empty category (HA keeps those the user made) does not show in the tree, so converting it would
  * change nothing visible. Nothing here is applied automatically; the user confirms every line
  * (dashes also occur inside plain names).
- *
- * @param ignored - Keys the user hid ("split:…", "merge:…").
  */
-export function findCleanupProposals(
-  categories: ScopeCategories,
-  assignments: ScopeAssignments,
-  ignored: ReadonlySet<string>,
-): CleanupProposal[] {
-  const counts = countByName(categories, assignments);
+export function findCleanupProposals({
+  categories,
+  assignments,
+  ignored,
+}: FindCleanupProposalsOptions): CleanupProposal[] {
+  const counts = countByName({ categories, assignments });
   const flatNames = [...counts.keys()]
     .filter((name) => !name.includes(CATEGORY_SEPARATOR) && total(counts.get(name) ?? {}) > 0)
     .sort((a, b) => a.localeCompare(b));
@@ -176,20 +187,25 @@ export function findCleanupProposals(
   return [...splits, ...merges].filter((proposal) => !ignored.has(proposal.key));
 }
 
+export type PlanCleanupOptions = {
+  /** Already normalized paths. */
+  changes: CleanupChange[];
+  categories: ScopeCategories;
+  assignments: ScopeAssignments;
+};
+
 /**
  * Turns confirmed changes into HA steps, scope by scope.
  *
  * Changes run in order. When the target name already exists in a scope (from the start, or
  * because an earlier change produced it, like "Haus - Personen" and "Haus-Personen" both going to
  * "Haus/Personen"), the entries are merged instead, since HA refuses two categories with one name.
- *
- * @param changes - Already normalized paths.
  */
-export function planCleanup(
-  changes: CleanupChange[],
-  categories: ScopeCategories,
-  assignments: ScopeAssignments,
-): CleanupOperation[] {
+export function planCleanup({
+  changes,
+  categories,
+  assignments,
+}: PlanCleanupOptions): CleanupOperation[] {
   const operations: CleanupOperation[] = [];
 
   for (const scope of CATEGORY_SCOPES) {

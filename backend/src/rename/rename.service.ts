@@ -36,6 +36,12 @@ export type RenameResult = {
 
 const FLOW_KINDS = ["automation", "script"];
 
+export type RenameOptions = {
+  entityId: string;
+  newEntityId: string;
+  withReferences: boolean;
+};
+
 /** Changes an entity ID in HA and, if wanted, in every flow that names it (docs/api.md). */
 @Injectable()
 export class RenameService {
@@ -56,7 +62,7 @@ export class RenameService {
 
     for (const [flowId, config] of snapshot.configs) {
       if (flowId === entityId) continue;
-      const count = countEntityId(config, entityId);
+      const count = countEntityId({ value: config, entityId });
       if (count === 0) continue;
 
       references.push({
@@ -96,15 +102,14 @@ export class RenameService {
    * @throws BadRequestException `ENTRY_ID_INVALID` for another domain or a malformed ID.
    * @throws ConflictException `ENTRY_ID_TAKEN` when HA already has the new ID.
    */
-  async rename(
-    entityId: string,
-    newEntityId: string,
-    withReferences: boolean,
-  ): Promise<RenameResult> {
+  async rename({ entityId, newEntityId, withReferences }: RenameOptions): Promise<RenameResult> {
     const domain = entityId.split(".")[0];
     if (!ENTITY_ID_PATTERN.test(newEntityId) || newEntityId.split(".")[0] !== domain) {
       throw new BadRequestException(
-        apiError(MESSAGE_ID.entryIdInvalid, { params: { entityId: newEntityId } }),
+        apiError({
+          message: MESSAGE_ID.entryIdInvalid,
+          details: { params: { entityId: newEntityId } },
+        }),
       );
     }
     if (newEntityId === entityId) return { entityId, updated: [], skipped: [] };
@@ -117,7 +122,10 @@ export class RenameService {
       snapshot.registry.some((entry) => entry.entity_id === newEntityId);
     if (taken) {
       throw new ConflictException(
-        apiError(MESSAGE_ID.entryIdTaken, { params: { entityId: newEntityId } }),
+        apiError({
+          message: MESSAGE_ID.entryIdTaken,
+          details: { params: { entityId: newEntityId } },
+        }),
       );
     }
 
@@ -127,7 +135,9 @@ export class RenameService {
       entity_id: entityId,
       new_entity_id: newEntityId,
     });
-    await this.overlay.update((current) => carryOver(current, entityId, newEntityId));
+    await this.overlay.update((current) =>
+      carryOver({ overlay: current, from: entityId, to: newEntityId }),
+    );
 
     const updated: EntityReference[] = [];
     const skipped: EntityReference[] = [];
@@ -145,7 +155,10 @@ export class RenameService {
         continue;
       }
 
-      const next = replaceEntityId(stored, entityId, newEntityId) as Record<string, unknown>;
+      const next = replaceEntityId({ value: stored, from: entityId, to: newEntityId }) as Record<
+        string,
+        unknown
+      >;
       await this.editor.saveConfig(kind, key, next);
       updated.push(reference);
     }
@@ -165,7 +178,7 @@ export class RenameService {
 }
 
 /** Favorite, note and hidden findings belong to the entity, so they move to the new ID. */
-function carryOver(overlay: Overlay, from: string, to: string): Overlay {
+function carryOver({ overlay, from, to }: { overlay: Overlay; from: string; to: string }): Overlay {
   const notes = { ...overlay.notes };
   const note = notes[from];
   delete notes[from];
@@ -175,7 +188,9 @@ function carryOver(overlay: Overlay, from: string, to: string): Overlay {
     ...overlay,
     favorites: overlay.favorites.map((id) => (id === from ? to : id)),
     notes,
-    checkupIgnored: overlay.checkupIgnored.map((key) => replaceEntityId(key, from, to) as string),
-    entitySorting: renameSortingEntity(overlay.entitySorting, from, to),
+    checkupIgnored: overlay.checkupIgnored.map(
+      (key) => replaceEntityId({ value: key, from, to }) as string,
+    ),
+    entitySorting: renameSortingEntity({ memory: overlay.entitySorting, from, to }),
   };
 }

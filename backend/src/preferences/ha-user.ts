@@ -20,7 +20,7 @@ export const INGRESS_USER_HEADER = {
 } as const;
 
 /** One header value; Node gives repeated headers as a list. */
-function headerValue(headers: IncomingHttpHeaders, name: string): string {
+function headerValue({ headers, name }: { headers: IncomingHttpHeaders; name: string }): string {
   const value = headers[name];
   const firstValue = Array.isArray(value) ? value[0] : value;
 
@@ -35,11 +35,11 @@ function headerValue(headers: IncomingHttpHeaders, name: string): string {
  *   login name is used, else the ID.
  */
 export function haUserFrom(headers: IncomingHttpHeaders): HaUser | null {
-  const id = headerValue(headers, INGRESS_USER_HEADER.id);
+  const id = headerValue({ headers, name: INGRESS_USER_HEADER.id });
   if (!id) return null;
 
-  const displayName = headerValue(headers, INGRESS_USER_HEADER.displayName);
-  const loginName = headerValue(headers, INGRESS_USER_HEADER.name);
+  const displayName = headerValue({ headers, name: INGRESS_USER_HEADER.displayName });
+  const loginName = headerValue({ headers, name: INGRESS_USER_HEADER.name });
 
   return { id, name: displayName || loginName || id };
 }

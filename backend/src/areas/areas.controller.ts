@@ -15,13 +15,13 @@ export class AreasController {
   @Post()
   @ResponseMessage(MESSAGE_ID.areaCreated)
   create(@Body() dto: CreateAreaDto): Promise<Area> {
-    return this.areas.create(dto.name, dto.icon ?? null);
+    return this.areas.create({ name: dto.name, icon: dto.icon ?? null });
   }
 
   @Patch(":areaId")
   @ResponseMessage(MESSAGE_ID.areaUpdated)
   update(@Param("areaId") areaId: string, @Body() dto: UpdateAreaDto): Promise<Area> {
-    return this.areas.update(areaId, dto);
+    return this.areas.update({ areaId, changes: dto });
   }
 
   @Delete(":areaId")

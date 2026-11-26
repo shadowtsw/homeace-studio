@@ -27,7 +27,7 @@ export class EntriesController {
   @Patch(":entityId")
   @ResponseMessage(MESSAGE_ID.entryUpdated)
   update(@Param("entityId") entityId: string, @Body() dto: UpdateEntryDto): Promise<Entry> {
-    return this.entriesService.update(entityId, dto);
+    return this.entriesService.update({ entityId, changes: dto });
   }
 
   /** Favorite and note (overlay only). */
@@ -37,7 +37,7 @@ export class EntriesController {
     @Param("entityId") entityId: string,
     @Body() dto: UpdateExtrasDto,
   ): Promise<null> {
-    await this.entriesService.updateExtras(entityId, dto);
+    await this.entriesService.updateExtras({ entityId, extras: dto });
 
     return null;
   }
@@ -47,7 +47,7 @@ export class EntriesController {
   @HttpCode(HttpStatus.OK)
   @ResponseMessage(MESSAGE_ID.entryMoved)
   async move(@Param("entityId") entityId: string, @Body() dto: MoveEntryDto): Promise<null> {
-    await this.entriesService.moveToCategory(entityId, dto.categoryPath);
+    await this.entriesService.moveToCategory({ entityId, categoryPath: dto.categoryPath });
 
     return null;
   }
@@ -56,25 +56,31 @@ export class EntriesController {
   @HttpCode(HttpStatus.OK)
   @ResponseMessage(MESSAGE_ID.entryActionDone)
   run(@Param("entityId") entityId: string): Promise<null> {
-    return this.act(entityId, ENTRY_ACTION.run);
+    return this.act({ entityId, action: ENTRY_ACTION.run });
   }
 
   @Post(":entityId/turn-on")
   @HttpCode(HttpStatus.OK)
   @ResponseMessage(MESSAGE_ID.entryActionDone)
   turnOn(@Param("entityId") entityId: string): Promise<null> {
-    return this.act(entityId, ENTRY_ACTION.turnOn);
+    return this.act({ entityId, action: ENTRY_ACTION.turnOn });
   }
 
   @Post(":entityId/turn-off")
   @HttpCode(HttpStatus.OK)
   @ResponseMessage(MESSAGE_ID.entryActionDone)
   turnOff(@Param("entityId") entityId: string): Promise<null> {
-    return this.act(entityId, ENTRY_ACTION.turnOff);
+    return this.act({ entityId, action: ENTRY_ACTION.turnOff });
   }
 
-  private async act(entityId: string, action: EntryAction): Promise<null> {
-    await this.entriesService.runAction(entityId, action);
+  private async act({
+    entityId,
+    action,
+  }: {
+    entityId: string;
+    action: EntryAction;
+  }): Promise<null> {
+    await this.entriesService.runAction({ entityId, action });
 
     return null;
   }

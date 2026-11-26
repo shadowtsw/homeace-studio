@@ -1,12 +1,17 @@
 import type { Overlay } from "../overlay/overlay.model";
 import type { Entry } from "./entry.model";
 
+export type WithExtrasOptions = {
+  entries: readonly Entry[];
+  overlay: Overlay;
+};
+
 /**
  * Adds the user's own extras (favorite, note) from the overlay to entries from HA.
  *
  * @returns New entry objects; entries without extras get `isFavorite: false` and `note: null`.
  */
-export function withExtras(entries: readonly Entry[], overlay: Overlay): Entry[] {
+export function withExtras({ entries, overlay }: WithExtrasOptions): Entry[] {
   const favorites = new Set(overlay.favorites);
 
   return entries.map((entry) => ({
@@ -16,17 +21,20 @@ export function withExtras(entries: readonly Entry[], overlay: Overlay): Entry[]
   }));
 }
 
+export type ApplyExtrasOptions = {
+  overlay: Overlay;
+  entityId: string;
+  /**
+   * `isFavorite` sets or clears the favorite; `note` null or blank removes the note. Missing fields
+   * stay as they are.
+   */
+  extras: { isFavorite?: boolean; note?: string | null };
+};
+
 /**
  * Applies a change of favorite and note for one entity to the overlay.
- *
- * @param extras - `isFavorite` sets or clears the favorite; `note` null or blank removes the note.
- *   Missing fields stay as they are.
  */
-export function applyExtras(
-  overlay: Overlay,
-  entityId: string,
-  extras: { isFavorite?: boolean; note?: string | null },
-): Overlay {
+export function applyExtras({ overlay, entityId, extras }: ApplyExtrasOptions): Overlay {
   const favorites = overlay.favorites.filter((id) => id !== entityId);
   const notes = { ...overlay.notes };
 
@@ -47,7 +55,12 @@ export function applyExtras(
   return { ...overlay, favorites, notes };
 }
 
+export type RemoveExtrasOptions = {
+  overlay: Overlay;
+  entityId: string;
+};
+
 /** Removes all extras of an entity, e.g. after it was deleted in HA. */
-export function removeExtras(overlay: Overlay, entityId: string): Overlay {
-  return applyExtras(overlay, entityId, { isFavorite: false, note: null });
+export function removeExtras({ overlay, entityId }: RemoveExtrasOptions): Overlay {
+  return applyExtras({ overlay, entityId, extras: { isFavorite: false, note: null } });
 }

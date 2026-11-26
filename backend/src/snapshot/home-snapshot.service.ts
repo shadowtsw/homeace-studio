@@ -16,7 +16,9 @@ import { SNAPSHOT_CACHE_MS, SNAPSHOT_CLOCK } from "./snapshot.constants";
 /** The newest run HA kept of an automation or script. */
 export type LastRun = { startedAt: string; result: RunResult; error: string | null };
 
-/** Everything the check-up, the dependencies and the area view read at once, taken at one moment. */
+/**
+ * Everything the check-up, the dependencies and the area view read at once, taken at one moment.
+ */
 export type HomeSnapshot = {
   /** When it was read (ms since epoch). */
   at: number;
@@ -101,17 +103,20 @@ export class HomeSnapshotService implements OnModuleInit {
       devices,
       areas,
       configs,
-      lastRuns: lastRunsOf(traces, registry),
+      lastRuns: lastRunsOf({ traces, registry }),
     };
     return this.cached;
   }
 }
 
 /** HA files runs under the automation id / script key, which is the registry unique_id. */
-function lastRunsOf(
-  traces: (HaTrace & { domain?: string; item_id?: string })[],
-  registry: HaEntityRegistryEntry[],
-): Map<string, LastRun> {
+function lastRunsOf({
+  traces,
+  registry,
+}: {
+  traces: (HaTrace & { domain?: string; item_id?: string })[];
+  registry: HaEntityRegistryEntry[];
+}): Map<string, LastRun> {
   const entityOf = new Map(
     registry.map((entry) => [`${entry.platform}:${entry.unique_id}`, entry.entity_id]),
   );

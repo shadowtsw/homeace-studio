@@ -105,7 +105,7 @@ describe("MCP endpoint", () => {
     expect(context.access.lastClient).toBe("test-client");
 
     // The user applies only the move in the app.
-    const result = await context.plans.apply(planId, ["op2"]);
+    const result = await context.plans.apply({ planId, operationIds: ["op2"] });
     expect(result).toEqual({ appliedCount: 1, failed: [] });
 
     const status = JSON.parse(

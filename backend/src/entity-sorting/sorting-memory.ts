@@ -4,14 +4,19 @@ import {
   type SortingRunMove,
 } from "./entity-sorting.model";
 
+export type MoveSortingPathsOptions = {
+  memory: EntitySortingMemory;
+  movePath: (path: string) => string;
+};
+
 /**
  * Folder paths in the memory follow a folder rename: rule targets, turned-down folders and the
  * last run (so undo still finds the folder).
  */
-export function moveSortingPaths(
-  memory: EntitySortingMemory,
-  movePath: (path: string) => string,
-): EntitySortingMemory {
+export function moveSortingPaths({
+  memory,
+  movePath,
+}: MoveSortingPathsOptions): EntitySortingMemory {
   const moveOptional = (path: string | null): string | null => (path ? movePath(path) : path);
 
   return {
@@ -33,12 +38,18 @@ export function moveSortingPaths(
   };
 }
 
+export type RenameSortingEntityOptions = {
+  memory: EntitySortingMemory;
+  from: string;
+  to: string;
+};
+
 /** An entity ID rename carries its bundle key (entities without a device) and its last move. */
-export function renameSortingEntity(
-  memory: EntitySortingMemory,
-  from: string,
-  to: string,
-): EntitySortingMemory {
+export function renameSortingEntity({
+  memory,
+  from,
+  to,
+}: RenameSortingEntityOptions): EntitySortingMemory {
   const renameKey = (key: string): string =>
     key === `${ENTITY_BUNDLE_PREFIX}${from}` ? `${ENTITY_BUNDLE_PREFIX}${to}` : key;
 

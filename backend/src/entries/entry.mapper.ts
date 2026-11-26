@@ -46,20 +46,28 @@ export function mapToEntries(snapshot: HaSnapshot): Entry[] {
 
   for (const registryEntry of snapshot.registryEntries) {
     const { entity_id: entityId, config_entry_id: configEntryId } = registryEntry;
-    const kind = detectKind(entityId, configEntryId, snapshot.helperConfigEntryIds);
+    const kind = detectKind({
+      entityId,
+      configEntryId,
+      helperConfigEntryIds: snapshot.helperConfigEntryIds,
+    });
 
     if (!kind) continue;
 
     registeredIds.add(entityId);
-    entries.push(fromRegistry(registryEntry, kind, lookups));
+    entries.push(fromRegistry({ registryEntry, kind, lookups }));
   }
 
   for (const state of snapshot.states) {
-    const kind = detectKind(state.entity_id, null, snapshot.helperConfigEntryIds);
+    const kind = detectKind({
+      entityId: state.entity_id,
+      configEntryId: null,
+      helperConfigEntryIds: snapshot.helperConfigEntryIds,
+    });
 
     if (!kind || registeredIds.has(state.entity_id)) continue;
 
-    entries.push(fromStateOnly(state, kind));
+    entries.push(fromStateOnly({ state, kind }));
   }
 
   return entries;
@@ -83,11 +91,15 @@ function buildLookups(snapshot: HaSnapshot): Lookups {
   };
 }
 
-function detectKind(
-  entityId: string,
-  configEntryId: string | null,
-  helperConfigEntryIds: ReadonlySet<string>,
-): EntryKind | null {
+function detectKind({
+  entityId,
+  configEntryId,
+  helperConfigEntryIds,
+}: {
+  entityId: string;
+  configEntryId: string | null;
+  helperConfigEntryIds: ReadonlySet<string>;
+}): EntryKind | null {
   const domain = domainOf(entityId);
   const kindByDomain = KIND_BY_DOMAIN[domain];
 
@@ -100,11 +112,15 @@ function detectKind(
   return isConfigEntryHelper ? ENTRY_KIND.helper : null;
 }
 
-function fromRegistry(
-  registryEntry: HaEntityRegistryEntry,
-  kind: EntryKind,
-  lookups: Lookups,
-): Entry {
+function fromRegistry({
+  registryEntry,
+  kind,
+  lookups,
+}: {
+  registryEntry: HaEntityRegistryEntry;
+  kind: EntryKind;
+  lookups: Lookups;
+}): Entry {
   const state = lookups.statesById.get(registryEntry.entity_id);
   const scope = CATEGORY_SCOPE_BY_KIND[kind];
   const categoryId = registryEntry.categories[scope] ?? null;
@@ -118,7 +134,7 @@ function fromRegistry(
     entityId: registryEntry.entity_id,
     kind,
     domain: domainOf(registryEntry.entity_id),
-    name: displayName(registryEntry, state),
+    name: displayName({ registryEntry, state }),
     // The user's icon wins; otherwise the icon the entity reports in its state.
     icon: registryEntry.icon ?? state?.attributes.icon ?? null,
     categoryId,
@@ -135,7 +151,7 @@ function fromRegistry(
   };
 }
 
-function fromStateOnly(state: HaState, kind: EntryKind): Entry {
+function fromStateOnly({ state, kind }: { state: HaState; kind: EntryKind }): Entry {
   return {
     entityId: state.entity_id,
     kind,
@@ -156,7 +172,13 @@ function fromStateOnly(state: HaState, kind: EntryKind): Entry {
 }
 
 /** Same order as HA: the user's name, then the live friendly name, then the integration's name. */
-function displayName(registryEntry: HaEntityRegistryEntry, state: HaState | undefined): string {
+function displayName({
+  registryEntry,
+  state,
+}: {
+  registryEntry: HaEntityRegistryEntry;
+  state: HaState | undefined;
+}): string {
   const userName = registryEntry.name;
   const friendlyName = state?.attributes.friendly_name;
   const integrationName = registryEntry.original_name;

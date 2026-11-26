@@ -15,7 +15,7 @@ export class DemoHaConnectionService extends HaConnectionService {
 
   override call<TResult>(type: string, payload: Record<string, unknown> = {}): Promise<TResult> {
     // Like the real connection: errors arrive as a rejected promise, never synchronously.
-    return Promise.resolve().then(() => this.fake.call(type, payload) as TResult);
+    return Promise.resolve().then(() => this.fake.call({ type, payload }) as TResult);
   }
 
   override snapshot<TEvent>(type: string): Promise<TEvent> {
@@ -23,7 +23,7 @@ export class DemoHaConnectionService extends HaConnectionService {
   }
 
   override subscribe(eventType: string, handler: HaEventHandler): void {
-    this.fake.subscribe(eventType, handler);
+    this.fake.subscribe({ eventType, handler });
   }
 
   override onModuleDestroy(): void {
@@ -42,7 +42,7 @@ export class DemoHaRestService extends HaRestService {
   }
 
   override post<TResult>(path: string, body: unknown): Promise<TResult> {
-    return Promise.resolve().then(() => this.fake.restPost(path, body) as TResult);
+    return Promise.resolve().then(() => this.fake.restPost({ path, body }) as TResult);
   }
 
   override delete(path: string): Promise<void> {

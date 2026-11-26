@@ -155,7 +155,15 @@ export function analyzeCheckup(input: CheckupInput): CheckupFinding[] {
   const ageOf = (timeMs: number): number => input.now.getTime() - timeMs;
   /** Unknown creation time counts as old: no grace. */
   const createdAgo = (id: string): number => ageOf(input.createdAt.get(id) ?? 0);
-  const add = (entry: Entry, kind: CheckupKind, extra: Partial<CheckupFinding> = {}): void => {
+  const add = ({
+    entry,
+    kind,
+    extra = {},
+  }: {
+    entry: Entry;
+    kind: CheckupKind;
+    extra?: Partial<CheckupFinding>;
+  }): void => {
     findings.push({
       key: `${kind}:${entry.entityId}`,
       kind,
@@ -194,18 +202,26 @@ export function analyzeCheckup(input: CheckupInput): CheckupFinding[] {
       const unavailable = refs.filter((id) => stateById.get(id)?.state === STATE_UNAVAILABLE);
 
       if (gone.length > 0) {
-        add(entry, CHECKUP_KIND.gone, {
-          refs: gone.map((id) => ({ entityId: id, name: null, since: null })),
+        add({
+          entry,
+          kind: CHECKUP_KIND.gone,
+          extra: {
+            refs: gone.map((id) => ({ entityId: id, name: null, since: null })),
+          },
         });
       }
 
       if (unavailable.length > 0) {
-        add(entry, CHECKUP_KIND.unavailable, {
-          refs: unavailable.map((id) => ({
-            entityId: id,
-            name: nameOf(id),
-            since: stateById.get(id)?.last_changed ?? null,
-          })),
+        add({
+          entry,
+          kind: CHECKUP_KIND.unavailable,
+          extra: {
+            refs: unavailable.map((id) => ({
+              entityId: id,
+              name: nameOf(id),
+              since: stateById.get(id)?.last_changed ?? null,
+            })),
+          },
         });
       }
     }
@@ -213,16 +229,21 @@ export function analyzeCheckup(input: CheckupInput): CheckupFinding[] {
     // A newer run that went fine makes the finding go away; ignoring hides only this one failure.
     const lastRun = input.lastRuns.get(entry.entityId);
     if (lastRun?.result === RUN_ERROR) {
-      add(entry, CHECKUP_KIND.failed, {
-        key: `${CHECKUP_KIND.failed}:${entry.entityId}:${lastRun.startedAt}`,
-        failedAt: lastRun.startedAt,
-        error: lastRun.error,
+      add({
+        entry,
+        kind: CHECKUP_KIND.failed,
+        extra: {
+          key: `${CHECKUP_KIND.failed}:${entry.entityId}:${lastRun.startedAt}`,
+          failedAt: lastRun.startedAt,
+          error: lastRun.error,
+        },
       });
     }
 
     if (entry.kind === "helper" && CHECKED_HELPER_DOMAINS.has(entry.domain)) {
       const isNew = createdAgo(entry.entityId) < UNUSED_GRACE_DAYS * DAY_MS;
-      if (!isNew && !allConfigText.includes(entry.entityId)) add(entry, CHECKUP_KIND.unused);
+      if (!isNew && !allConfigText.includes(entry.entityId))
+        add({ entry, kind: CHECKUP_KIND.unused });
     }
 
     if (entry.kind === "automation") {
@@ -230,7 +251,8 @@ export function analyzeCheckup(input: CheckupInput): CheckupFinding[] {
       // Never ran: counted from its creation, so a new automation is not reported right away
       const age = lastTriggered ? ageOf(Date.parse(lastTriggered)) : createdAgo(entry.entityId);
 
-      if (age > STALE_AFTER_DAYS * DAY_MS) add(entry, CHECKUP_KIND.stale, { lastTriggered });
+      if (age > STALE_AFTER_DAYS * DAY_MS)
+        add({ entry, kind: CHECKUP_KIND.stale, extra: { lastTriggered } });
     }
   }
 

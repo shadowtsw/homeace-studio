@@ -27,7 +27,7 @@ export class HelpersController {
     @Param("entityId") entityId: string,
     @Body() dto: UpdateHelperSettingsDto,
   ): Promise<HelperSettingsView> {
-    return this.helpersService.updateSettings(entityId, dto.settings);
+    return this.helpersService.updateSettings({ entityId, settings: dto.settings });
   }
 
   @Delete(":entityId")

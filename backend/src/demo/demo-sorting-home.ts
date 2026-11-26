@@ -193,7 +193,7 @@ function room(spec: (typeof ROOMS)[number]): DemoEntity[] {
   return entities;
 }
 
-function plug(name: string, areaId?: string): DemoEntity[] {
+function plug({ name, areaId }: { name: string; areaId?: string }): DemoEntity[] {
   return device({
     name,
     areaId,
@@ -233,16 +233,18 @@ function plug(name: string, areaId?: string): DemoEntity[] {
   });
 }
 
-function plain(
-  entityId: string,
-  name: string,
-  platform: string,
-  extra: Partial<DemoEntity> = {},
-): DemoEntity {
+type PlainOptions = {
+  entityId: string;
+  name: string;
+  platform: string;
+  extra?: Partial<DemoEntity>;
+};
+
+function plain({ entityId, name, platform, extra = {} }: PlainOptions): DemoEntity {
   return { entityId, name, state: "on", platform, ...extra };
 }
 
-const heatPump = (name: string, parts: Part[]): DemoEntity[] =>
+const heatPump = ({ name, parts }: { name: string; parts: Part[] }): DemoEntity[] =>
   device({ name, platform: "modbus", manufacturer: "Vaillant", model: "aroTHERM", parts });
 
 const castDevice = (name: string): DemoEntity[] =>
@@ -273,31 +275,46 @@ const ENTITIES: DemoEntity[] = [
     model: "LTW012",
     parts: [{ domain: "light", labels: ["lights"] }],
   }),
-  ...plug("Coffee machine", "kitchen"),
-  ...plug("Office desk", "office"),
-  ...plug("Washing machine plug", "basement"),
-  ...plug("Kitchen fridge"),
-  ...plug("Kitchen dishwasher"),
-  ...heatPump("Heat pump outdoor unit", [
-    { domain: "sensor", name: "Power", state: "1800", unit: "W", deviceClass: "power" },
-    {
-      domain: "sensor",
-      name: "Outside temperature",
-      state: "4.5",
-      unit: "°C",
-      deviceClass: "temperature",
-    },
-    { domain: "binary_sensor", name: "Fault", state: "off", deviceClass: "problem" },
-  ]),
-  ...heatPump("Heat pump heating circuit", [
-    { domain: "sensor", name: "Flow", state: "35", unit: "°C", deviceClass: "temperature" },
-    { domain: "sensor", name: "Return", state: "29", unit: "°C", deviceClass: "temperature" },
-    { domain: "binary_sensor", name: "Pump", state: "on", deviceClass: "running" },
-  ]),
-  ...heatPump("Heat pump hot water", [
-    { domain: "sensor", name: "Temperature", state: "48", unit: "°C", deviceClass: "temperature" },
-    { domain: "switch", name: "Boost", state: "off" },
-  ]),
+  ...plug({ name: "Coffee machine", areaId: "kitchen" }),
+  ...plug({ name: "Office desk", areaId: "office" }),
+  ...plug({ name: "Washing machine plug", areaId: "basement" }),
+  ...plug({ name: "Kitchen fridge" }),
+  ...plug({ name: "Kitchen dishwasher" }),
+  ...heatPump({
+    name: "Heat pump outdoor unit",
+    parts: [
+      { domain: "sensor", name: "Power", state: "1800", unit: "W", deviceClass: "power" },
+      {
+        domain: "sensor",
+        name: "Outside temperature",
+        state: "4.5",
+        unit: "°C",
+        deviceClass: "temperature",
+      },
+      { domain: "binary_sensor", name: "Fault", state: "off", deviceClass: "problem" },
+    ],
+  }),
+  ...heatPump({
+    name: "Heat pump heating circuit",
+    parts: [
+      { domain: "sensor", name: "Flow", state: "35", unit: "°C", deviceClass: "temperature" },
+      { domain: "sensor", name: "Return", state: "29", unit: "°C", deviceClass: "temperature" },
+      { domain: "binary_sensor", name: "Pump", state: "on", deviceClass: "running" },
+    ],
+  }),
+  ...heatPump({
+    name: "Heat pump hot water",
+    parts: [
+      {
+        domain: "sensor",
+        name: "Temperature",
+        state: "48",
+        unit: "°C",
+        deviceClass: "temperature",
+      },
+      { domain: "switch", name: "Boost", state: "off" },
+    ],
+  }),
   ...device({
     name: "FRITZ!Box 7590",
     platform: "fritz",
@@ -338,25 +355,70 @@ const ENTITIES: DemoEntity[] = [
     "Fire detector 3",
     "Detector attic stairs",
   ].flatMap(smoke),
-  plain("sun.sun", "Sun", "sun", { state: "above_horizon" }),
-  plain("zone.home", "Home", "zone", { state: "2" }),
-  plain("zone.work", "Work", "zone", { state: "0" }),
-  plain("person.alex", "Alex", "person", { state: "home" }),
-  plain("person.sam", "Sam", "person", { state: "not_home" }),
-  plain("weather.forecast_home", "Forecast Home", "met", { state: "cloudy" }),
-  plain("update.home_assistant_core_update", "Home Assistant Core", "hassio", { state: "off" }),
-  plain("update.hacs_update", "HACS", "hacs", { state: "off" }),
-  plain("sensor.backup_last_successful_backup", "Last successful backup", "backup", {
-    state: "2026-11-25T03:00:00Z",
-    attributes: { device_class: "timestamp" },
+  plain({ entityId: "sun.sun", name: "Sun", platform: "sun", extra: { state: "above_horizon" } }),
+  plain({ entityId: "zone.home", name: "Home", platform: "zone", extra: { state: "2" } }),
+  plain({ entityId: "zone.work", name: "Work", platform: "zone", extra: { state: "0" } }),
+  plain({ entityId: "person.alex", name: "Alex", platform: "person", extra: { state: "home" } }),
+  plain({ entityId: "person.sam", name: "Sam", platform: "person", extra: { state: "not_home" } }),
+  plain({
+    entityId: "weather.forecast_home",
+    name: "Forecast Home",
+    platform: "met",
+    extra: { state: "cloudy" },
   }),
-  plain("sensor.open_windows", "Open windows", "template", { state: "1" }),
-  plain("sensor.test_temperature", "Test temperature", "template", { state: "21" }),
-  plain("switch.test_switch", "Test switch", "template", { state: "off" }),
-  plain("sensor.old_meter", "Old meter", "template", { state: "1834", isStateOnly: true }),
-  plain("sensor.legacy_outside_temperature", "Legacy outside temperature", "template", {
-    state: "4",
-    isStateOnly: true,
+  plain({
+    entityId: "update.home_assistant_core_update",
+    name: "Home Assistant Core",
+    platform: "hassio",
+    extra: { state: "off" },
+  }),
+  plain({
+    entityId: "update.hacs_update",
+    name: "HACS",
+    platform: "hacs",
+    extra: { state: "off" },
+  }),
+  plain({
+    entityId: "sensor.backup_last_successful_backup",
+    name: "Last successful backup",
+    platform: "backup",
+    extra: {
+      state: "2026-11-25T03:00:00Z",
+      attributes: { device_class: "timestamp" },
+    },
+  }),
+  plain({
+    entityId: "sensor.open_windows",
+    name: "Open windows",
+    platform: "template",
+    extra: { state: "1" },
+  }),
+  plain({
+    entityId: "sensor.test_temperature",
+    name: "Test temperature",
+    platform: "template",
+    extra: { state: "21" },
+  }),
+  plain({
+    entityId: "switch.test_switch",
+    name: "Test switch",
+    platform: "template",
+    extra: { state: "off" },
+  }),
+  plain({
+    entityId: "sensor.old_meter",
+    name: "Old meter",
+    platform: "template",
+    extra: { state: "1834", isStateOnly: true },
+  }),
+  plain({
+    entityId: "sensor.legacy_outside_temperature",
+    name: "Legacy outside temperature",
+    platform: "template",
+    extra: {
+      state: "4",
+      isStateOnly: true,
+    },
   }),
 ];
 
@@ -367,7 +429,8 @@ type FlowSpec = {
   uses: { trigger?: string[]; condition?: string[]; action?: string[] };
 };
 
-const idOf = (name: string, domain: string): string => `${domain}.${slug(name)}`;
+const idOf = ({ name, domain }: { name: string; domain: string }): string =>
+  `${domain}.${slug(name)}`;
 
 function automation(spec: FlowSpec): DemoEntity {
   const { trigger = [], condition = [], action = [] } = spec.uses;
@@ -398,18 +461,26 @@ function automation(spec: FlowSpec): DemoEntity {
   };
 }
 
-function lightOnMotion(roomName: string, id: string, category?: string): DemoEntity {
+function lightOnMotion({
+  roomName,
+  id,
+  category,
+}: {
+  roomName: string;
+  id: string;
+  category?: string;
+}): DemoEntity {
   return automation({
     id,
     name: `${roomName} light on motion`,
     category,
     uses: {
-      trigger: [idOf(`${roomName} motion sensor Motion`, "binary_sensor")],
+      trigger: [idOf({ name: `${roomName} motion sensor Motion`, domain: "binary_sensor" })],
       condition: [
-        idOf(`${roomName} motion sensor Illuminance`, "sensor"),
+        idOf({ name: `${roomName} motion sensor Illuminance`, domain: "sensor" }),
         "binary_sensor.anyone_home",
       ],
-      action: [idOf(`${roomName} ceiling light`, "light")],
+      action: [idOf({ name: `${roomName} ceiling light`, domain: "light" })],
     },
   });
 }
@@ -417,11 +488,11 @@ function lightOnMotion(roomName: string, id: string, category?: string): DemoEnt
 const HEATED = ROOMS.filter((item) => item.heating);
 
 const FLOWS: DemoEntity[] = [
-  lightOnMotion("Kitchen", "1764100000001", "House/Kitchen/Lights"),
-  lightOnMotion("Office", "1764100000002", "House/Office"),
-  lightOnMotion("Guest room", "1764100000003", "House/Guest room"),
-  lightOnMotion("Kids room", "1764100000004"),
-  lightOnMotion("Basement", "1764100000005"),
+  lightOnMotion({ roomName: "Kitchen", id: "1764100000001", category: "House/Kitchen/Lights" }),
+  lightOnMotion({ roomName: "Office", id: "1764100000002", category: "House/Office" }),
+  lightOnMotion({ roomName: "Guest room", id: "1764100000003", category: "House/Guest room" }),
+  lightOnMotion({ roomName: "Kids room", id: "1764100000004" }),
+  lightOnMotion({ roomName: "Basement", id: "1764100000005" }),
   automation({
     id: "1764100000006",
     name: "Cooking mode",
@@ -433,8 +504,8 @@ const FLOWS: DemoEntity[] = [
     name: "Window open: heating off",
     category: "Climate",
     uses: {
-      trigger: HEATED.map((item) => idOf(`${item.name} window`, "binary_sensor")),
-      action: HEATED.map((item) => idOf(`${item.name} thermostat`, "climate")),
+      trigger: HEATED.map((item) => idOf({ name: `${item.name} window`, domain: "binary_sensor" })),
+      action: HEATED.map((item) => idOf({ name: `${item.name} thermostat`, domain: "climate" })),
     },
   }),
   automation({

@@ -14,6 +14,12 @@ import { MESSAGE_ID } from "../messages/message-ids";
 
 const DOMAIN_SEPARATOR = ".";
 
+export type DuplicateOptions = {
+  entityId: string;
+  /** Name of the copy, e.g. "Terrace light (Kopie)"; the UI words it in its language. */
+  name: string;
+};
+
 /**
  * Copies an automation, script or storage helper with what HA's own "duplicate" leaves out: folder,
  * labels and area. An automation copy starts switched off, so original and copy do not both react
@@ -30,12 +36,11 @@ export class DuplicateService {
   ) {}
 
   /**
-   * @param name - Name of the copy, e.g. "Terrace light (Kopie)"; the UI words it in its language.
    * @throws BadRequestException `FLOW_UNSUPPORTED` / `FLOW_NOT_EDITABLE` like the flow editor.
    */
-  async duplicate(entityId: string, name: string): Promise<{ entityId: string }> {
+  async duplicate({ entityId, name }: DuplicateOptions): Promise<{ entityId: string }> {
     if (HELPER_TYPES.some((type) => entityId.startsWith(type + DOMAIN_SEPARATOR))) {
-      return this.duplicateHelper(entityId, name);
+      return this.duplicateHelper({ entityId, name });
     }
 
     const { kind, key } = await this.flowEditor.requireStoredFlow(entityId);
@@ -43,20 +48,25 @@ export class DuplicateService {
     const entry = (await this.entries.findAll()).find((item) => item.entityId === entityId);
 
     if (!source || !entry) {
-      throw new NotFoundException(apiError(MESSAGE_ID.entryNotFound, { params: { entityId } }));
+      throw new NotFoundException(
+        apiError({ message: MESSAGE_ID.entryNotFound, details: { params: { entityId } } }),
+      );
     }
 
-    const created = await this.flows.create(
-      { kind, name, categoryPath: entry.categoryPath ?? undefined },
-      source,
-    );
+    const created = await this.flows.create({
+      dto: { kind, name, categoryPath: entry.categoryPath ?? undefined },
+      copyOf: source,
+    });
 
-    await this.entries.update(created.entityId, {
-      labelIds: entry.labels.map((label) => label.labelId),
-      areaId: entry.area?.areaId ?? null,
+    await this.entries.update({
+      entityId: created.entityId,
+      changes: {
+        labelIds: entry.labels.map((label) => label.labelId),
+        areaId: entry.area?.areaId ?? null,
+      },
     });
     if (kind === FLOW_KIND.automation) {
-      await this.entries.runAction(created.entityId, ENTRY_ACTION.turnOff);
+      await this.entries.runAction({ entityId: created.entityId, action: ENTRY_ACTION.turnOff });
     }
 
     return created;
@@ -65,13 +75,22 @@ export class DuplicateService {
   /**
    * @throws BadRequestException `HELPER_NOT_EDITABLE` for config-entry helpers (template, group …).
    */
-  private async duplicateHelper(entityId: string, name: string): Promise<{ entityId: string }> {
+  private async duplicateHelper({
+    entityId,
+    name,
+  }: {
+    entityId: string;
+    name: string;
+  }): Promise<{ entityId: string }> {
     const entry = await this.requireEntry(entityId);
-    const copyId = await this.helpers.copy(entityId, name, entry.categoryPath);
+    const copyId = await this.helpers.copy({ entityId, name, categoryPath: entry.categoryPath });
 
-    await this.entries.update(copyId, {
-      labelIds: entry.labels.map((label) => label.labelId),
-      areaId: entry.area?.areaId ?? null,
+    await this.entries.update({
+      entityId: copyId,
+      changes: {
+        labelIds: entry.labels.map((label) => label.labelId),
+        areaId: entry.area?.areaId ?? null,
+      },
     });
 
     return { entityId: copyId };
@@ -81,7 +100,9 @@ export class DuplicateService {
     const entry = (await this.entries.findAll()).find((item) => item.entityId === entityId);
 
     if (!entry) {
-      throw new NotFoundException(apiError(MESSAGE_ID.entryNotFound, { params: { entityId } }));
+      throw new NotFoundException(
+        apiError({ message: MESSAGE_ID.entryNotFound, details: { params: { entityId } } }),
+      );
     }
 
     return entry;

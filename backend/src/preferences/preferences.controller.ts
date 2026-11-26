@@ -26,7 +26,7 @@ export class PreferencesController {
     @Headers() headers: IncomingHttpHeaders,
     @Body() dto: ImportPreferencesDto,
   ): Promise<UserPreferences> {
-    return this.preferences.importFirst(haUserFrom(headers), dto.values);
+    return this.preferences.importFirst({ user: haUserFrom(headers), values: dto.values });
   }
 
   @Put(":name")
@@ -35,6 +35,6 @@ export class PreferencesController {
     @Param("name") name: string,
     @Body() dto: SetPreferenceDto,
   ): Promise<UserPreferences> {
-    return this.preferences.set(haUserFrom(headers), name, dto.value);
+    return this.preferences.set({ user: haUserFrom(headers), name, value: dto.value });
   }
 }

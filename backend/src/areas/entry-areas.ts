@@ -73,12 +73,14 @@ export function deriveEntryAreas(input: EntryAreasInput): EntryAreas[] {
     return deviceName ?? friendlyNames.get(entityId) ?? entityId;
   };
 
-  const add = (
-    found: Map<string, Candidate>,
-    areaId: string,
-    source: AreaSource,
-    via: EntryAreaLink["via"],
-  ): void => {
+  type AddOptions = {
+    found: Map<string, Candidate>;
+    areaId: string;
+    source: AreaSource;
+    via: EntryAreaLink["via"];
+  };
+
+  const add = ({ found, areaId, source, via }: AddOptions): void => {
     const name = areaNames.get(areaId);
     if (!name) return;
     const existing = found.get(areaId);
@@ -107,7 +109,12 @@ export function deriveEntryAreas(input: EntryAreasInput): EntryAreas[] {
     for (const usedId of input.index.get(entry.entityId)?.keys() ?? []) {
       const areaId = areaOf(usedId);
       if (areaId)
-        add(found, areaId, AREA_SOURCE.uses, { entityId: usedId, name: viaNameOf(usedId) });
+        add({
+          found,
+          areaId,
+          source: AREA_SOURCE.uses,
+          via: { entityId: usedId, name: viaNameOf(usedId) },
+        });
     }
 
     direct.set(entry.entityId, sorted(found));
@@ -124,9 +131,14 @@ export function deriveEntryAreas(input: EntryAreasInput): EntryAreas[] {
       if (userId === entry.entityId || !refs.has(entry.entityId)) continue;
 
       for (const link of direct.get(userId) ?? []) {
-        add(found, link.areaId, AREA_SOURCE.usedBy, {
-          entityId: userId,
-          name: entryNames.get(userId) ?? friendlyNames.get(userId) ?? userId,
+        add({
+          found,
+          areaId: link.areaId,
+          source: AREA_SOURCE.usedBy,
+          via: {
+            entityId: userId,
+            name: entryNames.get(userId) ?? friendlyNames.get(userId) ?? userId,
+          },
         });
       }
     }

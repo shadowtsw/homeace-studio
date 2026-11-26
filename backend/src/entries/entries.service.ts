@@ -12,6 +12,27 @@ import type { EntryRepository } from "./repositories/entry.repository";
 
 export type EntryExtras = { isFavorite?: boolean; note?: string | null };
 
+export type MoveToCategoryOptions = {
+  entityId: string;
+  /** Target folder like "Haus/Pool"; null removes the category. */
+  categoryPath: string | null;
+};
+
+export type UpdateOptions = {
+  entityId: string;
+  changes: EntryChanges;
+};
+
+export type RunActionOptions = {
+  entityId: string;
+  action: EntryAction;
+};
+
+export type UpdateExtrasOptions = {
+  entityId: string;
+  extras: EntryExtras;
+};
+
 @Injectable()
 export class EntriesService {
   constructor(
@@ -24,17 +45,15 @@ export class EntriesService {
   async findAll(): Promise<Entry[]> {
     const [entries, overlay] = await Promise.all([this.entries.findAll(), this.overlay.read()]);
 
-    return withExtras(entries, overlay).sort((first, second) =>
+    return withExtras({ entries, overlay }).sort((first, second) =>
       first.name.localeCompare(second.name, undefined, { sensitivity: "base" }),
     );
   }
 
   /**
    * Moves an entry into a folder, written straight to HA's entity registry.
-   *
-   * @param categoryPath - Target folder like "Haus/Pool"; null removes the category.
    */
-  async moveToCategory(entityId: string, categoryPath: string | null): Promise<void> {
+  async moveToCategory({ entityId, categoryPath }: MoveToCategoryOptions): Promise<void> {
     const entry = await this.requireRegistered(entityId);
 
     await this.categories.assign({
@@ -57,7 +76,7 @@ export class EntriesService {
 
     if (!details) {
       throw new BadRequestException(
-        apiError(MESSAGE_ID.entryNotInRegistry, { params: { entityId } }),
+        apiError({ message: MESSAGE_ID.entryNotInRegistry, details: { params: { entityId } } }),
       );
     }
 
@@ -68,7 +87,7 @@ export class EntriesService {
    * Changes name, icon, area, labels, aliases, hidden or disabled in HA.
    * @returns The entry as HA now has it.
    */
-  async update(entityId: string, changes: EntryChanges): Promise<Entry> {
+  async update({ entityId, changes }: UpdateOptions): Promise<Entry> {
     await this.requireRegistered(entityId);
     await this.entries.update(entityId, normalizeChanges(changes));
 
@@ -80,13 +99,16 @@ export class EntriesService {
    *
    * @throws BadRequestException `ENTRY_ACTION_UNSUPPORTED` when the domain has no such action.
    */
-  async runAction(entityId: string, action: EntryAction): Promise<void> {
+  async runAction({ entityId, action }: RunActionOptions): Promise<void> {
     const entry = await this.requireEntry(entityId);
     const service = SERVICE_BY_ACTION[action][entry.domain];
 
     if (!service) {
       throw new BadRequestException(
-        apiError(MESSAGE_ID.entryActionUnsupported, { params: { entityId, action } }),
+        apiError({
+          message: MESSAGE_ID.entryActionUnsupported,
+          details: { params: { entityId, action } },
+        }),
       );
     }
 
@@ -94,19 +116,21 @@ export class EntriesService {
   }
 
   /** Saves favorite and note (overlay only). */
-  async updateExtras(entityId: string, extras: EntryExtras): Promise<void> {
+  async updateExtras({ entityId, extras }: UpdateExtrasOptions): Promise<void> {
     await this.requireEntry(entityId);
-    await this.overlay.update((overlay) => applyExtras(overlay, entityId, extras));
+    await this.overlay.update((overlay) => applyExtras({ overlay, entityId, extras }));
   }
 
   private async requireEntry(entityId: string): Promise<Entry> {
     const entry = await this.entries.findOne(entityId);
 
     if (!entry) {
-      throw new NotFoundException(apiError(MESSAGE_ID.entryNotFound, { params: { entityId } }));
+      throw new NotFoundException(
+        apiError({ message: MESSAGE_ID.entryNotFound, details: { params: { entityId } } }),
+      );
     }
 
-    const [withOverlay] = withExtras([entry], await this.overlay.read());
+    const [withOverlay] = withExtras({ entries: [entry], overlay: await this.overlay.read() });
 
     return withOverlay ?? entry;
   }
@@ -117,7 +141,7 @@ export class EntriesService {
 
     if (!entry.isInRegistry) {
       throw new BadRequestException(
-        apiError(MESSAGE_ID.entryNotInRegistry, { params: { entityId } }),
+        apiError({ message: MESSAGE_ID.entryNotInRegistry, details: { params: { entityId } } }),
       );
     }
 

@@ -13,7 +13,7 @@ export class EditorController {
   /** All trigger, condition and action types with translated names and their fields. */
   @Get("catalog")
   catalog(@Query("lang") language?: string): Promise<EditorCatalog> {
-    return this.editorService.getCatalog(language);
+    return this.editorService.getCatalog({ language });
   }
 
   /** The config of an automation or script, with names of the entities it mentions. */
@@ -26,6 +26,6 @@ export class EditorController {
   @Put("flows/:entityId")
   @ResponseMessage(MESSAGE_ID.flowSaved)
   save(@Param("entityId") entityId: string, @Body() dto: SaveFlowDto): Promise<Flow> {
-    return this.editorService.saveFlow(entityId, dto.config);
+    return this.editorService.saveFlow({ entityId, config: dto.config });
   }
 }

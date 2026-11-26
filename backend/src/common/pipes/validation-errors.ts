@@ -9,24 +9,36 @@ type FieldError = NonNullable<ApiErrorPayload["fields"]>[number];
 
 /** Builds a `VALIDATION_FAILED` error with one entry per failed constraint. */
 export function createValidationException(errors: ValidationError[]): BadRequestException {
-  const fields = errors.flatMap((error) => collectFieldErrors(error, ""));
+  const fields = errors.flatMap((error) => collectFieldErrors({ error, parentPath: "" }));
 
-  return new BadRequestException(apiError(MESSAGE_ID.validationFailed, { fields }));
+  return new BadRequestException(
+    apiError({ message: MESSAGE_ID.validationFailed, details: { fields } }),
+  );
 }
 
-function collectFieldErrors(error: ValidationError, parentPath: string): FieldError[] {
+function collectFieldErrors({
+  error,
+  parentPath,
+}: {
+  error: ValidationError;
+  parentPath: string;
+}): FieldError[] {
   const field = parentPath ? `${parentPath}.${error.property}` : error.property;
   const constraintNames = Object.keys(error.constraints ?? {});
   const ownErrors = constraintNames.map((constraintName) => ({
     field,
     message: toMessageId(constraintName),
   }));
-  const childErrors = (error.children ?? []).flatMap((child) => collectFieldErrors(child, field));
+  const childErrors = (error.children ?? []).flatMap((child) =>
+    collectFieldErrors({ error: child, parentPath: field }),
+  );
 
   return [...ownErrors, ...childErrors];
 }
 
-/** class-validator names constraints in camelCase (`isString`); message IDs are UPPER_SNAKE_CASE. */
+/**
+ * class-validator names constraints in camelCase (`isString`); message IDs are UPPER_SNAKE_CASE.
+ */
 function toMessageId(constraintName: string): MessageId {
   const candidate = constraintName.replace(/([a-z])([A-Z])/g, "$1_$2").toUpperCase();
 

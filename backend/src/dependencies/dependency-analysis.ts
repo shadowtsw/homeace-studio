@@ -54,46 +54,51 @@ const TOP_LEVEL: Record<string, Context> = {
   sequence: "action",
 };
 
+export type CollectRoleRefsOptions = {
+  config: unknown;
+  isKnown: (id: string) => boolean;
+};
+
 /**
  * Every entity a flow config names, with what it does with each: plain IDs in `entity_id` fields
  * and targets, scripts called directly (`action: script.good_night`) and, inside templates, IDs of
  * entities that exist (`isKnown`), so that a word like `states.sensor` is not taken for one.
  */
-export function collectRoleRefs(config: unknown, isKnown: (id: string) => boolean): RoleRefs {
+export function collectRoleRefs({ config, isKnown }: CollectRoleRefsOptions): RoleRefs {
   const refs: RoleRefs = new Map();
-  const add = (id: string, role: DependencyRole): void => {
+  const add = ({ id, role }: { id: string; role: DependencyRole }): void => {
     const roles = refs.get(id) ?? new Set<DependencyRole>();
     roles.add(role);
     refs.set(id, roles);
   };
-  const roleOf = (id: string, context: Context): DependencyRole => {
+  const roleOf = ({ id, context }: { id: string; context: Context }): DependencyRole => {
     if (context !== "action") return context;
     return CALLED_DOMAINS.has(id.split(".")[0] ?? "")
       ? DEPENDENCY_ROLE.call
       : DEPENDENCY_ROLE.action;
   };
-  const addIds = (value: unknown, context: Context): void => {
+  const addIds = ({ value, context }: { value: unknown; context: Context }): void => {
     const values = Array.isArray(value) ? value : typeof value === "string" ? value.split(",") : [];
 
     for (const item of values) {
       const id = typeof item === "string" ? item.trim() : "";
-      if (ENTITY_ID.test(id)) add(id, roleOf(id, context));
+      if (ENTITY_ID.test(id)) add({ id, role: roleOf({ id, context }) });
     }
   };
-  const addTemplateIds = (text: string, context: Context): void => {
+  const addTemplateIds = ({ text, context }: { text: string; context: Context }): void => {
     for (const match of text.matchAll(TEMPLATE_ID)) {
       const id = match[1] ?? "";
-      if (isKnown(id)) add(id, context === "action" ? DEPENDENCY_ROLE.value : context);
+      if (isKnown(id)) add({ id, role: context === "action" ? DEPENDENCY_ROLE.value : context });
     }
   };
-  const walk = (node: unknown, context: Context): void => {
+  const walk = ({ node, context }: { node: unknown; context: Context }): void => {
     if (typeof node === "string") {
-      if (node.includes(TEMPLATE_MARK)) addTemplateIds(node, context);
+      if (node.includes(TEMPLATE_MARK)) addTemplateIds({ text: node, context });
       return;
     }
 
     if (Array.isArray(node)) {
-      node.forEach((item) => walk(item, context));
+      node.forEach((item) => walk({ node: item, context }));
       return;
     }
 
@@ -106,8 +111,9 @@ export function collectRoleRefs(config: unknown, isKnown: (id: string) => boolea
 
     for (const [key, value] of Object.entries(record)) {
       if (key === "entity_id") {
-        addIds(value, own);
-        if (typeof value === "string" && value.includes(TEMPLATE_MARK)) addTemplateIds(value, own);
+        addIds({ value, context: own });
+        if (typeof value === "string" && value.includes(TEMPLATE_MARK))
+          addTemplateIds({ text: value, context: own });
         continue;
       }
 
@@ -118,19 +124,22 @@ export function collectRoleRefs(config: unknown, isKnown: (id: string) => boolea
       ) {
         if (value.startsWith(SCRIPT_PREFIX)) {
           const service = value.slice(SCRIPT_PREFIX.length);
-          if (!SCRIPT_SERVICES.has(service)) add(value, DEPENDENCY_ROLE.call);
+          if (!SCRIPT_SERVICES.has(service)) add({ id: value, role: DEPENDENCY_ROLE.call });
         }
         continue;
       }
 
-      walk(value, own === "action" && CONDITION_KEYS.has(key) ? "condition" : own);
+      walk({
+        node: value,
+        context: own === "action" && CONDITION_KEYS.has(key) ? "condition" : own,
+      });
     }
   };
 
   if (config && typeof config === "object" && !Array.isArray(config)) {
     for (const [key, value] of Object.entries(config as Record<string, unknown>)) {
       // Top-level `action` / `condition` are the old plural keys, always lists there.
-      walk(value, TOP_LEVEL[key] ?? "action");
+      walk({ node: value, context: TOP_LEVEL[key] ?? "action" });
     }
   }
 
@@ -168,7 +177,10 @@ export function buildDependencyIndex(input: DependencyIndexInput): DependencyInd
   for (const [userId, config] of input.configs) {
     const refs: RoleRefs = new Map();
 
-    for (const [id, roles] of collectRoleRefs(config, (candidate) => known.has(candidate))) {
+    for (const [id, roles] of collectRoleRefs({
+      config,
+      isKnown: (candidate) => known.has(candidate),
+    })) {
       const target = resolve(id);
       if (target === userId) continue;
       refs.set(target, new Set([...(refs.get(target) ?? []), ...roles]));

@@ -12,17 +12,21 @@ const CONFIG = {
 
 describe("countEntityId", () => {
   it("counts the whole ID in fields, lists and templates", () => {
-    expect(countEntityId(CONFIG, "light.terrace")).toBe(4);
+    expect(countEntityId({ value: CONFIG, entityId: "light.terrace" })).toBe(4);
   });
 
   it("leaves service names out: action: script.x calls the script by its key", () => {
-    expect(countEntityId(CONFIG, "script.light_terrace")).toBe(0);
+    expect(countEntityId({ value: CONFIG, entityId: "script.light_terrace" })).toBe(0);
   });
 });
 
 describe("replaceEntityId", () => {
   it("replaces every occurrence and nothing that only looks alike", () => {
-    const next = replaceEntityId(CONFIG, "light.terrace", "light.patio") as typeof CONFIG;
+    const next = replaceEntityId({
+      value: CONFIG,
+      from: "light.terrace",
+      to: "light.patio",
+    }) as typeof CONFIG;
 
     expect(next.triggers[0]?.entity_id).toBe("light.patio");
     expect(next.conditions[0]?.entity_id).toEqual(["light.patio", "light.terrace_paths"]);
@@ -33,11 +37,15 @@ describe("replaceEntityId", () => {
     expect(next.actions[2]?.wait_template).toBe(
       "{{ is_state('light.patio', 'off') and states.xlight.terrace }}",
     );
-    expect(countEntityId(next, "light.terrace")).toBe(0);
+    expect(countEntityId({ value: next, entityId: "light.terrace" })).toBe(0);
   });
 
   it("keeps service calls as they are", () => {
-    const next = replaceEntityId(CONFIG, "script.light_terrace", "script.patio") as typeof CONFIG;
+    const next = replaceEntityId({
+      value: CONFIG,
+      from: "script.light_terrace",
+      to: "script.patio",
+    }) as typeof CONFIG;
 
     expect(next.actions[1]).toEqual({ action: "script.light_terrace" });
   });

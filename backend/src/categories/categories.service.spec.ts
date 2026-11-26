@@ -198,7 +198,7 @@ describe("CategoriesService", () => {
     it("puts an entity into a folder in HomeAce Studio's own scope, other scopes untouched", async () => {
       const otherId = categories.seed("automation", "Haus/Terrasse", ["light.terrasse"]);
 
-      await service.moveEntity("light.terrasse", "Haus/Terrasse");
+      await service.moveEntity({ entityId: "light.terrasse", targetPath: "Haus/Terrasse" });
 
       expect(categories.names("homeace_entities")).toEqual(["Haus/Terrasse"]);
       expect(categories.assignments.get("homeace_entities:light.terrasse")).toBe(
@@ -208,8 +208,8 @@ describe("CategoriesService", () => {
     });
 
     it("takes it out again and removes the folder it created when it became empty", async () => {
-      await service.moveEntity("light.terrasse", "Haus/Terrasse");
-      await service.moveEntity("light.terrasse", null);
+      await service.moveEntity({ entityId: "light.terrasse", targetPath: "Haus/Terrasse" });
+      await service.moveEntity({ entityId: "light.terrasse", targetPath: null });
 
       expect(categories.assignments.get("homeace_entities:light.terrasse")).toBeNull();
       expect(categories.names("homeace_entities")).toEqual([]);
@@ -219,16 +219,16 @@ describe("CategoriesService", () => {
     it("refuses an entity without a registry entry", async () => {
       categories.unregistered.add("light.yaml");
 
-      await expect(service.moveEntity("light.yaml", "Haus")).rejects.toBeInstanceOf(
-        BadRequestException,
-      );
+      await expect(
+        service.moveEntity({ entityId: "light.yaml", targetPath: "Haus" }),
+      ).rejects.toBeInstanceOf(BadRequestException);
       expect(categories.names("homeace_entities")).toEqual([]);
     });
   });
 
   describe("moveEntities", () => {
     it("moves many entities, creates each folder once and cleans up the emptied one", async () => {
-      await service.moveEntity("sensor.old", "Alt");
+      await service.moveEntity({ entityId: "sensor.old", targetPath: "Alt" });
 
       const results = await service.moveEntities([
         { entityId: "light.a", targetPath: "Haus/Küche" },
@@ -243,7 +243,7 @@ describe("CategoriesService", () => {
     });
 
     it("reports per entity: unchanged, changed since, and not in the registry", async () => {
-      await service.moveEntity("light.a", "Haus");
+      await service.moveEntity({ entityId: "light.a", targetPath: "Haus" });
       categories.unregistered.add("sensor.yaml");
 
       const results = await service.moveEntities([
@@ -267,7 +267,7 @@ describe("CategoriesService", () => {
       categories.seed("automation", "Hausflur");
       categories.seed("helpers", "Haus/Terrasse/Licht");
 
-      const renamedCount = await service.rename("Haus", "Heim");
+      const renamedCount = await service.rename({ from: "Haus", to: "Heim" });
 
       expect(renamedCount).toBe(3);
       expect(categories.names("automation")).toEqual(["Hausflur", "Heim", "Heim/Terrasse"]);
@@ -279,7 +279,9 @@ describe("CategoriesService", () => {
       categories.seed("script", "Haus/Terrasse");
       categories.seed("script", "Heim/Terrasse");
 
-      await expect(service.rename("Haus", "Heim")).rejects.toBeInstanceOf(ConflictException);
+      await expect(service.rename({ from: "Haus", to: "Heim" })).rejects.toBeInstanceOf(
+        ConflictException,
+      );
       expect(categories.names("automation")).toEqual(["Haus/Terrasse"]);
     });
 
@@ -287,13 +289,15 @@ describe("CategoriesService", () => {
       categories.seed("automation", "Haus");
       overlay.data.folders = ["Haus/Pool", "Hausflur/Neu", "Garage"];
 
-      await service.rename("Haus", "Heim");
+      await service.rename({ from: "Haus", to: "Heim" });
 
       expect(overlay.data.folders).toEqual(["Heim/Pool", "Hausflur/Neu", "Garage"]);
     });
 
     it("refuses to move a folder into itself", async () => {
-      await expect(service.rename("Haus", "Haus/Neu")).rejects.toBeInstanceOf(BadRequestException);
+      await expect(service.rename({ from: "Haus", to: "Haus/Neu" })).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
     });
   });
 });

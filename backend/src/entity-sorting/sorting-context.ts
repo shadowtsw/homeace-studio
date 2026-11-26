@@ -46,7 +46,13 @@ const ENTITY_CATEGORIES = new Set(["config", "diagnostic"]);
  * integrations name them today. HA 2026.11 leaves `has_entity_name` out of the list, so it is only
  * used when present (tested on a throwaway HA).
  */
-function registryName(entry: HaEntityRegistryEntry, deviceName: string | null): string {
+function registryName({
+  entry,
+  deviceName,
+}: {
+  entry: HaEntityRegistryEntry;
+  deviceName: string | null;
+}): string {
   if (entry.name) return entry.name;
 
   const usesDeviceName = entry.has_entity_name ?? deviceName !== null;
@@ -82,7 +88,7 @@ export function buildSortingContext(sources: SortingSources): SortingContext {
 
       return {
         entityId: entry.entity_id,
-        name: state?.attributes.friendly_name ?? registryName(entry, deviceName),
+        name: state?.attributes.friendly_name ?? registryName({ entry, deviceName }),
         domain: entry.entity_id.split(DOMAIN_SEPARATOR)[0] ?? "",
         deviceId: device?.id ?? null,
         areaId: entry.area_id ?? (device ? deviceContext.areaIdOf(device) : null),
@@ -137,7 +143,7 @@ export function buildSortingContext(sources: SortingSources): SortingContext {
     })),
     floors: sources.floors.map((floor) => ({ floorId: floor.floor_id, name: floor.name })),
     integrations: sources.integrations,
-    flows: flowsOf(sources.entries, sources.dependencies),
+    flows: flowsOf({ entries: sources.entries, dependencies: sources.dependencies }),
     entries: sources.entries.map((entry) => ({
       entityId: entry.entityId,
       name: entry.name,
@@ -146,14 +152,20 @@ export function buildSortingContext(sources: SortingSources): SortingContext {
       labels: entry.labels.map((label) => label.name),
       areaId: entry.area?.areaId ?? null,
     })),
-    folders: foldersOf(sources, fromRegistry),
-    folderKinds: folderKindsOf(sources, fromRegistry),
+    folders: foldersOf({ sources, entities: fromRegistry }),
+    folderKinds: folderKindsOf({ sources, entities: fromRegistry }),
     memory: sources.memory,
   };
 }
 
 /** Users from the dependency index that are entries; their folder is what the tool learns from. */
-function flowsOf(entries: Entry[], dependencies: DependencyIndex): SortingFlow[] {
+function flowsOf({
+  entries,
+  dependencies,
+}: {
+  entries: Entry[];
+  dependencies: DependencyIndex;
+}): SortingFlow[] {
   const byId = new Map(entries.map((entry) => [entry.entityId, entry]));
   const flows: SortingFlow[] = [];
 
@@ -173,25 +185,34 @@ function flowsOf(entries: Entry[], dependencies: DependencyIndex): SortingFlow[]
   return flows;
 }
 
-function folderKindsOf(
-  sources: SortingSources,
-  entities: SortingEntity[],
-): Record<string, FolderContent[]> {
+function folderKindsOf({
+  sources,
+  entities,
+}: {
+  sources: SortingSources;
+  entities: SortingEntity[];
+}): Record<string, FolderContent[]> {
   const kinds = new Map<string, Set<FolderContent>>();
-  const add = (path: string | null, kind: FolderContent): void => {
+  const add = ({ path, kind }: { path: string | null; kind: FolderContent }): void => {
     if (path) kinds.set(path, (kinds.get(path) ?? new Set()).add(kind));
   };
 
-  sources.entries.forEach((entry) => add(entry.categoryPath, entry.kind));
-  entities.forEach((entity) => add(entity.categoryPath, "entity"));
+  sources.entries.forEach((entry) => add({ path: entry.categoryPath, kind: entry.kind }));
+  entities.forEach((entity) => add({ path: entity.categoryPath, kind: "entity" }));
   sources.emptyFolders.forEach((path) => {
-    if (!kinds.has(path)) add(path, "empty");
+    if (!kinds.has(path)) add({ path, kind: "empty" });
   });
 
   return Object.fromEntries([...kinds].map(([path, set]) => [path, [...set].sort()]));
 }
 
-function foldersOf(sources: SortingSources, entities: SortingEntity[]): string[] {
+function foldersOf({
+  sources,
+  entities,
+}: {
+  sources: SortingSources;
+  entities: SortingEntity[];
+}): string[] {
   const paths = [
     ...sources.entries.map((entry) => entry.categoryPath),
     ...entities.map((entity) => entity.categoryPath),

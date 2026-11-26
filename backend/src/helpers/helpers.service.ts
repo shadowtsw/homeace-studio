@@ -39,6 +39,17 @@ type StorageHelper = {
 /** The settings of a storage helper as the form shows them. */
 export type HelperSettingsView = { type: HelperType; settings: HelperSettings };
 
+export type UpdateSettingsOptions = {
+  entityId: string;
+  settings: HelperSettings;
+};
+
+export type CopyOptions = {
+  entityId: string;
+  name: string;
+  categoryPath: string | null;
+};
+
 @Injectable()
 export class HelpersService {
   private readonly logger = new Logger(HelpersService.name);
@@ -58,7 +69,7 @@ export class HelpersService {
   async create(dto: CreateHelperDto): Promise<{ entityId: string }> {
     const payload = this.toPayload(dto);
     const helperId = await this.helpers.create(dto.type, payload);
-    const entityId = await this.waitForEntityId(dto.type, helperId);
+    const entityId = await this.waitForEntityId({ type: dto.type, helperId });
 
     if (!entityId) {
       // The helper exists; only the folder could not be set. Fall back to HA's usual ID scheme.
@@ -90,22 +101,27 @@ export class HelpersService {
     const registration = await this.helpers.findRegistration(entityId);
 
     if (!registration) {
-      throw new NotFoundException(apiError(MESSAGE_ID.entryNotFound, { params: { entityId } }));
+      throw new NotFoundException(
+        apiError({ message: MESSAGE_ID.entryNotFound, details: { params: { entityId } } }),
+      );
     }
 
     const type = HELPER_TYPES.find((helperType) => helperType === registration.platform);
 
     if (!type) {
       throw new BadRequestException(
-        apiError(MESSAGE_ID.helperNotDeletable, { params: { entityId } }),
+        apiError({ message: MESSAGE_ID.helperNotDeletable, details: { params: { entityId } } }),
       );
     }
 
     await this.helpers.remove(type, registration.uniqueId);
-    await this.overlay.update((overlay) => removeExtras(overlay, entityId));
+    await this.overlay.update((overlay) => removeExtras({ overlay, entityId }));
 
     if (registration.categoryId) {
-      await this.categories.cleanUp(CATEGORY_SCOPE.helpers, registration.categoryId);
+      await this.categories.cleanUp({
+        scope: CATEGORY_SCOPE.helpers,
+        categoryId: registration.categoryId,
+      });
     }
 
     this.logger.log(`Deleted ${entityId}`);
@@ -119,7 +135,10 @@ export class HelpersService {
   async settings(entityId: string): Promise<HelperSettingsView> {
     const helper = await this.requireStorageHelper(entityId);
 
-    return { type: helper.type, settings: helperSettingsOf(helper.type, helper.stored) };
+    return {
+      type: helper.type,
+      settings: helperSettingsOf({ type: helper.type, item: helper.stored }),
+    };
   }
 
   /**
@@ -129,9 +148,11 @@ export class HelpersService {
    * @returns The settings as HA now has them.
    * @throws BadRequestException `HELPER_SETTINGS_INVALID` naming the first invalid setting.
    */
-  async updateSettings(entityId: string, settings: HelperSettings): Promise<HelperSettingsView> {
+  async updateSettings({ entityId, settings }: UpdateSettingsOptions): Promise<HelperSettingsView> {
     const helper = await this.requireStorageHelper(entityId);
-    const payload = this.checked(() => buildUpdatePayload(helper.type, helper.stored, settings));
+    const payload = this.checked(() =>
+      buildUpdatePayload({ type: helper.type, stored: helper.stored, settings }),
+    );
 
     await this.helpers.update(helper.type, helper.helperId, payload);
     this.logger.log(`Saved the settings of ${entityId}`);
@@ -145,10 +166,13 @@ export class HelpersService {
    *
    * @returns The entity ID of the copy.
    */
-  async copy(entityId: string, name: string, categoryPath: string | null): Promise<string> {
+  async copy({ entityId, name, categoryPath }: CopyOptions): Promise<string> {
     const helper = await this.requireStorageHelper(entityId);
-    const helperId = await this.helpers.create(helper.type, buildCopyPayload(helper.stored, name));
-    const copyId = await this.waitForEntityId(helper.type, helperId);
+    const helperId = await this.helpers.create(
+      helper.type,
+      buildCopyPayload({ stored: helper.stored, name }),
+    );
+    const copyId = await this.waitForEntityId({ type: helper.type, helperId });
 
     if (!copyId) {
       this.logger.warn(`Entity of the copy of ${entityId} not found; category not set`);
@@ -175,7 +199,9 @@ export class HelpersService {
   private async requireStorageHelper(entityId: string): Promise<StorageHelper> {
     const registration = await this.helpers.findRegistration(entityId);
     const notFound = (): NotFoundException =>
-      new NotFoundException(apiError(MESSAGE_ID.entryNotFound, { params: { entityId } }));
+      new NotFoundException(
+        apiError({ message: MESSAGE_ID.entryNotFound, details: { params: { entityId } } }),
+      );
 
     if (!registration) throw notFound();
 
@@ -183,7 +209,7 @@ export class HelpersService {
 
     if (!type) {
       throw new BadRequestException(
-        apiError(MESSAGE_ID.helperNotEditable, { params: { entityId } }),
+        apiError({ message: MESSAGE_ID.helperNotEditable, details: { params: { entityId } } }),
       );
     }
 
@@ -196,18 +222,28 @@ export class HelpersService {
 
   private toPayload(dto: CreateHelperDto): Record<string, unknown> {
     return this.checked(() =>
-      buildHelperPayload(dto.type, dto.name.trim(), dto.icon?.trim(), dto.settings ?? {}),
+      buildHelperPayload({
+        type: dto.type,
+        name: dto.name.trim(),
+        icon: dto.icon?.trim(),
+        settings: dto.settings ?? {},
+      }),
     );
   }
 
-  /** Runs a payload builder; an invalid setting becomes `HELPER_SETTINGS_INVALID` with its field. */
+  /**
+   * Runs a payload builder; an invalid setting becomes `HELPER_SETTINGS_INVALID` with its field.
+   */
   private checked(build: () => Record<string, unknown>): Record<string, unknown> {
     try {
       return build();
     } catch (error) {
       if (error instanceof HelperSettingsError) {
         throw new BadRequestException(
-          apiError(MESSAGE_ID.helperSettingsInvalid, { params: { field: error.field } }),
+          apiError({
+            message: MESSAGE_ID.helperSettingsInvalid,
+            details: { params: { field: error.field } },
+          }),
         );
       }
 
@@ -216,7 +252,13 @@ export class HelpersService {
   }
 
   /** HA registers the entity a moment after the helper; ask a few times. */
-  private async waitForEntityId(type: HelperType, helperId: string): Promise<string | null> {
+  private async waitForEntityId({
+    type,
+    helperId,
+  }: {
+    type: HelperType;
+    helperId: string;
+  }): Promise<string | null> {
     for (let attempt = 0; attempt < ENTITY_LOOKUP_ATTEMPTS; attempt++) {
       const entityId = await this.helpers.findEntityId(type, helperId);
 

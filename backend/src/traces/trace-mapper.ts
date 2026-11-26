@@ -1,6 +1,8 @@
 import { RUN_RESULT, type Run, type RunResult, type RunStart, type RunStep } from "./traces.model";
 
-/** A run as HA's `trace/get` answers it (only the fields we read); trace/list leaves out `trace`. */
+/**
+ * A run as HA's `trace/get` answers it (only the fields we read); trace/list leaves out `trace`.
+ */
 export type HaTrace = {
   run_id: string;
   state: string;
@@ -50,7 +52,7 @@ function resultOf(trace: HaTrace): RunResult {
   return EXECUTION_RESULT[trace.script_execution ?? ""] ?? RUN_RESULT.unknown;
 }
 
-function startOf(trace: HaTrace, steps: HaTraceStep[]): RunStart {
+function startOf({ trace, steps }: { trace: HaTrace; steps: HaTraceStep[] }): RunStart {
   const triggerStep = steps.find((step) => TRIGGER_PATH.test(step.path));
   const trigger = record(record(triggerStep?.changed_variables)?.trigger);
 
@@ -71,7 +73,7 @@ function startOf(trace: HaTrace, steps: HaTraceStep[]): RunStart {
     from: null,
     to: null,
     description: trace.trigger ?? null,
-    by: startedBy(trace, steps),
+    by: startedBy({ trace, steps }),
   };
 }
 
@@ -79,7 +81,7 @@ function startOf(trace: HaTrace, steps: HaTraceStep[]): RunStart {
  * Who started a run that no trigger of its own started. An automation run by hand still carries a
  * `parent_id` (the context of the service call), so its manual trigger step is checked first.
  */
-function startedBy(trace: HaTrace, steps: HaTraceStep[]): RunStart["by"] {
+function startedBy({ trace, steps }: { trace: HaTrace; steps: HaTraceStep[] }): RunStart["by"] {
   if (steps.some((step) => step.path === MANUAL_TRIGGER_PATH)) return "user";
   if (trace.context?.parent_id) return "flow";
 
@@ -99,7 +101,7 @@ export function toRun(trace: HaTrace): Run {
     result: resultOf(trace),
     lastStep: trace.last_step,
     error: trace.error ?? null,
-    start: startOf(trace, steps),
+    start: startOf({ trace, steps }),
     steps: steps.map((step): RunStep => ({
       path: step.path,
       at: step.timestamp,

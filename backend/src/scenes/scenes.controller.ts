@@ -37,14 +37,14 @@ export class ScenesController {
   @Put(":entityId")
   @ResponseMessage(MESSAGE_ID.sceneSaved)
   save(@Param("entityId") entityId: string, @Body() dto: SceneEntitiesDto): Promise<SceneView> {
-    return this.scenes.save(entityId, dto.entities);
+    return this.scenes.save({ entityId, entities: dto.entities });
   }
 
   @Post(":entityId/preview")
   @HttpCode(HttpStatus.OK)
   @ResponseMessage(MESSAGE_ID.scenePreviewShown)
   async preview(@Param("entityId") entityId: string, @Body() dto: SceneEntitiesDto): Promise<null> {
-    await this.scenes.preview(entityId, dto.entities);
+    await this.scenes.preview({ sceneId: entityId, entities: dto.entities });
     return null;
   }
 
@@ -52,7 +52,7 @@ export class ScenesController {
   @HttpCode(HttpStatus.OK)
   @ResponseMessage(MESSAGE_ID.sceneRestored)
   async restore(@Param("entityId") entityId: string, @Body() dto: RestoreSceneDto): Promise<null> {
-    await this.scenes.restore(entityId, dto.entityIds);
+    await this.scenes.restore({ sceneId: entityId, deviceIds: dto.entityIds });
     return null;
   }
 }

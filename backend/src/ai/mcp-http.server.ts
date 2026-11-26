@@ -35,7 +35,14 @@ type JsonRpcMessage = { method?: unknown; params?: { clientInfo?: { name?: unkno
 
 class BodyTooLargeError extends Error {}
 
-function sendError(response: ServerResponse, status: number, code: number, message: string): void {
+type SendErrorOptions = {
+  response: ServerResponse;
+  status: number;
+  code: number;
+  message: string;
+};
+
+function sendError({ response, status, code, message }: SendErrorOptions): void {
   response.writeHead(status, { "Content-Type": "application/json" });
   response.end(JSON.stringify({ jsonrpc: "2.0", error: { code, message }, id: null }));
 }
@@ -95,7 +102,7 @@ export class McpHttpServer implements OnApplicationBootstrap, OnModuleDestroy {
 
   /** @param port - 0 picks a free port (tests). @returns The port it listens on. */
   start(port: number): Promise<number> {
-    const server = createServer((request, response) => void this.handle(request, response));
+    const server = createServer((request, response) => void this.handle({ request, response }));
     this.server = server;
 
     return new Promise((resolve, reject) => {
@@ -112,46 +119,52 @@ export class McpHttpServer implements OnApplicationBootstrap, OnModuleDestroy {
     this.server?.close();
   }
 
-  private async handle(request: IncomingMessage, response: ServerResponse): Promise<void> {
+  private async handle({
+    request,
+    response,
+  }: {
+    request: IncomingMessage;
+    response: ServerResponse;
+  }): Promise<void> {
     try {
       if (new URL(request.url ?? "/", "http://localhost").pathname !== MCP_PATH) {
-        return sendError(
+        return sendError({
           response,
-          HTTP.notFound,
-          JSON_RPC.serverError,
-          `Not found; use ${MCP_PATH}`,
-        );
+          status: HTTP.notFound,
+          code: JSON_RPC.serverError,
+          message: `Not found; use ${MCP_PATH}`,
+        });
       }
 
       const authorization = await this.access.authorize(request.headers.authorization);
 
       if (authorization === "off") {
-        return sendError(
+        return sendError({
           response,
-          HTTP.unavailable,
-          JSON_RPC.serverError,
-          "MCP access is switched off in HomeAce Studio (Settings → AI access).",
-        );
+          status: HTTP.unavailable,
+          code: JSON_RPC.serverError,
+          message: "MCP access is switched off in HomeAce Studio (Settings → AI access).",
+        });
       }
 
       if (authorization === "denied") {
         response.setHeader("WWW-Authenticate", 'Bearer realm="HomeAce Studio"');
-        return sendError(
+        return sendError({
           response,
-          HTTP.unauthorized,
-          JSON_RPC.serverError,
-          "Missing or wrong token.",
-        );
+          status: HTTP.unauthorized,
+          code: JSON_RPC.serverError,
+          message: "Missing or wrong token.",
+        });
       }
 
       if (request.method !== "POST") {
         response.setHeader("Allow", "POST");
-        return sendError(
+        return sendError({
           response,
-          HTTP.methodNotAllowed,
-          JSON_RPC.serverError,
-          "Only POST is supported.",
-        );
+          status: HTTP.methodNotAllowed,
+          code: JSON_RPC.serverError,
+          message: "Only POST is supported.",
+        });
       }
 
       let message: unknown;
@@ -160,14 +173,19 @@ export class McpHttpServer implements OnApplicationBootstrap, OnModuleDestroy {
         message = JSON.parse(await readBody(request));
       } catch (error) {
         if (error instanceof BodyTooLargeError) {
-          return sendError(
+          return sendError({
             response,
-            HTTP.payloadTooLarge,
-            JSON_RPC.serverError,
-            "Request too large.",
-          );
+            status: HTTP.payloadTooLarge,
+            code: JSON_RPC.serverError,
+            message: "Request too large.",
+          });
         }
-        return sendError(response, HTTP.badRequest, JSON_RPC.parseError, "Invalid JSON.");
+        return sendError({
+          response,
+          status: HTTP.badRequest,
+          code: JSON_RPC.parseError,
+          message: "Invalid JSON.",
+        });
       }
 
       const client = clientNameOf(message);
@@ -193,7 +211,12 @@ export class McpHttpServer implements OnApplicationBootstrap, OnModuleDestroy {
       this.logger.error(`MCP request failed: ${String(error)}`);
 
       if (!response.headersSent) {
-        sendError(response, HTTP.internalError, JSON_RPC.serverError, "Internal error.");
+        sendError({
+          response,
+          status: HTTP.internalError,
+          code: JSON_RPC.serverError,
+          message: "Internal error.",
+        });
       }
     }
   }

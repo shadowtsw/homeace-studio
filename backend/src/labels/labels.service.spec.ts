@@ -50,17 +50,21 @@ describe("LabelsService", () => {
   it("renames and recolours a label but keeps its id, so flows keep working", async () => {
     const { service } = setup();
 
-    expect(await service.update("lights", { name: "Lighting", color: "blue" })).toMatchObject({
+    expect(
+      await service.update({ labelId: "lights", fields: { name: "Lighting", color: "blue" } }),
+    ).toMatchObject({
       labelId: "lights",
       name: "Lighting",
       color: "blue",
     });
-    await expect(service.update("lights", { name: "Weather" })).rejects.toMatchObject({
+    await expect(
+      service.update({ labelId: "lights", fields: { name: "Weather" } }),
+    ).rejects.toMatchObject({
       response: { message: "LABEL_NAME_TAKEN" },
     });
     // Its own name in another case is fine; null clears the colour.
     await expect(
-      service.update("lights", { name: "LIGHTING", color: null }),
+      service.update({ labelId: "lights", fields: { name: "LIGHTING", color: null } }),
     ).resolves.toMatchObject({
       name: "LIGHTING",
       color: null,
@@ -88,16 +92,21 @@ describe("label usage", () => {
     ({ entity_id: entityId, labels }) as HaEntityRegistryEntry;
 
   it("counts entries, other entities, devices and areas apart", () => {
-    const usage = labelUsage("lights", {
-      entries: [entry("script.all_off", ["lights"]), entry("script.other", [])],
-      registry: [
-        registryEntry("script.all_off", ["lights"]),
-        registryEntry("light.terrace", ["lights"]),
-        registryEntry("light.garden", []),
-      ],
-      devices: [{ id: "d1", name: "Lamp", name_by_user: null, area_id: null, labels: ["lights"] }],
-      areas: [{ area_id: "terrace", name: "Terrace", icon: null, labels: ["lights", "x"] }],
-      configs: new Map(),
+    const usage = labelUsage({
+      labelId: "lights",
+      sources: {
+        entries: [entry("script.all_off", ["lights"]), entry("script.other", [])],
+        registry: [
+          registryEntry("script.all_off", ["lights"]),
+          registryEntry("light.terrace", ["lights"]),
+          registryEntry("light.garden", []),
+        ],
+        devices: [
+          { id: "d1", name: "Lamp", name_by_user: null, area_id: null, labels: ["lights"] },
+        ],
+        areas: [{ area_id: "terrace", name: "Terrace", icon: null, labels: ["lights", "x"] }],
+        configs: new Map(),
+      },
     });
 
     expect(usage).toMatchObject({
@@ -110,32 +119,35 @@ describe("label usage", () => {
   });
 
   it("finds flows that use the label as a target, also nested and in a list", () => {
-    const usage = labelUsage("lights", {
-      entries: [entry("script.all_off", []), entry("automation.night", [])],
-      registry: [],
-      devices: [],
-      areas: [],
-      configs: new Map<string, unknown>([
-        [
-          "script.all_off",
-          { sequence: [{ action: "light.turn_off", target: { label_id: "lights" } }] },
-        ],
-        [
-          "automation.night",
-          {
-            actions: [
-              {
-                if: [],
-                then: [{ action: "light.turn_off", target: { label_id: ["x", "lights"] } }],
-              },
-            ],
-          },
-        ],
-        [
-          "automation.other",
-          { actions: [{ action: "light.turn_on", target: { label_id: "weather" } }] },
-        ],
-      ]),
+    const usage = labelUsage({
+      labelId: "lights",
+      sources: {
+        entries: [entry("script.all_off", []), entry("automation.night", [])],
+        registry: [],
+        devices: [],
+        areas: [],
+        configs: new Map<string, unknown>([
+          [
+            "script.all_off",
+            { sequence: [{ action: "light.turn_off", target: { label_id: "lights" } }] },
+          ],
+          [
+            "automation.night",
+            {
+              actions: [
+                {
+                  if: [],
+                  then: [{ action: "light.turn_off", target: { label_id: ["x", "lights"] } }],
+                },
+              ],
+            },
+          ],
+          [
+            "automation.other",
+            { actions: [{ action: "light.turn_on", target: { label_id: "weather" } }] },
+          ],
+        ]),
+      },
     });
 
     expect(usage.flowsAsTarget.map((flow) => flow.entityId)).toEqual([

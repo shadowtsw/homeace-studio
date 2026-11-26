@@ -24,6 +24,16 @@ export type SortingMemoryChanges = Omit<EntitySortingMemory, "lastRun">;
 
 export type SortingMove = { entityId: string; categoryPath: string | null };
 
+export type ApplyMovesOptions = {
+  runId: string;
+  moves: SortingMove[];
+};
+
+export type UndoOptions = {
+  runId: string;
+  entityIds: string[];
+};
+
 /** The tool "Entitäten einsortieren" (docs/features/entity-sorting.md). */
 @Injectable()
 export class EntitySortingService {
@@ -73,7 +83,7 @@ export class EntitySortingService {
    * One batch of a run. The first batch of a new `runId` replaces the last run, so undo always
    * covers the whole latest apply, however many batches it took.
    */
-  async applyMoves(runId: string, moves: SortingMove[]): Promise<EntityMoveResult[]> {
+  async applyMoves({ runId, moves }: ApplyMovesOptions): Promise<EntityMoveResult[]> {
     const results = await this.categories.moveEntities(
       moves.map((move) => ({ entityId: move.entityId, targetPath: move.categoryPath })),
     );
@@ -105,12 +115,12 @@ export class EntitySortingService {
    *
    * @throws NotFoundException `ENTITY_SORTING_RUN_NOT_FOUND` when `runId` is not the last run.
    */
-  async undo(runId: string, entityIds: string[]): Promise<EntityMoveResult[]> {
+  async undo({ runId, entityIds }: UndoOptions): Promise<EntityMoveResult[]> {
     const overlay = await this.overlay.read();
     const run = overlay.entitySorting?.lastRun;
 
     if (!run || run.runId !== runId) {
-      throw new NotFoundException(apiError(MESSAGE_ID.entitySortingRunNotFound));
+      throw new NotFoundException(apiError({ message: MESSAGE_ID.entitySortingRunNotFound }));
     }
 
     const wanted = new Set(entityIds);

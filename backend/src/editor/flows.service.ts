@@ -28,6 +28,11 @@ function pickIdentity(config: Record<string, unknown>): Record<string, unknown> 
 }
 const ENTITY_ID_SEPARATOR = ".";
 
+export type CreateOptions = {
+  dto: CreateFlowDto;
+  copyOf?: Record<string, unknown>;
+};
+
 /** Creating and deleting whole automations and scripts (the editor service edits them). */
 @Injectable()
 export class FlowsService {
@@ -49,12 +54,9 @@ export class FlowsService {
    * @returns The entity ID HA gave the new flow.
    * @throws BadRequestException `FLOW_INVALID` when HA rejects the config.
    */
-  async create(
-    dto: CreateFlowDto,
-    copyOf?: Record<string, unknown>,
-  ): Promise<{ entityId: string }> {
+  async create({ dto, copyOf }: CreateOptions): Promise<{ entityId: string }> {
     const name = dto.name.trim();
-    const fresh = await this.newConfig(dto.kind, name);
+    const fresh = await this.newConfig({ kind: dto.kind, name });
     const key = fresh.key;
     // A copy takes the whole flow; only the id (automations) and the name are new.
     const config = copyOf ? { ...copyOf, ...pickIdentity(fresh.config) } : fresh.config;
@@ -63,7 +65,7 @@ export class FlowsService {
       throw toFlowError(error);
     });
 
-    const entityId = await this.waitForEntityId(dto.kind, key);
+    const entityId = await this.waitForEntityId({ kind: dto.kind, key });
 
     if (!entityId) {
       // The flow exists; only the folder could not be set. HA names it after a slug of the name.
@@ -97,17 +99,20 @@ export class FlowsService {
     const categoryId = await this.editor.loadCategoryId(kind, entityId);
 
     await this.editor.deleteConfig(kind, key);
-    await this.overlay.update((overlay) => removeExtras(overlay, entityId));
+    await this.overlay.update((overlay) => removeExtras({ overlay, entityId }));
 
-    if (categoryId) await this.categories.cleanUp(kind, categoryId);
+    if (categoryId) await this.categories.cleanUp({ scope: kind, categoryId });
 
     this.logger.log(`Deleted ${entityId}`);
   }
 
-  private async newConfig(
-    kind: FlowKind,
-    name: string,
-  ): Promise<{ key: string; config: Record<string, unknown> }> {
+  private async newConfig({
+    kind,
+    name,
+  }: {
+    kind: FlowKind;
+    name: string;
+  }): Promise<{ key: string; config: Record<string, unknown> }> {
     if (kind === FLOW_KIND.automation) {
       // HA's own editor uses the current time in milliseconds as id.
       const id = String(this.now());
@@ -125,19 +130,28 @@ export class FlowsService {
       };
     }
 
-    const key = await firstFreeKey(scriptKeyFor(name), async (candidate) => {
-      const [stored, entityId] = await Promise.all([
-        this.editor.loadStoredConfig(kind, candidate),
-        this.editor.findEntityId(kind, candidate),
-      ]);
-      return stored !== null || entityId !== null;
+    const key = await firstFreeKey({
+      base: scriptKeyFor(name),
+      isTaken: async (candidate) => {
+        const [stored, entityId] = await Promise.all([
+          this.editor.loadStoredConfig(kind, candidate),
+          this.editor.findEntityId(kind, candidate),
+        ]);
+        return stored !== null || entityId !== null;
+      },
     });
 
     return { key, config: { alias: name, sequence: [], mode: DEFAULT_MODE } };
   }
 
   /** HA registers the entity after reloading its automations or scripts; ask a few times. */
-  private async waitForEntityId(kind: FlowKind, key: string): Promise<string | null> {
+  private async waitForEntityId({
+    kind,
+    key,
+  }: {
+    kind: FlowKind;
+    key: string;
+  }): Promise<string | null> {
     for (let attempt = 0; attempt < FLOW_LOOKUP_ATTEMPTS; attempt++) {
       const entityId = await this.editor.findEntityId(kind, key);
 

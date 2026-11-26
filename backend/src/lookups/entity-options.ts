@@ -32,7 +32,9 @@ export type EntityOption = {
   labels: string[];
   /** Its folder ("Haus/Terrasse"), a category in HomeAce Studio's own scope; null when none. */
   categoryPath: string | null;
-  /** Only entities with a registry entry can be put into a folder (YAML without unique_id cannot). */
+  /**
+   * Only entities with a registry entry can be put into a folder (YAML without unique_id cannot).
+   */
   isInRegistry: boolean;
   /**
    * Scripts only: the key in scripts.yaml. `action: script.<key>` runs the script and waits for it;
@@ -57,8 +59,13 @@ const SCRIPT_PLATFORM = "script";
 const stringList = (value: unknown): string[] | null =>
   Array.isArray(value) && value.every((item) => typeof item === "string") ? value : null;
 
+export type NameWithinDeviceOptions = {
+  name: string;
+  deviceName: string | null;
+};
+
 /** "Terrace motion sensor Battery" in device "Terrace motion sensor" → "Battery". */
-export function nameWithinDevice(name: string, deviceName: string | null): string {
+export function nameWithinDevice({ name, deviceName }: NameWithinDeviceOptions): string {
   if (!deviceName) return name;
 
   const prefix = `${deviceName} `;
@@ -90,7 +97,7 @@ export function toEntityOptions(sources: EntitySources): EntityOption[] {
     return {
       entityId: state.entity_id,
       name,
-      shortName: nameWithinDevice(name, deviceName),
+      shortName: nameWithinDevice({ name, deviceName }),
       domain: state.entity_id.split(DOMAIN_SEPARATOR)[0] ?? "",
       state: state.state,
       unit: typeof unit === "string" ? unit : null,

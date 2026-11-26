@@ -52,11 +52,11 @@ describe("RenameService", () => {
   it("renames the entity, its references and its extras", async () => {
     const { service, editor, overlay } = setup();
 
-    const result = await service.rename(
-      "input_number.terrace_brightness",
-      "input_number.patio_brightness",
-      true,
-    );
+    const result = await service.rename({
+      entityId: "input_number.terrace_brightness",
+      newEntityId: "input_number.patio_brightness",
+      withReferences: true,
+    });
 
     expect(result.entityId).toBe("input_number.patio_brightness");
     expect(result.updated.map((item) => item.entityId)).toEqual(["script.terrace_evening_mood"]);
@@ -72,7 +72,11 @@ describe("RenameService", () => {
   it("keeps the old references when asked to", async () => {
     const { service, editor } = setup();
 
-    const result = await service.rename("script.all_off", "script.everything_off", false);
+    const result = await service.rename({
+      entityId: "script.all_off",
+      newEntityId: "script.everything_off",
+      withReferences: false,
+    });
 
     expect(result.updated).toEqual([]);
     expect(result.skipped.map((item) => item.entityId)).toEqual(["script.good_night"]);
@@ -85,10 +89,18 @@ describe("RenameService", () => {
     const { service } = setup();
 
     await expect(
-      service.rename("input_number.terrace_brightness", "input_boolean.guest_mode", true),
+      service.rename({
+        entityId: "input_number.terrace_brightness",
+        newEntityId: "input_boolean.guest_mode",
+        withReferences: true,
+      }),
     ).rejects.toMatchObject({ response: { message: "ENTRY_ID_INVALID" } });
-    await expect(service.rename("script.all_off", "script.good_night", true)).rejects.toMatchObject(
-      { response: { message: "ENTRY_ID_TAKEN" } },
-    );
+    await expect(
+      service.rename({
+        entityId: "script.all_off",
+        newEntityId: "script.good_night",
+        withReferences: true,
+      }),
+    ).rejects.toMatchObject({ response: { message: "ENTRY_ID_TAKEN" } });
   });
 });

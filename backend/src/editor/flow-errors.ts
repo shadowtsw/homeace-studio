@@ -13,7 +13,7 @@ const HTTP_BAD_REQUEST = 400;
 export function toFlowError(error: unknown): unknown {
   if (error instanceof HaRestError && error.status === HTTP_BAD_REQUEST) {
     return new BadRequestException(
-      apiError(MESSAGE_ID.flowInvalid, { params: { reason: error.message } }),
+      apiError({ message: MESSAGE_ID.flowInvalid, details: { params: { reason: error.message } } }),
     );
   }
 
