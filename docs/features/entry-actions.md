@@ -6,7 +6,7 @@ rows and the properties tab.
 
 ## Who can do what
 
-`frontend/src/utils/entryActions.ts` decides it, mirroring the backend:
+`frontend/src/utils/entries/entryActions.ts` decides it, mirroring the backend:
 
 | Action | Entries | Backend |
 | --- | --- | --- |
@@ -25,9 +25,9 @@ Disabled entries have no state and cannot act (`supportsAction`). The header sho
 
 | What | File |
 | --- | --- |
-| Frontend actions with toasts, confirmations, undo | `frontend/src/composables/useEntryActions.ts` |
+| Frontend actions with toasts, confirmations, undo | `frontend/src/composables/actions/useEntryActions.ts` |
 | Dialogs (delete with users, disable with users, entity ID) | `frontend/src/components/layout/StudioDialogs.vue`, `components/entries/RenameEntityDialog.vue` |
-| Entity ID field with suggestion (`slugifyName` like HA) | `components/entries/EntityIdField.vue`, `utils/entityId.ts` |
+| Entity ID field with suggestion (`slugifyName` like HA) | `components/entries/EntityIdField.vue`, `utils/entities/entityId.ts` |
 | Enabled / hidden / aliases | `components/entries/EntryVisibilityForm.vue` |
 | Inline name input (list row, title, folders, areas) | `components/common/InlineNameInput.vue`. Enter or blur saves, Esc cancels |
 | Entries, update, extras, actions | `backend/src/entries/entries.service.ts`, `entries.controller.ts`, `entry-extras.ts` |

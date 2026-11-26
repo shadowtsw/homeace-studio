@@ -22,7 +22,7 @@ import { useI18n } from "vue-i18n";
 
 import type { Run } from "@/services/tracesService";
 import { useSettingsStore } from "@/stores/settingsStore";
-import { clockTime, dayLabel } from "@/utils/runTime";
+import { clockTime, dayLabel } from "@/utils/runs/runTime";
 
 /** Above the flow while a run is shown on its blocks. */
 const props = defineProps<{ run: Run }>();

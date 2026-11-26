@@ -8,10 +8,10 @@ import { useLookupsStore } from "@/stores/lookupsStore";
 import { useStudioStore } from "@/stores/studioStore";
 import type { EntityOption } from "@/types/editor";
 import type { Entry } from "@/types/entry";
-import { applyFolderOrder } from "@/utils/folderOrder";
-import { buildCategoryTree, flattenCategoryPaths, type CategoryNode } from "@/utils/categoryTree";
-import { filterListEntities } from "@/utils/entityList";
-import { countByScope, filterEntries, isSpecialCategory } from "@/utils/entryFilter";
+import { applyFolderOrder } from "@/utils/categories/folderOrder";
+import { buildCategoryTree, flattenCategoryPaths, type CategoryNode } from "@/utils/categories/categoryTree";
+import { filterListEntities } from "@/utils/entities/entityList";
+import { countByScope, filterEntries, isSpecialCategory } from "@/utils/entries/entryFilter";
 
 /** One area in the tree of the area view. */
 export type AreaNavItem = { areaId: string; name: string; icon: string | null; count: number };

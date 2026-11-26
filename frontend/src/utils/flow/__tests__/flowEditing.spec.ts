@@ -2,12 +2,12 @@ import { describe, expect, it } from "vitest";
 
 import type { EditorCatalog, Flow } from "@/types/editor";
 
-import { getAtPath, parsePath, setAtPath } from "../flow/configPath";
-import { listValue, numberValue, timeValue } from "../flow/editValue";
-import { joinDuration, splitDuration } from "../flow/formatValue";
-import { stateSuggestions } from "../flow/stateSuggestions";
-import { toDisplayFlow, type FlowTexts } from "../flow/toDisplayFlow";
-import { classicFieldEditor, editorForSelector } from "../flow/valueEditors";
+import { getAtPath, parsePath, setAtPath } from "../configPath";
+import { listValue, numberValue, timeValue } from "../editValue";
+import { joinDuration, splitDuration } from "../formatValue";
+import { stateSuggestions } from "../stateSuggestions";
+import { toDisplayFlow, type FlowTexts } from "../toDisplayFlow";
+import { classicFieldEditor, editorForSelector } from "../valueEditors";
 
 const texts: FlowTexts = {
   yes: "ja",

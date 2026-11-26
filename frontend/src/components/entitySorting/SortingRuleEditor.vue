@@ -101,7 +101,7 @@ import { computed, nextTick, ref, useTemplateRef } from "vue";
 import { useI18n } from "vue-i18n";
 
 import FolderPathField from "@/components/common/FolderPathField.vue";
-import { useSortingTexts } from "@/composables/useSortingTexts";
+import { useSortingTexts } from "@/composables/texts/useSortingTexts";
 import { useEntitySortingStore } from "@/stores/entitySortingStore";
 import type { SortingCondition, SortingConditionType, SortingRule } from "@/types/entitySorting";
 import { fromDisplayTarget } from "@/utils/entitySorting/placeholders";

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import type { DisplayBlock, DisplayFlow } from "@/types/editor";
 
-import { branchesOf, dropTargets, nextBlockId } from "../flow/dropTargets";
+import { branchesOf, dropTargets, nextBlockId } from "../dropTargets";
 
 function block(id: string, overrides: Partial<DisplayBlock> = {}): DisplayBlock {
   return {

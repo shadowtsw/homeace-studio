@@ -1,4 +1,4 @@
-import { isSameOrBelow } from "@/utils/categoryPath";
+import { isSameOrBelow } from "@/utils/categories/categoryPath";
 
 import {
   COMMON_PARENT_SHARE,

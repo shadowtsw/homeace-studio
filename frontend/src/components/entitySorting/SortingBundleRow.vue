@@ -171,12 +171,12 @@ import { computed, nextTick, ref, useTemplateRef } from "vue";
 import { useI18n } from "vue-i18n";
 
 import FolderTreePanel from "@/components/common/FolderTreePanel.vue";
-import { useSortingTexts } from "@/composables/useSortingTexts";
+import { useSortingTexts } from "@/composables/texts/useSortingTexts";
 import { useEntitySortingStore } from "@/stores/entitySortingStore";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { useToastStore } from "@/stores/toastStore";
 import type { SortingEntity } from "@/types/entitySorting";
-import { cleanFolderPath } from "@/utils/categoryPath";
+import { cleanFolderPath } from "@/utils/categories/categoryPath";
 import { entityTarget, targetOf } from "@/utils/entitySorting/compute";
 import type { SortingBundle, SortingGroup } from "@/utils/entitySorting/model";
 import { hasNewTarget } from "@/utils/entitySorting/targets";

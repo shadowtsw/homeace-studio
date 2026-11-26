@@ -53,7 +53,7 @@ import { useI18n } from "vue-i18n";
 
 import DialogFrame from "@/components/common/DialogFrame.vue";
 import type { Area } from "@/types/entry";
-import { AREA_ICONS, DEFAULT_AREA_ICON, guessAreaIcon } from "@/utils/areaIcons";
+import { AREA_ICONS, DEFAULT_AREA_ICON, guessAreaIcon } from "@/utils/areas/areaIcons";
 import { mdiIconClass } from "@/utils/text";
 
 /** Name and icon of a new or existing area. */

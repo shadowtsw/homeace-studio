@@ -29,7 +29,7 @@ import { useI18n } from "vue-i18n";
 
 import DialogFrame from "@/components/common/DialogFrame.vue";
 import { CATEGORY_SEPARATOR } from "@/constants/entries";
-import { lastLevel } from "@/utils/categoryPath";
+import { lastLevel } from "@/utils/categories/categoryPath";
 
 /** Folder colors to pick from; chosen to read well on light and dark backgrounds. */
 const FOLDER_COLORS = [

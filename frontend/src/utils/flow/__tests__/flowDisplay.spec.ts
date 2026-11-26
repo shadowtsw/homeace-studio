@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 
 import type { BlockChip, EditorCatalog, Flow } from "@/types/editor";
 
-import { formatDuration, formatValue } from "../flow/formatValue";
-import { toDisplayFlow, type FlowTexts } from "../flow/toDisplayFlow";
+import { formatDuration, formatValue } from "../formatValue";
+import { toDisplayFlow, type FlowTexts } from "../toDisplayFlow";
 
 const texts: FlowTexts = {
   yes: "ja",

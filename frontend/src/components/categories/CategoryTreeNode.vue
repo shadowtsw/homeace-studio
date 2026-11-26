@@ -123,11 +123,11 @@ import { useI18n } from "vue-i18n";
 
 import InlineNameInput from "@/components/common/InlineNameInput.vue";
 
-import { useEntryDropTarget } from "@/composables/useEntryDropTarget";
-import { draggedFolder, FOLDER_DRAG_TYPE } from "@/composables/useFolderDrag";
-import { folderColor } from "@/utils/categoryPath";
-import type { CategoryNode } from "@/utils/categoryTree";
-import { parentOf } from "@/utils/folderOrder";
+import { useEntryDropTarget } from "@/composables/dragDrop/useEntryDropTarget";
+import { draggedFolder, FOLDER_DRAG_TYPE } from "@/composables/dragDrop/useFolderDrag";
+import { folderColor } from "@/utils/categories/categoryPath";
+import type { CategoryNode } from "@/utils/categories/categoryTree";
+import { parentOf } from "@/utils/categories/folderOrder";
 
 const props = defineProps<{
   node: CategoryNode;

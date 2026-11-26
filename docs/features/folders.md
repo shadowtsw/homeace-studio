@@ -20,7 +20,7 @@ The structure lives in HA, not in an own database. The UI side is in [../ui/navi
   and adds its id to `overlay.ownedCategoryIds`. When an owned category becomes empty, it is deleted
   (`CategoriesService.cleanUp`). **Categories the user made in HA are never deleted automatically.**
 - Path rules, the same in both layers: `backend/src/categories/category-path.ts` and
-  `frontend/src/utils/categoryPath.ts` (`isSameOrBelow` on whole levels, `replacePathPrefix`). The backend
+  `frontend/src/utils/categories/categoryPath.ts` (`isSameOrBelow` on whole levels, `replacePathPrefix`). The backend
   also normalizes input (`normalizeCategoryPath`: trims every level, `" Haus / Pool "` → `"Haus/Pool"`).
 
 Verified against HA 2026.11.2 (`poc/categories-test.mjs`): in all four scopes HA stores names with `/`
@@ -36,11 +36,11 @@ unchanged, keeps the `category_id` on rename, and refuses a duplicate name withi
 | Moving an entry (`POST /api/entries/:id/move`) | `backend/src/entries/entries.service.ts` → `CategoriesService.assign` |
 | Moving a plain entity (`POST /api/entities/:id/move`), its folder in `GET /api/entities` | `backend/src/categories/entity-folders.controller.ts` → `CategoriesService.moveEntity`; `backend/src/lookups/entity-options.ts` |
 | Tidy-up assistant (`/api/categories/cleanup`) | `backend/src/categories/cleanup/` (`cleanup-analysis.ts` is pure) |
-| Frontend actions with toasts (move one / many, rename dialog + inline, order) | `frontend/src/composables/useCategoryActions.ts` |
+| Frontend actions with toasts (move one / many, rename dialog + inline, order) | `frontend/src/composables/actions/useCategoryActions.ts` |
 | Rename dialog with preview of every changed HA category | `frontend/src/components/categories/RenameCategoryDialog.vue` |
-| New folder, folder color | `components/categories/NewFolderDialog.vue`, `FolderColorDialog.vue`, `composables/useCreateActions.ts` |
+| New folder, folder color | `components/categories/NewFolderDialog.vue`, `FolderColorDialog.vue`, `composables/actions/useCreateActions.ts` |
 | Move dialog for ticked rows, move field in the properties | `components/entries/MoveEntriesDialog.vue`, `CategoryMoveField.vue` |
-| Tidy-up hint and dialog | `components/cleanup/CleanupHint.vue`, `CleanupDialog.vue`, `stores/cleanupStore.ts`, `utils/cleanupSelection.ts` |
+| Tidy-up hint and dialog | `components/cleanup/CleanupHint.vue`, `CleanupDialog.vue`, `stores/cleanupStore.ts`, `utils/categories/cleanupSelection.ts` |
 
 ## Call chains
 

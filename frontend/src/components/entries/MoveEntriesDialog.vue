@@ -36,7 +36,7 @@ import { computed, onMounted, ref, useId, useTemplateRef } from "vue";
 import { useI18n } from "vue-i18n";
 
 import DialogFrame from "@/components/common/DialogFrame.vue";
-import { normalizeFolderPath } from "@/utils/cleanupSelection";
+import { normalizeFolderPath } from "@/utils/categories/cleanupSelection";
 
 /** Target folder for ticked entries or one entity; a new folder is created on the way. */
 defineProps<{

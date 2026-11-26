@@ -53,7 +53,7 @@
 import { computed, onMounted, ref, useTemplateRef } from "vue";
 import { useI18n } from "vue-i18n";
 
-import { buildCategoryTree, type CategoryNode } from "@/utils/categoryTree";
+import { buildCategoryTree, type CategoryNode } from "@/utils/categories/categoryTree";
 
 import PopoverClose from "./PopoverClose.vue";
 

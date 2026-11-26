@@ -30,10 +30,10 @@ page stays complete.
 | Groups, the four stages for the rest, pre-ticks | `utils/entitySorting/layout.ts` |
 | Target of a bundle, computation, moves, changes | `utils/entitySorting/targets.ts`, `compute.ts` |
 | Types and API calls | `frontend/src/types/entitySorting.ts`, `services/entitySortingService.ts` |
-| Tests with a small home like the dummy's | `utils/__tests__/entitySorting.spec.ts`, `entitySortingFixture.ts` |
+| Tests with a small home like the dummy's | `utils/entitySorting/__tests__/entitySorting.spec.ts`, `entitySortingFixture.ts` |
 | Session state: memory, options, ticks, engine results; recompute vs. reorder | `frontend/src/stores/entitySortingStore.ts` |
 | Apply and undo in batches of 50, result, hints for automations without folder | `composables/useSortingRun.ts` |
-| Reasons, confidences, origins and rule conditions as text; placeholders `{Bereich}` ↔ `{area}` | `composables/useSortingTexts.ts`, `utils/entitySorting/placeholders.ts` |
+| Reasons, confidences, origins and rule conditions as text; placeholders `{Bereich}` ↔ `{area}` | `composables/texts/useSortingTexts.ts`, `utils/entitySorting/placeholders.ts` |
 | Window and steps: overview (funnel), rules (editor, ideas), proposals (groups, rows, phone sheet), apply, result | `components/entitySorting/` |
 | Entry in the tools tab with beta label and count | `components/settings/SettingsToolsTab.vue`, `components/common/BetaBadge.vue` |
 | Folder path to type (own suggestion list, ↑↓ Enter) or pick from the tree; the tree panel alone for "Anderer Ordner …" in step 3 | `components/common/FolderPathField.vue`, `FolderTreePanel.vue` |

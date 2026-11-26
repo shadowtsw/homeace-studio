@@ -175,7 +175,7 @@ import {
   suggestEntities,
   type CriterionKey,
   type PickerCriteria,
-} from "@/utils/entityPicker";
+} from "@/utils/entities/entityPicker";
 import { mdiIconClass } from "@/utils/text";
 
 import EntityPickerRow from "./EntityPickerRow.vue";

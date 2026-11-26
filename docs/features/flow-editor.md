@@ -13,7 +13,7 @@ saves the whole config back to HA. No YAML in the UI.
 | Tab view: mode bar, three sections, the one popover for every editor and menu | `components/flow/FlowView.vue` |
 | One block (recursive): icon, title, chips, "+ Option", ⋮ menu, branches, run state | `components/flow/FlowBlock.vue` |
 | Popover / bottom sheet (≤ 560 px) for a value or a menu | `components/flow/ChipEditorPopover.vue` (+ `ChoiceList.vue`) |
-| Entity editor | `components/flow/EntityPicker.vue`, `EntityPickerRow.vue`, pure parts in `utils/entityPicker.ts` |
+| Entity editor | `components/flow/EntityPicker.vue`, `EntityPickerRow.vue`, pure parts in `utils/entities/entityPicker.ts` |
 | Add button of a list | `components/flow/AddBlockButton.vue` |
 | New automation / script (name + folder) | `components/flow/NewFlowDialog.vue` |
 | What FlowView provides to nested blocks | `components/flow/flowEditing.ts` (`FLOW_EDITING`, `FLOW_RUN_STATES`) |
@@ -26,9 +26,9 @@ saves the whole config back to HA. No YAML in the UI.
 | Changing the config | `utils/flow/configPath.ts` (`parsePath`, `setAtPath`, `getAtPath`), `utils/flow/flowChanges.ts` (`applyFlowChange`) |
 | Red chips for entities the check-up found gone | `utils/flow/markGoneChips.ts` |
 | State suggestions for "to" / "state" fields | `utils/flow/stateSuggestions.ts` |
-| Texts the converter needs | `composables/useFlowTexts.ts` (`flow.titles`, `flow.labels`, `flow.choices` in the locales) |
+| Texts the converter needs | `composables/texts/useFlowTexts.ts` (`flow.titles`, `flow.labels`, `flow.choices` in the locales) |
 | Catalog, flow, drafts, save | `stores/editorStore.ts`, `services/editorService.ts`, `services/flowsService.ts` |
-| Dropping a plain entity from the list: signs, innermost list, "Wohin genau?", choices | `composables/useFlowEntityDrop.ts` (wired in `FlowView`), drag state in `composables/usePlainEntityDrag.ts` |
+| Dropping a plain entity from the list: signs, innermost list, "Wohin genau?", choices | `composables/dragDrop/useFlowEntityDrop.ts` (wired in `FlowView`), drag state in `composables/dragDrop/usePlainEntityDrag.ts` |
 | Every list an entity can go into (sections, branches) | `utils/flow/dropTargets.ts` (`dropTargets`, `branchesOf`, `nextBlockId`) |
 | Entity + section → choices and the new block ("Bewegung erkannt", HA's "Einschalten") | `utils/flow/entityBlocks.ts` (`entityFit`) |
 | Clicking an entity in the list (the way on a phone) | `composables/useEntityMenu.ts`, `components/common/QuickMenu.vue` |
@@ -119,7 +119,7 @@ list (`onApplyArea`). Suggestions: entities the flow already uses, then the entr
   `blockTypes.ts`. Rendering goes in `toDisplayFlow.ts` (structural: `structuralBlock` /
   `loopOrWaitBlock`, classic: `CLASSIC_*_FIELDS`, `REQUIRED_FIELDS`), the icon in `CLASSIC_ICON`, the
   title in `flow.titles.<kind>` (or `<kind>_<section>`) in all five locales, plus a test in
-  `utils/__tests__/flowDisplay.spec.ts` / `flowBlocks.spec.ts`. The demo home should contain an example (`backend/src/demo/demo-home.ts`).
+  `utils/flow/__tests__/flowDisplay.spec.ts` / `flowBlocks.spec.ts`. The demo home should contain an example (`backend/src/demo/demo-home.ts`).
 - **New value editor type:** extend `ValueEditor` in `types/editor.ts`, map it in `valueEditors.ts`,
   render it in `ChipEditorPopover.vue`, and convert input in `editValue.ts`.
 - **Block menu action:** `BLOCK_ACTION` + `blockChange` in `FlowView.vue`, a new `FlowChange` type in

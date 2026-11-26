@@ -34,9 +34,9 @@
 import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 
-import { RUN_STATUS_ICON, runStatusTone, useRunTexts } from "@/composables/useRunTexts";
+import { RUN_STATUS_ICON, runStatusTone, useRunTexts } from "@/composables/texts/useRunTexts";
 import type { DisplayBlock } from "@/types/editor";
-import type { BlockRunState } from "@/utils/runStates";
+import type { BlockRunState } from "@/utils/runs/runStates";
 
 /** One block of a flow with what it did in the selected run; nested blocks follow, indented. */
 const props = defineProps<{

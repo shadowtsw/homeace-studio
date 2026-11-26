@@ -49,7 +49,7 @@ import { computed, onMounted, ref, useId, useTemplateRef } from "vue";
 import { useI18n } from "vue-i18n";
 
 import { CATEGORY_SEPARATOR } from "@/constants/entries";
-import { isSameOrBelow, lastLevel, renameLastLevel, replacePathPrefix } from "@/utils/categoryPath";
+import { isSameOrBelow, lastLevel, renameLastLevel, replacePathPrefix } from "@/utils/categories/categoryPath";
 
 const props = defineProps<{
   /** The folder to rename, e.g. "Haus/Terrasse". */

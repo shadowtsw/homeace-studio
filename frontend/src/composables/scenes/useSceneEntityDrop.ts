@@ -5,8 +5,8 @@ import { carriesEntity, carriesPlainEntity } from "@/utils/dragDrop";
 import { flashElement } from "@/utils/flash";
 import { sceneMisfit } from "@/utils/flow/entityBlocks";
 
-import { usePlainEntityDrag } from "./usePlainEntityDrag";
-import type { DropSign } from "./useFlowEntityDrop";
+import { usePlainEntityDrag } from "../dragDrop/usePlainEntityDrag";
+import type { DropSign } from "../dragDrop/useFlowEntityDrop";
 
 type SceneEntityDropOptions = {
   isEditable: Ref<boolean>;

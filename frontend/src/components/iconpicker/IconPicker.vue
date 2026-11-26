@@ -75,9 +75,9 @@ import { computed, nextTick, onMounted, ref, toRef, useTemplateRef, watch } from
 import { useI18n } from "vue-i18n";
 
 import AppIcon from "@/components/common/AppIcon.vue";
-import { useCloseWhenFieldScrolls } from "@/composables/useCloseWhenFieldScrolls";
-import { useNoCoverPlacement } from "@/composables/useNoCoverPlacement";
-import { usePageScrollLock } from "@/composables/usePageScrollLock";
+import { useCloseWhenFieldScrolls } from "@/composables/panels/useCloseWhenFieldScrolls";
+import { useNoCoverPlacement } from "@/composables/panels/useNoCoverPlacement";
+import { usePageScrollLock } from "@/composables/panels/usePageScrollLock";
 import { useIconPacksStore } from "@/stores/iconPacksStore";
 import { ICON_SEARCH_LIMIT, MDI_PACK, searchIcons } from "@/utils/haIcon";
 

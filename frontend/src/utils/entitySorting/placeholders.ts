@@ -1,4 +1,4 @@
-import { cleanFolderPath } from "@/utils/categoryPath";
+import { cleanFolderPath } from "@/utils/categories/categoryPath";
 
 import { RULE_PLACEHOLDER } from "./constants";
 

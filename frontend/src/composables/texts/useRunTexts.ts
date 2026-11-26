@@ -1,10 +1,10 @@
 import { useI18n } from "vue-i18n";
 
-import { useStateText } from "@/composables/useStateText";
+import { useStateText } from "@/composables/texts/useStateText";
 import { useLookupsStore } from "@/stores/lookupsStore";
 import { useSettingsStore } from "@/stores/settingsStore";
-import type { BlockRunState, BlockRunStatus } from "@/utils/runStates";
-import { runDuration } from "@/utils/runTime";
+import type { BlockRunState, BlockRunStatus } from "@/utils/runs/runStates";
+import { runDuration } from "@/utils/runs/runTime";
 
 export const RUN_STATUS_ICON: Record<BlockRunStatus, string> = {
   fired: "mdi-check",

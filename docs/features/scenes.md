@@ -11,9 +11,9 @@ afterwards.
 | --- | --- |
 | Tab: load, draft (kept in `draftsStore`), device rows, take current state, save, save footer (teleported) | `frontend/src/components/scenes/SceneEditorView.vue` |
 | "+ Gerät hinzufügen": picker placed within the window, `SCENE_DOMAINS` | `frontend/src/components/scenes/SceneDevicePicker.vue` |
-| "Vorschau", "Ausprobieren", live edits, restore on leaving and `pagehide` | `frontend/src/composables/useScenePreview.ts` |
-| Automatic saving and "Alles rückgängig" | `frontend/src/composables/useSceneAutoSave.ts` |
-| Dropping a plain entity from the list onto the devices | `frontend/src/composables/useSceneEntityDrop.ts`, what fits: `sceneMisfit` in `utils/flow/entityBlocks.ts` |
+| "Vorschau", "Ausprobieren", live edits, restore on leaving and `pagehide` | `frontend/src/composables/scenes/useScenePreview.ts` |
+| Automatic saving and "Alles rückgängig" | `frontend/src/composables/scenes/useSceneAutoSave.ts` |
+| Dropping a plain entity from the list onto the devices | `frontend/src/composables/scenes/useSceneEntityDrop.ts`, what fits: `sceneMisfit` in `utils/flow/entityBlocks.ts` |
 | Controls of one device (on/off, brightness, white tone, color, position, temperature, …) | `frontend/src/components/scenes/SceneDeviceRow.vue` |
 | HA attributes ↔ controls, light capabilities, presets, "extras" the editor cannot show | `frontend/src/utils/sceneValues.ts` (`readControls`, `writeControls`, `lightCaps`, `extrasOf`) |
 | API calls, `sendBeacon` restore | `frontend/src/services/scenesService.ts` |

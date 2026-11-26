@@ -14,7 +14,7 @@ import { flashElement } from "@/utils/flash";
 import { dropTargets, nextBlockId, type DropTarget } from "@/utils/flow/dropTargets";
 import { entityFit, type EntityChoice } from "@/utils/flow/entityBlocks";
 
-import { choiceText } from "./useFlowEntityDrop";
+import { choiceText } from "./dragDrop/useFlowEntityDrop";
 
 type EntityMenuOptions = {
   /** The open automation or script as shown; null when another kind of entry is open. */

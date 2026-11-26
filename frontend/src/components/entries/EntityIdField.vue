@@ -26,7 +26,7 @@ import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 
 import type { Entry } from "@/types/entry";
-import { suggestEntityId } from "@/utils/entityId";
+import { suggestEntityId } from "@/utils/entities/entityId";
 
 /** The entity ID, read-only, with "Ändern …" and a suggestion when it no longer fits the name. */
 const props = defineProps<{

@@ -73,7 +73,7 @@ import { useLookupsStore } from "@/stores/lookupsStore";
 import type { EntityOption } from "@/types/editor";
 import type { Entry } from "@/types/entry";
 import { countUses, goneHintKey, groupUsesByRole } from "@/utils/dependencies";
-import { countByDevice, rowLabel } from "@/utils/entityPicker";
+import { countByDevice, rowLabel } from "@/utils/entities/entityPicker";
 
 import DependencyUseRow from "./DependencyUseRow.vue";
 import DependencyUserRow from "./DependencyUserRow.vue";

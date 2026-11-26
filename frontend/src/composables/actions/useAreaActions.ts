@@ -9,7 +9,7 @@ import { useLookupsStore } from "@/stores/lookupsStore";
 import { useMessagesStore } from "@/stores/messagesStore";
 import { useStudioStore } from "@/stores/studioStore";
 import { useToastStore } from "@/stores/toastStore";
-import { areaFilter } from "@/utils/entryFilter";
+import { areaFilter } from "@/utils/entries/entryFilter";
 
 type AreaActions = {
   isBusy: Ref<boolean>;

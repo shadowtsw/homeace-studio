@@ -8,13 +8,13 @@ import {
   WHATS_NEW,
   type WhatsNewRelease,
 } from "@/constants/whatsNew";
-import { hadEarlierVisit } from "@/utils/earlierVisit";
+import { hadEarlierVisit } from "@/utils/whatsNew/earlierVisit";
 import {
   currentRelease,
   effectiveVersion,
   initialSeenVersion,
   unseenReleases,
-} from "@/utils/whatsNew";
+} from "@/utils/whatsNew/whatsNew";
 
 /**
  * "What's new" after an update: which highlights the user has not confirmed yet, and the popover.

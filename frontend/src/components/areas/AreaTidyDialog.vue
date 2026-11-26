@@ -85,7 +85,7 @@ import DialogFrame from "@/components/common/DialogFrame.vue";
 import { ENTRY_KIND_ICON } from "@/constants/entries";
 import type { EntryAreaLink } from "@/services/entryAreasService";
 import type { Entry } from "@/types/entry";
-import { planAreaTidy, tidyCandidates, type TidyMove } from "@/utils/areaTidy";
+import { planAreaTidy, tidyCandidates, type TidyMove } from "@/utils/areas/areaTidy";
 
 /** "Ordnung in einem Klick": sorts entries into the folders of their areas, after a preview. */
 const props = defineProps<{

@@ -72,9 +72,9 @@ import { onClickOutside, onKeyStroke, useEventListener } from "@vueuse/core";
 import { computed, nextTick, onMounted, ref, toRef, useTemplateRef, watch } from "vue";
 import { useI18n } from "vue-i18n";
 
-import { useCloseWhenFieldScrolls } from "@/composables/useCloseWhenFieldScrolls";
-import { useNoCoverPlacement } from "@/composables/useNoCoverPlacement";
-import { usePageScrollLock } from "@/composables/usePageScrollLock";
+import { useCloseWhenFieldScrolls } from "@/composables/panels/useCloseWhenFieldScrolls";
+import { useNoCoverPlacement } from "@/composables/panels/useNoCoverPlacement";
+import { usePageScrollLock } from "@/composables/panels/usePageScrollLock";
 import type { LabelFields } from "@/services/labelsService";
 import type { Label } from "@/types/entry";
 

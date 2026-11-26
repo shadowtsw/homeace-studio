@@ -5,7 +5,7 @@ import { fetchEntities } from "@/services/editorService";
 import { fetchAreas, fetchFloors, fetchLabels } from "@/services/lookupsService";
 import type { EntityOption } from "@/types/editor";
 import type { Area, Floor, Label } from "@/types/entry";
-import { hasUnknownEntry } from "@/utils/unknownEntries";
+import { hasUnknownEntry } from "@/utils/entries/unknownEntries";
 
 import { useEntriesStore } from "./entriesStore";
 

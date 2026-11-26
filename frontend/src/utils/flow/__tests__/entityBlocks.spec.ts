@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 
 import type { EditorCatalog, EntityOption } from "@/types/editor";
 
-import { entityFit, sceneMisfit } from "../flow/entityBlocks";
-import { isScriptStartBlock } from "../flow/scriptStart";
+import { entityFit, sceneMisfit } from "../entityBlocks";
+import { isScriptStartBlock } from "../scriptStart";
 
 function entity(entityId: string, overrides: Partial<EntityOption> = {}): EntityOption {
   return {

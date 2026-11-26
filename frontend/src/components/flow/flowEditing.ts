@@ -1,7 +1,7 @@
 import type { ComputedRef, InjectionKey, Ref } from "vue";
 
 import type { AddTarget, ChipEdit, DisplayBlock } from "@/types/editor";
-import type { BlockRunState } from "@/utils/runStates";
+import type { BlockRunState } from "@/utils/runs/runStates";
 
 /**
  * What FlowView hands down to every (nested) FlowBlock, so chips and menus can open their popover

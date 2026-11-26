@@ -52,7 +52,7 @@ import { useDraftsStore } from "@/stores/draftsStore";
 import { useMessagesStore } from "@/stores/messagesStore";
 import { useToastStore } from "@/stores/toastStore";
 import type { Entry } from "@/types/entry";
-import { hasEditableSettings } from "@/utils/entryActions";
+import { hasEditableSettings } from "@/utils/entries/entryActions";
 import { helperSettingsProblem } from "@/utils/helperSettings";
 
 import SaveFooter from "@/components/common/SaveFooter.vue";

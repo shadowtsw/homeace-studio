@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { entryFormChanges, isFormEdited, type EntryFormValues } from "@/utils/entryForm";
+import { entryFormChanges, isFormEdited, type EntryFormValues } from "@/utils/entries/entryForm";
 
 /** What the form was filled with. */
 const base: EntryFormValues = {

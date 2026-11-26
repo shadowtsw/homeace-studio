@@ -129,10 +129,10 @@
 import { ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 
-import { useEntryDropTarget } from "@/composables/useEntryDropTarget";
+import { useEntryDropTarget } from "@/composables/dragDrop/useEntryDropTarget";
 import { CATEGORY_FILTER, CATEGORY_SEPARATOR, NAV_MODE, type NavMode } from "@/constants/entries";
-import type { CategoryNode } from "@/utils/categoryTree";
-import { isSpecialCategory } from "@/utils/entryFilter";
+import type { CategoryNode } from "@/utils/categories/categoryTree";
+import { isSpecialCategory } from "@/utils/entries/entryFilter";
 
 import CategoryTreeNode from "./CategoryTreeNode.vue";
 

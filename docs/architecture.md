@@ -84,10 +84,13 @@ frontend/src/
   components/common/     DialogFrame, ConfirmDialog, SaveFooter, InlineNameInput, SwitchToggle, ToastHost
   components/layout/     AppTopBar, LanguageMenu, WhatsNewMenu, PaneSplitter, StudioDialogs
   components/settings/   the settings window and one file per tab
-  composables/           page actions with toasts (useCategoryActions, useEntryActions, …), useStudioData
+  composables/           useStudioData, usePreference, useLiveUpdates, … and topic folders:
+                         actions/ (page actions with toasts), dragDrop/, scenes/, panels/, texts/
   stores/                Pinia, one per concern (entries, studio, settings, editor, folders, …)
   services/              API calls, one file per backend area; api.ts has apiFetch / ApiError
-  utils/                 pure logic, unit-tested in utils/__tests__/
+  utils/                 pure logic in topic folders (areas/, categories/, entries/, entities/, flow/,
+                         entitySorting/, runs/, whatsNew/) plus small shared helpers; tests in a
+                         __tests__/ folder next to the code
   types/                 mirrors of backend models (entry.ts, editor.ts)
   constants/             kinds, filters, actions, layout, helpers, What's new
   i18n/, locales/        vue-i18n, de.ts is the schema                         features/i18n.md

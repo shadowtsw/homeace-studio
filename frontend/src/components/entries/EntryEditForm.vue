@@ -83,7 +83,7 @@ import { useI18n } from "vue-i18n";
 import IconField from "@/components/iconpicker/IconField.vue";
 import LabelChip from "@/components/labels/LabelChip.vue";
 import LabelPicker from "@/components/labels/LabelPicker.vue";
-import { useLabelActions } from "@/composables/useLabelActions";
+import { useLabelActions } from "@/composables/actions/useLabelActions";
 import { useAreasStore } from "@/stores/areasStore";
 import type { Area, Entry, EntryChanges, Label } from "@/types/entry";
 import {
@@ -91,7 +91,7 @@ import {
   entryFormValuesOf,
   isFormEdited,
   type EntryFormValues,
-} from "@/utils/entryForm";
+} from "@/utils/entries/entryForm";
 
 const props = defineProps<{
   entry: Entry;

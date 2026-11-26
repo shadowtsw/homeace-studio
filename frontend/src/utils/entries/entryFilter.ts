@@ -6,7 +6,7 @@ import {
 } from "@/constants/entries";
 import type { Entry } from "@/types/entry";
 
-import { isSameOrBelow } from "./categoryPath";
+import { isSameOrBelow } from "../categories/categoryPath";
 import { showsKind } from "./listScopes";
 
 export type EntryFilter = {

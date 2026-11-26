@@ -111,9 +111,9 @@ import { computed, onBeforeUnmount, reactive, ref, toRaw, watch } from "vue";
 import { useI18n } from "vue-i18n";
 
 import SaveFooter from "@/components/common/SaveFooter.vue";
-import { useSceneAutoSave } from "@/composables/useSceneAutoSave";
-import { useScenePreview } from "@/composables/useScenePreview";
-import { useSceneEntityDrop } from "@/composables/useSceneEntityDrop";
+import { useSceneAutoSave } from "@/composables/scenes/useSceneAutoSave";
+import { useScenePreview } from "@/composables/scenes/useScenePreview";
+import { useSceneEntityDrop } from "@/composables/scenes/useSceneEntityDrop";
 import {
   fetchScene,
   fetchSceneDevice,

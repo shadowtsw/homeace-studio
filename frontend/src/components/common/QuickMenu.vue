@@ -32,7 +32,7 @@ import { onClickOutside, onKeyStroke, useEventListener } from "@vueuse/core";
 import { onMounted, ref, useTemplateRef } from "vue";
 
 import PopoverClose from "@/components/common/PopoverClose.vue";
-import { usePlainEntityDrag } from "@/composables/usePlainEntityDrag";
+import { usePlainEntityDrag } from "@/composables/dragDrop/usePlainEntityDrag";
 
 /** One line of the menu; a note explains why something is not offered. */
 export type QuickMenuItem = {

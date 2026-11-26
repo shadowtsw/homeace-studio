@@ -6,8 +6,8 @@ import type {
   SortingRole,
 } from "@/types/entitySorting";
 
-import { buildSortingHome, type SortingHome } from "../entitySorting/home";
-import type { SortingNames, SortingState } from "../entitySorting/model";
+import { buildSortingHome, type SortingHome } from "../home";
+import type { SortingNames, SortingState } from "../model";
 
 /** A small home like the dummy's: sorted flows, unsorted entities. */
 export const NAMES: SortingNames = {

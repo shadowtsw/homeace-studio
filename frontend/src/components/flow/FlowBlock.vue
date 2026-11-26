@@ -115,7 +115,7 @@
 import { computed, inject } from "vue";
 import { useI18n } from "vue-i18n";
 
-import { RUN_STATUS_ICON, runStatusTone, useRunTexts } from "@/composables/useRunTexts";
+import { RUN_STATUS_ICON, runStatusTone, useRunTexts } from "@/composables/texts/useRunTexts";
 import type { BlockChip, DisplayBlock, DisplayBranch } from "@/types/editor";
 import { dropKey } from "@/utils/flow/dropTargets";
 import { isScriptStartBlock } from "@/utils/flow/scriptStart";

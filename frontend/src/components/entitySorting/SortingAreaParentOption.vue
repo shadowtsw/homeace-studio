@@ -48,7 +48,7 @@ import { useI18n } from "vue-i18n";
 
 import FolderPathField from "@/components/common/FolderPathField.vue";
 import { useEntitySortingStore } from "@/stores/entitySortingStore";
-import { cleanFolderPath } from "@/utils/categoryPath";
+import { cleanFolderPath } from "@/utils/categories/categoryPath";
 import { areaParents } from "@/utils/entitySorting/home";
 
 /**

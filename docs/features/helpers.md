@@ -16,7 +16,7 @@ HA has two kinds of helpers, and HomeAce Studio treats them differently:
 | "Einstellungen" tab (first tab of every helper), teleported save footer | `frontend/src/components/helpers/HelperSettingsView.vue` |
 | Checks while typing, never stricter than the backend | `frontend/src/utils/helperSettings.ts` (`helperSettingsProblem`, `badOptionIndexes`) |
 | Types, icons, form defaults (same as the backend's) | `frontend/src/constants/helpers.ts` |
-| Which helpers are deletable / copyable / editable | `frontend/src/utils/entryActions.ts`, `DELETABLE_HELPER_DOMAINS` in `constants/entries.ts` |
+| Which helpers are deletable / copyable / editable | `frontend/src/utils/entries/entryActions.ts`, `DELETABLE_HELPER_DOMAINS` in `constants/entries.ts` |
 | `POST /api/helpers`, `GET/PUT /api/helpers/:id/settings`, `DELETE /api/helpers/:id` | `backend/src/helpers/helpers.controller.ts` |
 | Create, delete, settings, copy | `backend/src/helpers/helpers.service.ts` |
 | Settings checks and mapping (camelCase UI ↔ HA field names) | `backend/src/helpers/helper-payload.ts` |

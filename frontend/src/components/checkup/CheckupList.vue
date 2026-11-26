@@ -92,7 +92,7 @@ import { CHECKUP_KINDS, type CheckupFinding, type CheckupKind } from "@/services
 import { useCheckupStore } from "@/stores/checkupStore";
 import { useMessagesStore } from "@/stores/messagesStore";
 import { useToastStore } from "@/stores/toastStore";
-import { relativeTime } from "@/utils/relativeTime";
+import { relativeTime } from "@/utils/runs/relativeTime";
 
 /** The check-up view in the list column: findings grouped by kind; a click opens the entry. */
 defineProps<{

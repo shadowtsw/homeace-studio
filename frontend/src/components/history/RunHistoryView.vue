@@ -112,8 +112,8 @@
 import { computed, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 
-import { useRunTexts } from "@/composables/useRunTexts";
-import { useStateText } from "@/composables/useStateText";
+import { useRunTexts } from "@/composables/texts/useRunTexts";
+import { useStateText } from "@/composables/texts/useStateText";
 import type { Run, RunResult } from "@/services/tracesService";
 import { useLookupsStore } from "@/stores/lookupsStore";
 import { useMessagesStore } from "@/stores/messagesStore";
@@ -122,8 +122,8 @@ import { useToastStore } from "@/stores/toastStore";
 import { useTracesStore } from "@/stores/tracesStore";
 import type { DisplayFlow } from "@/types/editor";
 import type { Entry } from "@/types/entry";
-import { runSeconds, runStatesFor } from "@/utils/runStates";
-import { clockTime, dayLabel, runDuration } from "@/utils/runTime";
+import { runSeconds, runStatesFor } from "@/utils/runs/runStates";
+import { clockTime, dayLabel, runDuration } from "@/utils/runs/runTime";
 
 import RunStepRow from "./RunStepRow.vue";
 

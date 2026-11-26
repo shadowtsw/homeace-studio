@@ -11,12 +11,12 @@ The left column. It holds the special nodes at the top, a switch between **folde
 | One folder (recursive): twisty, icon with color, count, hover actions, drop target, sorting by drag | `components/categories/CategoryTreeNode.vue` |
 | Area view: list of areas, "Ohne Bereich", tidy-up card | `components/areas/AreaNav.vue`, `AreaNavNode.vue` |
 | Hints above the folders (AI plans, tidy-up assistant) | `components/ai/AiPlanHint.vue`, `components/cleanup/CleanupHint.vue` (slot `#notices`) |
-| Folder tree from category paths | `utils/categoryTree.ts` (`buildCategoryTree`, `flattenCategoryPaths`) |
-| Own folder order | `utils/folderOrder.ts` (`applyFolderOrder`, `moveSibling`, `parentOf`) |
-| Path helpers (same rules as the backend) | `utils/categoryPath.ts` (`isSameOrBelow`, `replacePathPrefix`, `folderColor`, …) |
+| Folder tree from category paths | `utils/categories/categoryTree.ts` (`buildCategoryTree`, `flattenCategoryPaths`) |
+| Own folder order | `utils/categories/folderOrder.ts` (`applyFolderOrder`, `moveSibling`, `parentOf`) |
+| Path helpers (same rules as the backend) | `utils/categories/categoryPath.ts` (`isSameOrBelow`, `replacePathPrefix`, `folderColor`, …) |
 | Empty folders, colors and order (overlay) | `stores/foldersStore.ts`, `services/foldersService.ts` |
-| Dropping list rows on a node | `composables/useEntryDropTarget.ts`, `utils/dragDrop.ts` |
-| Dragging a folder to sort it | `composables/useFolderDrag.ts` (`draggedFolder`) |
+| Dropping list rows on a node | `composables/dragDrop/useEntryDropTarget.ts`, `utils/dragDrop.ts` |
+| Dragging a folder to sort it | `composables/dragDrop/useFolderDrag.ts` (`draggedFolder`) |
 
 ## Selections
 
@@ -29,7 +29,7 @@ The left column. It holds the special nodes at the top, a switch between **folde
 | `CATEGORY_FILTER.checkup` | not a filter: the list column shows `CheckupList` instead of `EntryList` |
 | `areaFilter(areaId)` → `"__area:<id>"`, `areaFilter(null)` → `"__area:"` | an area, or "no area" |
 
-Use `isSpecialCategory()` and `areaOfFilter()` from `utils/entryFilter.ts` to tell them apart. Never
+Use `isSpecialCategory()` and `areaOfFilter()` from `utils/entries/entryFilter.ts` to tell them apart. Never
 compare against the prefix by hand. Changing the selection or the scope tab clears the ticked rows
 (`studioStore`).
 

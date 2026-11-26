@@ -23,7 +23,7 @@ they help each other. Use exactly these words in every user text (app, README, D
 | Settings window (tabs, one file per tab, scope symbol per setting) | `components/settings/SettingsWindow.vue`, `SettingsRow.vue`, `Settings*Tab.vue`, `stores/settingsWindowStore.ts`, `constants/settings.ts` |
 | Splitters between the columns | `components/layout/PaneSplitter.vue`, limits in `constants/layout.ts` |
 | Every dialog and the toasts of the page | `components/layout/StudioDialogs.vue`, `components/common/ToastHost.vue` |
-| Actions with toasts and error texts | `composables/useCategoryActions.ts` (move, rename, order), `useCreateActions.ts` (folders, helpers, flows), `useEntryActions.ts` (entry actions), `useAreaActions.ts` |
+| Actions with toasts and error texts | `composables/actions/useCategoryActions.ts` (move, rename, order), `useCreateActions.ts` (folders, helpers, flows), `useEntryActions.ts` (entry actions), `useAreaActions.ts` |
 
 ## Grid and splitters
 
@@ -66,9 +66,9 @@ Choosing a tree node always sets `isNavOpen = false`, and opening an entry alway
   gear, which opens the settings window (see below).
 - `WhatsNewMenu`: after an update, a gift with a dot next to the gear and a popover with the highlights.
   "Zeigen" leads to the feature (`utils/flash.ts` lets it light up), and only "OK" confirms.
-  `constants/whatsNew.ts` holds the highlights per release in every language. `utils/whatsNew.ts` has the
+  `constants/whatsNew.ts` holds the highlights per release in every language. `utils/whatsNew/whatsNew.ts` has the
   logic (unseen releases, test builds without a version show the newest). `stores/whatsNewStore` keeps
-  the confirmed version (`PREFERENCES.seenVersion`, scope `user`). `utils/earlierVisit.ts` tells a fresh install from an
+  the confirmed version (`PREFERENCES.seenVersion`, scope `user`). `utils/whatsNew/earlierVisit.ts` tells a fresh install from an
   earlier user. It is captured in `main.ts` before any store writes its defaults.
 
 ## Settings window

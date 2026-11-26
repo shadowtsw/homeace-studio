@@ -20,7 +20,7 @@ of a power strip, `parent_device_id`), the parent's. Device names of children ge
 in front ("Power strip Outlet 1"), because HA names them on their own ("Outlet 1"). Both come from
 `createDeviceContext` (`backend/src/ha/device-context.ts`), which the entity picker uses too.
 `GET /api/entry-areas` returns the list for all entries. In the frontend, `entryAreasStore.linksOf(entityId)`
-serves it to the filter (`areaIdsOf`), the area nav counts and the row notes (`utils/areaNotes.ts`:
+serves it to the filter (`areaIdsOf`), the area nav counts and the row notes (`utils/areas/areaNotes.ts`:
 "über Bewegungsmelder · auch in Garten").
 
 ## Where what lives
@@ -30,11 +30,11 @@ serves it to the filter (`areaIdsOf`), the area nav counts and the row notes (`u
 | Derivation, service, `GET /api/entry-areas` | `backend/src/areas/entry-areas.ts`, `entry-areas.service.ts`, `entry-areas.controller.ts` |
 | Create / rename / delete areas (`POST/PATCH/DELETE /api/areas`), names unique ignoring case | `backend/src/areas/areas.service.ts`, `areas.controller.ts` |
 | Area nav, nodes | `frontend/src/components/areas/AreaNav.vue`, `AreaNavNode.vue` |
-| New / edit area (name + icon guessed from the name) | `components/areas/AreaDialog.vue`, `utils/areaIcons.ts` (`guessAreaIcon`) |
+| New / edit area (name + icon guessed from the name) | `components/areas/AreaDialog.vue`, `utils/areas/areaIcons.ts` (`guessAreaIcon`) |
 | Set the own area of ticked rows | `components/areas/SetAreaDialog.vue` |
-| "Ordnung in einem Klick": folders from areas | `components/areas/AreaTidyDialog.vue`, `utils/areaTidy.ts` (`tidyCandidates`, `planAreaTidy`, `folderForArea`) |
+| "Ordnung in einem Klick": folders from areas | `components/areas/AreaTidyDialog.vue`, `utils/areas/areaTidy.ts` (`tidyCandidates`, `planAreaTidy`, `folderForArea`) |
 | Which area dialog is open (the properties form opens it too) | `stores/areasStore.ts` |
-| Saving with toasts, inline rename with undo | `composables/useAreaActions.ts` |
+| Saving with toasts, inline rename with undo | `composables/actions/useAreaActions.ts` |
 | Derived areas per entry | `stores/entryAreasStore.ts`, `services/entryAreasService.ts` |
 
 ## Behavior

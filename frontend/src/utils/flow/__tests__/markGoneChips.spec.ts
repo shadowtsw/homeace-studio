@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import type { BlockChip, DisplayBlock, DisplayFlow } from "@/types/editor";
 
-import { markGoneChips } from "../flow/markGoneChips";
+import { markGoneChips } from "../markGoneChips";
 
 function entityChip(value: unknown): BlockChip {
   return {

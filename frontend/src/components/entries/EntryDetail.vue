@@ -205,8 +205,8 @@ import FlowView from "@/components/flow/FlowView.vue";
 import type { CheckupFinding } from "@/services/checkupService";
 import { useDependenciesStore } from "@/stores/dependenciesStore";
 import { useTracesStore } from "@/stores/tracesStore";
-import { startTab } from "@/utils/detailTab";
-import { runStatesFor } from "@/utils/runStates";
+import { startTab } from "@/utils/entries/detailTab";
+import { runStatesFor } from "@/utils/runs/runStates";
 import type { DisplayFlow, EditorCatalog, FlowChange } from "@/types/editor";
 import type { Area, Entry, EntryChanges, Label } from "@/types/entry";
 

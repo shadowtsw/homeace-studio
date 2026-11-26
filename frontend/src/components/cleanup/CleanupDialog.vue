@@ -218,7 +218,7 @@ import {
   type CleanupChoice,
   type MergeChoice,
   type SplitChoice,
-} from "@/utils/cleanupSelection";
+} from "@/utils/categories/cleanupSelection";
 
 /**
  * The tidy-up assistant: pick the lines to convert, check what HA will do, then apply.

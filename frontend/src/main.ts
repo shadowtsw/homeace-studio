@@ -17,7 +17,7 @@ import { PREFERENCES } from "./constants/preferences";
 import router from "./router";
 import "./styles/tokens.css";
 import "./styles/base.css";
-import { captureEarlierVisit } from "./utils/earlierVisit";
+import { captureEarlierVisit } from "./utils/whatsNew/earlierVisit";
 
 // Before any store exists: the stores write their defaults at once, and "What's new" needs to know
 // whether this browser knew HomeAce Studio before (a fresh install has nothing to catch up on).

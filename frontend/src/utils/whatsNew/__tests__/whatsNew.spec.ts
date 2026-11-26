@@ -9,16 +9,16 @@ import {
   type WhatsNewRelease,
 } from "@/constants/whatsNew";
 import { APP_LOCALES } from "@/i18n";
-import { compareVersions, parseVersion } from "@/utils/version";
+import { compareVersions, parseVersion } from "@/utils/whatsNew/version";
 import {
   currentRelease,
   effectiveVersion,
   initialSeenVersion,
   unseenReleases,
-} from "@/utils/whatsNew";
+} from "@/utils/whatsNew/whatsNew";
 
 /** The app definition in the repo; its version is the one about to be released. */
-const CONFIG_PATH = join(__dirname, "..", "..", "..", "..", "homeace-studio", "config.yaml");
+const CONFIG_PATH = join(__dirname, "..", "..", "..", "..", "..", "homeace-studio", "config.yaml");
 
 const release = (version: string): WhatsNewRelease => ({ version, items: [] });
 const RELEASES = [release("0.16.0"), release("0.15.0"), release("0.14.0")];

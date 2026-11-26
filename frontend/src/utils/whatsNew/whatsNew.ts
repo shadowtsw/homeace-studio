@@ -1,5 +1,5 @@
 import type { WhatsNewRelease } from "@/constants/whatsNew";
-import { compareVersions, parseVersion } from "@/utils/version";
+import { compareVersions, parseVersion } from "@/utils/whatsNew/version";
 
 /**
  * The version whose highlights count as "current". A released image always has a real version; a

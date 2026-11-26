@@ -9,16 +9,16 @@ folder, with search, scope tabs, a "Neu" menu and bulk actions. A click opens th
 | What | File |
 | --- | --- |
 | Column: title with breadcrumb, "Neu" menu, search, bulk bar, groups | `components/entries/EntryList.vue` |
-| Filter bar (combinable: Strg/⌘+Klick, right-click menu, long press on touch) | `components/entries/ListScopeTabs.vue`, rules in `utils/listScopes.ts` |
+| Filter bar (combinable: Strg/⌘+Klick, right-click menu, long press on touch) | `components/entries/ListScopeTabs.vue`, rules in `utils/entries/listScopes.ts` |
 | One plain entity (light, sensor …): drag source, click offers its folder, checkbox | `components/entries/EntityListRow.vue` |
-| Selection bar of ticked entities, moving them | `components/entries/EntityBulkBar.vue`, `composables/useEntityBulkMove.ts` |
-| Which plain entities a view shows, groups of entries + entities | `utils/entityList.ts` (`filterListEntities`, `groupListItems`) |
+| Selection bar of ticked entities, moving them | `components/entries/EntityBulkBar.vue`, `composables/actions/useEntityBulkMove.ts` |
+| Which plain entities a view shows, groups of entries + entities | `utils/entities/entityList.ts` (`filterListEntities`, `groupListItems`) |
 | One row: checkbox, icon, name (inline rename), star, unsaved dot, quick actions, drag source | `components/entries/EntryListRow.vue` |
 | Check-up instead of the list (node "Check-up") | `components/checkup/CheckupList.vue` |
-| Filter, search, counts, grouping, which groups start open | `utils/entryFilter.ts` |
+| Filter, search, counts, grouping, which groups start open | `utils/entries/entryFilter.ts` |
 | The filtered entries and the scope counts | `composables/useStudioData.ts` (`visibleEntries`, `scopeCounts`) |
-| Which quick actions a row offers | `utils/entryActions.ts` (`supportsAction`, `canToggle`, `canDuplicate`) |
-| Area view notes per row ("über Bewegungsmelder · auch in Garten") | `utils/areaNotes.ts`, `areaView` in StudioView |
+| Which quick actions a row offers | `utils/entries/entryActions.ts` (`supportsAction`, `canToggle`, `canDuplicate`) |
+| Area view notes per row ("über Bewegungsmelder · auch in Garten") | `utils/areas/areaNotes.ts`, `areaView` in StudioView |
 
 ## Filtering
 

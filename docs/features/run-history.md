@@ -11,10 +11,10 @@ by block, and "Im Ablauf zeigen" puts it on the flow.
 | HA trace → `Run` (result word, what started it, steps in time order) | `backend/src/traces/trace-mapper.ts` (pure) |
 | Tab: runs by day, selected run step by step, "Die letzten 20 merken" | `frontend/src/components/history/RunHistoryView.vue`, `RunStepRow.vue` |
 | Bar above the flow while a run is shown on it | `frontend/src/components/history/RunOverlayBar.vue` |
-| Run → state per display block (`fired`, `passed`, `failed`, `notReached`, …) | `frontend/src/utils/runStates.ts` (`tracePathOf`, `runStatesFor`) |
-| Durations and times | `frontend/src/utils/runTime.ts` |
+| Run → state per display block (`fired`, `passed`, `failed`, `notReached`, …) | `frontend/src/utils/runs/runStates.ts` (`tracePathOf`, `runStatesFor`) |
+| Durations and times | `frontend/src/utils/runs/runTime.ts` |
 | Store: runs of the open entry, `shownRunId` | `frontend/src/stores/tracesStore.ts`, `services/tracesService.ts` |
-| Texts per run state | `frontend/src/composables/useRunTexts.ts` |
+| Texts per run state | `frontend/src/composables/texts/useRunTexts.ts` |
 
 ## Flow
 

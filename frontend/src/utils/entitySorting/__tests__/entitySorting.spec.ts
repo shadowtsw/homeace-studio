@@ -1,20 +1,20 @@
 import { describe, expect, it } from "vitest";
 
-import { buildBundles } from "../entitySorting/bundles";
+import { buildBundles } from "../bundles";
 import {
   collectMoves,
   computeSorting,
   suggestionChanges,
   type SortingInput,
-} from "../entitySorting/compute";
-import { areaParents } from "../entitySorting/home";
-import { layoutSorting, pretick } from "../entitySorting/layout";
-import type { SortingState } from "../entitySorting/model";
-import { sortingOverview } from "../entitySorting/overview";
-import { fromDisplayTarget, toDisplayTarget } from "../entitySorting/placeholders";
-import { ruleIdeas } from "../entitySorting/ruleIdeas";
-import { ruleFor, ruleSideHits, ruleStats } from "../entitySorting/rules";
-import { meaningfulWords, wordKey } from "../entitySorting/words";
+} from "../compute";
+import { areaParents } from "../home";
+import { layoutSorting, pretick } from "../layout";
+import type { SortingState } from "../model";
+import { sortingOverview } from "../overview";
+import { fromDisplayTarget, toDisplayTarget } from "../placeholders";
+import { ruleIdeas } from "../ruleIdeas";
+import { ruleFor, ruleSideHits, ruleStats } from "../rules";
+import { meaningfulWords, wordKey } from "../words";
 import { NAMES, sampleHome, sampleState } from "./entitySortingFixture";
 
 /** Computes, lays out and pre-ticks like the tool does when it opens. */

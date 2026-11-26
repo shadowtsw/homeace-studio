@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { compareVersions, parseVersion } from "@/utils/version";
+import { compareVersions, parseVersion } from "@/utils/whatsNew/version";
 
 describe("parseVersion", () => {
   it("reads release versions, also with a suffix", () => {

@@ -6,7 +6,7 @@ import type {
   SortingFlow,
   SortingRole,
 } from "@/types/entitySorting";
-import { lastLevel } from "@/utils/categoryPath";
+import { lastLevel } from "@/utils/categories/categoryPath";
 
 import { ROLE_WEIGHT } from "./constants";
 import { wordKey } from "./words";

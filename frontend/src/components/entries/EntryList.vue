@@ -214,11 +214,11 @@ import {
 } from "@/constants/entries";
 import type { EntityOption } from "@/types/editor";
 import type { Entry } from "@/types/entry";
-import type { AreaListView } from "@/utils/areaNotes";
-import { groupListItems, type ListGroup } from "@/utils/entityList";
-import { isGroupOpenByDefault, isSpecialCategory } from "@/utils/entryFilter";
+import type { AreaListView } from "@/utils/areas/areaNotes";
+import { groupListItems, type ListGroup } from "@/utils/entities/entityList";
+import { isGroupOpenByDefault, isSpecialCategory } from "@/utils/entries/entryFilter";
 
-import { rangeBetween } from "@/utils/selection";
+import { rangeBetween } from "@/utils/entries/selection";
 
 import EntityBulkBar from "./EntityBulkBar.vue";
 import EntityListRow from "./EntityListRow.vue";

@@ -4,7 +4,7 @@ import { computed, ref, watch } from "vue";
 import { usePreference } from "@/composables/usePreference";
 import { CATEGORY_FILTER, SCOPE_ALL, type ListScope } from "@/constants/entries";
 import { PREFERENCES } from "@/constants/preferences";
-import { showsEntities, toggleScope, validScopes } from "@/utils/listScopes";
+import { showsEntities, toggleScope, validScopes } from "@/utils/entries/listScopes";
 
 /** What the user is looking at: tree selection, filters, search, the open entry and ticked rows. */
 export const useStudioStore = defineStore("studio", () => {

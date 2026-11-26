@@ -83,9 +83,9 @@ import { useMediaQuery } from "@vueuse/core";
 import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
 
-import { useSortingTexts } from "@/composables/useSortingTexts";
+import { useSortingTexts } from "@/composables/texts/useSortingTexts";
 import { useEntitySortingStore } from "@/stores/entitySortingStore";
-import { cleanFolderPath } from "@/utils/categoryPath";
+import { cleanFolderPath } from "@/utils/categories/categoryPath";
 import { targetOf } from "@/utils/entitySorting/compute";
 import type { SortingBundle, SortingGroup } from "@/utils/entitySorting/model";
 import { groupTarget } from "@/utils/entitySorting/targets";

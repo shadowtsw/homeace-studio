@@ -6,7 +6,7 @@ import { moveEntityToFolder } from "@/services/editorService";
 import { useEntriesStore } from "@/stores/entriesStore";
 import { useLookupsStore } from "@/stores/lookupsStore";
 import type { EntityOption } from "@/types/editor";
-import type { TidyMove } from "@/utils/areaTidy";
+import type { TidyMove } from "@/utils/areas/areaTidy";
 import { useFoldersStore } from "@/stores/foldersStore";
 import { useMessagesStore } from "@/stores/messagesStore";
 import { useStudioStore } from "@/stores/studioStore";

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { hasOwnKeys } from "@/utils/earlierVisit";
+import { hasOwnKeys } from "@/utils/whatsNew/earlierVisit";
 
 describe("hasOwnKeys", () => {
   it("finds keys of HomeAce Studio", () => {

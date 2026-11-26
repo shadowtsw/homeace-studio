@@ -1,5 +1,5 @@
 import type { SortingEntity } from "@/types/entitySorting";
-import { cleanFolderPath } from "@/utils/categoryPath";
+import { cleanFolderPath } from "@/utils/categories/categoryPath";
 
 import { buildBundles } from "./bundles";
 import { areaParents, existingFolders, type SortingHome } from "./home";

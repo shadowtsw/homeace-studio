@@ -80,7 +80,7 @@
 import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 
-import { useSortingTexts } from "@/composables/useSortingTexts";
+import { useSortingTexts } from "@/composables/texts/useSortingTexts";
 import { SORTING_STEP, useEntitySortingStore } from "@/stores/entitySortingStore";
 
 /** The buttons of the current step, below the scrolling body. */

@@ -26,12 +26,12 @@ icon, delete). The UI sides are in [../ui/detail.md](../ui/detail.md) (propertie
 | HA colour names → CSS, free colour for a new label | `frontend/src/utils/labelColors.ts` |
 | Calls | `frontend/src/services/labelsService.ts` |
 | Busy state, delete in two steps, reload | `frontend/src/stores/labelsStore.ts` |
-| Toasts, counts per label, ticking on many entries | `frontend/src/composables/useLabelActions.ts` |
+| Toasts, counts per label, ticking on many entries | `frontend/src/composables/actions/useLabelActions.ts` |
 | Picker (search, ticks, create, pencil) | `frontend/src/components/labels/LabelPicker.vue` |
 | Edit form inside the picker | `frontend/src/components/labels/LabelEditForm.vue` |
 | Delete dialog with the uses | `frontend/src/components/labels/LabelDeleteDialog.vue` |
 | Chip | `frontend/src/components/labels/LabelChip.vue` |
-| Placement that never covers the field | `frontend/src/composables/useNoCoverPlacement.ts` |
+| Placement that never covers the field | `frontend/src/composables/panels/useNoCoverPlacement.ts` |
 
 ## Two kinds of action
 

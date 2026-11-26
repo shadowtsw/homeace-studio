@@ -9,7 +9,7 @@ banner, tabs, and a fixed save footer. Only the middle scrolls.
 | --- | --- |
 | Column frame, tabs, which tab shows what, save footer slot | `components/entries/EntryDetail.vue` |
 | Header: kind, title (inline rename), rename / duplicate buttons, on/off or "Aktivieren", run, favorite, delete, back (phone) | `components/entries/EntryDetailHeader.vue` |
-| Start tab of a newly opened entry | `utils/detailTab.ts` (`startTab`) |
+| Start tab of a newly opened entry | `utils/entries/detailTab.ts` (`startTab`) |
 | Check-up banner above the tabs | `components/checkup/CheckupBanner.vue` |
 | Save footer ("Ungespeicherte Änderungen · Verwerfen · In HA speichern", or the status line of automatic saving) | `components/common/SaveFooter.vue` |
 | Unsaved helper settings and scene edits per entry | `stores/draftsStore.ts` |
@@ -32,7 +32,7 @@ Top to bottom:
 
 1. `CategoryMoveField`: folder with suggestions from every scope.
 2. `EntryEditForm`: name, icon, area (with "+ Neuer Bereich …"), labels. It sends only the fields
-   the user changed since the form was filled (`EntryChanges`, `utils/entryForm.ts`) →
+   the user changed since the form was filled (`EntryChanges`, `utils/entries/entryForm.ts`) →
    `PATCH /api/entries/:id`; ticked and unticked labels are applied to the labels the entry has now.
    Comparing with the entry as it is now instead would undo, on saving, a change made elsewhere while
    the form was open (a label set in HA, the entry dragged onto an area). The icon is an `IconField` (preview, text,

@@ -39,7 +39,7 @@ import { useI18n } from "vue-i18n";
 
 import DialogFrame from "@/components/common/DialogFrame.vue";
 import { CATEGORY_SEPARATOR } from "@/constants/entries";
-import { lastLevel } from "@/utils/categoryPath";
+import { lastLevel } from "@/utils/categories/categoryPath";
 
 const props = defineProps<{
   /** Folder to create the new one in; null for a top-level folder. */

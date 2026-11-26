@@ -25,7 +25,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
-import { useStateText } from "@/composables/useStateText";
+import { useStateText } from "@/composables/texts/useStateText";
 import { DOMAIN_ICON, FALLBACK_DOMAIN_ICON } from "@/constants/domainIcons";
 import type { EntityOption } from "@/types/editor";
 

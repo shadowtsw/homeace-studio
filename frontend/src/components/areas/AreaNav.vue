@@ -69,7 +69,7 @@
 import { useI18n } from "vue-i18n";
 
 import type { AreaNavItem } from "@/composables/useStudioData";
-import { areaFilter } from "@/utils/entryFilter";
+import { areaFilter } from "@/utils/entries/entryFilter";
 
 import AreaNavNode from "./AreaNavNode.vue";
 

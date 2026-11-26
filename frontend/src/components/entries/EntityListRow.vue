@@ -57,7 +57,7 @@ import { useI18n } from "vue-i18n";
 
 import { DOMAIN_ICON, FALLBACK_DOMAIN_ICON } from "@/constants/domainIcons";
 import type { EntityOption } from "@/types/editor";
-import { usePlainEntityDrag } from "@/composables/usePlainEntityDrag";
+import { usePlainEntityDrag } from "@/composables/dragDrop/usePlainEntityDrag";
 import { setDraggedPlainEntity } from "@/utils/dragDrop";
 
 const props = defineProps<{

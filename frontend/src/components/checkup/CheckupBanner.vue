@@ -63,10 +63,10 @@
 <script setup lang="ts">
 import { useI18n } from "vue-i18n";
 
-import { useRunTexts } from "@/composables/useRunTexts";
+import { useRunTexts } from "@/composables/texts/useRunTexts";
 
 import type { CheckupFinding, CheckupKind } from "@/services/checkupService";
-import { relativeTime } from "@/utils/relativeTime";
+import { relativeTime } from "@/utils/runs/relativeTime";
 
 /** What the check-up found about the open entry, with what to do about it. */
 defineProps<{

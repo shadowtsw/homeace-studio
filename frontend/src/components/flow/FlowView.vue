@@ -97,8 +97,8 @@
 import { computed, provide, ref, toRef, watch } from "vue";
 import { useI18n } from "vue-i18n";
 
-import { useFlowEntityDrop } from "@/composables/useFlowEntityDrop";
-import { useFlowTexts } from "@/composables/useFlowTexts";
+import { useFlowEntityDrop } from "@/composables/dragDrop/useFlowEntityDrop";
+import { useFlowTexts } from "@/composables/texts/useFlowTexts";
 import {
   FLOW_MODES,
   type AddTarget,
@@ -114,7 +114,7 @@ import {
 import { blockTypes, newBlock } from "@/utils/flow/blockTypes";
 import { dropKey } from "@/utils/flow/dropTargets";
 import { entityIdsInFlow } from "@/utils/flow/entityIdsInFlow";
-import type { BlockRunState } from "@/utils/runStates";
+import type { BlockRunState } from "@/utils/runs/runStates";
 
 import AddBlockButton from "./AddBlockButton.vue";
 import ChipEditorPopover from "./ChipEditorPopover.vue";

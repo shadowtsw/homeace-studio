@@ -58,7 +58,7 @@
 import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
 
-import { useStateText } from "@/composables/useStateText";
+import { useStateText } from "@/composables/texts/useStateText";
 import { DOMAIN_ICON, FALLBACK_DOMAIN_ICON } from "@/constants/domainIcons";
 import { ENTRY_KIND_ICON } from "@/constants/entries";
 import type { DependencyUse } from "@/services/dependenciesService";

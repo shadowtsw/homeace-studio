@@ -78,7 +78,7 @@ import { useI18n } from "vue-i18n";
 import DialogFrame from "@/components/common/DialogFrame.vue";
 import { fetchReferences, type EntityReference } from "@/services/renameService";
 import type { Entry } from "@/types/entry";
-import { domainOf, OBJECT_ID_PATTERN, objectIdOf } from "@/utils/entityId";
+import { domainOf, OBJECT_ID_PATTERN, objectIdOf } from "@/utils/entities/entityId";
 
 /** "Entity-ID ändern": the new ID, and which flows are rewritten with it. */
 const props = defineProps<{

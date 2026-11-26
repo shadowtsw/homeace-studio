@@ -60,7 +60,7 @@ import { useI18n } from "vue-i18n";
 import AppIcon from "@/components/common/AppIcon.vue";
 import InlineNameInput from "@/components/common/InlineNameInput.vue";
 
-import { useEntryDropTarget } from "@/composables/useEntryDropTarget";
+import { useEntryDropTarget } from "@/composables/dragDrop/useEntryDropTarget";
 
 /** One area in the tree of the area view; entries dropped on it get it as their own area. */
 defineProps<{

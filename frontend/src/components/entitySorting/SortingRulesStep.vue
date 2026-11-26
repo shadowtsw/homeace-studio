@@ -123,7 +123,7 @@ import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
 
 import SwitchToggle from "@/components/common/SwitchToggle.vue";
-import { useSortingTexts } from "@/composables/useSortingTexts";
+import { useSortingTexts } from "@/composables/texts/useSortingTexts";
 import { useEntitySortingStore } from "@/stores/entitySortingStore";
 import { useToastStore } from "@/stores/toastStore";
 import type { SortingRule } from "@/types/entitySorting";

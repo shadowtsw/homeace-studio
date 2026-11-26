@@ -2,9 +2,9 @@ import { describe, expect, it } from "vitest";
 
 import type { EditorCatalog, Flow } from "@/types/editor";
 
-import { blockTypes, newBlock } from "../flow/blockTypes";
-import { applyFlowChange } from "../flow/flowChanges";
-import { toDisplayFlow, type FlowTexts } from "../flow/toDisplayFlow";
+import { blockTypes, newBlock } from "../blockTypes";
+import { applyFlowChange } from "../flowChanges";
+import { toDisplayFlow, type FlowTexts } from "../toDisplayFlow";
 
 const texts: FlowTexts = {
   yes: "ja",

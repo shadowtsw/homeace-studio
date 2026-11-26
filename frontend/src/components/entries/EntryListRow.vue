@@ -108,7 +108,7 @@
 </template>
 
 <script setup lang="ts">
-import { canDuplicate as canDuplicateEntry } from "@/utils/entryActions";
+import { canDuplicate as canDuplicateEntry } from "@/utils/entries/entryActions";
 import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 
@@ -117,10 +117,10 @@ import LabelChip from "@/components/labels/LabelChip.vue";
 import SwitchToggle from "@/components/common/SwitchToggle.vue";
 import { ENTRY_ACTION, ENTRY_KIND_ICON, type EntryAction } from "@/constants/entries";
 import type { Entry } from "@/types/entry";
-import { usePlainEntityDrag } from "@/composables/usePlainEntityDrag";
+import { usePlainEntityDrag } from "@/composables/dragDrop/usePlainEntityDrag";
 import { useLookupsStore } from "@/stores/lookupsStore";
 import { setDraggedEntity } from "@/utils/dragDrop";
-import { canToggle, isOn, supportsAction, toggleAction } from "@/utils/entryActions";
+import { canToggle, isOn, supportsAction, toggleAction } from "@/utils/entries/entryActions";
 import AppIcon from "@/components/common/AppIcon.vue";
 
 /** HA's state for a switched-off automation or script. */

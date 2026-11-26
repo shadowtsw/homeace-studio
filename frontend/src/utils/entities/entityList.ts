@@ -2,8 +2,8 @@ import { CATEGORY_FILTER } from "@/constants/entries";
 import type { EntityOption } from "@/types/editor";
 import type { Entry } from "@/types/entry";
 
-import { isSameOrBelow } from "./categoryPath";
-import { areaOfFilter, compareCategoryPaths, type EntryGroup } from "./entryFilter";
+import { isSameOrBelow } from "../categories/categoryPath";
+import { areaOfFilter, compareCategoryPaths, type EntryGroup } from "../entries/entryFilter";
 
 export type EntityListFilter = {
   /** A category path, one of CATEGORY_FILTER or an area selection. */
