@@ -10,8 +10,8 @@ for entries and labels. Areas keep their fixed choice in the area dialog but sho
 | What | Where |
 | --- | --- |
 | Show an icon (standard via the font, pack icon as SVG, else a fallback) | `frontend/src/components/common/AppIcon.vue` |
-| Icon field: preview, text input, "Auswählen …", note | `frontend/src/components/icons/IconField.vue` |
-| Icon search: grid, filters per pack, selection line | `frontend/src/components/icons/IconPicker.vue` |
+| Icon field: preview, text input, "Auswählen …", note | `frontend/src/components/iconpicker/IconField.vue` |
+| Icon search: grid, filters per pack, selection line | `frontend/src/components/iconpicker/IconPicker.vue` |
 | Find and load packs, paths per icon, names per pack | `frontend/src/stores/iconPacksStore.ts` |
 | HA's page, `customIcons`, loading pack scripts | `frontend/src/services/iconPacksService.ts` |
 | Parse "pack:name", standard icon names, search | `frontend/src/utils/haIcon.ts` |

@@ -149,10 +149,12 @@ A local app and the installed one can exist side by side; they have separate con
 
 1. On HA, install the **Samba share** app (or **Advanced SSH & Web Terminal**) so `/addons` is reachable.
    Settings → Apps → App store (direct: `/config/apps/available`); Samba needs a username and password.
+   Samba hides names in its `veto_files` list (by default `icon?` for Mac icon files, which also
+   matches a folder called `icons`). So no file or folder in the app may be named like that.
 2. Assemble the folder, straight onto the share or locally to copy it yourself:
 
    ```bash
-   node scripts/build-addon.mjs --to \homeassistant.localaddons   # → /addons/homeace_studio
+   node scripts/build-addon.mjs --to \\homeassistant.local\addons  # → /addons/homeace_studio
    node scripts/build-addon.mjs                                       # → dist-addon/homeace_studio
    ```
 

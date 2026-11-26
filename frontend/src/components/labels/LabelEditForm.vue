@@ -74,7 +74,7 @@
 import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
 
-import IconField from "@/components/icons/IconField.vue";
+import IconField from "@/components/iconpicker/IconField.vue";
 import type { LabelFields } from "@/services/labelsService";
 import type { Label } from "@/types/entry";
 import { LABEL_COLORS } from "@/utils/labelColors";

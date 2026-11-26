@@ -80,7 +80,7 @@
 import { computed, ref, useTemplateRef, watch } from "vue";
 import { useI18n } from "vue-i18n";
 
-import IconField from "@/components/icons/IconField.vue";
+import IconField from "@/components/iconpicker/IconField.vue";
 import LabelChip from "@/components/labels/LabelChip.vue";
 import LabelPicker from "@/components/labels/LabelPicker.vue";
 import { useLabelActions } from "@/composables/useLabelActions";
