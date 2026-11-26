@@ -156,6 +156,8 @@ export default {
     save: "Speichern",
     reset: "Zurücksetzen",
     close: "Schließen",
+    /** A name or value quoted the way this language does it. */
+    quoted: "„{text}“",
   },
   folder: {
     title: "Neuer Ordner",

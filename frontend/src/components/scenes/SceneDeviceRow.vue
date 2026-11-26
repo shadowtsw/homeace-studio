@@ -297,7 +297,7 @@ function extraText(key: string, value: unknown): string {
   else if (key === "percentage") shown = `${String(value)} %`;
   else if (key === "volume_level" && typeof value === "number")
     shown = `${Math.round(value * 100)} %`;
-  else if (typeof value === "string") shown = `„${value}“`;
+  else if (typeof value === "string") shown = t("common.quoted", { text: value });
   else shown = JSON.stringify(value);
 
   return `${label} ${shown}`;

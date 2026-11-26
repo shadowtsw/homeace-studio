@@ -163,6 +163,8 @@ const fr: MessageSchema = {
     save: "Enregistrer",
     reset: "Réinitialiser",
     close: "Fermer",
+    /** A name or value quoted the way this language does it. */
+    quoted: "« {text} »",
   },
   folder: {
     title: "Nouveau dossier",

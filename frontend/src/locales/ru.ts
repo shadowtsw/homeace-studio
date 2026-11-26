@@ -159,6 +159,8 @@ const ru: MessageSchema = {
     save: "Сохранить",
     reset: "Сбросить",
     close: "Закрыть",
+    /** A name or value quoted the way this language does it. */
+    quoted: "«{text}»",
   },
   folder: {
     title: "Новая папка",

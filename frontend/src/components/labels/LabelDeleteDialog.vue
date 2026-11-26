@@ -60,7 +60,7 @@ const lines = computed(() =>
     .map(([kind, count]) => t(`labels.usage.${kind}`, { count })),
 );
 const flowNames = computed(() =>
-  props.usage.flowsAsTarget.map((flow) => `„${flow.name}“`).join(", "),
+  props.usage.flowsAsTarget.map((flow) => t("common.quoted", { text: flow.name })).join(", "),
 );
 </script>
 

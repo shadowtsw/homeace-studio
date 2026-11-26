@@ -155,6 +155,8 @@ const en: MessageSchema = {
     save: "Save",
     reset: "Reset",
     close: "Close",
+    /** A name or value quoted the way this language does it. */
+    quoted: "“{text}”",
   },
   folder: {
     title: "New folder",
