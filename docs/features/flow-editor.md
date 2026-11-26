@@ -10,9 +10,9 @@ saves the whole config back to HA. No YAML in the UI.
 
 | What | File |
 | --- | --- |
-| Tab view: mode bar, three sections, the one popover for every editor and menu | `components/flow/FlowView.vue`; the popover and its menus in `composables/useFlowPopover.ts`, the sections with their drop signs in `composables/useFlowSections.ts` |
+| Tab view: mode bar, three sections, the one popover for every editor and menu | `components/flow/FlowView.vue`; the popover and its menus in `composables/flow/useFlowPopover.ts`, the sections with their drop signs in `composables/flow/useFlowSections.ts` |
 | One block (recursive): icon, title, chips, "+ Option", ⋮ menu, branches, run state | `components/flow/FlowBlock.vue` |
-| Popover / bottom sheet (≤ 560 px) for a value or a menu | `components/flow/ChipEditorPopover.vue` (+ `ChoiceList.vue`) |
+| Popover / bottom sheet (≤ 560 px) for a value or a menu | `components/flow/ChipEditorPopover.vue` (+ `ChoiceList.vue`); the value and what "Übernehmen" sends in `composables/flow/useChipEditorValue.ts`, the placement next to the chip in `composables/panels/useAnchoredPlacement.ts` |
 | Entity editor | `components/flow/EntityPicker.vue`, `EntityPickerRow.vue`, pure parts in `utils/entities/entityPicker.ts` |
 | Add button of a list | `components/flow/AddBlockButton.vue` |
 | New automation / script (name + folder) | `components/flow/NewFlowDialog.vue` |
@@ -121,8 +121,8 @@ list (`onApplyArea`). Suggestions: entities the flow already uses, then the entr
   title in `flow.titles.<kind>` (or `<kind>_<section>`) in all five locales, plus a test in
   `utils/flow/__tests__/flowDisplay.spec.ts` / `flowBlocks.spec.ts`. The demo home should contain an example (`backend/src/demo/demo-home.ts`).
 - **New value editor type:** extend `ValueEditor` in `types/editor.ts`, map it in `valueEditors.ts`,
-  render it in `ChipEditorPopover.vue`, and convert input in `editValue.ts`.
-- **Block menu action:** `BLOCK_ACTION` + `blockChange` in `composables/useFlowPopover.ts`, a new `FlowChange` type in
+  render it in `ChipEditorPopover.vue` (its value in `useChipEditorValue.ts`), and convert input in `editValue.ts`.
+- **Block menu action:** `BLOCK_ACTION` + `blockChange` in `composables/flow/useFlowPopover.ts`, a new `FlowChange` type in
   `types/editor.ts`, and its handling in `applyFlowChange`.
 
 ## Dropping entities from the list

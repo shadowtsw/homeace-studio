@@ -98,8 +98,8 @@ import { computed, provide, toRef, watch } from "vue";
 import { useI18n } from "vue-i18n";
 
 import { useFlowEntityDrop } from "@/composables/dragDrop/useFlowEntityDrop";
-import { useFlowPopover } from "@/composables/useFlowPopover";
-import { useFlowSections } from "@/composables/useFlowSections";
+import { useFlowPopover } from "@/composables/flow/useFlowPopover";
+import { useFlowSections } from "@/composables/flow/useFlowSections";
 import {
   FLOW_MODES,
   type ConfigPath,

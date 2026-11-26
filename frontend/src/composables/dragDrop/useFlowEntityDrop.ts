@@ -13,7 +13,7 @@ import { flashElement } from "@/utils/flash";
 import { branchesOf, dropTargets, nextBlockId, type DropTarget } from "@/utils/flow/dropTargets";
 import { entityFit, type ChoiceLabel, type EntityChoice } from "@/utils/flow/entityBlocks";
 
-import type { OpenMenuOptions } from "@/composables/useFlowPopover";
+import type { OpenMenuOptions } from "@/composables/flow/useFlowPopover";
 
 import { usePlainEntityDrag } from "./usePlainEntityDrag";
 

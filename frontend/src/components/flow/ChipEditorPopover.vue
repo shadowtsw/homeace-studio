@@ -113,24 +113,17 @@
 </template>
 
 <script setup lang="ts">
-import { onClickOutside, useEventListener, useMediaQuery, useResizeObserver } from "@vueuse/core";
-import { computed, nextTick, onMounted, reactive, ref, toRef } from "vue";
+import { onClickOutside, useMediaQuery } from "@vueuse/core";
+import { nextTick, onMounted, ref, toRef } from "vue";
 import { useI18n } from "vue-i18n";
 
 import PopoverClose from "@/components/common/PopoverClose.vue";
+import { useChipEditorValue } from "@/composables/flow/useChipEditorValue";
+import { useAnchoredPlacement } from "@/composables/panels/useAnchoredPlacement";
 import { useLookupsStore } from "@/stores/lookupsStore";
 import type { ChipEdit, ConfigPath } from "@/types/editor";
-import {
-  listValue,
-  numberValue,
-  selectedValues,
-  textValue,
-  timeValue,
-} from "@/utils/flow/editValue";
-import { joinDuration, splitDuration } from "@/utils/flow/formatValue";
-import { stateSuggestions } from "@/utils/flow/stateSuggestions";
 
-import ChoiceList, { type ListOption } from "./ChoiceList.vue";
+import ChoiceList from "./ChoiceList.vue";
 import EntityPicker from "./EntityPicker.vue";
 
 const props = defineProps<{
@@ -152,198 +145,59 @@ const emit = defineEmits<{
   close: [];
 }>();
 
-const { t, te } = useI18n();
+const { t } = useI18n();
 const lookups = useLookupsStore();
 
 /** Lists get a search field from this length on. */
 const SEARCH_FROM = 8;
-/** Distance to the chip and to the window edges, in px. */
-const GAP = 6;
-const EDGE = 12;
 const DURATION_PARTS = ["hours", "minutes", "seconds"] as const;
 
 const popover = ref<HTMLElement | null>(null);
 const firstInput = ref<HTMLInputElement | HTMLTextAreaElement | null>(null);
-const position = ref<{ left: number; top: number } | null>(null);
 /** On phones the editor is a sheet at the bottom instead of a popover. */
 const isNarrow = useMediaQuery("(max-width: 560px)");
 
-const editor = computed(() => props.edit.editor);
-
-/** Menus without a config path ("Aktion hinzufügen") from this length get the wide two-column form. */
-const LONG_MENU = 8;
-const isLongMenu = computed(
-  () =>
-    props.edit.path.length === 0 &&
-    editor.value.type === "choice" &&
-    editor.value.options.length > LONG_MENU,
-);
-const isMultiline = computed(() => editor.value.type === "text" && editor.value.isMultiline);
-const isMultiple = computed(() => {
-  const current = editor.value;
-
-  return (
-    (current.type === "entity" || current.type === "area" || current.type === "choice") &&
-    current.isMultiple
-  );
+const {
+  editor,
+  isLongMenu,
+  isMultiline,
+  isMultiple,
+  selected,
+  text,
+  duration,
+  listOptions,
+  suggestions,
+  inputType,
+  inputStep,
+  canRemove,
+  needsApply,
+  pick,
+  pickArea,
+  applyInput,
+} = useChipEditorValue({
+  edit: toRef(props, "edit"),
+  onApply: (value) => emit("apply", value),
+  onApplyArea: ({ areaPath, areaId }) => emit("applyArea", areaPath, areaId),
+  onClose: () => emit("close"),
 });
-
-const selected = ref<string[]>(selectedValues(props.edit.value));
-const initialText =
-  props.edit.value === undefined || typeof props.edit.value === "object"
-    ? ""
-    : String(props.edit.value);
-const text = ref(initialText);
-const duration = reactive(splitDuration(props.edit.value) ?? { hours: 0, minutes: 0, seconds: 0 });
-
-const choiceLabel = (value: string): string =>
-  te(`flow.choices.${value}`) ? t(`flow.choices.${value}`) : value;
-
-/** Entities, areas and fixed choices are picked from a list; everything else is typed. */
-const listOptions = computed((): ListOption[] | null => {
-  const current = editor.value;
-
-  // Entities have their own picker (EntityPicker).
-  if (current.type === "entity") return null;
-
-  if (current.type === "area") {
-    return lookups.areas.map((area) => ({ value: area.areaId, label: area.name }));
-  }
-
-  if (current.type === "choice") return current.options;
-
-  if (current.type === "boolean") {
-    return [
-      { value: "true", label: t("detail.yes") },
-      { value: "false", label: t("detail.no") },
-    ];
-  }
-
-  return null;
-});
-
-const suggestions = computed((): ListOption[] => {
-  const current = editor.value;
-
-  if (current.type !== "text" || !current.stateOf) return [];
-
-  return stateSuggestions({ entityIds: current.stateOf, entities: lookups.entities }).map(
-    (state) => ({
-      value: state,
-      label: choiceLabel(state),
-    }),
-  );
-});
-
-const inputType = computed(() => {
-  const type = editor.value.type;
-
-  if (type === "number") return "number";
-  if (type === "time") return "time";
-  if (type === "date") return "date";
-
-  return "text";
-});
-
-const inputStep = computed(() => {
-  const current = editor.value;
-
-  if (current.type === "time") return 1;
-  if (current.type === "number") return current.step ?? "any";
-
-  return undefined;
-});
-
-const canRemove = computed(() => props.edit.isRemovable && props.edit.value !== undefined);
-const needsApply = computed(
-  () => (listOptions.value === null && editor.value.type !== "entity") || isMultiple.value,
-);
-
-const positionStyle = computed(() =>
-  isNarrow.value || !position.value
-    ? undefined
-    : { left: `${position.value.left}px`, top: `${position.value.top}px` },
-);
-
-function pick(value: string): void {
-  if (!isMultiple.value) {
-    emit("apply", editor.value.type === "boolean" ? value === "true" : value);
-    return;
-  }
-
-  selected.value = selected.value.includes(value)
-    ? selected.value.filter((item) => item !== value)
-    : [...selected.value, value];
-}
-
-function pickArea(areaId: string): void {
-  const current = editor.value;
-
-  if (current.type === "entity" && current.areaPath) emit("applyArea", current.areaPath, areaId);
-}
-
-function applyInput(): void {
-  const value = inputValue();
-
-  // A required field cannot be emptied; keep it as it is.
-  if (value === undefined && !props.edit.isRemovable) {
-    emit("close");
-    return;
-  }
-
-  emit("apply", value);
-}
-
-function inputValue(): unknown {
-  const current = editor.value;
-
-  if (isMultiple.value) return listValue({ selected: selected.value, original: props.edit.value });
-  if (current.type === "number") return numberValue(text.value);
-  if (current.type === "time") return timeValue(text.value);
-  if (current.type === "duration") {
-    return joinDuration({
-      hours: duration.hours || 0,
-      minutes: duration.minutes || 0,
-      seconds: duration.seconds || 0,
-    });
-  }
-
-  return textValue(text.value);
-}
-
-/** Below the chip if there is room, otherwise above; always inside the window. */
-function place(): void {
-  const element = popover.value;
-
-  if (!element) return;
-
-  const chip = props.anchor.getBoundingClientRect();
-  const width = element.offsetWidth;
-  const height = element.offsetHeight;
-  const left = Math.max(EDGE, Math.min(chip.left, window.innerWidth - width - EDGE));
-  const below = chip.bottom + GAP;
-  const preferred = below + height > window.innerHeight - EDGE ? chip.top - height - GAP : below;
-  // Also when the chip sits low on a short window: the popover stays inside it.
-  const top = Math.max(EDGE, Math.min(preferred, window.innerHeight - height - EDGE));
-
-  position.value = { left, top };
-}
 
 // A click on the chip itself reopens the editor (FlowView handles it), so it is not "outside".
 onClickOutside(popover, () => emit("close"), { ignore: [toRef(props, "anchor")] });
-useEventListener(window, "resize", place);
-// The detail pane scrolls; the popover follows its chip.
-useEventListener(window, "scroll", place, { capture: true, passive: true });
-// The content grows after opening (entities load, a criterion opens); stay inside the window.
-useResizeObserver(popover, place);
+const { place, positionStyle } = useAnchoredPlacement({
+  panel: popover,
+  anchor: toRef(props, "anchor"),
+  isSheet: isNarrow,
+});
 
 onMounted(async () => {
+  // The entity list, where this editor needs it
   const current = editor.value;
 
   if (current.type === "entity" || (current.type === "text" && current.stateOf)) {
     void lookups.loadEntities();
   }
 
+  // Next to the chip, then ready to type
   await nextTick();
   place();
   // preventScroll: focusing must not shift the panes (their overflow is hidden, but still scrollable).
