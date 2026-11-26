@@ -9,7 +9,9 @@ afterwards.
 
 | What | File |
 | --- | --- |
-| Tab: load, draft (kept in `draftsStore`), device rows, take current state, save, save footer (teleported) | `frontend/src/components/scenes/SceneEditorView.vue` |
+| Tab: device rows, preview bar, device picker, save footer (teleported) | `frontend/src/components/scenes/SceneEditorView.vue` |
+| Load, draft (kept in `draftsStore`), saved vs. edited, take over what HA saved | `frontend/src/composables/scenes/useSceneDraft.ts` |
+| Editing: take current state, add, remove, save, discard; wires preview, automatic saving and drop; switching scenes and leaving | `frontend/src/composables/scenes/useSceneEditor.ts` |
 | "+ Gerät hinzufügen": picker placed within the window, `SCENE_DOMAINS` | `frontend/src/components/scenes/SceneDevicePicker.vue` |
 | "Vorschau", "Ausprobieren", live edits, restore on leaving and `pagehide` | `frontend/src/composables/scenes/useScenePreview.ts` |
 | Automatic saving and "Alles rückgängig" | `frontend/src/composables/scenes/useSceneAutoSave.ts` |
