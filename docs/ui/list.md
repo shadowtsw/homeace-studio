@@ -10,7 +10,8 @@ folder, with search, scope tabs, a "Neu" menu and bulk actions. A click opens th
 | --- | --- |
 | Column: title with breadcrumb, "Neu" menu, search, bulk bar, groups | `components/entries/EntryList.vue` |
 | Filter bar (combinable: Strg/⌘+Klick, right-click menu, long press on touch) | `components/entries/ListScopeTabs.vue`, rules in `utils/listScopes.ts` |
-| One plain entity (light, sensor …): drag source, click offers its folder | `components/entries/EntityListRow.vue` |
+| One plain entity (light, sensor …): drag source, click offers its folder, checkbox | `components/entries/EntityListRow.vue` |
+| Selection bar of ticked entities, moving them | `components/entries/EntityBulkBar.vue`, `composables/useEntityBulkMove.ts` |
 | Which plain entities a view shows, groups of entries + entities | `utils/entityList.ts` (`filterListEntities`, `groupListItems`) |
 | One row: checkbox, icon, name (inline rename), star, unsaved dot, quick actions, drag source | `components/entries/EntryListRow.vue` |
 | Check-up instead of the list (node "Check-up") | `components/checkup/CheckupList.vue` |
@@ -70,6 +71,11 @@ the list:
   entries can be ticked or dragged (`isInRegistry`). The bulk bar offers move, set area, "Label" and take
   out of the folder. "Label" opens the `LabelPicker` next to the bar; a tick acts at once on all ticked
   entries (see [labels](../features/labels.md)).
+- **Ticking entities:** plain entities have a checkbox too (its click never opens the row's menu), with
+  shift-click ranges and "Alle auswählen" over the shown rows. Their own bar (`EntityBulkBar`) offers
+  "Verschieben nach …" (the folder dialog) and "Aus Ordner nehmen". Entries and entities are ticked
+  separately (`studio.checkedIds` / `checkedEntityIds`): ticking one kind clears the other, with a
+  toast that says so, so the bar always fits what is ticked.
 - **Label chips:** with "Labels in der Liste zeigen" on (per user, off by default), each row shows its
   labels as small chips without icon (`EntryListRow`, prop `isLabelsVisible`).
 - **Inline rename:** double-click on the name, the pencil, or F2. `studio.renaming = { entityId, place:

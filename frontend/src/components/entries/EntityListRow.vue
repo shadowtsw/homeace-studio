@@ -4,7 +4,11 @@
     role="button"
     tabindex="0"
     class="entity-list-row"
-    :class="{ 'entity-list-row--pressed': isPressed }"
+    :class="{
+      'entity-list-row--pressed': isPressed,
+      'entity-list-row--checked': isChecked,
+      'entity-list-row--checking': isCheckActive,
+    }"
     :data-plain-entity-id="entity.entityId"
     draggable="true"
     :title="entity.isInRegistry ? t('entityRow.hint') : t('entityRow.hintNoFolder')"
@@ -18,6 +22,20 @@
     @keydown.enter.prevent="open"
     @keydown.space.prevent="open"
   >
+    <!-- Its own click: ticking never opens the row's menu -->
+    <input
+      class="entity-list-row__check"
+      type="checkbox"
+      draggable="false"
+      :checked="isChecked"
+      :disabled="!entity.isInRegistry"
+      :aria-label="t('list.check', { name: entity.shortName })"
+      :title="entity.isInRegistry ? t('list.checkHint') : t('entityRow.hintNoFolder')"
+      @click.stop="(event: MouseEvent) => emit('check', entity.entityId, event.shiftKey)"
+      @pointerdown.stop
+      @keydown.enter.stop
+      @keydown.space.stop
+    />
     <span class="entity-list-row__icon">
       <span class="mdi" :class="DOMAIN_ICON[entity.domain] ?? FALLBACK_DOMAIN_ICON" />
     </span>
@@ -47,11 +65,16 @@ const props = defineProps<{
   isTechnicalDetailsVisible: boolean;
   /** In the area view the area is the list itself, so the row leaves it out. */
   isAreaShown: boolean;
+  isChecked: boolean;
+  /** Some entity is ticked: the boxes stay visible, not only on hover. */
+  isCheckActive: boolean;
 }>();
 
 const emit = defineEmits<{
   /** A click (or tap): the page offers where the entity can go. */
   open: [entity: EntityOption, anchor: HTMLElement];
+  /** Its box was clicked; with Shift, everything from the last clicked box to here. */
+  check: [entityId: string, withShift: boolean];
 }>();
 
 const { t } = useI18n();
@@ -100,13 +123,13 @@ function endDrag(): void {
 </script>
 
 <style scoped>
-/* Lighter than an entry row: no checkbox, no quick actions; it is something to sort or to drag. */
+/* Lighter than an entry row: no quick actions; it is something to sort, tick or drag. */
 .entity-list-row {
   display: flex;
   align-items: center;
   gap: 10px;
   width: 100%;
-  padding: 6px 10px 6px 26px;
+  padding: 6px 10px 6px 12px;
   border: 1px solid transparent;
   border-radius: var(--radius-md);
   background: none;
@@ -191,6 +214,38 @@ function endDrag(): void {
 
   .entity-list-row__grip {
     display: none;
+  }
+}
+
+.entity-list-row--checked {
+  background: var(--accent-soft);
+}
+
+/* Like the boxes of entry rows: faint until hovered or something is ticked */
+.entity-list-row__check {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+  opacity: 0.3;
+}
+
+.entity-list-row:hover .entity-list-row__check,
+.entity-list-row__check:focus-visible,
+.entity-list-row--checking .entity-list-row__check {
+  opacity: 1;
+}
+
+.entity-list-row__check:disabled {
+  cursor: default;
+  opacity: 0.15;
+}
+
+@media (pointer: coarse) {
+  .entity-list-row__check {
+    opacity: 0.6;
   }
 }
 </style>

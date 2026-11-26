@@ -94,6 +94,15 @@
         </button>
       </div>
 
+      <EntityBulkBar
+        v-if="checkedIds.size === 0 && checkedEntityIds.size > 0"
+        :count="checkedEntityIds.size"
+        @move="emit('moveCheckedEntities')"
+        @take-out="emit('uncategorizeCheckedEntities')"
+        @check-all="emit('checkEntities', visibleEntityIds, true)"
+        @clear="emit('checkEntities', [...checkedEntityIds], false)"
+      />
+
       <ListScopeTabs
         :scopes="scopes"
         :counts="scopeCounts"
@@ -151,7 +160,10 @@
             :entity="entity"
             :is-technical-details-visible="isTechnicalDetailsVisible"
             :is-area-shown="!areaView"
+            :is-checked="checkedEntityIds.has(entity.entityId)"
+            :is-check-active="checkedEntityIds.size > 0"
             @open="(item, anchor) => emit('openEntity', item, anchor)"
+            @check="onEntityCheck"
           />
           <!-- A big HA has hundreds of loose entities; they come in pages, so the list stays fast. -->
           <button
@@ -198,6 +210,7 @@ import { isGroupOpenByDefault, isSpecialCategory } from "@/utils/entryFilter";
 
 import { rangeBetween } from "@/utils/selection";
 
+import EntityBulkBar from "./EntityBulkBar.vue";
 import EntityListRow from "./EntityListRow.vue";
 import EntryListRow from "./EntryListRow.vue";
 import ListScopeTabs from "./ListScopeTabs.vue";
@@ -218,6 +231,8 @@ const props = defineProps<{
   unsavedIds: ReadonlySet<string>;
   /** Rows ticked for moving several entries at once. */
   checkedIds: ReadonlySet<string>;
+  /** Ticked plain entities; never together with ticked entries. */
+  checkedEntityIds: ReadonlySet<string>;
   isTechnicalDetailsVisible: boolean;
   /** Label chips under each name (setting "Labels in der Liste zeigen", off by default). */
   isListLabelsVisible: boolean;
@@ -237,6 +252,9 @@ const emit = defineEmits<{
   addFolder: [parent: string | null];
   /** Tick or untick rows. */
   check: [entityIds: string[], isChecked: boolean];
+  checkEntities: [entityIds: string[], isChecked: boolean];
+  moveCheckedEntities: [];
+  uncategorizeCheckedEntities: [];
   moveChecked: [];
   uncategorizeChecked: [];
   /** "Bereich" for the ticked rows. */
@@ -322,6 +340,26 @@ function onCheck(entityId: string, withShift: boolean): void {
 
 function checkAll(): void {
   emit("check", visibleIds.value, true);
+}
+
+/** Plain entities that can be ticked right now: shown, in open groups, with a registry entry. */
+const visibleEntityIds = computed(() =>
+  groups.value
+    .flatMap((group) => (isOpen(group) ? shownEntities(group) : []))
+    .filter((entity) => entity.isInRegistry)
+    .map((entity) => entity.entityId),
+);
+/** Last clicked entity box; shift-click ticks everything from here. */
+let entityCheckAnchor: string | null = null;
+
+function onEntityCheck(entityId: string, withShift: boolean): void {
+  const isChecked = !props.checkedEntityIds.has(entityId);
+  const ids = withShift
+    ? rangeBetween(visibleEntityIds.value, entityCheckAnchor, entityId)
+    : [entityId];
+
+  emit("checkEntities", ids, isChecked);
+  entityCheckAnchor = entityId;
 }
 
 /** Inside a folder the button makes a subfolder; elsewhere a top-level folder. */

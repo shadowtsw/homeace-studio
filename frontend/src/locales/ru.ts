@@ -701,6 +701,9 @@ const ru: MessageSchema = {
     checkHint: "Выберите, чтобы переместить несколько сразу. С Shift — целый диапазон.",
     bulk: "Выбранные записи",
     checkedCount: "Выбрано: {count}",
+    checkedEntities: "Выбран {count} объект | Выбрано {count} объекта | Выбрано {count} объектов",
+    entityMoveTitle:
+      "Переместить {count} объект в папку | Переместить {count} объекта в папку | Переместить {count} объектов в папку",
     moveTo: "Переместить в …",
     takeOut: "Убрать из папки",
     checkAll: "Выбрать все",
@@ -1358,6 +1361,12 @@ const ru: MessageSchema = {
     storedTracesFailed: "Создано, но число хранимых запусков задать не удалось.",
     entityMoved: "«{name}» теперь в {path}",
     entityMovedOut: "«{name}» больше не в папке",
+    entitiesMoved:
+      "{count} объект теперь в {path} | {count} объекта теперь в {path} | {count} объектов теперь в {path}",
+    entitiesMovedOut:
+      "{count} объект больше не в папке | {count} объекта больше не в папке | {count} объектов больше не в папке",
+    entityCheckCleared: "Выбор объектов снят: записи и объекты выбираются отдельно.",
+    entryCheckCleared: "Выбор записей снят: записи и объекты выбираются отдельно.",
     undo: "Отменить",
     undone: "Отменено",
     renamedEntry: "Переименовано в «{name}»",

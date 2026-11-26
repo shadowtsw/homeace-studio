@@ -20,6 +20,8 @@ export const useStudioStore = defineStore("studio", () => {
   const selectedEntityId = ref<string | null>(null);
   /** Rows ticked for moving several entries at once. */
   const checkedIds = ref<ReadonlySet<string>>(new Set());
+  /** Plain entities ticked for moving several into a folder; never together with ticked entries. */
+  const checkedEntityIds = ref<ReadonlySet<string>>(new Set());
   /** An entry being renamed in place: in its list row or in the detail title. */
   const renaming = ref<{ entityId: string; place: "list" | "title" } | null>(null);
 
@@ -49,19 +51,39 @@ export const useStudioStore = defineStore("studio", () => {
     selectedEntityId.value = entityId;
   }
 
-  function setChecked(entityIds: readonly string[], isChecked: boolean): void {
-    const next = new Set(checkedIds.value);
+  /**
+   * Ticks or unticks entries. Ticking clears ticked entities, so the selection bar always fits.
+   *
+   * @returns Whether ticked entities were cleared for it.
+   */
+  function setChecked(entityIds: readonly string[], isChecked: boolean): boolean {
+    checkedIds.value = withChecked({ ids: checkedIds.value, changed: entityIds, isChecked });
 
-    for (const entityId of entityIds) {
-      if (isChecked) next.add(entityId);
-      else next.delete(entityId);
-    }
+    const clearsOther = isChecked && checkedEntityIds.value.size > 0;
+    if (clearsOther) checkedEntityIds.value = new Set();
+    return clearsOther;
+  }
 
-    checkedIds.value = next;
+  /**
+   * Ticks or unticks plain entities. Ticking clears ticked entries.
+   *
+   * @returns Whether ticked entries were cleared for it.
+   */
+  function setEntityChecked(entityIds: readonly string[], isChecked: boolean): boolean {
+    checkedEntityIds.value = withChecked({
+      ids: checkedEntityIds.value,
+      changed: entityIds,
+      isChecked,
+    });
+
+    const clearsOther = isChecked && checkedIds.value.size > 0;
+    if (clearsOther) checkedIds.value = new Set();
+    return clearsOther;
   }
 
   function clearChecked(): void {
     if (checkedIds.value.size > 0) checkedIds.value = new Set();
+    if (checkedEntityIds.value.size > 0) checkedEntityIds.value = new Set();
   }
 
   // Ticked rows belong to what is on screen; another folder or filter starts fresh.
@@ -76,12 +98,28 @@ export const useStudioStore = defineStore("studio", () => {
     search,
     selectedEntityId,
     checkedIds,
+    checkedEntityIds,
     renaming,
     startRename,
     stopRename,
     selectCategory,
     selectEntry,
     setChecked,
+    setEntityChecked,
     clearChecked,
   };
 });
+
+type CheckChange = { ids: ReadonlySet<string>; changed: readonly string[]; isChecked: boolean };
+
+/** A new set with the changed IDs ticked or unticked. */
+function withChecked(change: CheckChange): ReadonlySet<string> {
+  const next = new Set(change.ids);
+
+  for (const id of change.changed) {
+    if (change.isChecked) next.add(id);
+    else next.delete(id);
+  }
+
+  return next;
+}

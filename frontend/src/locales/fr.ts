@@ -714,6 +714,9 @@ const fr: MessageSchema = {
     checkHint: "Sélectionnez pour en déplacer plusieurs à la fois. Avec Maj, toute une plage.",
     bulk: "Éléments sélectionnés",
     checkedCount: "{count} sélectionné(s)",
+    checkedEntities: "1 entité sélectionnée | {count} entités sélectionnées",
+    entityMoveTitle:
+      "Déplacer une entité dans un dossier | Déplacer {count} entités dans un dossier",
     moveTo: "Déplacer vers …",
     takeOut: "Sortir du dossier",
     checkAll: "Tout sélectionner",
@@ -1365,6 +1368,14 @@ const fr: MessageSchema = {
     storedTracesFailed: "Créé, mais le nombre d'exécutions conservées n'a pas pu être défini.",
     entityMoved: "« {name} » est maintenant dans {path}",
     entityMovedOut: "« {name} » n'est plus dans aucun dossier",
+    entitiesMoved:
+      "1 entité est maintenant dans {path} | {count} entités sont maintenant dans {path}",
+    entitiesMovedOut:
+      "1 entité n'est plus dans aucun dossier | {count} entités ne sont plus dans aucun dossier",
+    entityCheckCleared:
+      "Sélection des entités annulée : entrées et entités se sélectionnent séparément.",
+    entryCheckCleared:
+      "Sélection des entrées annulée : entrées et entités se sélectionnent séparément.",
     undo: "Annuler",
     undone: "Annulé",
     renamedEntry: "Renommé en « {name} »",

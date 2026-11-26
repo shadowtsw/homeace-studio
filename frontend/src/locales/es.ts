@@ -702,6 +702,8 @@ const es: MessageSchema = {
     checkHint: "Selecciona para mover varias a la vez. Con Mayús, todo un rango.",
     bulk: "Entradas seleccionadas",
     checkedCount: "{count} seleccionadas",
+    checkedEntities: "1 entidad seleccionada | {count} entidades seleccionadas",
+    entityMoveTitle: "Mover una entidad a una carpeta | Mover {count} entidades a una carpeta",
     moveTo: "Mover a …",
     takeOut: "Sacar de la carpeta",
     checkAll: "Seleccionar todo",
@@ -1349,6 +1351,13 @@ const es: MessageSchema = {
     storedTracesFailed: "Creado, pero no se pudo fijar el número de ejecuciones guardadas.",
     entityMoved: "“{name}” ahora está en {path}",
     entityMovedOut: "“{name}” ya no está en ninguna carpeta",
+    entitiesMoved: "1 entidad está ahora en {path} | {count} entidades están ahora en {path}",
+    entitiesMovedOut:
+      "1 entidad ya no está en ninguna carpeta | {count} entidades ya no están en ninguna carpeta",
+    entityCheckCleared:
+      "Selección de entidades quitada: entradas y entidades se seleccionan por separado.",
+    entryCheckCleared:
+      "Selección de entradas quitada: entradas y entidades se seleccionan por separado.",
     undo: "Deshacer",
     undone: "Deshecho",
     renamedEntry: "Renombrado como “{name}”",

@@ -102,6 +102,7 @@
           :selected-entity-id="studio.selectedEntityId"
           :unsaved-ids="unsavedIds"
           :checked-ids="studio.checkedIds"
+          :checked-entity-ids="studio.checkedEntityIds"
           :is-technical-details-visible="settings.isTechnicalDetailsVisible"
           :is-list-labels-visible="settings.isListLabelsVisible"
           :area-view="areaView"
@@ -114,7 +115,10 @@
           @open-nav="isNavOpen = true"
           @create="onCreate"
           @add-folder="create.startFolder"
-          @check="studio.setChecked"
+          @check="checkEntries"
+          @check-entities="checkEntities"
+          @move-checked-entities="entityMove.start([...studio.checkedEntityIds])"
+          @uncategorize-checked-entities="entityMove.move([...studio.checkedEntityIds], null)"
           @move-checked="actions.startMoveMany([...studio.checkedIds])"
           @uncategorize-checked="actions.moveEntries([...studio.checkedIds], null)"
           @set-area-checked="areas.startSetArea([...studio.checkedIds])"
@@ -207,6 +211,21 @@
       @delete="deleteBulkLabel"
       @close="bulkLabelField = null"
     />
+    <MoveEntriesDialog
+      v-if="entityMove.movingIds.value"
+      :count="entityMove.movingIds.value.length"
+      :title="
+        t(
+          'list.entityMoveTitle',
+          { count: entityMove.movingIds.value.length },
+          entityMove.movingIds.value.length,
+        )
+      "
+      :all-paths="data.allCategoryPaths.value"
+      :is-busy="entityMove.isBusy.value"
+      @cancel="entityMove.cancel"
+      @confirm="(path) => entityMove.move(entityMove.movingIds.value ?? [], path)"
+    />
     <QuickMenu
       v-if="entityMenu.menu.value"
       :anchor="entityMenu.menu.value.anchor"
@@ -239,6 +258,7 @@ import { useI18n } from "vue-i18n";
 import CategoryTree from "@/components/categories/CategoryTree.vue";
 import CheckupList from "@/components/checkup/CheckupList.vue";
 import QuickMenu from "@/components/common/QuickMenu.vue";
+import MoveEntriesDialog from "@/components/entries/MoveEntriesDialog.vue";
 import LabelPicker from "@/components/labels/LabelPicker.vue";
 import AiPlanHint from "@/components/ai/AiPlanHint.vue";
 import AreaNav from "@/components/areas/AreaNav.vue";
@@ -282,6 +302,7 @@ import { useSettingsStore } from "@/stores/settingsStore";
 import { useStudioStore } from "@/stores/studioStore";
 import { useTracesStore } from "@/stores/tracesStore";
 import { useToastStore } from "@/stores/toastStore";
+import { useEntityBulkMove } from "@/composables/useEntityBulkMove";
 import type { EntityOption } from "@/types/editor";
 import type { Area, Entry, EntryChanges, Label } from "@/types/entry";
 import { areaNote, type AreaListView } from "@/utils/areaNotes";
@@ -310,6 +331,8 @@ const editorStore = useEditorStore();
 const draftsStore = useDraftsStore();
 const flowTexts = useFlowTexts();
 const toasts = useToastStore();
+/** Several ticked entities into a folder, with its own folder dialog. */
+const entityMove = useEntityBulkMove();
 const messages = useMessagesStore();
 const cleanup = useCleanupStore();
 const ai = useAiStore();
@@ -583,6 +606,17 @@ function dropEntry(path: string | null, entityId: string): void {
     void actions.moveEntries([...studio.checkedIds], path);
   } else {
     void actions.moveEntry(entityId, path);
+  }
+}
+
+/** Entries and entities are ticked separately; ticking one kind clears the other, and says so. */
+function checkEntries(entityIds: string[], isChecked: boolean): void {
+  if (studio.setChecked(entityIds, isChecked)) toasts.show(t("toast.entityCheckCleared"));
+}
+
+function checkEntities(entityIds: string[], isChecked: boolean): void {
+  if (studio.setEntityChecked(entityIds, isChecked)) {
+    toasts.show(t("toast.entryCheckCleared"));
   }
 }
 

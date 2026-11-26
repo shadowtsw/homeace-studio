@@ -4,8 +4,8 @@
 
 - Folders for devices: the new filter "Entitäten" shows lights, sensors and every other plain entity,
   each in its folder after the automations and helpers there. Drag one onto a folder to sort it in, or
-  onto "Ohne Kategorie" to take it out. The folders are stored in Home Assistant and its backups,
-  without crowding HA's own label and category lists.
+  onto "Ohne Kategorie" to take it out. Or tick several and pick "Verschieben nach …". The folders
+  are stored in Home Assistant and its backups, without crowding HA's own label and category lists.
 - Drag entities into flows: drop a motion sensor on "Wenn" and pick "Bewegung erkannt", a lamp on
   "Dann" and pick HA's "Einschalten". Fitting sections light up, the others say why not (a sensor
   cannot be switched). Branches of a Wenn/Sonst block are targets of their own; dropped next to them,

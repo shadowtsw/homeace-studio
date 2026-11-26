@@ -697,6 +697,9 @@ export default {
     checkHint: "Auswählen, um mehrere auf einmal zu verschieben. Mit Shift einen ganzen Bereich.",
     bulk: "Ausgewählte Einträge",
     checkedCount: "{count} ausgewählt",
+    checkedEntities: "1 Entität ausgewählt | {count} Entitäten ausgewählt",
+    entityMoveTitle:
+      "Eine Entität in einen Ordner verschieben | {count} Entitäten in einen Ordner verschieben",
     moveTo: "Verschieben nach …",
     takeOut: "Aus Ordner nehmen",
     checkAll: "Alle auswählen",
@@ -1341,6 +1344,13 @@ export default {
     storedTracesFailed: "Angelegt, aber die Zahl der gemerkten Durchläufe ließ sich nicht setzen.",
     entityMoved: "„{name}“ liegt jetzt in {path}",
     entityMovedOut: "„{name}“ liegt in keinem Ordner mehr",
+    entitiesMoved: "1 Entität liegt jetzt in {path} | {count} Entitäten liegen jetzt in {path}",
+    entitiesMovedOut:
+      "1 Entität liegt in keinem Ordner mehr | {count} Entitäten liegen in keinem Ordner mehr",
+    entityCheckCleared:
+      "Auswahl der Entitäten aufgehoben: Einträge und Entitäten wählst du getrennt aus.",
+    entryCheckCleared:
+      "Auswahl der Einträge aufgehoben: Einträge und Entitäten wählst du getrennt aus.",
     undo: "Rückgängig",
     undone: "Rückgängig gemacht",
     renamedEntry: "Umbenannt in „{name}“",
