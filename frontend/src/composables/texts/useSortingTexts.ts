@@ -10,6 +10,7 @@ import type {
   SuggestionChange,
 } from "@/utils/entitySorting/model";
 import { toDisplayTarget, type PlaceholderWords } from "@/utils/entitySorting/placeholders";
+import type { RulePreview } from "@/utils/entitySorting/rules";
 
 type SortingTexts = {
   reason: (reason: SortingReason) => string;
@@ -22,6 +23,8 @@ type SortingTexts = {
   placeholderWords: () => PlaceholderWords;
   /** A rule target as the user reads it: "Licht/{Bereich}". */
   target: (target: string) => string;
+  /** What a rule being written would do, as one sentence (`rulePreview`). */
+  rulePreview: (preview: RulePreview) => string;
 };
 
 /** The engine returns reasons as data; this writes them in the UI language. */
@@ -111,6 +114,33 @@ export function useSortingTexts(): SortingTexts {
     return item.type === "nameContains" ? `${type} „${value}“` : `${type} = ${value}`;
   }
 
+  function rulePreview(preview: RulePreview): string {
+    // How many it catches, how many lack an area, a few examples
+    const examples = preview.examples.map((example) => `„${example.name}“ → ${example.target}`);
+    const matchesText = t(
+      "entitySorting.rules.preview",
+      { count: preview.matches },
+      preview.matches,
+    );
+    const withoutAreaText = preview.withoutArea
+      ? t("entitySorting.rules.previewWithoutArea", { count: preview.withoutArea })
+      : "";
+    const examplesText = examples.length
+      ? t("entitySorting.rules.previewExamples", { examples: examples.join(", ") })
+      : "";
+
+    // Why it may catch fewer than expected: entries match too, or entities that have a folder
+    const sideParts = [
+      ...(preview.entries
+        ? [t("entitySorting.rules.entriesMatch", { count: preview.entries })]
+        : []),
+      ...(preview.sorted ? [t("entitySorting.rules.sortedMatch", { count: preview.sorted })] : []),
+    ];
+    const sideText = sideParts.length ? ` ${sideParts.join(". ")}.` : "";
+
+    return matchesText + withoutAreaText + examplesText + "." + sideText;
+  }
+
   return {
     reason,
     confidence: (value) => t(CONFIDENCE_KEY[value]),
@@ -121,5 +151,6 @@ export function useSortingTexts(): SortingTexts {
     condition,
     placeholderWords,
     target: (target) => toDisplayTarget({ target, words: placeholderWords() }),
+    rulePreview,
   };
 }

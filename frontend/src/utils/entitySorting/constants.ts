@@ -1,4 +1,4 @@
-import type { SortingRole } from "@/types/entitySorting";
+import type { SortingConditionType, SortingRole } from "@/types/entitySorting";
 
 /**
  * Weights and thresholds of the proposals. Tuned on the dummy's example home; adjust them here (and
@@ -122,3 +122,15 @@ export const RULE_PLACEHOLDER = { area: "{area}", floor: "{floor}" } as const;
 
 /** Key prefix of a bundle without device; same as the backend's ENTITY_BUNDLE_PREFIX. */
 export const ENTITY_BUNDLE_PREFIX = "entity:";
+
+/** The kinds of conditions a rule can have, in the order the rule editor offers them. */
+export const CONDITION_TYPES: SortingConditionType[] = [
+  "label",
+  "area",
+  "floor",
+  "manufacturer",
+  "integration",
+  "domain",
+  "deviceClass",
+  "nameContains",
+];

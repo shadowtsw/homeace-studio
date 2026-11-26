@@ -1,4 +1,4 @@
-import type { SortingRule } from "@/types/entitySorting";
+import type { SortingConditionType, SortingRule } from "@/types/entitySorting";
 
 import { HUB_INTEGRATIONS, RULE_PLACEHOLDER } from "./constants";
 import type { SortingHome } from "./home";
@@ -63,4 +63,42 @@ export function ruleIdeas(input: {
     }));
 
   return [...labelIdeas, ...integrationIdeas].slice(0, MAX_IDEAS);
+}
+
+export type ConditionValue = { value: string; label: string };
+
+export type ConditionValuesOptions = {
+  type: SortingConditionType;
+  home: SortingHome;
+};
+
+/** Values that occur in this home, so a rule is picked rather than typed; none for names. */
+export function conditionValues({ type, home }: ConditionValuesOptions): ConditionValue[] {
+  const entities = home.context.entities;
+  const unique = (values: (string | null | undefined)[]): ConditionValue[] =>
+    [...new Set(values.filter((value): value is string => !!value))]
+      .sort((first, second) => first.localeCompare(second))
+      .map((value) => ({ value, label: value }));
+
+  switch (type) {
+    case "label":
+      return unique(entities.flatMap((entity) => entity.labels));
+    case "area":
+      return home.context.areas.map((area) => ({ value: area.areaId, label: area.name }));
+    case "floor":
+      return home.context.floors.map((floor) => ({ value: floor.floorId, label: floor.name }));
+    case "manufacturer":
+      return unique(home.context.devices.map((device) => device.manufacturer));
+    case "integration":
+      return unique(entities.map((entity) => entity.integration)).map((option) => ({
+        ...option,
+        label: home.context.integrations[option.value] ?? option.value,
+      }));
+    case "domain":
+      return unique(entities.map((entity) => entity.domain));
+    case "deviceClass":
+      return unique(entities.map((entity) => entity.deviceClass));
+    case "nameContains":
+      return [];
+  }
 }

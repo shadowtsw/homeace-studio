@@ -23,7 +23,7 @@ page stays complete.
 | Engine (pure, browser): weights and thresholds | `frontend/src/utils/entitySorting/constants.ts` |
 | Lookups built once per load, area folders and their pattern | `utils/entitySorting/home.ts` |
 | Bundles (one per device), what is offered | `utils/entitySorting/bundles.ts` |
-| Rules: match, `{area}`/`{floor}`, which rule wins, stats | `utils/entitySorting/rules.ts` |
+| Rules: match, `{area}`/`{floor}`, which rule wins, stats, the rule editor's scope and preview | `utils/entitySorting/rules.ts` |
 | Learning from sorted and ticked bundles | `utils/entitySorting/learning.ts` |
 | Votes, common parent, confidence | `utils/entitySorting/votes.ts` |
 | One proposal per bundle | `utils/entitySorting/suggest.ts` |
@@ -33,11 +33,11 @@ page stays complete.
 | Tests with a small home like the dummy's | `utils/entitySorting/__tests__/entitySorting.spec.ts`, `entitySortingFixture.ts` |
 | Session state: memory, options, ticks, engine results; recompute vs. reorder | `frontend/src/stores/entitySortingStore.ts` |
 | Apply and undo in batches of 50, result, hints for automations without folder | `composables/useSortingRun.ts` |
-| Reasons, confidences, origins and rule conditions as text; placeholders `{Bereich}` ↔ `{area}` | `composables/texts/useSortingTexts.ts`, `utils/entitySorting/placeholders.ts` |
+| Reasons, confidences, origins, rule conditions and the rule preview as text; placeholders `{Bereich}` ↔ `{area}` | `composables/texts/useSortingTexts.ts`, `utils/entitySorting/placeholders.ts` |
 | Window and steps: overview (funnel), rules (editor, ideas), proposals (groups, rows, phone sheet), apply, result | `components/entitySorting/` |
 | Entry in the tools tab with beta label and count | `components/settings/SettingsToolsTab.vue`, `components/common/BetaBadge.vue` |
 | Folder path to type (own suggestion list, ↑↓ Enter) or pick from the tree; the tree panel alone for "Anderer Ordner …" in step 3 | `components/common/FolderPathField.vue`, `FolderTreePanel.vue` |
-| Numbers of step 1, rule ideas | `utils/entitySorting/overview.ts`, `ruleIdeas.ts` |
+| Numbers of step 1, rule ideas, the values a condition can pick from | `utils/entitySorting/overview.ts`, `ruleIdeas.ts` |
 
 ## Backend rules
 

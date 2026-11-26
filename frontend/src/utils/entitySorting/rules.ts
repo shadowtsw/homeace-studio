@@ -192,3 +192,68 @@ export function ruleStats({ rule, ruleIndex, rules, entities, home }: RuleStatsO
 
   return stats;
 }
+
+export type RuleScopeOptions = {
+  entities: SortingEntity[];
+  /** "Auch einsortierte neu einsortieren": entities with a folder count too. */
+  isResortingSorted: boolean;
+  /** Disabled and hidden entities count too. */
+  includeHidden: boolean;
+};
+
+/** Entities the rules may touch: as offered in step 3, plus sorted ones when re-sorting is on. */
+export function ruleScope({
+  entities,
+  isResortingSorted,
+  includeHidden,
+}: RuleScopeOptions): SortingEntity[] {
+  return entities.filter((entity) => {
+    const isOffered = isResortingSorted || !entity.categoryPath;
+    const isShown = includeHidden || !(entity.isDisabled || entity.isHidden);
+
+    return entity.isInRegistry && isOffered && isShown;
+  });
+}
+
+export type RulePreview = RuleStats &
+  RuleSideHits & {
+    /** A few matched entities with the folder each would go to. */
+    examples: { name: string; target: string }[];
+  };
+
+export type RulePreviewOptions = {
+  rule: SortingRule;
+  rules: SortingRule[];
+  /** The entities the rule may touch (`ruleScope`). */
+  scope: SortingEntity[];
+  home: SortingHome;
+  isResortingSorted: boolean;
+  maxExamples: number;
+};
+
+/**
+ * What a rule being written would do: how many entities it catches, a few examples, and what
+ * matches besides (entries, sorted entities).
+ */
+export function rulePreview({
+  rule,
+  rules,
+  scope,
+  home,
+  isResortingSorted,
+  maxExamples,
+}: RulePreviewOptions): RulePreview {
+  // How many it catches, and how many of them lack the area the folder needs
+  const stats = ruleStats({ rule, ruleIndex: null, rules, entities: scope, home });
+
+  // A few examples with their folder
+  const examples = scope
+    .filter((entity) => ruleMatches({ rule, entity, home }) && ruleTarget({ rule, entity, home }))
+    .slice(0, maxExamples)
+    .map((entity) => ({ name: entity.name, target: ruleTarget({ rule, entity, home }) ?? "" }));
+
+  // What matches besides
+  const sideHits = ruleSideHits({ rule, home, isResortingSorted });
+
+  return { ...stats, ...sideHits, examples };
+}

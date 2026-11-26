@@ -8,7 +8,12 @@
         class="field-input"
         :value="condition.type"
         :aria-label="t('entitySorting.rules.when')"
-        @change="setType(index, ($event.target as HTMLSelectElement).value as SortingConditionType)"
+        @change="
+          setType({
+            index,
+            type: ($event.target as HTMLSelectElement).value as SortingConditionType,
+          })
+        "
       >
         <option v-for="type in CONDITION_TYPES" :key="type" :value="type">
           {{ texts.conditionType(type) }}
@@ -104,8 +109,10 @@ import FolderPathField from "@/components/common/FolderPathField.vue";
 import { useSortingTexts } from "@/composables/texts/useSortingTexts";
 import { useEntitySortingStore } from "@/stores/entitySortingStore";
 import type { SortingCondition, SortingConditionType, SortingRule } from "@/types/entitySorting";
+import { CONDITION_TYPES } from "@/utils/entitySorting/constants";
 import { fromDisplayTarget } from "@/utils/entitySorting/placeholders";
-import { ruleMatches, ruleSideHits, ruleStats, ruleTarget } from "@/utils/entitySorting/rules";
+import { conditionValues, type ConditionValue } from "@/utils/entitySorting/ruleIdeas";
+import { rulePreview, ruleScope } from "@/utils/entitySorting/rules";
 
 /** One rule being written: AND-ed conditions, a folder with placeholders, and a live preview. */
 const props = defineProps<{
@@ -117,16 +124,6 @@ const emit = defineEmits<{
   cancel: [];
 }>();
 
-const CONDITION_TYPES: SortingConditionType[] = [
-  "label",
-  "area",
-  "floor",
-  "manufacturer",
-  "integration",
-  "domain",
-  "deviceClass",
-  "nameContains",
-];
 const MAX_EXAMPLES = 3;
 
 const { t } = useI18n();
@@ -140,114 +137,50 @@ const targetField = useTemplateRef("targetField");
 /** Existing folders, for the tree and the suggestions while typing. */
 const folderPaths = computed(() => [...(sorting.computation?.folders ?? [])].sort());
 
+// The rule as written so far
 const conditions = ref<SortingCondition[]>(
   props.rule
     ? props.rule.conditions.map((condition) => ({ ...condition }))
     : [{ type: "label", value: "" }],
 );
 const target = ref(props.rule ? texts.target(props.rule.target) : "");
-
 const draft = computed<SortingRule>(() => ({
   conditions: conditions.value.filter((condition) => (condition.value ?? "").trim()),
   target: fromDisplayTarget({ text: target.value, words: words.value }),
 }));
 const isComplete = computed(() => draft.value.conditions.length > 0 && draft.value.target !== "");
 
-/** Entities the rules may touch: as offered in step 3, plus sorted ones when re-sorting is on. */
+// What it would do, as one sentence
 const scope = computed(() =>
-  (sorting.home?.context.entities ?? []).filter(
-    (entity) =>
-      entity.isInRegistry &&
-      (sorting.options.isResortingSorted || !entity.categoryPath) &&
-      (sorting.options.includeHidden || !(entity.isDisabled || entity.isHidden)),
-  ),
+  ruleScope({
+    entities: sorting.home?.context.entities ?? [],
+    isResortingSorted: sorting.options.isResortingSorted,
+    includeHidden: sorting.options.includeHidden,
+  }),
 );
 
 const preview = computed(() => {
   const home = sorting.home;
   if (!isComplete.value || !home) return t("entitySorting.rules.previewEmpty");
 
-  const stats = ruleStats({
+  const facts = rulePreview({
     rule: draft.value,
-    ruleIndex: null,
     rules: sorting.rules,
-    entities: scope.value,
-    home,
-  });
-  const examples = scope.value
-    .filter(
-      (entity) =>
-        ruleMatches({ rule: draft.value, entity, home }) &&
-        ruleTarget({ rule: draft.value, entity, home }),
-    )
-    .slice(0, MAX_EXAMPLES)
-    .map((entity) => `„${entity.name}“ → ${ruleTarget({ rule: draft.value, entity, home }) ?? ""}`);
-
-  return (
-    t("entitySorting.rules.preview", { count: stats.matches }, stats.matches) +
-    (stats.withoutArea
-      ? t("entitySorting.rules.previewWithoutArea", { count: stats.withoutArea })
-      : "") +
-    (examples.length
-      ? t("entitySorting.rules.previewExamples", { examples: examples.join(", ") })
-      : "") +
-    "." +
-    sideHits(home)
-  );
-});
-
-/** Entries that match too, or sorted entities: why a rule may catch fewer than expected. */
-function sideHits(home: NonNullable<typeof sorting.home>): string {
-  const hits = ruleSideHits({
-    rule: draft.value,
+    scope: scope.value,
     home,
     isResortingSorted: sorting.options.isResortingSorted,
+    maxExamples: MAX_EXAMPLES,
   });
-  const parts = [
-    ...(hits.entries ? [t("entitySorting.rules.entriesMatch", { count: hits.entries })] : []),
-    ...(hits.sorted ? [t("entitySorting.rules.sortedMatch", { count: hits.sorted })] : []),
-  ];
 
-  return parts.length ? ` ${parts.join(". ")}.` : "";
-}
-
-type ValueOption = { value: string; label: string };
+  return texts.rulePreview(facts);
+});
 
 /** Values that occur in this home, so a rule is picked rather than typed. */
-function valueOptions(type: SortingConditionType): ValueOption[] {
-  const home = sorting.home;
-  if (!home) return [];
-
-  const entities = home.context.entities;
-  const unique = (values: (string | null | undefined)[]): ValueOption[] =>
-    [...new Set(values.filter((value): value is string => !!value))]
-      .sort((first, second) => first.localeCompare(second))
-      .map((value) => ({ value, label: value }));
-
-  switch (type) {
-    case "label":
-      return unique(entities.flatMap((entity) => entity.labels));
-    case "area":
-      return home.context.areas.map((area) => ({ value: area.areaId, label: area.name }));
-    case "floor":
-      return home.context.floors.map((floor) => ({ value: floor.floorId, label: floor.name }));
-    case "manufacturer":
-      return unique(home.context.devices.map((device) => device.manufacturer));
-    case "integration":
-      return unique(entities.map((entity) => entity.integration)).map((option) => ({
-        ...option,
-        label: home.context.integrations[option.value] ?? option.value,
-      }));
-    case "domain":
-      return unique(entities.map((entity) => entity.domain));
-    case "deviceClass":
-      return unique(entities.map((entity) => entity.deviceClass));
-    case "nameContains":
-      return [];
-  }
+function valueOptions(type: SortingConditionType): ConditionValue[] {
+  return sorting.home ? conditionValues({ type, home: sorting.home }) : [];
 }
 
-function setType(index: number, type: SortingConditionType): void {
+function setType({ index, type }: { index: number; type: SortingConditionType }): void {
   conditions.value[index] = { type, value: "" };
 }
 

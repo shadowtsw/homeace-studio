@@ -7,8 +7,8 @@ import { layoutSorting, pretick } from "../layout";
 import type { SortingState } from "../model";
 import { sortingOverview } from "../overview";
 import { fromDisplayTarget, toDisplayTarget } from "../placeholders";
-import { ruleIdeas } from "../ruleIdeas";
-import { ruleFor, ruleSideHits, ruleStats } from "../rules";
+import { conditionValues, ruleIdeas } from "../ruleIdeas";
+import { ruleFor, rulePreview, ruleScope, ruleSideHits, ruleStats } from "../rules";
 import { meaningfulWords, wordKey } from "../words";
 import { NAMES, sampleHome, sampleState } from "./entitySortingFixture";
 
@@ -219,6 +219,62 @@ describe("rule side hits", () => {
       entries: 1,
       sorted: 0,
     });
+  });
+});
+
+describe("rule editor", () => {
+  it("offers unsorted, shown registry entities, more only when the options say so", () => {
+    const entities = sampleHome().context.entities;
+    const scope = ruleScope({ entities, isResortingSorted: false, includeHidden: false });
+    const withHidden = ruleScope({ entities, isResortingSorted: false, includeHidden: true });
+
+    for (const entity of scope) {
+      expect(entity.isInRegistry && !entity.categoryPath).toBe(true);
+      expect(entity.isDisabled || entity.isHidden).toBe(false);
+    }
+    expect(scope.map((entity) => entity.entityId)).not.toContain("sensor.bewegung_kueche_spannung");
+    expect(withHidden.map((entity) => entity.entityId)).toContain(
+      "sensor.bewegung_kueche_spannung",
+    );
+  });
+
+  it("previews a rule with the same counts as the rule list, plus examples and side hits", () => {
+    const home = sampleHome();
+    const rule = {
+      conditions: [{ type: "label" as const, value: "Licht" }],
+      target: "Licht/{area}",
+    };
+    const scope = ruleScope({
+      entities: home.context.entities,
+      isResortingSorted: false,
+      includeHidden: false,
+    });
+
+    const preview = rulePreview({
+      rule,
+      rules: [rule],
+      scope,
+      home,
+      isResortingSorted: false,
+      maxExamples: 1,
+    });
+
+    expect(preview).toMatchObject({
+      ...ruleStats({ rule, ruleIndex: null, rules: [rule], entities: scope, home }),
+      ...ruleSideHits({ rule, home, isResortingSorted: false }),
+    });
+    expect(preview.examples).toHaveLength(1);
+    expect(preview.examples[0]?.target).toBe("Licht/Küche");
+  });
+
+  it("offers the values the home has: sorted, once each, none for name parts", () => {
+    const home = sampleHome();
+    const labels = conditionValues({ type: "label", home }).map((option) => option.value);
+
+    expect(labels).toContain("Licht");
+    expect(new Set(labels).size).toBe(labels.length);
+    expect([...labels].sort((first, second) => first.localeCompare(second))).toEqual(labels);
+    expect(conditionValues({ type: "nameContains", home })).toEqual([]);
   });
 });
 
