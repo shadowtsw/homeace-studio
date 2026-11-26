@@ -173,6 +173,7 @@
     @applied="onCleanedUp"
   />
   <SettingsWindow v-if="settingsWindow.isOpen" @tidy="actions.startAreaTidy" />
+  <EntitySortingWindow v-if="sorting.isOpen" />
   <AiPlanDialog
     v-if="ai.reviewPlan"
     :key="ai.reviewPlan.id"
@@ -192,6 +193,7 @@ import AreaDialog from "@/components/areas/AreaDialog.vue";
 import AreaTidyDialog from "@/components/areas/AreaTidyDialog.vue";
 import SetAreaDialog from "@/components/areas/SetAreaDialog.vue";
 import CleanupDialog from "@/components/cleanup/CleanupDialog.vue";
+import EntitySortingWindow from "@/components/entitySorting/EntitySortingWindow.vue";
 import FolderColorDialog from "@/components/categories/FolderColorDialog.vue";
 import NewFolderDialog from "@/components/categories/NewFolderDialog.vue";
 import RenameCategoryDialog from "@/components/categories/RenameCategoryDialog.vue";
@@ -214,6 +216,7 @@ import type { NewHelper } from "@/services/helpersService";
 import { useAiStore } from "@/stores/aiStore";
 import { useAreasStore } from "@/stores/areasStore";
 import { useCleanupStore } from "@/stores/cleanupStore";
+import { useEntitySortingStore } from "@/stores/entitySortingStore";
 import { useDependenciesStore } from "@/stores/dependenciesStore";
 import { useEntriesStore } from "@/stores/entriesStore";
 import { useEntryAreasStore } from "@/stores/entryAreasStore";
@@ -256,6 +259,7 @@ const emit = defineEmits<{
 const { t } = useI18n();
 const foldersStore = useFoldersStore();
 const cleanup = useCleanupStore();
+const sorting = useEntitySortingStore();
 const entriesStore = useEntriesStore();
 const toasts = useToastStore();
 const ai = useAiStore();

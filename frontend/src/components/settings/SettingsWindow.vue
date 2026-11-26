@@ -43,6 +43,7 @@
           v-else-if="settingsWindow.tab === SETTINGS_TAB.tools"
           @cleanup="openCleanup"
           @tidy="openTidy"
+          @sort-entities="openSorting"
         />
         <SettingsAiTab v-else-if="settingsWindow.tab === SETTINGS_TAB.ai" />
         <SettingsGoodToKnowTab v-else-if="settingsWindow.tab === SETTINGS_TAB.goodToKnow" />
@@ -70,6 +71,7 @@ import { useI18n } from "vue-i18n";
 
 import { SETTINGS_TAB, SETTINGS_TABS } from "@/constants/settings";
 import { useCleanupStore } from "@/stores/cleanupStore";
+import { useEntitySortingStore } from "@/stores/entitySortingStore";
 import { useSettingsWindowStore } from "@/stores/settingsWindowStore";
 import { useWhatsNewStore } from "@/stores/whatsNewStore";
 
@@ -92,6 +94,7 @@ const emit = defineEmits<{
 const { t } = useI18n();
 const settingsWindow = useSettingsWindowStore();
 const cleanup = useCleanupStore();
+const sorting = useEntitySortingStore();
 const whatsNew = useWhatsNewStore();
 const panel = useTemplateRef("panel");
 
@@ -99,6 +102,11 @@ const panel = useTemplateRef("panel");
 function openCleanup(): void {
   settingsWindow.close();
   cleanup.open();
+}
+
+function openSorting(): void {
+  settingsWindow.close();
+  sorting.open();
 }
 
 function openTidy(): void {

@@ -3,6 +3,7 @@
     <div class="settings-row__text">
       <b>
         {{ title }}
+        <slot name="badges" />
         <span
           v-if="scope"
           class="mdi settings-row__scope"

@@ -11,7 +11,7 @@ export type SortingConditionType =
   | "deviceClass"
   | "nameContains";
 
-/** Label, area and floor hold ids; the rest plain values. */
+/** Area and floor hold ids, a label its name (as the context lists labels); the rest plain values. */
 export type SortingCondition = { type: SortingConditionType; value: string };
 
 /** All conditions must match. The target may hold `{area}` and `{floor}`. */

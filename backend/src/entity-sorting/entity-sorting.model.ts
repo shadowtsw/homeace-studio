@@ -16,7 +16,7 @@ export const SORTING_CONDITION_TYPE = {
 export type SortingConditionType =
   (typeof SORTING_CONDITION_TYPE)[keyof typeof SORTING_CONDITION_TYPE];
 
-/** One condition of a rule; label, area and floor hold ids, the rest plain values. */
+/** One condition of a rule; area and floor hold ids, a label its name, the rest plain values. */
 export type SortingCondition = { type: SortingConditionType; value: string };
 
 /**

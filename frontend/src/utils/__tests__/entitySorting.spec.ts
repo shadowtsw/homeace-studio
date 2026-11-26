@@ -9,6 +9,9 @@ import {
 } from "../entitySorting/compute";
 import { layoutSorting, pretick } from "../entitySorting/layout";
 import type { SortingState } from "../entitySorting/model";
+import { sortingOverview } from "../entitySorting/overview";
+import { fromDisplayTarget, toDisplayTarget } from "../entitySorting/placeholders";
+import { ruleIdeas } from "../entitySorting/ruleIdeas";
 import { ruleFor, ruleStats } from "../entitySorting/rules";
 import { meaningfulWords, wordKey } from "../entitySorting/words";
 import { NAMES, sampleHome, sampleState } from "./entitySortingFixture";
@@ -207,5 +210,41 @@ describe("layout", () => {
     const choices = pretick(opened);
 
     expect(choices.get("dKitchenLight")?.isOn).toBe(false);
+  });
+});
+
+describe("placeholders", () => {
+  const words = { area: "Bereich", floor: "Etage" };
+
+  it("show {area} in the UI language and read it back, case-insensitive", () => {
+    expect(toDisplayTarget("Licht/{area}/{floor}", words)).toBe("Licht/{Bereich}/{Etage}");
+    expect(fromDisplayTarget(" Licht / {bereich} ", words)).toBe("Licht/{area}");
+  });
+});
+
+describe("rule ideas and overview", () => {
+  it("suggest a rule for a label on many entities only when there is none yet", () => {
+    const opened = open();
+    const many = { ...opened.home, context: { ...opened.home.context } };
+    const ideas = ruleIdeas({ home: many, computation: opened.computation, rules: [] });
+
+    expect(ideas.map((idea) => idea.target)).toContain("Google Cast");
+    expect(
+      ruleIdeas({
+        home: many,
+        computation: opened.computation,
+        rules: [{ conditions: [{ type: "integration", value: "cast" }], target: "Medien" }],
+      }).map((idea) => idea.target),
+    ).not.toContain("Google Cast");
+  });
+
+  it("counts how the pile shrinks", () => {
+    const opened = open();
+    const overview = sortingOverview(opened);
+
+    expect(overview.stateOnly).toEqual(["Alter Zähler"]);
+    expect(overview.hidden).toBe(1);
+    expect(overview.bundles).toBe(opened.computation.bundles.size);
+    expect(overview.devices + overview.system + overview.single).toBe(overview.bundles);
   });
 });

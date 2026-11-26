@@ -417,7 +417,7 @@ The tool computes its proposals in the browser; the backend serves the data and 
   (bundle keys) and `lastRun` (`{ runId, at, moves: [{ entityId, from, to }] }`).
 - `PUT /memory` `{ rules, rejected, ignored }` replaces them (`ENTITY_SORTING_SAVED`); `lastRun` stays.
   A rule is `{ conditions: [{ type, value }], target }` with `type` one of `label`, `area`, `floor`,
-  `manufacturer`, `integration`, `domain`, `deviceClass`, `nameContains` (label, area, floor: ids); the
+  `manufacturer`, `integration`, `domain`, `deviceClass`, `nameContains` (area, floor: ids; label: its name); the
   target may hold `{area}` and `{floor}`.
 - `POST /moves` `{ runId, moves: [{ entityId, categoryPath }] }` (at most 100) moves one batch and
   answers per entity `[{ entityId, status, from }]` with `status` `moved`, `unchanged`, `notInRegistry`

@@ -31,6 +31,12 @@ page stays complete.
 | Target of a bundle, computation, moves, changes | `utils/entitySorting/targets.ts`, `compute.ts` |
 | Types and API calls | `frontend/src/types/entitySorting.ts`, `services/entitySortingService.ts` |
 | Tests with a small home like the dummy's | `utils/__tests__/entitySorting.spec.ts`, `entitySortingFixture.ts` |
+| Session state: memory, options, ticks, engine results; recompute vs. reorder | `frontend/src/stores/entitySortingStore.ts` |
+| Apply and undo in batches of 50, result, hints for automations without folder | `composables/useSortingRun.ts` |
+| Reasons, confidences, origins and rule conditions as text; placeholders `{Bereich}` ↔ `{area}` | `composables/useSortingTexts.ts`, `utils/entitySorting/placeholders.ts` |
+| Window and steps: overview (funnel), rules (editor, ideas), proposals (groups, rows, phone sheet), apply, result | `components/entitySorting/` |
+| Entry in the tools tab with beta label and count | `components/settings/SettingsToolsTab.vue`, `components/common/BetaBadge.vue` |
+| Numbers of step 1, rule ideas | `utils/entitySorting/overview.ts`, `ruleIdeas.ts` |
 
 ## Backend rules
 
@@ -89,3 +95,22 @@ changed shows the new folder and is marked.
 
 Language-dependent folder names ("System", "Sonne", "Rauchmelder") come in as `SortingNames` from the UI
 texts; reasons come back as data (`SortingReason`) and are written by the UI.
+
+## UI rules
+
+- The window opens from Einstellungen → Werkzeuge and closes the settings window first, like the other
+  tools. It is mounted in `StudioDialogs.vue` (`z-index` 105, below dialogs at 110).
+- **Rows never jump while reviewing.** A tick calls `recompute` (no new groups); a row whose proposal
+  changed shows the new folder and a mark, and the hint above offers "Liste neu ordnen" (`reorder`).
+  `reorder` also runs when step 3 is entered and after an apply. It computes twice and then once more,
+  so the first tick of the user only changes what it causes.
+- A group tick uses `tickMany` (one recompute for the whole group).
+- Closing with ticks in step 2 or 3 asks first; while a run or an undo is busy, the window stays open.
+- Escape: the window's handler is registered first and leaves the sheet and the close question to their
+  own handlers.
+- Phone (≤ 640 px): a group opens as a sheet from below (`sheetGroupKey`); the stepper shows numbers
+  and the current label only. Keyboard: ↑↓ between rows, Space ticks, Enter opens the entities.
+- Entity IDs only with "Technische Details" on.
+- Rules, turned-down folders and kept-out bundles are saved right away (`PUT /memory`); ticks are not.
+- Beta: `BetaBadge` in the tools row and the title, a note with the GitHub issues link in step 1 and in
+  the result. Public texts say "(Beta)"; the badge goes once a version passed without bigger reports.
