@@ -30,7 +30,9 @@ Checklists for changes that touch several places. Feature-specific recipes are o
    command handler, or `restGet` / `restPost` / `restDelete`). Otherwise demo mode and the screenshots
    break. Add data to `demo-home.ts` if needed.
 3. Add the API to the table "HA APIs we rely on" in [architecture.md](architecture.md), and a row with
-   risk, code and quick check to [ha-compatibility.md](ha-compatibility.md#touchpoints-by-risk).
+   risk, code and quick check to [ha-compatibility.md](ha-compatibility.md#touchpoints-by-risk). Add
+   that quick check to the HA check as well: an entry `{ area, name, run }` in
+   `scripts/ha-check/checks-home.mjs` or `checks-flows.mjs`, with the area named as in the row.
 4. If HA's answer can arrive later than the call (new entities after create or reload), poll briefly like
    `waitForEntityId` (helpers) or `FLOW_LOOKUP_ATTEMPTS` (flows).
 
@@ -88,7 +90,10 @@ beta week, so a fix can be ready on release day. The areas and quick checks are 
    registry, category, label, area, device, entity, trace, automation, script, scene, the helper types,
    trigger, condition, translations, frontend, WebSocket, ingress, Supervisor, apps.
 2. **Test** on a real HA, at best a throwaway one with the beta, otherwise the own HA right after the
-   release. Run the quick checks of every hit, and the 🔴 rows every time.
+   release. Run the quick checks of every hit, and the 🔴 rows every time. `node scripts/ha-check/run.mjs`
+   does this for the beta on its own: a fresh HA and the app from the working tree in Docker, then the
+   quick checks through the API and a few flows in the UI ([setup.md](setup.md#ha-check)). It does not
+   cover HA user, Supervisor and icon packs. Check those on the own HA after the release.
 3. **Write it down:** a line in the "Check log" of ha-compatibility.md, also when nothing was found. A
    real change also goes to "Known changes" with our answer.
 4. **Fix** in a patch release; the CHANGELOG line names the HA version. If an older HA can no longer work

@@ -37,6 +37,11 @@ page adds the risk, the code and a quick check per area. The routine is in
 🔴 high: interface of HA's frontend that changes often, or a file we write. 🟠 medium: registry or
 storage interface, changed rarely, but once already. 🟢 low: documented core API or Supervisor basics.
 
+**Automated:** `node scripts/ha-check/run.mjs` ([setup.md](setup.md#ha-check)) runs the quick checks of
+every row on a throwaway HA, except **HA user** (needs ingress), **Supervisor** (needs HA OS) and
+**icon packs** (need HACS). For dashboard resources it only checks that HA answers without an error.
+Those three need the own HA.
+
 | Risk | Area | HA interface | Code | Breaks as | Quick check |
 | --- | --- | --- | --- | --- | --- |
 | 🔴 | Block catalog | WS `trigger_platforms/subscribe`, `condition_platforms/subscribe`, `get_services` | `editor/repositories/ha-editor.repository.ts`, `editor/catalog.mapper.ts` | picker empty or missing groups, generic blocks without title or fields | New automation: add a trigger, a condition and an action; groups, names and fields are there |
@@ -59,7 +64,8 @@ storage interface, changed rarely, but once already. 🟢 low: documented core A
 | 🟢 | Core | WS auth, `get_states`, `call_service`, `subscribe_events` | `ha/ha-connection.service.ts`, `entries/` | nothing loads, run and on/off fail | App loads; run a script |
 | 🟢 | Supervisor | proxy URLs, `SUPERVISOR_TOKEN`, ingress prefix, `config.yaml` schema, app store | `ha/ha.constants.ts`, `homeace-studio/config.yaml` | app does not start, open or update | Install or update the app, open it from the sidebar |
 
-New HA command: add a row here ([recipes.md](recipes.md#new-ha-command-or-rest-call)).
+New HA command: add a row here and its quick check to `scripts/ha-check/`
+([recipes.md](recipes.md#new-ha-command-or-rest-call)).
 
 ## Known changes
 
@@ -85,3 +91,4 @@ One line per checked HA release (see [recipes.md](recipes.md#ha-release-check)).
 | --- | --- | --- | --- |
 | 2026.12 (beta 0) | 2026-11-25 | Read the beta notes (still unfinished) and the developer blog since 2026-08: child devices and target `exclude` (both fixed the same day, see Known changes), the rest does not affect us. The new `button.*` triggers and condition come from HA's catalog | not tested yet; 🔴 rows after the release on 2026-12-02 |
 | 2026.12 (beta 1) | 2026-11-26 | Throwaway HA `2026.12.0b1` in Docker with the demo integration, app built from `5b8f004` and again from `a2d07bb` on a fresh HA (with the fixes for hand-started runs and script names in the catalog): every 🔴 and 🟠 quick check green through the API (29/29, results checked in HA), five flows in the UI (new and old syntax, floor + label target, `exclude`, if/then) without unknown blocks or console errors; `button.*` in the catalog with German names; editing a scene switched nothing. New: area refused on entities without an own name (Known changes, not affected). Not testable there: HA user (ingress), Supervisor, icon packs | throwaway HA 2026.12.0b1; own HA after the release on 2026-12-02 still open |
+| 2026.12 (beta 1) | 2026-11-26 | Released 0.14.0 (`ddd3497`) checked with `scripts/ha-check/run.mjs`, now in the repo, on a fresh HA: API 30/30 and UI 5/5 flows green, no console errors. HA again refused an own area on the two demo lights without a name of their own (Known changes, not affected) | throwaway HA 2026.12.0b1; own HA after the release on 2026-12-02 still open |

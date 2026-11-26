@@ -59,6 +59,26 @@ Both share `scripts/devtools.mjs` (start the browser, click, open the app). Pitf
 - Clips are filmed in stop motion (each pointer step one frame of fixed length), because a screenshot
   takes longer than a frame lasts. Drags and clicks are the page's own events under a drawn pointer.
 
+### HA check
+
+`node scripts/ha-check/run.mjs` tests the app against a new HA version before it is released
+([recipes.md](recipes.md#ha-release-check)). It starts a throwaway HA (the current beta by default) with
+the demo integration and the app built from this working tree, both in Docker. Then it fills HA with a
+small test home and runs the quick checks of [ha-compatibility.md](ha-compatibility.md) through the
+app's API, plus a few flows in the UI. Exit code 1 means a check failed.
+
+```bash
+node scripts/ha-check/run.mjs                 # HA beta, app from the working tree
+node scripts/ha-check/run.mjs --ha 2026.12.0  # another HA image tag (stable, a version)
+node scripts/ha-check/run.mjs --image <tag>   # an app image built before, no build
+node scripts/ha-check/run.mjs --down          # remove containers, volumes and network
+```
+
+Every run starts from scratch. Afterwards both keep running to look around: HA on
+http://localhost:8124 (user `ha-check`, password `ha-check-throwaway`), the app on
+http://localhost:8199. It needs Docker and Node.js 22+, and the UI part needs Edge or Chrome (via
+`devtools.mjs`). Not covered: HA user (ingress headers), Supervisor and icon packs.
+
 ## POC step 1: nested categories
 
 ```bash

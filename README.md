@@ -192,7 +192,7 @@ frontend/        Vue 3 + TypeScript, own components, vue-i18n
 backend/         NestJS; talks to HA over its WebSocket and REST APIs and serves the built UI
 homeace-studio/  app definition for HA: config.yaml, Dockerfile, DOCS.md, CHANGELOG.md
 scripts/         build-addon.mjs (assembles the app folder), screenshots.mjs and recordings.mjs
-                 (README pictures and clips)
+                 (README pictures and clips), ha-check/ (tests a new HA version in Docker)
 docs/            setup, architecture, API, decisions
 ```
 
