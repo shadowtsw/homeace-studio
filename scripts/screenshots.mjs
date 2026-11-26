@@ -207,6 +207,12 @@ const SHOTS = [
     steps: async (page) => {
       await click(page, '[aria-label="Settings"]');
       await click(page, ".settings-window__tab", "Good to know");
+      // The beta tool's topic stays out of the README until the owner approves the beta
+      // (the last in the list, icon mdi-auto-fix). Remove these lines then.
+      await evaluate(
+        page,
+        `document.querySelector(".settings-window .mdi-auto-fix")?.closest("button, li")?.style.setProperty("display", "none")`,
+      );
     },
   },
   {
