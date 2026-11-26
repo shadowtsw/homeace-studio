@@ -66,6 +66,10 @@ chip / menu → FlowChange → editorStore.applyChange → applyFlowChange(draft
   triggers/conditions (state, numeric_state, time, sun, template, …) are hand-made. Everything HA
   describes (new-style triggers like `zone.entered`, every service action) is a **generic block** from the
   catalog: title from HA, target chips, set fields, missing required fields, addable optional fields.
+- **Names in the catalog** (`buildCatalog`): HA's translation in the UI language first, then the
+  `name` / `description` that `get_services` sends (English, or a script's own alias and field names:
+  each script is its own action `script.<key>` without a translation), then the key. Without that
+  middle step, "Aktion hinzufügen" listed scripts as `script.<key>`.
 - **Targets:** entities and areas are editable chips, devices, floors (`floor_id`) and labels
   (`label_id`) show by name only, and `target.exclude` (what HA leaves out, same keys as the target)
   is one read-only chip "ohne …". Floor and label names come from `lookupsStore` as `TargetNames`

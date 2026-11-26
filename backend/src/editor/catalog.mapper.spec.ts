@@ -14,6 +14,7 @@ const sources: CatalogSources = {
   services: {
     climate: {
       set_temperature: {
+        name: "Set target temperature",
         fields: {
           temperature: { selector: { number: { step: 0.1 } } },
           temperature_range: {
@@ -24,6 +25,14 @@ const sources: CatalogSources = {
           },
         },
         target: { entity: [{ domain: ["climate"] }] },
+      },
+    },
+    // Each script is its own action; HA names it by the alias and has no translation for it.
+    script: {
+      abendstimmung: {
+        name: "Abendstimmung",
+        description: "",
+        fields: { dauer: { name: "Dauer", description: "Wie lange", selector: { number: {} } } },
       },
     },
   },
@@ -68,5 +77,17 @@ describe("buildCatalog", () => {
       "target_temp_low",
     ]);
     expect(action?.fields.temperature?.name).toBe("Soll-Temperatur");
+  });
+
+  it("prefers the translation over HA's English name", () => {
+    expect(catalog.actions["climate.set_temperature"]?.name).toBe("Solltemperatur einstellen");
+  });
+
+  it("names a script and its fields by HA's own texts when there is no translation", () => {
+    expect(catalog.actions["script.abendstimmung"]).toMatchObject({
+      name: "Abendstimmung",
+      description: null,
+      fields: { dauer: { name: "Dauer", description: "Wie lange" } },
+    });
   });
 });

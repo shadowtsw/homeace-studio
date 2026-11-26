@@ -1,13 +1,20 @@
 import type { CatalogEntry, CatalogField, EditorCatalog } from "./editor.model";
 
-/** A trigger or condition description, as `trigger_platforms/subscribe` sends it. */
+/**
+ * A trigger, condition or action description, as `trigger_platforms/subscribe` or `get_services`
+ * sends it. Only `get_services` has `name` / `description`: English, or a script's own alias.
+ */
 export type HaPlatformDescription = {
+  name?: string;
+  description?: string;
   fields?: Record<string, HaFieldDescription>;
   target?: unknown;
 };
 
 /** One field description; sections (like `temperature_range`) contain their own `fields`. */
 export type HaFieldDescription = {
+  name?: string;
+  description?: string;
   required?: boolean;
   default?: unknown;
   selector?: Record<string, unknown>;
@@ -63,8 +70,9 @@ function mapEntries(
       Object.entries(fields).map(([fieldKey, field]): [string, CatalogField] => [
         fieldKey,
         {
-          name: translations[`${prefix}.fields.${fieldKey}.name`] ?? null,
-          description: translations[`${prefix}.fields.${fieldKey}.description`] ?? null,
+          name: translations[`${prefix}.fields.${fieldKey}.name`] ?? filled(field.name),
+          description:
+            translations[`${prefix}.fields.${fieldKey}.description`] ?? filled(field.description),
           required: field.required ?? false,
           ...(field.default !== undefined ? { default: field.default } : {}),
           selector: field.selector ?? null,
@@ -75,8 +83,8 @@ function mapEntries(
     return [
       key,
       {
-        name: translations[`${prefix}.name`] ?? key,
-        description: translations[`${prefix}.description`] ?? null,
+        name: translations[`${prefix}.name`] ?? filled(description.name) ?? key,
+        description: translations[`${prefix}.description`] ?? filled(description.description),
         fields: mappedFields,
         target: description.target ?? null,
       },
@@ -85,6 +93,12 @@ function mapEntries(
 
   return Object.fromEntries(entries);
 }
+
+/**
+ * HA's own text when there is no translation, e.g. the alias of a script (each script is its own action
+ * "script.<key>" without translations). HA sends "" for a missing description.
+ */
+const filled = (value: string | undefined): string | null => (value?.trim() ? value : null);
 
 /**
  * Where HA keeps the texts of a key: "zone.entered" → "component.zone.triggers.entered".
