@@ -452,12 +452,12 @@ const displayFlow = computed(() => {
     labels: Object.fromEntries(lookups.labels.map((label) => [label.labelId, label.name])),
   };
 
-  const display = toDisplayFlow(
-    { ...flow, entityNames },
-    editorStore.catalogs[settings.locale] ?? null,
-    flowTexts.value,
+  const display = toDisplayFlow({
+    flow: { ...flow, entityNames },
+    catalog: editorStore.catalogs[settings.locale] ?? null,
+    texts: flowTexts.value,
     targetNames,
-  );
+  });
   // Entities the check-up found missing show in red.
   const gone = new Set(
     checkup
@@ -466,7 +466,7 @@ const displayFlow = computed(() => {
       .flatMap((finding) => finding.refs.map((ref) => ref.entityId)),
   );
 
-  return display ? markGoneChips(display, gone) : display;
+  return display ? markGoneChips({ flow: display, gone }) : display;
 });
 
 /** Entries with unsaved edits: flows, helper settings and scenes. */

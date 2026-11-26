@@ -38,7 +38,15 @@ function contextOf(block: DisplayBlock): string {
   return summary || block.title;
 }
 
-function nestedTargets(blocks: DisplayBlock[], root: BlockSection, depth: number): DropTarget[] {
+function nestedTargets({
+  blocks,
+  root,
+  depth,
+}: {
+  blocks: DisplayBlock[];
+  root: BlockSection;
+  depth: number;
+}): DropTarget[] {
   return blocks.flatMap((block) =>
     block.branches.flatMap((branch) => [
       ...branch.add
@@ -51,7 +59,7 @@ function nestedTargets(blocks: DisplayBlock[], root: BlockSection, depth: number
           depth,
           count: branch.blocks.length,
         })),
-      ...nestedTargets(branch.blocks, root, depth + 1),
+      ...nestedTargets({ blocks: branch.blocks, root, depth: depth + 1 }),
     ]),
   );
 }
@@ -66,12 +74,17 @@ export function dropTargets(flow: DisplayFlow): DropTarget[] {
 
   return sections.flatMap(([root, blocks, add]) => [
     { ...add, key: dropKey(add), root, branch: null, depth: 0, count: blocks.length },
-    ...nestedTargets(blocks, root, 1),
+    ...nestedTargets({ blocks, root, depth: 1 }),
   ]);
 }
 
+export type BranchesOfOptions = {
+  targets: readonly DropTarget[];
+  root: BlockSection;
+};
+
 /** The branches inside a section; when there are some, a drop on the section asks where exactly. */
-export function branchesOf(targets: readonly DropTarget[], root: BlockSection): DropTarget[] {
+export function branchesOf({ targets, root }: BranchesOfOptions): DropTarget[] {
   return targets.filter((target) => target.root === root && target.depth > 0);
 }
 

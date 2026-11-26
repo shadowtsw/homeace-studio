@@ -129,7 +129,15 @@ const CONDITION_WORD: Record<StateKind, Record<string, string>> = {
   other: {},
 };
 
-function stateLabel(words: Record<string, string>, state: string, fallback: string): ChoiceLabel {
+function stateLabel({
+  words,
+  state,
+  fallback,
+}: {
+  words: Record<string, string>;
+  state: string;
+  fallback: string;
+}): ChoiceLabel {
   const key = words[state];
 
   return key ? { key } : { key: fallback, params: { state } };
@@ -166,7 +174,7 @@ function triggerChoices(entity: EntityOption): EntityChoice[] {
 
   const words = TRIGGER_WORD[stateKindOf(entity)];
   return states.map((state) => ({
-    label: stateLabel(words, state, "changesTo"),
+    label: stateLabel({ words, state, fallback: "changesTo" }),
     item: { trigger: "state", entity_id: entityId, to: state },
   }));
 }
@@ -194,7 +202,7 @@ function conditionChoices(entity: EntityOption): EntityChoice[] {
   const words = CONDITION_WORD[stateKindOf(entity)];
 
   return states.map((state) => ({
-    label: stateLabel(words, state, "isState"),
+    label: stateLabel({ words, state, fallback: "isState" }),
     item: { condition: "state", entity_id: entityId, state },
   }));
 }
@@ -206,7 +214,13 @@ export const SCRIPT_START_ACTION = "script.turn_on";
  * A script: run it and wait (a direct call, as HA's own editor adds a script), or start it and go
  * on at once. The direct call needs no catalog entry, so a script created a moment ago works too.
  */
-function scriptChoices(entity: EntityOption, catalog: EditorCatalog | null): EntityFit {
+function scriptChoices({
+  entity,
+  catalog,
+}: {
+  entity: EntityOption;
+  catalog: EditorCatalog | null;
+}): EntityFit {
   const key = entity.scriptKey ?? entity.entityId.slice(entity.entityId.indexOf(".") + 1);
   const run: EntityChoice = {
     label: { key: "runScript" },
@@ -221,14 +235,23 @@ function scriptChoices(entity: EntityOption, catalog: EditorCatalog | null): Ent
   const start: EntityChoice = {
     label: { key: "startScript" },
     sub: { key: "startScriptSub" },
-    item: { ...newBlock("action", startTemplate, catalog), target: { entity_id: entity.entityId } },
+    item: {
+      ...newBlock({ section: "action", type: startTemplate, catalog }),
+      target: { entity_id: entity.entityId },
+    },
   };
 
   return { choices: [run, start] };
 }
 
-function actionChoices(entity: EntityOption, catalog: EditorCatalog | null): EntityFit {
-  if (entity.domain === "script") return scriptChoices(entity, catalog);
+function actionChoices({
+  entity,
+  catalog,
+}: {
+  entity: EntityOption;
+  catalog: EditorCatalog | null;
+}): EntityFit {
+  if (entity.domain === "script") return scriptChoices({ entity, catalog });
 
   // Sensors only report
   const keys = ACTIONS_BY_DOMAIN[entity.domain] ?? [];
@@ -245,23 +268,29 @@ function actionChoices(entity: EntityOption, catalog: EditorCatalog | null): Ent
   return {
     choices: described.map((key) => {
       const name = catalog?.actions[key]?.name ?? key;
-      const block = newBlock("action", { key, label: name, icon: "", isClassic: false }, catalog);
+      const block = newBlock({
+        section: "action",
+        type: { key, label: name, icon: "", isClassic: false },
+        catalog,
+      });
 
       return { label: { text: name }, item: { ...block, target: { entity_id: entity.entityId } } };
     }),
   };
 }
 
+export type EntityFitOptions = {
+  entity: EntityOption;
+  section: BlockSection;
+  catalog: EditorCatalog | null;
+};
+
 /**
  * What a plain entity can become when it is dropped on a section of a flow: a motion sensor on
  * "Wenn" offers "Bewegung erkannt" / "Keine Bewegung mehr", a light on "Dann" HA's "Einschalten" …
  * Sensors cannot be told to do anything; they say why instead.
  */
-export function entityFit(
-  entity: EntityOption,
-  section: BlockSection,
-  catalog: EditorCatalog | null,
-): EntityFit {
+export function entityFit({ entity, section, catalog }: EntityFitOptions): EntityFit {
   if (section === "trigger") return { choices: triggerChoices(entity) };
   if (section === "condition") {
     // A scene or a button only knows when it last fired; there is nothing to check
@@ -269,7 +298,7 @@ export function entityFit(
     return { choices: conditionChoices(entity) };
   }
 
-  return actionChoices(entity, catalog);
+  return actionChoices({ entity, catalog });
 }
 
 /** Device kinds a scene can hold (the same as "+ Gerät hinzufügen" offers). */

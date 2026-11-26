@@ -45,7 +45,7 @@ const labels = (fit: ReturnType<typeof entityFit>) =>
 describe("entity blocks", () => {
   it("offers a motion sensor on 'Wenn' as detected / no motion, with HA's states", () => {
     const motion = entity("binary_sensor.flur", { deviceClass: "motion" });
-    const fit = entityFit(motion, "trigger", catalog);
+    const fit = entityFit({ entity: motion, section: "trigger", catalog });
 
     expect(labels(fit)).toEqual([{ key: "motionOn" }, { key: "motionOff" }]);
     expect("choices" in fit && fit.choices[0]?.item).toEqual({
@@ -59,11 +59,11 @@ describe("entity blocks", () => {
     const door = entity("binary_sensor.tuer", { deviceClass: "door" });
     const cover = entity("cover.markise");
 
-    expect(labels(entityFit(door, "condition", catalog))).toEqual([
+    expect(labels(entityFit({ entity: door, section: "condition", catalog }))).toEqual([
       { key: "isOpen" },
       { key: "isClosed" },
     ]);
-    expect(labels(entityFit(cover, "trigger", catalog))).toEqual([
+    expect(labels(entityFit({ entity: cover, section: "trigger", catalog }))).toEqual([
       { key: "opens" },
       { key: "closes" },
     ]);
@@ -71,7 +71,7 @@ describe("entity blocks", () => {
 
   it("starts a measured value's limit at what it shows now, so the block is valid at once", () => {
     const wind = entity("sensor.wind", { state: "12", unit: "km/h" });
-    const fit = entityFit(wind, "trigger", catalog);
+    const fit = entityFit({ entity: wind, section: "trigger", catalog });
 
     expect("choices" in fit && fit.choices.map((choice) => choice.item)).toEqual([
       { trigger: "numeric_state", entity_id: "sensor.wind", above: 12 },
@@ -82,14 +82,14 @@ describe("entity blocks", () => {
   it("names unknown states as they are", () => {
     const select = entity("input_select.modus", { options: ["Tag", "Nacht"], state: "Tag" });
 
-    expect(labels(entityFit(select, "condition", catalog))).toEqual([
+    expect(labels(entityFit({ entity: select, section: "condition", catalog }))).toEqual([
       { key: "isState", params: { state: "Tag" } },
       { key: "isState", params: { state: "Nacht" } },
     ]);
   });
 
   it("offers only the actions HA describes, named by HA, with the target and HA's defaults", () => {
-    const fit = entityFit(entity("light.flur"), "action", catalog);
+    const fit = entityFit({ entity: entity("light.flur"), section: "action", catalog });
 
     expect(labels(fit)).toEqual([{ text: "Einschalten" }, { text: "Ausschalten" }]);
     expect("choices" in fit && fit.choices[0]?.item).toEqual({
@@ -97,7 +97,7 @@ describe("entity blocks", () => {
       target: { entity_id: "light.flur" },
     });
 
-    const heating = entityFit(entity("climate.bad"), "action", catalog);
+    const heating = entityFit({ entity: entity("climate.bad"), section: "action", catalog });
     expect("choices" in heating && heating.choices[0]?.item).toEqual({
       action: "climate.set_temperature",
       data: { hvac_mode: "heat" },
@@ -106,25 +106,31 @@ describe("entity blocks", () => {
   });
 
   it("says why sensors cannot be told to do anything", () => {
-    expect(entityFit(entity("binary_sensor.flur"), "action", catalog)).toEqual({
-      reason: "sensor",
-    });
-    expect(entityFit(entity("sensor.wind", { state: "3" }), "action", catalog)).toEqual({
+    expect(entityFit({ entity: entity("binary_sensor.flur"), section: "action", catalog })).toEqual(
+      {
+        reason: "sensor",
+      },
+    );
+    expect(
+      entityFit({ entity: entity("sensor.wind", { state: "3" }), section: "action", catalog }),
+    ).toEqual({
       reason: "measure",
     });
-    expect(entityFit(entity("weather.home"), "action", catalog)).toEqual({ reason: "noAction" });
+    expect(entityFit({ entity: entity("weather.home"), section: "action", catalog })).toEqual({
+      reason: "noAction",
+    });
   });
 
   it("treats helpers like devices: a switch turns on, a number has a limit", () => {
     const guests = entity("input_boolean.gaeste");
     const target = entity("input_number.soll", { state: "21.5" });
 
-    expect(labels(entityFit(guests, "trigger", catalog))).toEqual([
+    expect(labels(entityFit({ entity: guests, section: "trigger", catalog }))).toEqual([
       { key: "turnsOn" },
       { key: "turnsOff" },
     ]);
-    expect("choices" in entityFit(target, "condition", catalog)).toBe(true);
-    expect(labels(entityFit(target, "condition", catalog))).toEqual([
+    expect("choices" in entityFit({ entity: target, section: "condition", catalog })).toBe(true);
+    expect(labels(entityFit({ entity: target, section: "condition", catalog }))).toEqual([
       { key: "isAbove" },
       { key: "isBelow" },
     ]);
@@ -132,7 +138,7 @@ describe("entity blocks", () => {
 
   it("lets a scene or a button fire, but has nothing to check", () => {
     const scene = entity("scene.abend", { state: "2026-11-25T20:00:00+00:00" });
-    const fit = entityFit(scene, "trigger", catalog);
+    const fit = entityFit({ entity: scene, section: "trigger", catalog });
 
     expect(labels(fit)).toEqual([{ key: "fires" }]);
     // Never when the device drops out or comes back, or it would "fire" on its own
@@ -142,12 +148,14 @@ describe("entity blocks", () => {
       not_from: ["unavailable", "unknown"],
       not_to: ["unavailable", "unknown"],
     });
-    expect(entityFit(scene, "condition", catalog)).toEqual({ reason: "noCondition" });
+    expect(entityFit({ entity: scene, section: "condition", catalog })).toEqual({
+      reason: "noCondition",
+    });
   });
 
   it("lets an entity without known states change, but not by dropping out", () => {
     const weather = entity("sensor.wetter", { state: "sonnig" });
-    const fit = entityFit(weather, "trigger", catalog);
+    const fit = entityFit({ entity: weather, section: "trigger", catalog });
 
     expect(labels(fit)).toEqual([{ key: "changes" }]);
     expect("choices" in fit && fit.choices[0]?.item).toEqual({
@@ -164,9 +172,15 @@ describe("entity blocks", () => {
       actions: { ...catalog.actions, "automation.trigger": { name: "Ausführen", fields: {} } },
     } as unknown as EditorCatalog;
 
-    expect(labels(entityFit(entity("automation.licht"), "action", withAutomation))).toEqual([
-      { text: "Ausführen" },
-    ]);
+    expect(
+      labels(
+        entityFit({
+          entity: entity("automation.licht"),
+          section: "action",
+          catalog: withAutomation,
+        }),
+      ),
+    ).toEqual([{ text: "Ausführen" }]);
   });
 
   it("knows what a scene can hold", () => {
@@ -181,7 +195,7 @@ describe("entity blocks", () => {
       actions: { ...catalog.actions, "script.turn_on": { name: "Einschalten", fields: {} } },
     } as unknown as EditorCatalog;
     const script = entity("script.gute_nacht_neu", { scriptKey: "gute_nacht" });
-    const fit = entityFit(script, "action", withStart);
+    const fit = entityFit({ entity: script, section: "action", catalog: withStart });
 
     expect(labels(fit)).toEqual([{ key: "runScript" }, { key: "startScript" }]);
     // Run: a direct call by the key in scripts.yaml, which waits
@@ -192,7 +206,7 @@ describe("entity blocks", () => {
       target: { entity_id: "script.gute_nacht_neu" },
     });
     // Without a known key (a script just created), its object ID is the key
-    const fresh = entityFit(entity("script.neu"), "action", catalog);
+    const fresh = entityFit({ entity: entity("script.neu"), section: "action", catalog });
     expect("choices" in fresh && fresh.choices.map((choice) => choice.item)).toEqual([
       { action: "script.neu" },
     ]);

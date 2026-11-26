@@ -14,65 +14,88 @@ import {
   keyIn,
   listBlocks,
   unlabeled,
-  type Context,
-  type Raw,
+  type BlockListOptions,
+  type BlockOptions,
 } from "./context";
 import { addableClassic, missingChips, valueChips } from "./fieldChips";
 import { entityChip } from "./targetChips";
 import { conditionBlock, conditionBlocks, triggerBlocks } from "./triggers";
 
-export function actionBlocks(value: unknown, path: string, context: Context): DisplayBlock[] {
-  return listBlocks(value, path, (raw, id) => actionBlock(asRecord(raw), id, context));
+/** A block of a hand-made kind ("delay", "if", …) without chips or branches yet. */
+type MakeBlock = (kind: string) => DisplayBlock;
+
+/** A branch whose blocks all come from one list of the given section. */
+type MakeBranch = (options: { label: string; section: BlockSection; key: string }) => DisplayBranch;
+
+/** Builds the blocks of a list by the section they belong to. */
+const LIST_BUILDERS: Record<BlockSection, (options: BlockListOptions) => DisplayBlock[]> = {
+  trigger: triggerBlocks,
+  condition: conditionBlocks,
+  action: actionBlocks,
+};
+
+export function actionBlocks({ value, path, context }: BlockListOptions): DisplayBlock[] {
+  return listBlocks({
+    value,
+    path,
+    build: ({ raw, id }) => actionBlock({ raw: asRecord(raw), id, context }),
+  });
 }
 
-function actionBlock(raw: Raw, id: string, context: Context): DisplayBlock {
+function actionBlock({ raw, id, context }: BlockOptions): DisplayBlock {
   const service = asText(raw.action) ?? asText(raw.service);
 
   if (service?.includes(KEY_SEPARATOR)) {
-    return genericBlock("action", service, raw, keyIn(raw, ["data", "data_template"]), id, context);
+    return genericBlock({
+      section: "action",
+      key: service,
+      raw,
+      valuesKey: keyIn({ raw, keys: ["data", "data_template"] }),
+      id,
+      context,
+    });
   }
 
-  if ("condition" in raw) return conditionBlock(raw, id, context);
+  if ("condition" in raw) return conditionBlock({ value: raw, id, context });
 
-  return structuralBlock(raw, id, context) ?? unknownBlock("action", raw, id, context);
+  return (
+    structuralBlock({ raw, id, context }) ?? unknownBlock({ section: "action", raw, id, context })
+  );
 }
 
 /** Delay, if, choose, repeat, … : HA tells them apart by the key they contain. */
-function structuralBlock(raw: Raw, id: string, context: Context): DisplayBlock | null {
+function structuralBlock({ raw, id, context }: BlockOptions): DisplayBlock | null {
   const { texts } = context;
-  const make = (kind: string): DisplayBlock =>
-    baseBlock(
-      "action",
-      CLASSIC_ICON[kind] ?? iconForSection("action"),
-      texts.titles[kind] ?? kind,
+  const make: MakeBlock = (kind) =>
+    baseBlock({
+      section: "action",
+      icon: CLASSIC_ICON[kind] ?? iconForSection("action"),
+      title: texts.titles[kind] ?? kind,
       id,
       raw,
-    );
-  /** A branch whose blocks all come from one list of the given section. */
-  const branch = (label: string, section: BlockSection, key: string): DisplayBranch => {
+    });
+  const branch: MakeBranch = ({ label, section, key }) => {
     const path = join(id, key);
-    const blocks =
-      section === "condition"
-        ? conditionBlocks(raw[key], path, context)
-        : section === "trigger"
-          ? triggerBlocks(raw[key], path, context)
-          : actionBlocks(raw[key], path, context);
+    const blocks = LIST_BUILDERS[section]({ value: raw[key], path, context });
 
-    return { label: texts.labels[label] ?? label, blocks, add: [addTarget(section, path)] };
+    return { label: texts.labels[label] ?? label, blocks, add: [addTarget({ section, path })] };
   };
 
   if ("delay" in raw) {
     const block = make("delay");
-    block.chips = unlabeled(valueChips(raw, ["delay"], "delay", id, context));
+    block.chips = unlabeled(valueChips({ raw, fields: ["delay"], kind: "delay", id, context }));
     return block;
   }
 
   if ("if" in raw) {
     const block = make("if");
+    const elseBranches = raw.else
+      ? [branch({ label: "else", section: "action", key: "else" })]
+      : [];
     block.branches = [
-      branch("if", "condition", "if"),
-      branch("thenBranch", "action", "then"),
-      ...(raw.else ? [branch("else", "action", "else")] : []),
+      branch({ label: "if", section: "condition", key: "if" }),
+      branch({ label: "thenBranch", section: "action", key: "then" }),
+      ...elseBranches,
     ];
     return block;
   }
@@ -83,48 +106,67 @@ function structuralBlock(raw: Raw, id: string, context: Context): DisplayBlock |
       const optionPath = join(join(id, "choose"), index);
       const conditionsPath = join(optionPath, "conditions");
       const sequencePath = join(optionPath, "sequence");
-      const conditions = conditionBlocks(asRecord(option).conditions, conditionsPath, context);
-      const sequence = actionBlocks(asRecord(option).sequence, sequencePath, context);
+      const conditions = conditionBlocks({
+        value: asRecord(option).conditions,
+        path: conditionsPath,
+        context,
+      });
+      const sequence = actionBlocks({
+        value: asRecord(option).sequence,
+        path: sequencePath,
+        context,
+      });
 
       return {
         label: `${texts.labels.option ?? "option"} ${index + 1}`,
         blocks: [...conditions, ...sequence],
-        add: [addTarget("condition", conditionsPath), addTarget("action", sequencePath)],
+        add: [
+          addTarget({ section: "condition", path: conditionsPath }),
+          addTarget({ section: "action", path: sequencePath }),
+        ],
       };
     });
-    const fallback = raw.default ? [branch("default", "action", "default")] : [];
+    const fallback = raw.default
+      ? [branch({ label: "default", section: "action", key: "default" })]
+      : [];
     block.branches = [...options, ...fallback];
     return block;
   }
 
-  return loopOrWaitBlock(raw, id, context, make, branch);
+  return loopOrWaitBlock({ raw, id, context, make, branch });
 }
 
-function loopOrWaitBlock(
-  raw: Raw,
-  id: string,
-  context: Context,
-  make: (kind: string) => DisplayBlock,
-  branch: (label: string, section: BlockSection, key: string) => DisplayBranch,
-): DisplayBlock | null {
+type LoopOrWaitBlockOptions = BlockOptions & {
+  make: MakeBlock;
+  branch: MakeBranch;
+};
+
+function loopOrWaitBlock({
+  raw,
+  id,
+  context,
+  make,
+  branch,
+}: LoopOrWaitBlockOptions): DisplayBlock | null {
   const { texts } = context;
 
   if ("repeat" in raw) {
     const repeat = asRecord(raw.repeat);
     const block = make("repeat");
+    const repeatId = join(id, "repeat");
     const sequencePath = join(id, "repeat.sequence");
-    block.chips = valueChips(
-      repeat,
-      ["count", "while", "until", "for_each"],
-      "repeat",
-      join(id, "repeat"),
+    block.chips = valueChips({
+      raw: repeat,
+      fields: ["count", "while", "until", "for_each"],
+      kind: "repeat",
+      id: repeatId,
       context,
-    );
+    });
     block.branches = [
       {
         label: texts.labels.sequence ?? "sequence",
-        blocks: actionBlocks(repeat.sequence, sequencePath, context),
-        add: [addTarget("action", sequencePath)],
+        blocks: actionBlocks({ value: repeat.sequence, path: sequencePath, context }),
+        add: [addTarget({ section: "action", path: sequencePath })],
       },
     ];
     return block;
@@ -133,16 +175,24 @@ function loopOrWaitBlock(
   if ("parallel" in raw || "sequence" in raw) {
     const kind = "parallel" in raw ? "parallel" : "sequence";
     const block = make(kind);
-    block.branches = [branch(kind, "action", kind)];
+    block.branches = [branch({ label: kind, section: "action", key: kind })];
     return block;
   }
 
   if ("wait_for_trigger" in raw || "wait_template" in raw) {
     const block = make("wait");
-    block.chips = valueChips(raw, ["wait_template", "timeout"], "wait", id, context);
-    block.addable = addableClassic(raw, ["timeout"], "wait", id, context);
-    block.branches =
-      "wait_for_trigger" in raw ? [branch("until", "trigger", "wait_for_trigger")] : [];
+    const isWaitingForTrigger = "wait_for_trigger" in raw;
+    block.chips = valueChips({
+      raw,
+      fields: ["wait_template", "timeout"],
+      kind: "wait",
+      id,
+      context,
+    });
+    block.addable = addableClassic({ raw, fields: ["timeout"], kind: "wait", id, context });
+    block.branches = isWaitingForTrigger
+      ? [branch({ label: "until", section: "trigger", key: "wait_for_trigger" })]
+      : [];
     return block;
   }
 
@@ -158,28 +208,36 @@ function loopOrWaitBlock(
   if ("stop" in raw) {
     const block = make("stop");
     block.chips = unlabeled([
-      ...valueChips(raw, ["stop"], "stop", id, context),
-      ...missingChips(raw, ["stop"], "stop", id, context),
+      ...valueChips({ raw, fields: ["stop"], kind: "stop", id, context }),
+      ...missingChips({ raw, fields: ["stop"], kind: "stop", id, context }),
     ]);
     return block;
   }
 
   if ("event" in raw) {
     const block = make("event");
-    block.chips = unlabeled(valueChips(raw, ["event"], "event", id, context));
+    block.chips = unlabeled(valueChips({ raw, fields: ["event"], kind: "event", id, context }));
     return block;
   }
 
   if ("scene" in raw) {
-    const block = baseBlock(
-      "action",
-      iconForKey("scene", "action"),
-      texts.titles.scene ?? "scene",
+    const block = baseBlock({
+      section: "action",
+      icon: iconForKey({ key: "scene", section: "action" }),
+      title: texts.titles.scene ?? "scene",
       id,
       raw,
-    );
+    });
+    const scenePath = [...parsePath(id), "scene"];
     block.chips = [
-      entityChip(raw.scene, [...parsePath(id), "scene"], ["scene"], false, false, context),
+      entityChip({
+        value: raw.scene,
+        path: scenePath,
+        domains: ["scene"],
+        isMultiple: false,
+        isRemovable: false,
+        context,
+      }),
     ];
     return block;
   }

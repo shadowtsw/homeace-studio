@@ -66,7 +66,11 @@ describe("config paths", () => {
     const unknownPart = { keep: { deep: true } };
     const config = { alias: "A", actions: [{ delay: 5, extra: unknownPart }], x: 1 };
 
-    const changed = setAtPath(config, ["actions", 0, "delay"], 10) as typeof config;
+    const changed = setAtPath({
+      root: config,
+      path: ["actions", 0, "delay"],
+      value: 10,
+    }) as typeof config;
 
     expect(changed).toEqual({ alias: "A", actions: [{ delay: 10, extra: unknownPart }], x: 1 });
     expect(changed.actions[0]?.extra).toBe(unknownPart);
@@ -75,8 +79,12 @@ describe("config paths", () => {
   });
 
   it("removes keys with undefined and creates missing objects", () => {
-    expect(setAtPath({ a: { b: 1, c: 2 } }, ["a", "b"], undefined)).toEqual({ a: { c: 2 } });
-    expect(setAtPath({ actions: [{}] }, ["actions", 0, "data", "x"], 1)).toEqual({
+    expect(setAtPath({ root: { a: { b: 1, c: 2 } }, path: ["a", "b"], value: undefined })).toEqual({
+      a: { c: 2 },
+    });
+    expect(
+      setAtPath({ root: { actions: [{}] }, path: ["actions", 0, "data", "x"], value: 1 }),
+    ).toEqual({
       actions: [{ data: { x: 1 } }],
     });
   });
@@ -84,25 +92,36 @@ describe("config paths", () => {
   it("treats a single item where HA allows a list as index 0", () => {
     const config = { triggers: { trigger: "state", to: "on" } };
 
-    expect(setAtPath(config, ["triggers", 0, "to"], "off")).toEqual({
+    expect(setAtPath({ root: config, path: ["triggers", 0, "to"], value: "off" })).toEqual({
       triggers: { trigger: "state", to: "off" },
     });
-    expect(getAtPath(config, ["triggers", 0, "to"])).toBe("on");
+    expect(getAtPath({ root: config, path: ["triggers", 0, "to"] })).toBe("on");
   });
 });
 
 describe("value editors", () => {
   it("follows HA's selector", () => {
     expect(
-      editorForSelector({ number: { min: 0, max: 100, unit_of_measurement: "%" } }, 5),
+      editorForSelector({
+        selector: { number: { min: 0, max: 100, unit_of_measurement: "%" } },
+        value: 5,
+      }),
     ).toEqual({ type: "number", min: 0, max: 100, step: undefined, unit: "%" });
-    expect(editorForSelector({ entity: { filter: [{ domain: "light" }] } }, "light.a")).toEqual({
+    expect(
+      editorForSelector({
+        selector: { entity: { filter: [{ domain: "light" }] } },
+        value: "light.a",
+      }),
+    ).toEqual({
       type: "entity",
       domains: ["light"],
       isMultiple: false,
     });
     expect(
-      editorForSelector({ select: { options: ["a", { value: "b", label: "B" }] } }, "c"),
+      editorForSelector({
+        selector: { select: { options: ["a", { value: "b", label: "B" }] } },
+        value: "c",
+      }),
     ).toEqual({
       type: "choice",
       options: [
@@ -115,26 +134,36 @@ describe("value editors", () => {
   });
 
   it("edits templates as templates and leaves objects alone", () => {
-    expect(editorForSelector({ number: {} }, "{{ states('x') }}")).toEqual({ type: "template" });
-    expect(editorForSelector({ object: {} }, { a: 1 })).toBeNull();
+    expect(editorForSelector({ selector: { number: {} }, value: "{{ states('x') }}" })).toEqual({
+      type: "template",
+    });
+    expect(editorForSelector({ selector: { object: {} }, value: { a: 1 } })).toBeNull();
   });
 
   it("knows the classic fields", () => {
-    expect(classicFieldEditor("to", "state", { entity_id: "light.a" })).toEqual({
+    expect(
+      classicFieldEditor({ field: "to", kind: "state", raw: { entity_id: "light.a" } }),
+    ).toEqual({
       type: "text",
       isMultiline: false,
       stateOf: ["light.a"],
     });
-    expect(classicFieldEditor("event", "sun", {})).toMatchObject({ type: "choice" });
-    expect(classicFieldEditor("at", "time", { at: "input_datetime.wecker" })).toBeNull();
-    expect(classicFieldEditor("for", "state", {})).toEqual({ type: "duration" });
+    expect(classicFieldEditor({ field: "event", kind: "sun", raw: {} })).toMatchObject({
+      type: "choice",
+    });
+    expect(
+      classicFieldEditor({ field: "at", kind: "time", raw: { at: "input_datetime.wecker" } }),
+    ).toBeNull();
+    expect(classicFieldEditor({ field: "for", kind: "state", raw: {} })).toEqual({
+      type: "duration",
+    });
   });
 });
 
 describe("edit info in the flow view", () => {
   it("gives chips the exact path of their value, also in the old syntax", () => {
-    const flow = toDisplayFlow(
-      automation({
+    const flow = toDisplayFlow({
+      flow: automation({
         trigger: [{ platform: "state", entity_id: "light.a", to: "on" }],
         action: [
           {
@@ -146,7 +175,7 @@ describe("edit info in the flow view", () => {
       }),
       catalog,
       texts,
-    );
+    });
 
     expect(flow.triggers[0]?.chips.map((chip) => chip.edit?.path)).toEqual([
       ["trigger", 0, "entity_id"],
@@ -164,14 +193,14 @@ describe("edit info in the flow view", () => {
   });
 
   it("offers unset optional fields to add", () => {
-    const flow = toDisplayFlow(
-      automation({
+    const flow = toDisplayFlow({
+      flow: automation({
         triggers: [{ trigger: "sun", event: "sunset" }],
         actions: [{ action: "light.turn_on", data_template: { brightness_pct: 50 } }],
       }),
       catalog,
       texts,
-    );
+    });
 
     expect(flow.triggers[0]?.chips[0]).toMatchObject({ text: "Sonnenuntergang" });
     expect(flow.triggers[0]?.addable.map((field) => field.path)).toEqual([
@@ -187,11 +216,11 @@ describe("edit info in the flow view", () => {
   });
 
   it("edits a template condition shorthand in place", () => {
-    const flow = toDisplayFlow(
-      automation({ conditions: ["{{ is_state('a', 'on') }}"] }),
+    const flow = toDisplayFlow({
+      flow: automation({ conditions: ["{{ is_state('a', 'on') }}"] }),
       catalog,
       texts,
-    );
+    });
 
     expect(flow.conditions[0]?.chips[0]?.edit).toMatchObject({
       path: ["conditions", 0],
@@ -200,17 +229,22 @@ describe("edit info in the flow view", () => {
   });
 
   it("reads the mode and defaults to single", () => {
-    expect(toDisplayFlow(automation({ mode: "restart" }), catalog, texts).mode).toBe("restart");
-    expect(toDisplayFlow(automation({}), catalog, texts).mode).toBe("single");
+    expect(toDisplayFlow({ flow: automation({ mode: "restart" }), catalog, texts }).mode).toBe(
+      "restart",
+    );
+    expect(toDisplayFlow({ flow: automation({}), catalog, texts }).mode).toBe("single");
   });
 });
 
 describe("turning input into config values", () => {
   it("keeps one entity a string unless it was a list", () => {
-    expect(listValue(["light.a"], "light.b")).toBe("light.a");
-    expect(listValue(["light.a"], ["light.b"])).toEqual(["light.a"]);
-    expect(listValue(["light.a", "light.b"], "light.b")).toEqual(["light.a", "light.b"]);
-    expect(listValue([], "light.b")).toBeUndefined();
+    expect(listValue({ selected: ["light.a"], original: "light.b" })).toBe("light.a");
+    expect(listValue({ selected: ["light.a"], original: ["light.b"] })).toEqual(["light.a"]);
+    expect(listValue({ selected: ["light.a", "light.b"], original: "light.b" })).toEqual([
+      "light.a",
+      "light.b",
+    ]);
+    expect(listValue({ selected: [], original: "light.b" })).toBeUndefined();
   });
 
   it("reads numbers, times and durations", () => {
@@ -220,7 +254,11 @@ describe("turning input into config values", () => {
     expect(splitDuration("01:30:15")).toEqual({ hours: 1, minutes: 30, seconds: 15 });
     expect(splitDuration(90)).toEqual({ hours: 0, minutes: 1, seconds: 30 });
     expect(splitDuration("{{ x }}")).toBeNull();
-    expect(joinDuration(0, 5, 0)).toEqual({ hours: 0, minutes: 5, seconds: 0 });
+    expect(joinDuration({ hours: 0, minutes: 5, seconds: 0 })).toEqual({
+      hours: 0,
+      minutes: 5,
+      seconds: 0,
+    });
   });
 
   it("suggests states from options, the domain and the current state", () => {
@@ -256,7 +294,10 @@ describe("turning input into config values", () => {
       },
     ];
 
-    expect(stateSuggestions(["input_select.modus"], entities)).toEqual(["Tag", "Nacht"]);
-    expect(stateSuggestions(["light.a"], entities)).toEqual(["on", "off"]);
+    expect(stateSuggestions({ entityIds: ["input_select.modus"], entities })).toEqual([
+      "Tag",
+      "Nacht",
+    ]);
+    expect(stateSuggestions({ entityIds: ["light.a"], entities })).toEqual(["on", "off"]);
   });
 });

@@ -62,7 +62,7 @@ export function useFlowEntityDrop(options: FlowEntityDropOptions) {
 
     // Why not
     if (entity.entityId === selfId.value) return { text: t("flow.drop.why.self"), isOk: false };
-    const fit = entityFit(entity, section, catalog.value);
+    const fit = entityFit({ entity, section, catalog: catalog.value });
     if ("reason" in fit) return { text: t(`flow.drop.why.${fit.reason}`), isOk: false };
 
     // A branch under the pointer, or a section with branches (then the user picks)
@@ -71,7 +71,10 @@ export function useFlowEntityDrop(options: FlowEntityDropOptions) {
       const { label, context } = hovered.branch;
       return { text: t("flow.drop.sign.branch", { branch: label, context }), isOk: true };
     }
-    if (hovered?.root === section && branchesOf(targets.value, section).length > 0) {
+    if (
+      hovered?.root === section &&
+      branchesOf({ targets: targets.value, root: section }).length > 0
+    ) {
       return { text: t("flow.drop.sign.pick"), isOk: true };
     }
 
@@ -85,7 +88,7 @@ export function useFlowEntityDrop(options: FlowEntityDropOptions) {
     const entity = drag.dragged.value;
     if (!element || !target || !entity || entity.entityId === selfId.value) return null;
 
-    const fit = entityFit(entity, target.section, catalog.value);
+    const fit = entityFit({ entity, section: target.section, catalog: catalog.value });
     return "reason" in fit ? null : { element, target };
   }
 
@@ -119,7 +122,7 @@ export function useFlowEntityDrop(options: FlowEntityDropOptions) {
 
     // A section with branches: ask where exactly first
     const anchor = addButtonOf(hit.element);
-    const branches = branchesOf(targets.value, hit.target.root);
+    const branches = branchesOf({ targets: targets.value, root: hit.target.root });
     if (!hit.target.branch && branches.length > 0) {
       askWhere(entity, [hit.target, ...branches], anchor);
       return;
@@ -148,7 +151,7 @@ export function useFlowEntityDrop(options: FlowEntityDropOptions) {
 
   /** One choice goes in at once; several get a menu ("Bewegung erkannt" / "Keine Bewegung mehr"). */
   function offerChoices(entity: EntityOption, target: DropTarget, anchor: HTMLElement): void {
-    const fit = entityFit(entity, target.section, catalog.value);
+    const fit = entityFit({ entity, section: target.section, catalog: catalog.value });
     if ("reason" in fit) return;
 
     const [only] = fit.choices;

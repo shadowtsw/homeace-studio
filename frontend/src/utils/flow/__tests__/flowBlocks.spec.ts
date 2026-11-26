@@ -62,12 +62,15 @@ describe("applyFlowChange", () => {
 
   it("moves, duplicates and removes blocks without touching the rest", () => {
     expect(
-      applyFlowChange(config, { type: "move", listPath: ["actions"], from: 2, to: 0 }),
+      applyFlowChange({ config, change: { type: "move", listPath: ["actions"], from: 2, to: 0 } }),
     ).toEqual({ alias: "A", actions: [{ delay: 3 }, { delay: 1 }, { delay: 2 }] });
     expect(
-      applyFlowChange(config, { type: "duplicate", listPath: ["actions"], index: 0 }).actions,
+      applyFlowChange({ config, change: { type: "duplicate", listPath: ["actions"], index: 0 } })
+        .actions,
     ).toEqual([{ delay: 1 }, { delay: 1 }, { delay: 2 }, { delay: 3 }]);
-    expect(applyFlowChange(config, { type: "remove", listPath: ["actions"], index: 1 })).toEqual({
+    expect(
+      applyFlowChange({ config, change: { type: "remove", listPath: ["actions"], index: 1 } }),
+    ).toEqual({
       alias: "A",
       actions: [{ delay: 1 }, { delay: 3 }],
     });
@@ -75,25 +78,31 @@ describe("applyFlowChange", () => {
   });
 
   it("ignores moves past either end", () => {
-    expect(applyFlowChange(config, { type: "move", listPath: ["actions"], from: 0, to: -1 })).toBe(
-      config,
-    );
+    expect(
+      applyFlowChange({ config, change: { type: "move", listPath: ["actions"], from: 0, to: -1 } }),
+    ).toBe(config);
   });
 
   it("disables with enabled: false and enables by removing the key", () => {
-    const disabled = applyFlowChange(config, { type: "toggle", listPath: ["actions"], index: 0 });
+    const disabled = applyFlowChange({
+      config,
+      change: { type: "toggle", listPath: ["actions"], index: 0 },
+    });
 
     expect(disabled.actions).toEqual([{ delay: 1, enabled: false }, { delay: 2 }, { delay: 3 }]);
     expect(
-      applyFlowChange(disabled, { type: "toggle", listPath: ["actions"], index: 0 }).actions,
+      applyFlowChange({
+        config: disabled,
+        change: { type: "toggle", listPath: ["actions"], index: 0 },
+      }).actions,
     ).toEqual(config.actions);
   });
 
   it("writes the long form when disabling a template shorthand", () => {
-    const changed = applyFlowChange(
-      { conditions: ["{{ true }}"] },
-      { type: "toggle", listPath: ["conditions"], index: 0 },
-    );
+    const changed = applyFlowChange({
+      config: { conditions: ["{{ true }}"] },
+      change: { type: "toggle", listPath: ["conditions"], index: 0 },
+    });
 
     expect(changed.conditions).toEqual([
       { condition: "template", value_template: "{{ true }}", enabled: false },
@@ -102,23 +111,26 @@ describe("applyFlowChange", () => {
 
   it("adds to missing lists and turns a single item into a list", () => {
     expect(
-      applyFlowChange({}, { type: "insert", listPath: ["conditions"], item: { condition: "or" } }),
+      applyFlowChange({
+        config: {},
+        change: { type: "insert", listPath: ["conditions"], item: { condition: "or" } },
+      }),
     ).toEqual({ conditions: [{ condition: "or" }] });
     expect(
-      applyFlowChange(
-        { triggers: { trigger: "sun" } },
-        { type: "insert", listPath: ["triggers"], item: { trigger: "time" } },
-      ),
+      applyFlowChange({
+        config: { triggers: { trigger: "sun" } },
+        change: { type: "insert", listPath: ["triggers"], item: { trigger: "time" } },
+      }),
     ).toEqual({ triggers: [{ trigger: "sun" }, { trigger: "time" }] });
   });
 });
 
 describe("block types and new blocks", () => {
   it("offers hand-made types first, then HA's catalog by name", () => {
-    const types = blockTypes("condition", catalog, texts.titles);
+    const types = blockTypes({ section: "condition", catalog, titles: texts.titles });
 
     expect(types[0]).toMatchObject({ key: "state", label: "Zustand ist", isClassic: true });
-    const actions = blockTypes("action", catalog, texts.titles);
+    const actions = blockTypes({ section: "action", catalog, titles: texts.titles });
 
     expect(actions[actions.length - 1]).toMatchObject({
       key: "notify.send_message",
@@ -127,11 +139,11 @@ describe("block types and new blocks", () => {
   });
 
   it("fills required fields that have a default, like HA's editor", () => {
-    const type = blockTypes("trigger", catalog, texts.titles).find(
+    const type = blockTypes({ section: "trigger", catalog, titles: texts.titles }).find(
       (item) => item.key === "zone.entered",
     );
 
-    expect(type && newBlock("trigger", type, catalog)).toEqual({
+    expect(type && newBlock({ section: "trigger", type, catalog })).toEqual({
       trigger: "zone.entered",
       options: { behavior: "each" },
     });
@@ -140,8 +152,8 @@ describe("block types and new blocks", () => {
 
 describe("block positions, add targets and missing values", () => {
   it("tells every block where it sits and where new ones go", () => {
-    const flow = toDisplayFlow(
-      automation({
+    const flow = toDisplayFlow({
+      flow: automation({
         trigger: [{ trigger: "time", at: "07:00:00" }],
         // HA itself names the branch of an if block "then"; this is real HA config.
         // oxlint-disable-next-line unicorn/no-thenable
@@ -149,7 +161,7 @@ describe("block positions, add targets and missing values", () => {
       }),
       catalog,
       texts,
-    );
+    });
 
     expect(flow.add.triggers.listPath).toEqual(["trigger"]);
     expect(flow.add.conditions.listPath).toEqual(["conditions"]);
@@ -166,14 +178,14 @@ describe("block positions, add targets and missing values", () => {
   });
 
   it("asks for required values of new blocks", () => {
-    const flow = toDisplayFlow(
-      automation({
+    const flow = toDisplayFlow({
+      flow: automation({
         triggers: [{ trigger: "zone.entered", options: { behavior: "each" } }, { trigger: "time" }],
         conditions: [{ condition: "state" }],
       }),
       catalog,
       texts,
-    );
+    });
 
     expect(
       flow.triggers[0]?.chips.map((chip) => [chip.text, chip.isMissing, chip.edit?.path]),

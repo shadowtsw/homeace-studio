@@ -14,14 +14,19 @@ const MAX_JSON_LENGTH = 60;
 
 type DurationParts = { days?: number; hours?: number; minutes?: number; seconds?: number };
 
+export type FormatDurationOptions = {
+  /** "HH:MM:SS" (or "MM:SS"), seconds as a number, or `{ hours, minutes, seconds }`. */
+  value: unknown;
+  texts: FormatTexts;
+};
+
 /**
  * Turns an HA duration into short text.
  *
- * @param value - "HH:MM:SS" (or "MM:SS"), seconds as a number, or `{ hours, minutes, seconds }`.
  * @returns e.g. "1 h 5 min" or "30 s"; "0 s" for zero; the raw text when it cannot be read.
- * @example formatDuration("00:05:00", texts) // "5 min"
+ * @example formatDuration({ value: "00:05:00", texts }) // "5 min"
  */
-export function formatDuration(value: unknown, texts: FormatTexts): string {
+export function formatDuration({ value, texts }: FormatDurationOptions): string {
   const parts = toDurationParts(value);
 
   if (!parts) return String(value);
@@ -61,11 +66,17 @@ export function splitDuration(
   };
 }
 
+export type JoinDurationOptions = {
+  hours: number;
+  minutes: number;
+  seconds: number;
+};
+
 /**
  * The duration as HA's own editor writes it, e.g. `{ hours: 0, minutes: 5, seconds: 0 }`.
  * HA accepts that form everywhere a duration is allowed.
  */
-export function joinDuration(hours: number, minutes: number, seconds: number): DurationParts {
+export function joinDuration({ hours, minutes, seconds }: JoinDurationOptions): DurationParts {
   return { hours, minutes, seconds };
 }
 
@@ -83,25 +94,26 @@ function toDurationParts(value: unknown): DurationParts | null {
   return { hours, minutes, seconds };
 }
 
+export type FormatValueOptions = {
+  /** The stored value. */
+  value: unknown;
+  /** e.g. `{ number: { unit_of_measurement: "°C" } }`; null formats generically. */
+  selector: Record<string, unknown> | null;
+  /** Entity ID → friendly name, for entity selectors. */
+  entityNames: Record<string, string>;
+  texts: FormatTexts;
+};
+
 /**
  * Formats a config value for a chip, using the field's HA selector to choose how.
- *
- * @param value - The stored value.
- * @param selector - e.g. `{ number: { unit_of_measurement: "°C" } }`; null formats generically.
- * @param entityNames - Entity ID → friendly name, for entity selectors.
  */
-export function formatValue(
-  value: unknown,
-  selector: Record<string, unknown> | null,
-  entityNames: Record<string, string>,
-  texts: FormatTexts,
-): string {
+export function formatValue({ value, selector, entityNames, texts }: FormatValueOptions): string {
   const selectorType = selector ? Object.keys(selector)[0] : undefined;
   const options = (selectorType ? selector?.[selectorType] : undefined) as
     Record<string, unknown> | undefined;
 
-  if (selectorType === "duration") return formatDuration(value, texts);
-  if (selectorType === "entity") return formatEntities(value, entityNames);
+  if (selectorType === "duration") return formatDuration({ value, texts });
+  if (selectorType === "entity") return formatEntities({ value, entityNames });
   if (typeof value === "boolean") return value ? texts.yes : texts.no;
 
   if (selectorType === "number" && typeof value === "number") {
@@ -113,8 +125,13 @@ export function formatValue(
   return formatGeneric(value);
 }
 
+export type FormatEntitiesOptions = {
+  value: unknown;
+  entityNames: Record<string, string>;
+};
+
 /** One or more entity IDs as their friendly names, e.g. "Licht Terrasse, Gartenwege". */
-export function formatEntities(value: unknown, entityNames: Record<string, string>): string {
+export function formatEntities({ value, entityNames }: FormatEntitiesOptions): string {
   const ids = Array.isArray(value) ? value : [value];
 
   return ids.map((id) => entityNames[String(id)] ?? String(id)).join(LIST_SEPARATOR);

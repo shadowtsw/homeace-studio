@@ -4,14 +4,20 @@ const SECONDS_SUFFIX = ":00";
 /** "07:30" without seconds; HA's time fields store "07:30:00". */
 const SHORT_TIME = /^\d{1,2}:\d{2}$/;
 
+export type ListValueOptions = {
+  selected: string[];
+  original: unknown;
+};
+
 /**
  * The value of a list pick. One entity stays a plain string when it was one before (keeps the
  * config as the user wrote it); several become a list; none removes the value.
  *
- * @example listValue(["light.a"], "light.b") // "light.a"
- * @example listValue(["light.a", "light.b"], "light.b") // ["light.a", "light.b"]
+ * @example listValue({ selected: ["light.a"], original: "light.b" }) // "light.a"
+ * @example
+ * listValue({ selected: ["light.a", "light.b"], original: "light.b" }) // ["light.a", "light.b"]
  */
-export function listValue(selected: string[], original: unknown): unknown {
+export function listValue({ selected, original }: ListValueOptions): unknown {
   if (selected.length === 0) return undefined;
   if (selected.length === 1 && !Array.isArray(original)) return selected[0];
 

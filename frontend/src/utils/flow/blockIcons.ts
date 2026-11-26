@@ -55,8 +55,13 @@ const ICON_BY_SECTION: Record<BlockSection, string> = {
   action: "mdi-play-circle-outline",
 };
 
+export type IconForKeyOptions = {
+  key: string;
+  section: BlockSection;
+};
+
 /** Icon for a generic block: by the domain of its key, else by its section. */
-export function iconForKey(key: string, section: BlockSection): string {
+export function iconForKey({ key, section }: IconForKeyOptions): string {
   const domain = key.split(DOMAIN_SEPARATOR)[0] ?? key;
 
   return ICON_BY_DOMAIN[domain] ?? ICON_BY_SECTION[section];

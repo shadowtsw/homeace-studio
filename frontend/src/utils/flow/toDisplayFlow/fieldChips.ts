@@ -18,13 +18,15 @@ const DURATION_FIELDS = new Set(["for", "offset", "delay", "timeout"]);
 /** Required without a default: HA cannot run the block until the user sets it. */
 const needsValue = (info: CatalogField): boolean => info.required && info.default === undefined;
 
+export type FieldChipsOptions = {
+  values: Raw;
+  valuesPath: ConfigPath;
+  entry: CatalogEntry | undefined;
+  context: Context;
+};
+
 /** Set fields as "name: value"; fields still at their default are left out to keep it short. */
-export function fieldChips(
-  values: Raw,
-  valuesPath: ConfigPath,
-  entry: CatalogEntry | undefined,
-  context: Context,
-): BlockChip[] {
+export function fieldChips({ values, valuesPath, entry, context }: FieldChipsOptions): BlockChip[] {
   return Object.entries(values).flatMap(([field, value]): BlockChip[] => {
     const info = entry?.fields[field];
     const isDefault =
@@ -34,8 +36,8 @@ export function fieldChips(
 
     const selector = info?.selector ?? null;
     const label = info?.name ?? field;
-    const text = formatValue(value, selector, context.names, context.texts);
-    const editor = editorForSelector(selector, value);
+    const text = formatValue({ value, selector, entityNames: context.names, texts: context.texts });
+    const editor = editorForSelector({ selector, value });
     const edit: ChipEdit | undefined = editor
       ? {
           path: [...valuesPath, field],
@@ -50,18 +52,20 @@ export function fieldChips(
   });
 }
 
+export type MissingFieldsOptions = {
+  values: Raw;
+  valuesPath: ConfigPath;
+  entry: CatalogEntry | undefined;
+};
+
 /** Required catalog fields without a default that are not set yet. */
-export function missingFields(
-  values: Raw,
-  valuesPath: ConfigPath,
-  entry: CatalogEntry | undefined,
-): BlockChip[] {
+export function missingFields({ values, valuesPath, entry }: MissingFieldsOptions): BlockChip[] {
   if (!entry) return [];
 
   return Object.entries(entry.fields).flatMap(([field, info]): BlockChip[] => {
     if (field in values || !needsValue(info)) return [];
 
-    const editor = editorForSelector(info.selector, undefined);
+    const editor = editorForSelector({ selector: info.selector, value: undefined });
     const title = info.name ?? field;
 
     if (!editor) return [];
@@ -77,18 +81,20 @@ export function missingFields(
   });
 }
 
+export type AddableFieldsOptions = {
+  values: Raw;
+  valuesPath: ConfigPath;
+  entry: CatalogEntry | undefined;
+};
+
 /** Optional catalog fields the block does not set yet. */
-export function addableFields(
-  values: Raw,
-  valuesPath: ConfigPath,
-  entry: CatalogEntry | undefined,
-): ChipEdit[] {
+export function addableFields({ values, valuesPath, entry }: AddableFieldsOptions): ChipEdit[] {
   if (!entry) return [];
 
   return Object.entries(entry.fields).flatMap(([field, info]): ChipEdit[] => {
     if (field in values || needsValue(info)) return [];
 
-    const editor = editorForSelector(info.selector, undefined);
+    const editor = editorForSelector({ selector: info.selector, value: undefined });
 
     if (!editor) return [];
 
@@ -106,20 +112,22 @@ export function addableFields(
 
 const isEmpty = (value: unknown): boolean => value === undefined || value === null || value === "";
 
+export type MissingChipsOptions = {
+  raw: Raw;
+  fields: string[];
+  kind: string;
+  id: string;
+  context: Context;
+};
+
 /** Required fields that are still empty, as chips that ask for them (e.g. in a new block). */
-export function missingChips(
-  raw: Raw,
-  fields: string[],
-  kind: string,
-  id: string,
-  context: Context,
-): BlockChip[] {
+export function missingChips({ raw, fields, kind, id, context }: MissingChipsOptions): BlockChip[] {
   const path = parsePath(id);
 
   return fields
     .filter((field) => isEmpty(raw[field]))
     .flatMap((field): BlockChip[] => {
-      const editor = classicFieldEditor(field, kind, raw);
+      const editor = classicFieldEditor({ field, kind, raw });
       const label = context.texts.labels[field] ?? field;
 
       if (!editor) return [];
@@ -127,7 +135,7 @@ export function missingChips(
       const edit: ChipEdit = {
         path: [...path, field],
         title: label,
-        editor: withChoiceLabels(editor, context),
+        editor: withChoiceLabels({ editor, context }),
         value: undefined,
         isRemovable: false,
       };
@@ -136,8 +144,15 @@ export function missingChips(
     });
 }
 
+type ChipTextOptions = {
+  field: string;
+  value: unknown;
+  editor: ValueEditor | null;
+  context: Context;
+};
+
 /** Choices show their label ("Sonnenuntergang"), everything else its formatted value. */
-function chipText(field: string, value: unknown, editor: ValueEditor | null, context: Context) {
+function chipText({ field, value, editor, context }: ChipTextOptions) {
   const { texts } = context;
 
   if (editor?.type === "choice") {
@@ -146,53 +161,63 @@ function chipText(field: string, value: unknown, editor: ValueEditor | null, con
       .join(", ");
   }
 
-  if (DURATION_FIELDS.has(field)) return formatDuration(value, texts);
+  if (DURATION_FIELDS.has(field)) return formatDuration({ value, texts });
 
-  return formatValue(value, null, context.names, texts);
+  return formatValue({ value, selector: null, entityNames: context.names, texts });
 }
 
-export function valueChips(
-  raw: Raw,
-  fields: string[],
-  kind: string,
-  id: string,
-  context: Context,
-): BlockChip[] {
+export type ValueChipsOptions = {
+  raw: Raw;
+  fields: string[];
+  kind: string;
+  id: string;
+  context: Context;
+};
+
+export function valueChips({ raw, fields, kind, id, context }: ValueChipsOptions): BlockChip[] {
   const path = parsePath(id);
 
   return fields
     .filter((field) => !isEmpty(raw[field]))
     .map((field): BlockChip => {
       const value = raw[field];
-      const editor = classicFieldEditor(field, kind, raw);
+      const editor = classicFieldEditor({ field, kind, raw });
       const label = context.texts.labels[field] ?? field;
       const edit: ChipEdit | undefined = editor
         ? {
             path: [...path, field],
             title: label,
-            editor: withChoiceLabels(editor, context),
+            editor: withChoiceLabels({ editor, context }),
             value,
             isRemovable: !isRequiredClassicField(field),
           }
         : undefined;
 
-      return { kind: "value", label, text: chipText(field, value, editor, context), edit };
+      return { kind: "value", label, text: chipText({ field, value, editor, context }), edit };
     });
 }
 
-export function addableClassic(
-  raw: Raw,
-  fields: string[],
-  kind: string,
-  id: string,
-  context: Context,
-): ChipEdit[] {
+export type AddableClassicOptions = {
+  raw: Raw;
+  fields: string[];
+  kind: string;
+  id: string;
+  context: Context;
+};
+
+export function addableClassic({
+  raw,
+  fields,
+  kind,
+  id,
+  context,
+}: AddableClassicOptions): ChipEdit[] {
   const path = parsePath(id);
 
   return fields
     .filter((field) => raw[field] === undefined)
     .flatMap((field): ChipEdit[] => {
-      const editor = classicFieldEditor(field, kind, raw);
+      const editor = classicFieldEditor({ field, kind, raw });
 
       if (!editor) return [];
 
@@ -200,7 +225,7 @@ export function addableClassic(
         {
           path: [...path, field],
           title: context.texts.labels[field] ?? field,
-          editor: withChoiceLabels(editor, context),
+          editor: withChoiceLabels({ editor, context }),
           value: undefined,
           isRemovable: true,
         },
@@ -208,7 +233,13 @@ export function addableClassic(
     });
 }
 
-function withChoiceLabels(editor: ValueEditor, context: Context): ValueEditor {
+function withChoiceLabels({
+  editor,
+  context,
+}: {
+  editor: ValueEditor;
+  context: Context;
+}): ValueEditor {
   if (editor.type !== "choice") return editor;
 
   return {

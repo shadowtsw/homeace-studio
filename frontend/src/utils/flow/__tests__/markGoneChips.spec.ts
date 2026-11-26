@@ -38,7 +38,7 @@ const FLOW = {
 
 describe("gone chips", () => {
   it("marks chips that name a removed entity, also in lists and nested blocks", () => {
-    const marked = markGoneChips(FLOW, new Set(["binary_sensor.weg", "light.weg"]));
+    const marked = markGoneChips({ flow: FLOW, gone: new Set(["binary_sensor.weg", "light.weg"]) });
 
     expect(marked.triggers[0]?.chips[0]?.isGone).toBe(true);
     expect(marked.actions[0]?.chips[0]?.isGone).toBe(true);
@@ -46,6 +46,6 @@ describe("gone chips", () => {
   });
 
   it("leaves the flow untouched when nothing is gone", () => {
-    expect(markGoneChips(FLOW, new Set())).toBe(FLOW);
+    expect(markGoneChips({ flow: FLOW, gone: new Set() })).toBe(FLOW);
   });
 });

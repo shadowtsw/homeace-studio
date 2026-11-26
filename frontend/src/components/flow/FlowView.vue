@@ -260,7 +260,11 @@ function blockChange(action: string, listPath: ConfigPath, index: number): FlowC
 
 /** Hand-made types first, then everything HA describes; the search field finds the rest. */
 function openTypePicker(target: AddTarget, anchor: HTMLElement): void {
-  const types = blockTypes(target.section, props.catalog, flowTexts.value.titles);
+  const types = blockTypes({
+    section: target.section,
+    catalog: props.catalog,
+    titles: flowTexts.value.titles,
+  });
   // "Einschalten" exists for lights, switches and scripts alike; the kind tells them apart.
   const labelCount = new Map<string, number>();
   for (const type of types) labelCount.set(type.label, (labelCount.get(type.label) ?? 0) + 1);
@@ -286,7 +290,7 @@ function openTypePicker(target: AddTarget, anchor: HTMLElement): void {
     closeAndEmit({
       type: "insert",
       listPath: target.listPath,
-      item: newBlock(target.section, type, props.catalog),
+      item: newBlock({ section: target.section, type, catalog: props.catalog }),
     });
   });
 }

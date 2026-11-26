@@ -85,25 +85,37 @@ function automation(config: Record<string, unknown>): Flow {
 
 describe("formatDuration and formatValue", () => {
   it("writes durations short and skips zero parts", () => {
-    expect(formatDuration("00:05:00", texts)).toBe("5 min");
-    expect(formatDuration("01:30:15", texts)).toBe("1 h 30 min 15 s");
-    expect(formatDuration({ minutes: 2 }, texts)).toBe("2 min");
-    expect(formatDuration("00:00:00", texts)).toBe("0 s");
+    expect(formatDuration({ value: "00:05:00", texts })).toBe("5 min");
+    expect(formatDuration({ value: "01:30:15", texts })).toBe("1 h 30 min 15 s");
+    expect(formatDuration({ value: { minutes: 2 }, texts })).toBe("2 min");
+    expect(formatDuration({ value: "00:00:00", texts })).toBe("0 s");
   });
 
   it("uses the selector: units for numbers, names for entities", () => {
-    expect(formatValue(21.5, { number: { unit_of_measurement: "°C" } }, {}, texts)).toBe("21.5 °C");
-    expect(formatValue("zone.home", { entity: {} }, { "zone.home": "Zuhause" }, texts)).toBe(
-      "Zuhause",
-    );
-    expect(formatValue(true, null, {}, texts)).toBe("ja");
+    expect(
+      formatValue({
+        value: 21.5,
+        selector: { number: { unit_of_measurement: "°C" } },
+        entityNames: {},
+        texts,
+      }),
+    ).toBe("21.5 °C");
+    expect(
+      formatValue({
+        value: "zone.home",
+        selector: { entity: {} },
+        entityNames: { "zone.home": "Zuhause" },
+        texts,
+      }),
+    ).toBe("Zuhause");
+    expect(formatValue({ value: true, selector: null, entityNames: {}, texts })).toBe("ja");
   });
 });
 
 describe("toDisplayFlow", () => {
   it("builds generic blocks from the catalog and leaves out fields at their default", () => {
-    const flow = toDisplayFlow(
-      automation({
+    const flow = toDisplayFlow({
+      flow: automation({
         triggers: [
           {
             trigger: "button.pressed",
@@ -129,7 +141,7 @@ describe("toDisplayFlow", () => {
       }),
       catalog,
       texts,
-    );
+    });
 
     expect(flow.triggers.map((block) => [block.title, shown(block.chips)])).toEqual([
       ["Taste gedrückt", [{ kind: "entity", text: "Licht aus" }]],
@@ -149,8 +161,8 @@ describe("toDisplayFlow", () => {
   });
 
   it("shows classic triggers, delays and if blocks with their branches", () => {
-    const flow = toDisplayFlow(
-      automation({
+    const flow = toDisplayFlow({
+      flow: automation({
         triggers: [
           { trigger: "state", entity_id: "input_boolean.abwesend", to: "on", for: "00:05:00" },
         ],
@@ -166,7 +178,7 @@ describe("toDisplayFlow", () => {
       }),
       catalog,
       texts,
-    );
+    });
 
     expect(shown(flow.triggers[0]?.chips)).toEqual([
       { kind: "entity", text: "Abwesend" },
@@ -185,8 +197,8 @@ describe("toDisplayFlow", () => {
 
   it("shows which states a state trigger leaves out", () => {
     // What a button dropped on "Wenn" becomes: never on dropping out or coming back
-    const flow = toDisplayFlow(
-      automation({
+    const flow = toDisplayFlow({
+      flow: automation({
         triggers: [
           {
             trigger: "state",
@@ -197,8 +209,8 @@ describe("toDisplayFlow", () => {
         ],
       }),
       catalog,
-      { ...texts, labels: { ...texts.labels, not_from: "nicht von", not_to: "nicht zu" } },
-    );
+      texts: { ...texts, labels: { ...texts.labels, not_from: "nicht von", not_to: "nicht zu" } },
+    });
 
     expect(shown(flow.triggers[0]?.chips)).toEqual([
       { kind: "entity", text: "Abwesend" },
@@ -219,8 +231,8 @@ describe("toDisplayFlow", () => {
         },
       },
     };
-    const flow = toDisplayFlow(
-      {
+    const flow = toDisplayFlow({
+      flow: {
         ...automation({
           actions: [
             {
@@ -236,10 +248,13 @@ describe("toDisplayFlow", () => {
         }),
         entityNames: { kueche: "Küche" },
       },
-      withTarget,
-      { ...texts, labels: { ...texts.labels, floor: "Etage", label: "Label", exclude: "ohne" } },
-      { floors: { eg: "Erdgeschoss" }, labels: { nacht: "Nachtlicht" } },
-    );
+      catalog: withTarget,
+      texts: {
+        ...texts,
+        labels: { ...texts.labels, floor: "Etage", label: "Label", exclude: "ohne" },
+      },
+      targetNames: { floors: { eg: "Erdgeschoss" }, labels: { nacht: "Nachtlicht" } },
+    });
 
     expect(flow.actions.map((block) => shown(block.chips))).toEqual([
       [
@@ -254,19 +269,19 @@ describe("toDisplayFlow", () => {
   });
 
   it("keeps blocks it does not know as unknown, and marks disabled ones", () => {
-    const flow = toDisplayFlow(
-      automation({ actions: [{ some_future_key: true }, { delay: 5, enabled: false }] }),
+    const flow = toDisplayFlow({
+      flow: automation({ actions: [{ some_future_key: true }, { delay: 5, enabled: false }] }),
       catalog,
       texts,
-    );
+    });
 
     expect(flow.actions[0]).toMatchObject({ isUnknown: true, title: "Unbekannt" });
     expect(flow.actions[1]?.isDisabled).toBe(true);
   });
 
   it("titles a script call with the name of the script", () => {
-    const flow = toDisplayFlow(
-      {
+    const flow = toDisplayFlow({
+      flow: {
         entityId: "script.x",
         kind: "script",
         config: { sequence: [{ action: "script.gute_nacht" }] },
@@ -275,14 +290,14 @@ describe("toDisplayFlow", () => {
       },
       catalog,
       texts,
-    );
+    });
 
     expect(flow.actions[0]).toMatchObject({ title: "Gute Nacht", icon: "mdi-script-text-outline" });
   });
 
   it("reads the sequence of a script", () => {
-    const flow = toDisplayFlow(
-      {
+    const flow = toDisplayFlow({
+      flow: {
         entityId: "script.x",
         kind: "script",
         config: { sequence: [{ delay: 1 }] },
@@ -291,7 +306,7 @@ describe("toDisplayFlow", () => {
       },
       catalog,
       texts,
-    );
+    });
 
     expect(flow.triggers).toEqual([]);
     expect(flow.actions).toHaveLength(1);

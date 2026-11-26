@@ -88,17 +88,22 @@ export function domainsOf(filter: unknown): string[] {
   return [...new Set(domains.filter((domain): domain is string => typeof domain === "string"))];
 }
 
+export type EditorForSelectorOptions = {
+  /** e.g. `{ number: { min: 0, max: 100, unit_of_measurement: "%" } }`. */
+  selector: Record<string, unknown> | null;
+  /** The current value; a template always gets the template editor. */
+  value: unknown;
+};
+
 /**
  * Chooses the editor for a field HA describes with a selector.
  *
- * @param selector - e.g. `{ number: { min: 0, max: 100, unit_of_measurement: "%" } }`.
- * @param value - The current value; a template always gets the template editor.
  * @returns null when the value cannot be edited as a chip (objects, lists of objects, …).
  */
-export function editorForSelector(
-  selector: Record<string, unknown> | null,
-  value: unknown,
-): ValueEditor | null {
+export function editorForSelector({
+  selector,
+  value,
+}: EditorForSelectorOptions): ValueEditor | null {
   if (isTemplate(value)) return { type: "template" };
 
   const type = selector ? Object.keys(selector)[0] : undefined;
@@ -115,16 +120,20 @@ export function editorForSelector(
     case "area":
       return { type: "area", isMultiple };
     case "number":
-      return numberEditor(options, value);
+      return numberEditor({ options, value });
     case "color_temp":
-      return numberEditor(
-        { ...options, unit_of_measurement: options.unit === "kelvin" ? "K" : "mired" },
+      return numberEditor({
+        options: { ...options, unit_of_measurement: options.unit === "kelvin" ? "K" : "mired" },
         value,
-      );
+      });
     case "boolean":
       return { type: "boolean" };
     case "select":
-      return { type: "choice", options: selectOptions(options.options, value), isMultiple };
+      return {
+        type: "choice",
+        options: selectOptions({ options: options.options, value }),
+        isMultiple,
+      };
     case "duration":
       return { type: "duration" };
     case "time":
@@ -156,13 +165,22 @@ export function editorForValue(value: unknown): ValueEditor | null {
   return null;
 }
 
+export type ClassicFieldEditorOptions = {
+  field: string;
+  /** The block kind, e.g. "sun"; decides between same-named fields like `event`. */
+  kind: string;
+  /** The whole block, so state fields can suggest the states of its entities. */
+  raw: Raw;
+};
+
 /**
  * The editor of a field of a classic block (state trigger, delay, time condition, …).
- *
- * @param kind - The block kind, e.g. "sun"; decides between same-named fields like `event`.
- * @param raw - The whole block, so state fields can suggest the states of its entities.
  */
-export function classicFieldEditor(field: string, kind: string, raw: Raw): ValueEditor | null {
+export function classicFieldEditor({
+  field,
+  kind,
+  raw,
+}: ClassicFieldEditorOptions): ValueEditor | null {
   const value = raw[field];
 
   if (isTemplate(value) || TEMPLATE_FIELDS.has(field)) return { type: "template" };
@@ -180,10 +198,11 @@ export function classicFieldEditor(field: string, kind: string, raw: Raw): Value
   }
 
   if (kind === "sun" && (field === "event" || field === "after" || field === "before")) {
-    return choiceEditor(SUN_EVENTS, false);
+    return choiceEditor({ values: SUN_EVENTS, isMultiple: false });
   }
 
-  if (kind === "homeassistant" && field === "event") return choiceEditor(HA_EVENTS, false);
+  if (kind === "homeassistant" && field === "event")
+    return choiceEditor({ values: HA_EVENTS, isMultiple: false });
 
   if (TIME_FIELDS.has(field)) {
     return value === undefined || (typeof value === "string" && TIME_PATTERN.test(value))
@@ -191,7 +210,7 @@ export function classicFieldEditor(field: string, kind: string, raw: Raw): Value
       : null;
   }
 
-  if (field === "weekday") return choiceEditor(WEEKDAYS, true);
+  if (field === "weekday") return choiceEditor({ values: WEEKDAYS, isMultiple: true });
   if (field === "zone") return { type: "entity", domains: ["zone"], isMultiple: false };
   if (field === "count") return { type: "number", min: 1 };
   if (field === "event" || TEXT_FIELDS.has(field)) return { type: "text", isMultiline: false };
@@ -204,11 +223,17 @@ export function isRequiredClassicField(field: string): boolean {
 }
 
 /** Choice options whose labels the caller fills from the locale (`flow.choices`). */
-function choiceEditor(values: string[], isMultiple: boolean): ValueEditor {
+function choiceEditor({
+  values,
+  isMultiple,
+}: {
+  values: string[];
+  isMultiple: boolean;
+}): ValueEditor {
   return { type: "choice", options: values.map((value) => ({ value, label: value })), isMultiple };
 }
 
-function numberEditor(options: Raw, value: unknown): ValueEditor {
+function numberEditor({ options, value }: { options: Raw; value: unknown }): ValueEditor {
   // A number field may hold an entity ID or text in old configs; then it is edited as text.
   if (value !== undefined && typeof value !== "number") return { type: "text", isMultiline: false };
 
@@ -224,7 +249,7 @@ function numberEditor(options: Raw, value: unknown): ValueEditor {
 }
 
 /** HA select options are strings or `{ value, label }`; the current value is always offered. */
-function selectOptions(options: unknown, value: unknown): ChoiceOption[] {
+function selectOptions({ options, value }: { options: unknown; value: unknown }): ChoiceOption[] {
   const list = asList(options).map((option): ChoiceOption => {
     if (typeof option === "string") return { value: option, label: option };
 

@@ -105,7 +105,7 @@ export const useEditorStore = defineStore("editor", () => {
 
     const draft = drafts.value[current.entityId];
     const base = draft?.base ?? current.config;
-    const config = applyFlowChange(draft?.config ?? current.config, change);
+    const config = applyFlowChange({ config: draft?.config ?? current.config, change });
 
     // Edited back to how it was: nothing left to save.
     if (sameConfig(config, base)) {

@@ -36,12 +36,29 @@ export type Context = {
   texts: FlowTexts;
 };
 
+/** One list of blocks in the config: its value and where it sits (`id` style, "actions.2.then"). */
+export type BlockListOptions = {
+  value: unknown;
+  path: string;
+  context: Context;
+};
+
+/** One block: its config and its id, which is its place in the config ("actions.2"). */
+export type BlockOptions = {
+  raw: Raw;
+  id: string;
+  context: Context;
+};
+
 const PATH_SEPARATOR = ".";
 
 export const KEY_SEPARATOR = ".";
 
-export const asList = (value: unknown): unknown[] =>
-  value === undefined || value === null ? [] : Array.isArray(value) ? value : [value];
+export const asList = (value: unknown): unknown[] => {
+  if (value === undefined || value === null) return [];
+
+  return Array.isArray(value) ? value : [value];
+};
 export const asRecord = (value: unknown): Raw =>
   value && typeof value === "object" && !Array.isArray(value) ? (value as Raw) : {};
 export const asText = (value: unknown): string | undefined =>
@@ -49,43 +66,60 @@ export const asText = (value: unknown): string | undefined =>
 /** For blocks whose single value needs no name, like the duration of "Warten". */
 export const unlabeled = (chips: BlockChip[]): BlockChip[] =>
   chips.map((chip) => ({ ...chip, label: undefined }));
+/** Appends one level to a block id: `join("actions", 2)` → "actions.2". */
 export const join = (path: string, part: string | number): string =>
   `${path}${PATH_SEPARATOR}${part}`;
+
+export type KeyInOptions = {
+  raw: Raw;
+  keys: string[];
+};
+
 /** The first of these keys the config uses; the first one when none is set. */
-export const keyIn = (raw: Raw, keys: string[]): string =>
+export const keyIn = ({ raw, keys }: KeyInOptions): string =>
   keys.find((key) => key in raw) ?? keys[0] ?? "";
 
-export const addTarget = (section: BlockSection, path: string): AddTarget => ({
+export type AddTargetOptions = {
+  section: BlockSection;
+  path: string;
+};
+
+export const addTarget = ({ section, path }: AddTargetOptions): AddTarget => ({
   section,
   listPath: parsePath(path),
 });
+
+export type ListBlocksOptions = {
+  value: unknown;
+  path: string;
+  /** Builds the block of one list item; `id` is the item's place in the config. */
+  build: (item: { raw: unknown; id: string }) => DisplayBlock;
+};
 
 /**
  * Builds the blocks of one list and tells each where it sits, for moving, duplicating and
  * deleting. HA allows a single item instead of a list; it counts as a list of one.
  */
-export function listBlocks(
-  value: unknown,
-  path: string,
-  build: (raw: unknown, id: string) => DisplayBlock,
-): DisplayBlock[] {
+export function listBlocks({ value, path, build }: ListBlocksOptions): DisplayBlock[] {
   const items = asList(value);
   const listPath = parsePath(path);
 
   return items.map((raw, index) => {
-    const block = build(raw, join(path, index));
+    const block = build({ raw, id: join(path, index) });
     block.position = { listPath, index, count: items.length };
     return block;
   });
 }
 
-export function baseBlock(
-  section: BlockSection,
-  icon: string,
-  title: string,
-  id: string,
-  raw: Raw,
-): DisplayBlock {
+export type BaseBlockOptions = {
+  section: BlockSection;
+  icon: string;
+  title: string;
+  id: string;
+  raw: Raw;
+};
+
+export function baseBlock({ section, icon, title, id, raw }: BaseBlockOptions): DisplayBlock {
   return {
     id,
     section,

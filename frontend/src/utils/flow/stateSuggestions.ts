@@ -33,15 +33,20 @@ export const DOMAIN_STATES: Record<string, string[]> = {
   vacuum: ["cleaning", "docked", "idle", "paused", "returning", "error"],
 };
 
+export type StateSuggestionsOptions = {
+  /** The entities of the block. */
+  entityIds: string[];
+  /** All entities from HA (may still be empty while loading). */
+  entities: EntityOption[];
+};
+
 /**
  * States worth offering for "changes to …" and "is …": the entity's own options (select
  * helpers), the usual states of its domain, and what it is right now.
  *
- * @param entityIds - The entities of the block.
- * @param entities - All entities from HA (may still be empty while loading).
- * @example stateSuggestions(["light.flur"], entities) // ["on", "off"]
+ * @example stateSuggestions({ entityIds: ["light.flur"], entities }) // ["on", "off"]
  */
-export function stateSuggestions(entityIds: string[], entities: EntityOption[]): string[] {
+export function stateSuggestions({ entityIds, entities }: StateSuggestionsOptions): string[] {
   const byId = new Map(entities.map((entity) => [entity.entityId, entity]));
   const suggestions = entityIds.flatMap((entityId) => {
     const entity = byId.get(entityId);

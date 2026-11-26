@@ -227,10 +227,12 @@ const suggestions = computed((): ListOption[] => {
 
   if (current.type !== "text" || !current.stateOf) return [];
 
-  return stateSuggestions(current.stateOf, lookups.entities).map((state) => ({
-    value: state,
-    label: choiceLabel(state),
-  }));
+  return stateSuggestions({ entityIds: current.stateOf, entities: lookups.entities }).map(
+    (state) => ({
+      value: state,
+      label: choiceLabel(state),
+    }),
+  );
 });
 
 const inputType = computed(() => {
@@ -295,11 +297,15 @@ function applyInput(): void {
 function inputValue(): unknown {
   const current = editor.value;
 
-  if (isMultiple.value) return listValue(selected.value, props.edit.value);
+  if (isMultiple.value) return listValue({ selected: selected.value, original: props.edit.value });
   if (current.type === "number") return numberValue(text.value);
   if (current.type === "time") return timeValue(text.value);
   if (current.type === "duration") {
-    return joinDuration(duration.hours || 0, duration.minutes || 0, duration.seconds || 0);
+    return joinDuration({
+      hours: duration.hours || 0,
+      minutes: duration.minutes || 0,
+      seconds: duration.seconds || 0,
+    });
   }
 
   return textValue(text.value);

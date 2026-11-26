@@ -10,8 +10,9 @@ import {
   baseBlock,
   join,
   listBlocks,
+  type BlockListOptions,
+  type BlockOptions,
   type Context,
-  type Raw,
 } from "./context";
 
 /** Classic trigger kinds HA keeps outside the catalog, with the fields shown as chips. */
@@ -41,36 +42,53 @@ const GROUP_CONDITIONS = ["and", "or", "not"];
 
 // ---- triggers --------------------------------------------------------------------------
 
-export function triggerBlocks(value: unknown, path: string, context: Context): DisplayBlock[] {
-  return listBlocks(value, path, (raw, id) => triggerBlock(asRecord(raw), id, context));
+export function triggerBlocks({ value, path, context }: BlockListOptions): DisplayBlock[] {
+  return listBlocks({
+    value,
+    path,
+    build: ({ raw, id }) => triggerBlock({ raw: asRecord(raw), id, context }),
+  });
 }
 
-function triggerBlock(raw: Raw, id: string, context: Context): DisplayBlock {
+function triggerBlock({ raw, id, context }: BlockOptions): DisplayBlock {
   const key = asText(raw.trigger) ?? asText(raw.platform) ?? "";
   const classicFields = CLASSIC_TRIGGER_FIELDS[key];
 
-  if (classicFields) return classicBlock("trigger", key, raw, classicFields, id, context);
+  if (classicFields) {
+    return classicBlock({ section: "trigger", kind: key, raw, fields: classicFields, id, context });
+  }
 
-  return genericBlock("trigger", key, raw, "options", id, context);
+  return genericBlock({ section: "trigger", key, raw, valuesKey: "options", id, context });
 }
 
 // ---- conditions ------------------------------------------------------------------------
 
-export function conditionBlocks(value: unknown, path: string, context: Context): DisplayBlock[] {
-  return listBlocks(value, path, (raw, id) => conditionBlock(raw, id, context));
+export function conditionBlocks({ value, path, context }: BlockListOptions): DisplayBlock[] {
+  return listBlocks({
+    value,
+    path,
+    build: ({ raw, id }) => conditionBlock({ value: raw, id, context }),
+  });
 }
 
-export function conditionBlock(value: unknown, id: string, context: Context): DisplayBlock {
+export type ConditionBlockOptions = {
+  /** A condition object, or a plain string (HA's shorthand for a template condition). */
+  value: unknown;
+  id: string;
+  context: Context;
+};
+
+export function conditionBlock({ value, id, context }: ConditionBlockOptions): DisplayBlock {
   // A plain string is HA's shorthand for a template condition; editing replaces the string.
   if (typeof value === "string") {
-    const block = classicBlock(
-      "condition",
-      "template",
-      { value_template: value },
-      ["value_template"],
+    const block = classicBlock({
+      section: "condition",
+      kind: "template",
+      raw: { value_template: value },
+      fields: ["value_template"],
       id,
       context,
-    );
+    });
     const chip = block.chips[0];
     if (chip?.edit) chip.edit = { ...chip.edit, path: parsePath(id) };
     return block;
@@ -80,19 +98,19 @@ export function conditionBlock(value: unknown, id: string, context: Context): Di
   const key = asText(raw.condition) ?? "";
 
   if (GROUP_CONDITIONS.includes(key)) {
-    const block = baseBlock(
-      "condition",
-      CLASSIC_ICON.group ?? "",
-      context.texts.titles[key] ?? key,
+    const block = baseBlock({
+      section: "condition",
+      icon: CLASSIC_ICON.group ?? "",
+      title: context.texts.titles[key] ?? key,
       id,
       raw,
-    );
+    });
     const listPath = join(id, "conditions");
     block.branches = [
       {
         label: "",
-        blocks: conditionBlocks(raw.conditions, listPath, context),
-        add: [addTarget("condition", listPath)],
+        blocks: conditionBlocks({ value: raw.conditions, path: listPath, context }),
+        add: [addTarget({ section: "condition", path: listPath })],
       },
     ];
     return block;
@@ -100,7 +118,16 @@ export function conditionBlock(value: unknown, id: string, context: Context): Di
 
   const classicFields = CLASSIC_CONDITION_FIELDS[key];
 
-  if (classicFields) return classicBlock("condition", key, raw, classicFields, id, context);
+  if (classicFields) {
+    return classicBlock({
+      section: "condition",
+      kind: key,
+      raw,
+      fields: classicFields,
+      id,
+      context,
+    });
+  }
 
-  return genericBlock("condition", key, raw, "options", id, context);
+  return genericBlock({ section: "condition", key, raw, valuesKey: "options", id, context });
 }

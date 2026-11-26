@@ -89,7 +89,13 @@ const VALUES_KEY: Record<BlockSection, string> = {
   action: "data",
 };
 
-function catalogFor(section: BlockSection, catalog: EditorCatalog | null) {
+function catalogFor({
+  section,
+  catalog,
+}: {
+  section: BlockSection;
+  catalog: EditorCatalog | null;
+}) {
   if (!catalog) return {};
   if (section === "trigger") return catalog.triggers;
   if (section === "condition") return catalog.conditions;
@@ -97,28 +103,29 @@ function catalogFor(section: BlockSection, catalog: EditorCatalog | null) {
   return catalog.actions;
 }
 
+export type BlockTypesOptions = {
+  section: BlockSection;
+  catalog: EditorCatalog | null;
+  /** Titles of the hand-made kinds in the UI language (`flow.titles`). */
+  titles: Record<string, string>;
+};
+
 /**
  * Every block type that can be added to a section: the hand-made ones first, then all types HA
  * describes, sorted by name.
- *
- * @param titles - Titles of the hand-made kinds in the UI language (`flow.titles`).
  */
-export function blockTypes(
-  section: BlockSection,
-  catalog: EditorCatalog | null,
-  titles: Record<string, string>,
-): BlockType[] {
+export function blockTypes({ section, catalog, titles }: BlockTypesOptions): BlockType[] {
   const classic = CLASSIC_KINDS[section].map((kind): BlockType => ({
     key: kind,
     label: titles[`${kind}_${section}`] ?? titles[kind] ?? kind,
     icon: CLASSIC_ICON[kind] ?? CLASSIC_ICON.group ?? iconForSection(section),
     isClassic: true,
   }));
-  const described = Object.entries(catalogFor(section, catalog))
+  const described = Object.entries(catalogFor({ section, catalog }))
     .map(([key, entry]): BlockType => ({
       key,
       label: entry.name,
-      icon: iconForKey(key, section),
+      icon: iconForKey({ key, section }),
       isClassic: false,
     }))
     .sort((first, second) => first.label.localeCompare(second.label));
@@ -126,18 +133,20 @@ export function blockTypes(
   return [...classic, ...described];
 }
 
+export type NewBlockOptions = {
+  section: BlockSection;
+  type: BlockType;
+  catalog: EditorCatalog | null;
+};
+
 /**
  * The config of a new block. Catalog blocks get their required fields that have a default, like
  * HA's own editor does; everything else is left for the user.
  */
-export function newBlock(
-  section: BlockSection,
-  type: BlockType,
-  catalog: EditorCatalog | null,
-): Raw {
+export function newBlock({ section, type, catalog }: NewBlockOptions): Raw {
   if (type.isClassic) return CLASSIC_TEMPLATES[section][type.key]?.() ?? {};
 
-  const entry: CatalogEntry | undefined = catalogFor(section, catalog)[type.key];
+  const entry: CatalogEntry | undefined = catalogFor({ section, catalog })[type.key];
   const defaults = Object.fromEntries(
     Object.entries(entry?.fields ?? {})
       .filter(([, field]) => field.required && field.default !== undefined)

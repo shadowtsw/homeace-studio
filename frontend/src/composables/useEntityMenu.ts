@@ -116,7 +116,7 @@ export function useEntityMenu(options: EntityMenuOptions) {
     const fit =
       entity.entityId === flowId.value
         ? { reason: "self" }
-        : entityFit(entity, root, catalog.value);
+        : entityFit({ entity, section: root, catalog: catalog.value });
     if ("reason" in fit) {
       const why = t(`flow.drop.why.${fit.reason}`);
       return [
@@ -144,7 +144,7 @@ export function useEntityMenu(options: EntityMenuOptions) {
 
   /** The second step: what it does there ("Bewegung erkannt", "Einschalten" …). */
   function offerChoices(entity: EntityOption, target: DropTarget, anchor: HTMLElement): void {
-    const fit = entityFit(entity, target.section, catalog.value);
+    const fit = entityFit({ entity, section: target.section, catalog: catalog.value });
     if ("reason" in fit) return;
 
     const [only] = fit.choices;

@@ -71,10 +71,10 @@ describe("drop targets of a flow", () => {
   });
 
   it("names a branch by its condition, so 'Dann' of a Wenn is not the section 'Dann'", () => {
-    const [then] = branchesOf(dropTargets(flow), "action");
+    const [then] = branchesOf({ targets: dropTargets(flow), root: "action" });
 
     expect(then?.branch).toEqual({ label: "Dann", context: "Lawn moisture unter 20" });
-    expect(branchesOf(dropTargets(flow), "trigger")).toEqual([]);
+    expect(branchesOf({ targets: dropTargets(flow), root: "trigger" })).toEqual([]);
   });
 
   it("knows the id the new block gets at the end of its list", () => {
