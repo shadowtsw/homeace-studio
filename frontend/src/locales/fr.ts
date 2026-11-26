@@ -591,11 +591,17 @@ const fr: MessageSchema = {
     helper: "Entrée",
   },
   newFlow: {
-    title: { automation: "Nouvelle automatisation", script: "Nouveau script" },
+    title: {
+      automation: "Nouvelle automatisation",
+      script: "Nouveau script",
+      scene: "Nouvelle scène",
+    },
     hint: {
       automation:
         "Elle démarre vide et sans déclencheur, elle ne fait donc encore rien. Ajoutez ensuite des déclencheurs, des conditions et des actions dans son déroulement.",
       script: "Il démarre vide. Ajoutez ensuite ses actions dans le déroulement.",
+      scene:
+        "Elle démarre vide et ne commande encore rien. Glissez-y ensuite des appareils ou choisissez-les.",
     },
     name: "Nom",
     folder: "Dossier (facultatif)",
@@ -709,7 +715,7 @@ const fr: MessageSchema = {
     newSubfolder: "Nouveau sous-dossier",
     newFolder: "Nouveau dossier",
     new: "Nouveau",
-    newMenu: { automation: "Automatisation", script: "Script", helper: "Entrée" },
+    newMenu: { automation: "Automatisation", script: "Script", scene: "Scène", helper: "Entrée" },
     search: "Rechercher un nom ou un ID d'entité",
     inHa: "Dans Home Assistant sous {path}",
     allSubtitle: "Automatisations, scripts, scènes et entrées",
@@ -1389,6 +1395,7 @@ const fr: MessageSchema = {
     folderDeleted: "Dossier {path} supprimé",
     helperCreated: "« {name} » créé",
     flowCreated: "« {name} » créé. Remplissez maintenant son déroulement.",
+    sceneCreated: "« {name} » créée. Ajoutez maintenant des appareils.",
     saved: "Enregistré dans Home Assistant",
     flowSaved: "« {name} » enregistré dans Home Assistant",
     noteSaved: "Note enregistrée",

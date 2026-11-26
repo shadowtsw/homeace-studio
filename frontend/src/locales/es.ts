@@ -585,11 +585,13 @@ const es: MessageSchema = {
     helper: "Ayudante",
   },
   newFlow: {
-    title: { automation: "Nueva automatización", script: "Nuevo script" },
+    title: { automation: "Nueva automatización", script: "Nuevo script", scene: "Nueva escena" },
     hint: {
       automation:
         "Empieza vacía y sin desencadenantes, así que todavía no hace nada. Después añade desencadenantes, condiciones y acciones en su flujo.",
       script: "Empieza vacío. Después añade sus acciones en el flujo.",
+      scene:
+        "Empieza vacía y todavía no cambia nada. Después arrastra dispositivos a ella o elígelos.",
     },
     name: "Nombre",
     folder: "Carpeta (opcional)",
@@ -701,7 +703,12 @@ const es: MessageSchema = {
     newSubfolder: "Nueva subcarpeta",
     newFolder: "Nueva carpeta",
     new: "Nuevo",
-    newMenu: { automation: "Automatización", script: "Script", helper: "Ayudante" },
+    newMenu: {
+      automation: "Automatización",
+      script: "Script",
+      scene: "Escena",
+      helper: "Ayudante",
+    },
     search: "Buscar nombre o ID de entidad",
     inHa: "En Home Assistant como {path}",
     allSubtitle: "Automatizaciones, scripts, escenas y ayudantes",
@@ -1372,6 +1379,7 @@ const es: MessageSchema = {
     folderDeleted: "Carpeta {path} eliminada",
     helperCreated: "“{name}” creado",
     flowCreated: "“{name}” creado. Ahora rellena su flujo.",
+    sceneCreated: "“{name}” creada. Ahora añade dispositivos.",
     saved: "Guardado en Home Assistant",
     flowSaved: "“{name}” guardado en Home Assistant",
     noteSaved: "Nota guardada",

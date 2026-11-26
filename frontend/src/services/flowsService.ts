@@ -2,16 +2,23 @@ import type { FlowKind } from "@/types/editor";
 
 import { apiFetch, apiPost } from "./api";
 
+/** What the name dialog creates: an automation, a script or a scene. */
+export type NamedKind = FlowKind | "scene";
+
 export type NewFlow = {
-  kind: FlowKind;
+  kind: NamedKind;
   name: string;
   /** Folder to sort the new flow into right away; null for none. */
   categoryPath: string | null;
 };
 
-/** Creates an empty automation or script in HA. @returns Its entity ID. */
+/** Creates an empty automation, script or scene in HA. @returns Its entity ID. */
 export async function createFlow(flow: NewFlow): Promise<string> {
-  const result = await apiPost<{ entityId: string }>("/flows", flow);
+  const { kind, name, categoryPath } = flow;
+  const result =
+    kind === "scene"
+      ? await apiPost<{ entityId: string }>("/scenes", { name, categoryPath })
+      : await apiPost<{ entityId: string }>("/flows", flow);
 
   return result.entityId;
 }

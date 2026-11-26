@@ -582,11 +582,13 @@ const ru: MessageSchema = {
     helper: "Вспомогательный элемент",
   },
   newFlow: {
-    title: { automation: "Новая автоматизация", script: "Новый скрипт" },
+    title: { automation: "Новая автоматизация", script: "Новый скрипт", scene: "Новая сцена" },
     hint: {
       automation:
         "Она создаётся пустой и без триггеров, поэтому пока ничего не делает. Триггеры, условия и действия добавьте потом на вкладке «Логика».",
       script: "Он создаётся пустым. Действия добавьте потом на вкладке «Логика».",
+      scene:
+        "Она создаётся пустой и пока ничего не переключает. Потом перетащите в неё устройства или выберите их.",
     },
     name: "Название",
     folder: "Папка (необязательно)",
@@ -700,7 +702,12 @@ const ru: MessageSchema = {
     newSubfolder: "Новая подпапка",
     newFolder: "Новая папка",
     new: "Создать",
-    newMenu: { automation: "Автоматизация", script: "Скрипт", helper: "Вспомогательный элемент" },
+    newMenu: {
+      automation: "Автоматизация",
+      script: "Скрипт",
+      scene: "Сцена",
+      helper: "Вспомогательный элемент",
+    },
     search: "Поиск по названию или ID объекта",
     inHa: "В Home Assistant: {path}",
     allSubtitle: "Автоматизации, скрипты, сцены и вспомогательные элементы",
@@ -1384,6 +1391,7 @@ const ru: MessageSchema = {
     folderDeleted: "Папка {path} удалена",
     helperCreated: "Создано: «{name}»",
     flowCreated: "Создано: «{name}». Теперь заполните логику.",
+    sceneCreated: "Создано: «{name}». Теперь добавьте устройства.",
     saved: "Сохранено в Home Assistant",
     flowSaved: "Сохранено в Home Assistant: «{name}»",
     noteSaved: "Заметка сохранена",

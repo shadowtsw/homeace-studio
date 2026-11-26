@@ -2,14 +2,26 @@ import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Put } from "@
 
 import { ResponseMessage } from "src/common/api/response-message.decorator";
 import { MESSAGE_ID } from "src/messages/message-ids";
+import { CreateSceneDto } from "./dto/create-scene.dto";
 import { RestoreSceneDto } from "./dto/restore-scene.dto";
 import { SceneEntitiesDto } from "./dto/scene-entities.dto";
 import type { SceneDevice, SceneView } from "./scene.model";
+import { SceneCreateService } from "./scene-create.service";
 import { ScenesService } from "./scenes.service";
 
 @Controller("scenes")
 export class ScenesController {
-  constructor(private readonly scenes: ScenesService) {}
+  constructor(
+    private readonly scenes: ScenesService,
+    private readonly sceneCreate: SceneCreateService,
+  ) {}
+
+  /** A new, empty scene in scenes.yaml, sorted into a folder if one is given. */
+  @Post()
+  @ResponseMessage(MESSAGE_ID.flowCreated)
+  create(@Body() dto: CreateSceneDto): Promise<{ entityId: string }> {
+    return this.sceneCreate.create(dto);
+  }
 
   /** A device as it would join a scene, with its current state as the starting values. */
   @Get("device/:deviceId")

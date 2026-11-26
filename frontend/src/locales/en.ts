@@ -576,11 +576,13 @@ const en: MessageSchema = {
     helper: "Helper",
   },
   newFlow: {
-    title: { automation: "New automation", script: "New script" },
+    title: { automation: "New automation", script: "New script", scene: "New scene" },
     hint: {
       automation:
         "It starts empty and without triggers, so it does nothing yet. Add triggers, conditions and actions in its flow afterwards.",
       script: "It starts empty. Add its actions in the flow afterwards.",
+      scene:
+        "It starts empty and switches nothing yet. Drag devices into it or pick them afterwards.",
     },
     name: "Name",
     folder: "Folder (optional)",
@@ -690,7 +692,7 @@ const en: MessageSchema = {
     newSubfolder: "New subfolder",
     newFolder: "New folder",
     new: "New",
-    newMenu: { automation: "Automation", script: "Script", helper: "Helper" },
+    newMenu: { automation: "Automation", script: "Script", scene: "Scene", helper: "Helper" },
     search: "Search name or entity ID",
     inHa: "In Home Assistant as {path}",
     allSubtitle: "Automations, scripts, scenes and helpers",
@@ -1352,6 +1354,7 @@ const en: MessageSchema = {
     folderDeleted: "Folder {path} removed",
     helperCreated: 'Created "{name}"',
     flowCreated: 'Created "{name}". Now fill in its flow.',
+    sceneCreated: 'Created "{name}". Now add devices.',
     saved: "Saved in Home Assistant",
     flowSaved: "“{name}” saved in Home Assistant",
     noteSaved: "Note saved",

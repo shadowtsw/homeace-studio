@@ -41,12 +41,11 @@ import { onMounted, ref, useId, useTemplateRef } from "vue";
 import { useI18n } from "vue-i18n";
 
 import DialogFrame from "@/components/common/DialogFrame.vue";
-import type { NewFlow } from "@/services/flowsService";
-import type { FlowKind } from "@/types/editor";
+import type { NamedKind, NewFlow } from "@/services/flowsService";
 
-/** Name and folder of a new, empty automation or script; the flow is filled in afterwards. */
+/** Name and folder of a new, empty automation, script or scene; it is filled in afterwards. */
 const props = defineProps<{
-  kind: FlowKind;
+  kind: NamedKind;
   /** Folder to suggest, usually the one selected in the tree. */
   initialFolder: string | null;
   /** Existing folder paths, offered as suggestions. */

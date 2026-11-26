@@ -100,6 +100,7 @@ export const STATE_ON = "on";
 export const NEW_ENTRY_KIND = {
   automation: "automation",
   script: "script",
+  scene: "scene",
   helper: "helper",
 } as const;
 

@@ -706,11 +706,24 @@ export class FakeHa {
     const entry = [...this.registry.values()].find(
       (item) => domainOf(item.entity_id) === "scene" && item.unique_id === id,
     );
+    const entities = Object.keys(config.entities ?? {});
     if (entry) {
-      const entities = Object.keys(config.entities ?? {});
       this.setState(entry.entity_id, this.states.get(entry.entity_id)?.state ?? now(), {
         entity_id: entities,
       });
+    } else {
+      // A new scene: HA registers it under a slug of its name, never activated yet
+      const name = typeof config.name === "string" && config.name ? config.name : id;
+      const entityId = this.freeEntityId("scene", slugify(name));
+      this.addEntity({
+        entityId,
+        name,
+        state: "unknown",
+        platform: "homeassistant",
+        uniqueId: id,
+        attributes: { entity_id: entities },
+      });
+      this.emit("entity_registry_updated", { action: "create", entity_id: entityId });
     }
 
     return { result: "ok" };

@@ -30,6 +30,17 @@ export class HaSceneRepository implements SceneRepository {
     }
   }
 
+  async findEntityId(id: string): Promise<string | null> {
+    const entries = await this.ha.call<HaEntityRegistryEntry[]>(HA_COMMAND.entityRegistryList);
+    const prefix = SCENE_DOMAIN + ".";
+    // Scenes from scenes.yaml: the id there is the unique_id
+    const match = entries.find(
+      (entry) => entry.entity_id.startsWith(prefix) && entry.unique_id === id,
+    );
+
+    return match?.entity_id ?? null;
+  }
+
   loadConfig(id: string): Promise<Record<string, unknown> | null> {
     return this.rest.get<Record<string, unknown>>(this.path(id));
   }

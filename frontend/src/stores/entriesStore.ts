@@ -159,7 +159,7 @@ export const useEntriesStore = defineStore("entries", () => {
     }
   }
 
-  /** Creates an empty automation or script; the list reloads so it can be opened right away. */
+  /** Creates an empty automation, script or scene; the list reloads so it opens right away. */
   async function createFlow(flow: NewFlow): Promise<string> {
     const entityId = await createFlowRequest(flow);
     await load();

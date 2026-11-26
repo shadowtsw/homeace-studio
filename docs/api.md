@@ -507,6 +507,11 @@ Scenes are edited without switching anything: the values go into scenes.yaml thr
 (`config/scene/config/<id>`, the scene entity's unique_id), unlike HA's own editor, which switches the
 devices to "photograph" them.
 
+- `POST /api/scenes` `{ name, categoryPath? }` creates an empty scene in scenes.yaml (`{ id, name,
+  entities: {} }`, the id is the current time in milliseconds like HA's editor), waits for HA to register
+  it (like `POST /api/flows`) and sorts it into the folder (scope `scene`). Returns `{ entityId }` with
+  `FLOW_CREATED`; `400 FLOW_INVALID` when HA rejects it. Activating it switches nothing until devices
+  are added.
 - `GET /api/scenes/:entityId` → `{ entityId, isEditable, devices: [{ entityId, name, domain, values,
   current }] }`. `values` is what the scene sets (HA's state plus attributes; a plain `"off"` in
   scenes.yaml comes as `{ state: "off" }`), `current` what the device does now (`{ state, attributes }`,

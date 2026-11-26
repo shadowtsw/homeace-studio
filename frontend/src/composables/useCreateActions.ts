@@ -2,7 +2,7 @@ import { ref, type Ref } from "vue";
 import { useI18n } from "vue-i18n";
 
 import { DEFAULT_STORED_TRACES } from "@/constants/traces";
-import type { NewFlow } from "@/services/flowsService";
+import type { NamedKind, NewFlow } from "@/services/flowsService";
 import type { NewHelper } from "@/services/helpersService";
 import { useEntriesStore } from "@/stores/entriesStore";
 import { useFoldersStore } from "@/stores/foldersStore";
@@ -10,7 +10,6 @@ import { useMessagesStore } from "@/stores/messagesStore";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { useToastStore } from "@/stores/toastStore";
 import { useTracesStore } from "@/stores/tracesStore";
-import type { FlowKind } from "@/types/editor";
 
 /** Where a new folder goes: below `parent`, or at the top when it is null. */
 export type FolderDraft = { parent: string | null };
@@ -29,9 +28,9 @@ type CreateActions = {
   closeHelperDialog: () => void;
   /** @returns The entity ID of the new helper, or null when creating failed. */
   confirmHelper: (helper: NewHelper) => Promise<string | null>;
-  /** The kind of the open "new automation / script" dialog; null when closed. */
-  newFlowKind: Ref<FlowKind | null>;
-  openFlowDialog: (kind: FlowKind) => void;
+  /** The kind of the open "new automation / script / scene" dialog; null when closed. */
+  newFlowKind: Ref<NamedKind | null>;
+  openFlowDialog: (kind: NamedKind) => void;
   closeFlowDialog: () => void;
   /** @returns The entity ID of the new flow, or null when creating failed. */
   confirmFlow: (flow: NewFlow) => Promise<string | null>;
@@ -53,7 +52,7 @@ export function useCreateActions(): CreateActions {
   const isBusy = ref(false);
   const folderDraft = ref<FolderDraft | null>(null);
   const isHelperDialogOpen = ref(false);
-  const newFlowKind = ref<FlowKind | null>(null);
+  const newFlowKind = ref<NamedKind | null>(null);
 
   /** Runs one action with the busy flag and turns errors into an error toast. */
   async function run<T>(action: () => Promise<T>): Promise<T | null> {
@@ -120,9 +119,13 @@ export function useCreateActions(): CreateActions {
 
     if (entityId === null) return null;
 
-    // Apply the user's default for kept runs, then report
-    await keepRunsAsSet(entityId);
-    toasts.show(t("toast.flowCreated", { name: flow.name }));
+    // Flows keep the user's default for kept runs (scenes have no runs), then report
+    if (flow.kind === "scene") {
+      toasts.show(t("toast.sceneCreated", { name: flow.name }));
+    } else {
+      await keepRunsAsSet(entityId);
+      toasts.show(t("toast.flowCreated", { name: flow.name }));
+    }
     newFlowKind.value = null;
 
     return entityId;

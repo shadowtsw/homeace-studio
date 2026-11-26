@@ -75,6 +75,8 @@
   A new automation gets these 30 days from when it was created, and a new helper gets a week before
   "Wird nirgends benutzt", so neither shows up right after creating it.
 - Helpers and scripts you just created can be dragged into a flow right away, without reloading.
+- "Neu" → "Szene" creates an empty scene in the chosen folder and opens it in the scene editor; add
+  devices by dragging them in or with "Gerät hinzufügen".
 
 ## 0.13.0
 

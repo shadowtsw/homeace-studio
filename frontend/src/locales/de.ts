@@ -582,11 +582,13 @@ export default {
     helper: "Helfer",
   },
   newFlow: {
-    title: { automation: "Neue Automation", script: "Neues Skript" },
+    title: { automation: "Neue Automation", script: "Neues Skript", scene: "Neue Szene" },
     hint: {
       automation:
         "Sie startet leer und ohne Auslöser, löst also noch nichts aus. Auslöser, Bedingungen und Aktionen fügst du danach im Ablauf hinzu.",
       script: "Es startet leer. Die Aktionen fügst du danach im Ablauf hinzu.",
+      scene:
+        "Sie startet leer und schaltet noch nichts. Geräte ziehst du danach hinein oder wählst sie aus.",
     },
     name: "Name",
     folder: "Ordner (optional)",
@@ -696,7 +698,7 @@ export default {
     newSubfolder: "Unterordner anlegen",
     newFolder: "Neuer Ordner",
     new: "Neu",
-    newMenu: { automation: "Automation", script: "Skript", helper: "Helfer" },
+    newMenu: { automation: "Automation", script: "Skript", scene: "Szene", helper: "Helfer" },
     search: "Name oder Entity-ID suchen",
     inHa: "In Home Assistant als {path}",
     allSubtitle: "Automationen, Skripte, Szenen und Helfer",
@@ -1369,6 +1371,7 @@ export default {
     folderDeleted: "Ordner {path} entfernt",
     helperCreated: "„{name}“ angelegt",
     flowCreated: "„{name}“ angelegt. Jetzt den Ablauf füllen.",
+    sceneCreated: "„{name}“ angelegt. Jetzt Geräte hinzufügen.",
     saved: "In Home Assistant gespeichert",
     flowSaved: "„{name}“ in Home Assistant gespeichert",
     noteSaved: "Notiz gespeichert",

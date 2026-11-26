@@ -18,6 +18,7 @@ afterwards.
 | HA attributes ↔ controls, light capabilities, presets, "extras" the editor cannot show | `frontend/src/utils/sceneValues.ts` (`readControls`, `writeControls`, `lightCaps`, `extrasOf`) |
 | API calls, `sendBeacon` restore | `frontend/src/services/scenesService.ts` |
 | Endpoints `/api/scenes` | `backend/src/scenes/scenes.controller.ts` |
+| "Neu" → "Szene": empty scene, folder, wait for HA's entity | `backend/src/scenes/scene-create.service.ts`; dialog `frontend/src/components/flow/NewFlowDialog.vue` (shared with automations and scripts) |
 | Read, save, preview, restore | `backend/src/scenes/scenes.service.ts` |
 | HA access (storage id, REST config, `scene.apply`) | `backend/src/scenes/repositories/ha-scene.repository.ts` |
 

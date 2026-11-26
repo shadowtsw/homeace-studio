@@ -586,7 +586,7 @@ function dropEntry(path: string | null, entityId: string): void {
   }
 }
 
-/** "Neu" in the list: automations and scripts get a name dialog, helpers their own dialog. */
+/** "Neu" in the list: automations, scripts and scenes get a name dialog, helpers their own. */
 function onCreate(kind: NewEntryKind): void {
   if (kind === NEW_ENTRY_KIND.helper) create.openHelperDialog();
   else create.openFlowDialog(kind);
