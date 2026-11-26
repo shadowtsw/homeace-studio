@@ -161,15 +161,15 @@ function isChipEditable(chip: BlockChip): boolean {
 function openChip(chip: BlockChip, event: MouseEvent): void {
   if (!editing || !chip.edit || !isChipEditable(chip)) return;
 
-  editing.openEditor(chip.edit, event.currentTarget as HTMLElement);
+  editing.openEditor({ edit: chip.edit, anchor: event.currentTarget as HTMLElement });
 }
 
 function openAdd(event: MouseEvent): void {
-  editing?.openAddMenu(props.block.addable, event.currentTarget as HTMLElement);
+  editing?.openAddMenu({ fields: props.block.addable, anchor: event.currentTarget as HTMLElement });
 }
 
 function openMenu(event: MouseEvent): void {
-  editing?.openBlockMenu(props.block, event.currentTarget as HTMLElement);
+  editing?.openBlockMenu({ block: props.block, anchor: event.currentTarget as HTMLElement });
 }
 </script>
 

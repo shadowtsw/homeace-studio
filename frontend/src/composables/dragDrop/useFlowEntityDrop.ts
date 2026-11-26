@@ -3,7 +3,6 @@ import { useI18n } from "vue-i18n";
 
 import type {
   BlockSection,
-  ChoiceOption,
   DisplayFlow,
   EditorCatalog,
   EntityOption,
@@ -14,6 +13,8 @@ import { flashElement } from "@/utils/flash";
 import { branchesOf, dropTargets, nextBlockId, type DropTarget } from "@/utils/flow/dropTargets";
 import { entityFit, type ChoiceLabel, type EntityChoice } from "@/utils/flow/entityBlocks";
 
+import type { OpenMenuOptions } from "@/composables/useFlowPopover";
+
 import { usePlainEntityDrag } from "./usePlainEntityDrag";
 
 type FlowEntityDropOptions = {
@@ -23,12 +24,7 @@ type FlowEntityDropOptions = {
   isEditable: Ref<boolean>;
   catalog: Ref<EditorCatalog | null>;
   /** The flow's own menu (FlowView's popover), for the choices and "Wohin genau?". */
-  openMenu: (
-    title: string,
-    options: ChoiceOption[],
-    anchor: HTMLElement,
-    onPick: (value: string) => void,
-  ) => void;
+  openMenu: (options: OpenMenuOptions) => void;
   emitChange: (change: FlowChange) => void;
 };
 
@@ -151,9 +147,14 @@ export function useFlowEntityDrop(options: FlowEntityDropOptions) {
       icon: target.branch ? "mdi-subdirectory-arrow-right" : "mdi-arrow-collapse-down",
     }));
 
-    openMenu(t("flow.drop.where", { name: entity.shortName }), options, anchor, (value) => {
-      const target = choices[Number(value)];
-      if (target) offerChoices({ entity, target, anchor });
+    openMenu({
+      title: t("flow.drop.where", { name: entity.shortName }),
+      options,
+      anchor,
+      onPick: (value) => {
+        const target = choices[Number(value)];
+        if (target) offerChoices({ entity, target, anchor });
+      },
     });
   }
 
@@ -185,9 +186,14 @@ export function useFlowEntityDrop(options: FlowEntityDropOptions) {
     }));
     const title = target.branch ? `${entity.shortName} · ${target.branch.label}` : entity.shortName;
 
-    openMenu(title, choiceOptions, anchor, (value) => {
-      const choice = fit.choices[Number(value)];
-      if (choice) insert({ target, choice });
+    openMenu({
+      title,
+      options: choiceOptions,
+      anchor,
+      onPick: (value) => {
+        const choice = fit.choices[Number(value)];
+        if (choice) insert({ target, choice });
+      },
     });
   }
 

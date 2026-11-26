@@ -86,32 +86,28 @@
       :is-technical-details-visible="isTechnicalDetailsVisible"
       :used-ids="usedEntityIds"
       :area-id="areaId"
-      @apply="onApply"
-      @apply-area="onApplyArea"
-      @close="openEdit = null"
+      @apply="apply"
+      @apply-area="(areaPath, areaId) => applyArea({ areaPath, areaId })"
+      @close="close"
     />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, provide, ref, toRef, watch } from "vue";
+import { computed, provide, toRef, watch } from "vue";
 import { useI18n } from "vue-i18n";
 
 import { useFlowEntityDrop } from "@/composables/dragDrop/useFlowEntityDrop";
-import { useFlowTexts } from "@/composables/texts/useFlowTexts";
+import { useFlowPopover } from "@/composables/useFlowPopover";
+import { useFlowSections } from "@/composables/useFlowSections";
 import {
   FLOW_MODES,
-  type AddTarget,
-  type ChipEdit,
-  type ChoiceOption,
   type ConfigPath,
-  type DisplayBlock,
   type DisplayFlow,
   type EditorCatalog,
   type FlowChange,
   type FlowKind,
 } from "@/types/editor";
-import { blockTypes, newBlock } from "@/utils/flow/blockTypes";
 import { dropKey } from "@/utils/flow/dropTargets";
 import { entityIdsInFlow } from "@/utils/flow/entityIdsInFlow";
 import type { BlockRunState } from "@/utils/runs/runStates";
@@ -120,36 +116,6 @@ import AddBlockButton from "./AddBlockButton.vue";
 import ChipEditorPopover from "./ChipEditorPopover.vue";
 import FlowBlock from "./FlowBlock.vue";
 import { FLOW_EDITING, FLOW_RUN_STATES } from "./flowEditing";
-
-type Section = {
-  key: "when" | "if" | "then";
-  title: string;
-  hint: string;
-  empty: string;
-  blocks: DisplayBlock[];
-  add: AddTarget;
-};
-
-/**
- * The open popover. Without `onPick` it edits the value at `edit.path`; menus (block menu, type
- * picker, "+ Option") set `onPick` to handle the choice themselves. `key` remounts the popover
- * for every new opening.
- */
-type OpenEdit = {
-  key: number;
-  edit: ChipEdit;
-  anchor: HTMLElement;
-  onPick?: (value: string) => void;
-};
-
-/** Block menu actions, as the values of its choice list. */
-const BLOCK_ACTION = {
-  up: "up",
-  down: "down",
-  duplicate: "duplicate",
-  toggle: "toggle",
-  remove: "remove",
-} as const;
 
 const MODE_PATH: ConfigPath = ["mode"];
 
@@ -175,157 +141,27 @@ const emit = defineEmits<{
   change: [change: FlowChange];
 }>();
 
-const { t, te } = useI18n();
-const flowTexts = useFlowTexts();
+const { t } = useI18n();
 
-const openEdit = ref<OpenEdit | null>(null);
-let nextKey = 1;
+// The popover: value editors and the menus of the blocks
+const {
+  openEdit,
+  openEditor,
+  openMenu,
+  openAddMenu,
+  openBlockMenu,
+  openTypePicker,
+  closeAndEmit,
+  close,
+  apply,
+  applyArea,
+} = useFlowPopover({
+  catalog: toRef(props, "catalog"),
+  isTechnicalDetailsVisible: toRef(props, "isTechnicalDetailsVisible"),
+  onChange: (change) => emit("change", change),
+});
 
-function openEditor(edit: ChipEdit, anchor: HTMLElement): void {
-  openEdit.value = { key: nextKey++, edit, anchor };
-}
-
-/** A popover that is just a list to pick from; `onPick` gets the value of the chosen option. */
-function openMenu(
-  title: string,
-  options: ChoiceOption[],
-  anchor: HTMLElement,
-  onPick: (value: string) => void,
-): void {
-  const menu: ChipEdit = {
-    path: [],
-    title,
-    editor: { type: "choice", options, isMultiple: false },
-    value: undefined,
-    isRemovable: false,
-  };
-
-  openEdit.value = { key: nextKey++, edit: menu, anchor, onPick };
-}
-
-/** "+ Option": pick a field, then its editor opens at the same place. */
-function openAddMenu(fields: ChipEdit[], anchor: HTMLElement): void {
-  const options = fields.map((field, index) => ({ value: String(index), label: field.title }));
-
-  openMenu(t("flow.edit.add"), options, anchor, (value) => {
-    const field = fields[Number(value)];
-    if (field) openEditor(field, anchor);
-  });
-}
-
-function openBlockMenu(block: DisplayBlock, anchor: HTMLElement): void {
-  const { listPath, index, count } = block.position;
-  const options: ChoiceOption[] = [
-    ...(index > 0
-      ? [{ value: BLOCK_ACTION.up, label: t("flow.block.up"), icon: "mdi-arrow-up" }]
-      : []),
-    ...(index < count - 1
-      ? [{ value: BLOCK_ACTION.down, label: t("flow.block.down"), icon: "mdi-arrow-down" }]
-      : []),
-    { value: BLOCK_ACTION.duplicate, label: t("flow.block.duplicate"), icon: "mdi-content-copy" },
-    {
-      value: BLOCK_ACTION.toggle,
-      label: block.isDisabled ? t("flow.block.enable") : t("flow.block.disable"),
-      icon: block.isDisabled ? "mdi-play-circle-outline" : "mdi-pause-circle-outline",
-    },
-    {
-      value: BLOCK_ACTION.remove,
-      label: t("flow.block.remove"),
-      icon: "mdi-delete-outline",
-      isDanger: true,
-    },
-  ];
-
-  openMenu(t("flow.block.menu"), options, anchor, (value) => {
-    closeAndEmit(blockChange(value, listPath, index));
-  });
-}
-
-function blockChange(action: string, listPath: ConfigPath, index: number): FlowChange | null {
-  switch (action) {
-    case BLOCK_ACTION.up:
-      return { type: "move", listPath, from: index, to: index - 1 };
-    case BLOCK_ACTION.down:
-      return { type: "move", listPath, from: index, to: index + 1 };
-    case BLOCK_ACTION.duplicate:
-      return { type: "duplicate", listPath, index };
-    case BLOCK_ACTION.toggle:
-      return { type: "toggle", listPath, index };
-    case BLOCK_ACTION.remove:
-      return { type: "remove", listPath, index };
-    default:
-      return null;
-  }
-}
-
-/** Hand-made types first, then everything HA describes; the search field finds the rest. */
-function openTypePicker(target: AddTarget, anchor: HTMLElement): void {
-  const types = blockTypes({
-    section: target.section,
-    catalog: props.catalog,
-    titles: flowTexts.value.titles,
-  });
-  // "Einschalten" exists for lights, switches and scripts alike; the kind tells them apart.
-  const labelCount = new Map<string, number>();
-  for (const type of types) labelCount.set(type.label, (labelCount.get(type.label) ?? 0) + 1);
-  const kindOf = (key: string): string | undefined => {
-    const domain = key.split(".")[0] ?? "";
-    return te(`picker.kinds.${domain}`) ? t(`picker.kinds.${domain}`) : undefined;
-  };
-  const options = types.map((type, index) => ({
-    value: String(index),
-    label: type.label,
-    icon: type.icon,
-    sub: props.isTechnicalDetailsVisible
-      ? type.key
-      : (labelCount.get(type.label) ?? 0) > 1
-        ? kindOf(type.key)
-        : undefined,
-  }));
-
-  openMenu(t(`flow.addTitle.${target.section}`), options, anchor, (value) => {
-    const type = types[Number(value)];
-    if (!type) return;
-
-    closeAndEmit({
-      type: "insert",
-      listPath: target.listPath,
-      item: newBlock({ section: target.section, type, catalog: props.catalog }),
-    });
-  });
-}
-
-function closeAndEmit(change: FlowChange | null): void {
-  openEdit.value = null;
-  if (change) emit("change", change);
-}
-
-/** Every entity the flow names, for the picker's suggestions. */
-const usedEntityIds = computed(() => (props.flow ? entityIdsInFlow(props.flow) : []));
-
-/** "All lights in the living room": the target gets the area, its entity list goes. */
-function onApplyArea(areaPath: ConfigPath, areaId: string): void {
-  const current = openEdit.value;
-
-  if (!current) return;
-
-  closeAndEmit({ type: "set", path: areaPath, value: areaId });
-  emit("change", { type: "set", path: current.edit.path, value: undefined });
-}
-
-function onApply(value: unknown): void {
-  const current = openEdit.value;
-
-  if (!current) return;
-
-  if (current.onPick) {
-    current.onPick(String(value));
-    return;
-  }
-
-  closeAndEmit({ type: "set", path: current.edit.path, value });
-}
-
+// Plain entities dropped from the list, and the sections they land in
 const entityDrop = useFlowEntityDrop({
   flow: toRef(props, "flow"),
   selfId: toRef(props, "entityId"),
@@ -335,7 +171,16 @@ const entityDrop = useFlowEntityDrop({
   // Closes the menu the choice came from, then sends the change
   emitChange: closeAndEmit,
 });
+const { sections, dropSigns } = useFlowSections({
+  flow: toRef(props, "flow"),
+  kind: toRef(props, "kind"),
+  signFor: entityDrop.signFor,
+});
 
+/** Every entity the flow names, for the picker's suggestions. */
+const usedEntityIds = computed(() => (props.flow ? entityIdsInFlow(props.flow) : []));
+
+// What nested blocks need from here
 provide(
   FLOW_RUN_STATES,
   computed(() => props.runStates ?? null),
@@ -350,55 +195,7 @@ provide(FLOW_EDITING, {
 });
 
 // Another entry is open: the editor would point at the old one.
-watch(
-  () => props.entityId,
-  () => (openEdit.value = null),
-);
-
-/** The sign of each section while an entity is dragged; none otherwise. */
-const dropSigns = computed(() =>
-  Object.fromEntries(
-    sections.value.map((section) => [section.key, entityDrop.signFor(section.add.section)]),
-  ),
-);
-
-const sections = computed((): Section[] => {
-  const flow = props.flow;
-
-  if (!flow) return [];
-
-  const actions: Section = {
-    key: "then",
-    title: props.kind === "script" ? t("flow.sequence") : t("flow.thenSection"),
-    hint: t("flow.thenHint"),
-    empty: t("flow.noActions"),
-    blocks: flow.actions,
-    add: flow.add.actions,
-  };
-
-  // Scripts have no triggers or conditions of their own, only a sequence.
-  if (props.kind === "script") return [actions];
-
-  return [
-    {
-      key: "when",
-      title: t("flow.when"),
-      hint: t("flow.whenHint"),
-      empty: t("flow.noTriggers"),
-      blocks: flow.triggers,
-      add: flow.add.triggers,
-    },
-    {
-      key: "if",
-      title: t("flow.if"),
-      hint: t("flow.ifHint"),
-      empty: t("flow.noConditions"),
-      blocks: flow.conditions,
-      add: flow.add.conditions,
-    },
-    actions,
-  ];
-});
+watch(() => props.entityId, close);
 </script>
 
 <style scoped>

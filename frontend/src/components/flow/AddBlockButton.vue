@@ -4,7 +4,8 @@
     type="button"
     class="add-block-button"
     @click="
-      (event: MouseEvent) => editing?.openTypePicker(target, event.currentTarget as HTMLElement)
+      (event: MouseEvent) =>
+        editing?.openTypePicker({ target, anchor: event.currentTarget as HTMLElement })
     "
   >
     <span class="mdi mdi-plus" /> {{ t(`flow.add.${target.section}`) }}

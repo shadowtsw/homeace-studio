@@ -11,13 +11,13 @@ export type FlowEditing = {
   /** False for read-only flows: chips are plain text, menus and add buttons are hidden. */
   isEditable: Ref<boolean>;
   /** Opens the value editor next to the clicked chip. */
-  openEditor: (edit: ChipEdit, anchor: HTMLElement) => void;
+  openEditor: (options: { edit: ChipEdit; anchor: HTMLElement }) => void;
   /** Opens the list of optional fields that can be added to a block. */
-  openAddMenu: (fields: ChipEdit[], anchor: HTMLElement) => void;
+  openAddMenu: (options: { fields: ChipEdit[]; anchor: HTMLElement }) => void;
   /** Opens the ⋮ menu of a block: move, duplicate, disable, delete. */
-  openBlockMenu: (block: DisplayBlock, anchor: HTMLElement) => void;
+  openBlockMenu: (options: { block: DisplayBlock; anchor: HTMLElement }) => void;
   /** Opens the list of block types to add to a list. */
-  openTypePicker: (target: AddTarget, anchor: HTMLElement) => void;
+  openTypePicker: (options: { target: AddTarget; anchor: HTMLElement }) => void;
   /** The list a dragged entity would land in (`data-drop-key`); null while nothing drags. */
   dropHoverKey: Ref<string | null>;
 };
