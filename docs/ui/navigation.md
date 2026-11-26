@@ -16,7 +16,7 @@ The left column. It holds the special nodes at the top, a switch between **folde
 | Path helpers (same rules as the backend) | `utils/categories/categoryPath.ts` (`isSameOrBelow`, `replacePathPrefix`, `folderColor`, …) |
 | Empty folders, colors and order (overlay) | `stores/foldersStore.ts`, `services/foldersService.ts` |
 | Dropping list rows on a node | `composables/dragDrop/useEntryDropTarget.ts`, `utils/dragDrop.ts` |
-| Dragging a folder to sort it | `composables/dragDrop/useFolderDrag.ts` (`draggedFolder`) |
+| Dragging a folder to sort it among its siblings | `composables/dragDrop/useFolderDrag.ts` (`useFolderDrag`, state in `draggedFolder`) |
 
 ## Selections
 

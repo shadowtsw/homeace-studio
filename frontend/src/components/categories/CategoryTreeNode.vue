@@ -12,7 +12,7 @@
       :style="{ '--depth': depth }"
       :draggable="renamingPath !== node.path"
       @dragstart="startFolderDrag"
-      @dragend="draggedFolder = null"
+      @dragend="endFolderDrag"
       :title="node.isFolderOnly ? t('nav.folderOnly') : undefined"
       @click="emit('select', node.path)"
       @dragover="onAnyDragOver"
@@ -118,16 +118,15 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, toRef } from "vue";
 import { useI18n } from "vue-i18n";
 
 import InlineNameInput from "@/components/common/InlineNameInput.vue";
 
 import { useEntryDropTarget } from "@/composables/dragDrop/useEntryDropTarget";
-import { draggedFolder, FOLDER_DRAG_TYPE } from "@/composables/dragDrop/useFolderDrag";
+import { useFolderDrag } from "@/composables/dragDrop/useFolderDrag";
 import { folderColor } from "@/utils/categories/categoryPath";
 import type { CategoryNode } from "@/utils/categories/categoryTree";
-import { parentOf } from "@/utils/categories/folderOrder";
 
 const props = defineProps<{
   node: CategoryNode;
@@ -163,61 +162,19 @@ const { isDropOver, onDragOver, onDragLeave, onDrop } = useEntryDropTarget({
   onPlainEntityDropped: (entityId) => emit("dropEntity", props.node.path, entityId),
 });
 
-/** Where a dragged sibling folder would land: a line above or below this one. */
-const sortDrop = ref<"before" | "after" | null>(null);
-
-function startFolderDrag(event: DragEvent): void {
-  if (!event.dataTransfer) return;
-  event.stopPropagation();
-  event.dataTransfer.effectAllowed = "move";
-  event.dataTransfer.setData(FOLDER_DRAG_TYPE, props.node.path);
-  draggedFolder.value = props.node.path;
-}
-
-function isSortableHere(): boolean {
-  const moved = draggedFolder.value;
-  return (
-    moved !== null && moved !== props.node.path && parentOf(moved) === parentOf(props.node.path)
-  );
-}
-
-function onAnyDragOver(event: DragEvent): void {
-  if (draggedFolder.value === null) {
-    onDragOver(event);
-    return;
-  }
-  if (!isSortableHere()) return;
-
-  event.preventDefault();
-  event.stopPropagation();
-  const box = (event.currentTarget as HTMLElement).getBoundingClientRect();
-  sortDrop.value = event.clientY < box.top + box.height / 2 ? "before" : "after";
-}
-
-function onAnyDragLeave(): void {
-  sortDrop.value = null;
-  onDragLeave();
-}
-
-function onAnyDrop(event: DragEvent): void {
-  const moved = draggedFolder.value;
-  const position = sortDrop.value;
-  sortDrop.value = null;
-
-  if (moved === null) {
-    onDrop(event);
-    return;
-  }
-  event.preventDefault();
-  event.stopPropagation();
-  draggedFolder.value = null;
-  if (position && isSortableHereFor(moved))
-    emit("reorder", moved, props.node.path, position === "before");
-}
-
-function isSortableHereFor(moved: string): boolean {
-  return moved !== props.node.path && parentOf(moved) === parentOf(props.node.path);
-}
+// Sorting this folder among its siblings by drag & drop; entries and entities go to the drop target
+const {
+  sortDrop,
+  startDrag: startFolderDrag,
+  endDrag: endFolderDrag,
+  onDragOver: onAnyDragOver,
+  onDragLeave: onAnyDragLeave,
+  onDrop: onAnyDrop,
+} = useFolderDrag({
+  path: toRef(() => props.node.path),
+  entryDrop: { onDragOver, onDragLeave, onDrop },
+  onReorder: ({ moved, target, isBefore }) => emit("reorder", moved, target, isBefore),
+});
 
 const hasChildren = computed(() => props.node.children.length > 0);
 /** Own color, or the one inherited from the nearest colored parent folder. */
