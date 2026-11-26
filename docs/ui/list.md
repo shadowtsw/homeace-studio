@@ -76,6 +76,8 @@ the list:
   "Verschieben nach …" (the folder dialog) and "Aus Ordner nehmen". Entries and entities are ticked
   separately (`studio.checkedIds` / `checkedEntityIds`): ticking one kind clears the other, with a
   toast that says so, so the bar always fits what is ticked.
+  Dragging a ticked entity onto a folder takes all ticked ones along (`dropEntity` in StudioView),
+  like ticked entries.
 - **Label chips:** with "Labels in der Liste zeigen" on (per user, off by default), each row shows its
   labels as small chips without icon (`EntryListRow`, prop `isLabelsVisible`).
 - **Inline rename:** double-click on the name, the pencil, or F2. `studio.renaming = { entityId, place:

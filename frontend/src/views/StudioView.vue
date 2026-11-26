@@ -47,7 +47,7 @@
           @select="selectCategory"
           @rename="actions.startRename"
           @drop-entry="dropEntry"
-          @drop-entity="(path, entityId) => actions.moveEntity(entityId, path)"
+          @drop-entity="dropEntity"
           @add-folder="create.startFolder"
           @delete-folder="create.deleteFolder"
           @pick-color="(path) => (colorPath = path)"
@@ -606,6 +606,15 @@ function dropEntry(path: string | null, entityId: string): void {
     void actions.moveEntries([...studio.checkedIds], path);
   } else {
     void actions.moveEntry(entityId, path);
+  }
+}
+
+/** A ticked entity dropped on a folder takes all ticked ones along, like entries do. */
+function dropEntity(path: string | null, entityId: string): void {
+  if (studio.checkedEntityIds.has(entityId) && studio.checkedEntityIds.size > 1) {
+    void entityMove.move([...studio.checkedEntityIds], path);
+  } else {
+    void actions.moveEntity(entityId, path);
   }
 }
 
