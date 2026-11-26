@@ -13,10 +13,30 @@ your categories, entities and automations stay in Home Assistant and keep workin
 
 ## What it does
 
+**Edit scenes without your lights changing.** In Home Assistant, changing a scene means switching it
+on live. HomeAce Studio leaves the room as it is: set brightness, white tone or colour, cover
+positions and thermostats, and each device shows what it is doing right now for comparison. Want to
+see it? *Preview* shows the whole scene, *Try* a single device, and both put everything back
+afterwards. *Take the current state* reads a device without switching it, and whatever the editor has
+no control for (an effect, a fan speed) is kept and named.
+
+![Editing a scene: the sliders move, the lights stay as they are until Preview](docs/images/scenes-dark.gif)
+
+**Devices in folders, dragged into flows.** Turn on the filter *Entities* and lights, sensors and
+everything else join the list, each in its folder. Drag a device straight into an automation: drop
+the motion sensor on *When* and pick *Motion detected*, the lamp on *Then* and pick *Turn on*.
+Sections that fit light up, the others say why not. Helpers, scripts and scenes from the list can be
+dragged in the same way; a script either runs while the automation waits for it, or starts alongside.
+
+![Dragging a motion sensor and a lamp from the list into an automation](docs/images/drag-into-flow-light.gif)
+
 **Folders that nest.** HA categories are flat. HomeAce Studio shows `House/Terrace` as a folder
-inside `House`, in every scope at once, and stores it in HA as a normal category, so HA's own UI
-still reads it. Drag entries onto folders, rename a folder with a preview of every HA category it
-touches, and give folders colors that subfolders inherit.
+inside `House`, in every scope at once, and HA's own UI still reads it. Drag entries and devices onto
+folders, or tick several and move them together, rename a folder with a preview of every HA category
+it touches, and give folders colors that subfolders inherit. Device folders are stored in Home
+Assistant and its backups too, without crowding HA's own menus.
+
+![Sorting a device into a folder by dragging it onto the tree](docs/images/sort-into-folder-light.gif)
 
 **Flows as sentences.** Automations read as *When … / And only if … / Then …*, scripts as a
 sequence. Tap any value to change it in a small editor made for its type (entity, state, number,
@@ -27,15 +47,29 @@ duration, time, option list). Add, move, duplicate, disable or delete blocks; ne
 ![The flow of an automation with an if / then block, in dark mode](docs/images/flow-dark.png)
 
 **Everything about an entry in one place.** Name, icon, area, labels, folder, on/off, run, notes
-and favorites (the last two live only in HomeAce Studio). Create automations, scripts and eight
-kinds of helpers in a few clicks; delete them again when they are not needed. Change an entity ID and
+and favorites (the last two live only in HomeAce Studio). Create automations, scripts, scenes and
+eight kinds of helpers in a few clicks; delete them again when they are not needed. Change an entity ID and
 HomeAce Studio rewrites every automation and script that uses it (it lists them first). Aliases for
 Assist, hidden and disabled sit right there too; disabling tells you which flows still need it.
 
+**Helpers you can actually set up.** Every storage helper (toggle, button, number, text, dropdown,
+date/time, counter, timer) has a *Settings* tab for its ranges, steps, options, lengths and
+durations. A value Home Assistant would refuse is marked red before you save.
+
+![The settings of a number helper, with a range that does not fit marked red](docs/images/helper-settings-light.png)
+
+**Labels, managed where you use them.** Give an entry its labels from a search, create one by typing
+its name, change name, colour and icon, or tick several entries and label them in one go. Before a
+label is deleted, HomeAce Studio shows where it is still used, including automations that switch
+everything with that label.
+
+![Deleting a label: the dialog names the entries, devices and flows that still use it](docs/images/labels-dark.png)
+
 **Quick everyday handling.** Double click a name (or press F2) to rename it in place, in the list,
-the title or the folder tree, with *Undo* in the toast. Duplicate an automation or script next to the
-pencil: the copy keeps folder, labels and area, which HA's own duplicate does not. Sort folders by
-dragging them, fold the details away for a wider list, walk the list with the arrow keys.
+the title or the folder tree, with *Undo* in the toast. Duplicate an automation, script or helper next
+to the pencil: the copy keeps folder, labels and area (and a helper's settings), which HA's own
+duplicate does not. Sort folders by dragging them, fold the details away for a wider list, walk the
+list with the arrow keys.
 
 ![Editing a value right inside the flow](docs/images/editing-light.png)
 
@@ -66,8 +100,7 @@ including lights you add later.
 **Check-up, no setup needed.** Even if you never sort anything, HomeAce Studio shows what needs a
 look: automations that use devices which no longer exist (marked red in the flow) or are offline
 right now, flows whose last run stopped with an error, helpers no automation or script uses, and
-automations that have not run for months.
-Ignore what is fine as it is.
+automations that have not run for a month. New ones get time first. Ignore what is fine as it is.
 
 ![The check-up with a flow that points to a removed device](docs/images/checkup-light.png)
 
@@ -95,7 +128,8 @@ names the flows that would break.
 
 **Made to be used everywhere.** Light and dark mode, five languages (German, English, French, Spanish and Russian), all columns resizable,
 and on a phone the list comes first and the details slide in full screen. Technical details such
-as entity IDs stay hidden until you switch them on.
+as entity IDs stay hidden until you switch them on. Opened from the Home Assistant sidebar, the
+settings you choose follow you to every device.
 
 <p align="center">
   <img src="docs/images/phone-dark.png" alt="Folder list on a phone, dark mode" width="300">
@@ -105,13 +139,11 @@ as entity IDs stay hidden until you switch them on.
 
 **Live.** Changes made in HA show up right away, without reloading.
 
-**Devices in folders, dragged into flows.** Turn on the filter *Entities* and lights, sensors and
-everything else join the list, each in its folder. Drag a device onto a folder to sort it in, or
-straight into an automation: drop the motion sensor on *When* and pick *Motion detected*, the lamp
-on *Then* and pick *Turn on*. Sections that fit light up, the others say why not. The folders are
-stored in Home Assistant and its backups, without crowding HA's own menus.
-
 ## Good to know
+
+The settings window has a *Good to know* tab for quirks like these; a few to start with:
+
+![The settings window with the tab Good to know](docs/images/settings-light.png)
 
 - **Combine filters:** Ctrl+click (⌘+click on a Mac) adds a filter, for example *Automations* and
   *Entities* together. Right-click or a long press on a filter does the same; a plain click shows
@@ -122,13 +154,9 @@ stored in Home Assistant and its backups, without crowding HA's own menus.
   it, HomeAce Studio asks where exactly.
 - **On a phone,** tap an entity instead of dragging it: it offers the same places.
 
-## Coming next
+## What comes next
 
-- Editing helper settings (ranges, options, durations) and a scene editor.
-- Settings per Home Assistant user.
-- A full visual blueprint editor: build blueprints from scratch or from any automation.
-
-The whole plan, with what is released and what is being built, is in the [roadmap](ROADMAP.md).
+What is released, what is being built and what comes after is in the [roadmap](ROADMAP.md).
 
 ## Try it without Home Assistant
 
@@ -145,8 +173,8 @@ from this demo.
 
 ## Install on Home Assistant
 
-HomeAce Studio needs Home Assistant OS or Supervised (the app store), on amd64 or aarch64
-(Raspberry Pi 4/5, HA Green and Yellow).
+HomeAce Studio needs Home Assistant 2025.8 or newer, as Home Assistant OS or Supervised (the app
+store), on amd64 or aarch64 (Raspberry Pi 4/5, HA Green and Yellow).
 
 [![Add the repository to your Home Assistant](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fshadowtsw%2Fhomeace-studio)
 
@@ -163,7 +191,8 @@ Updates arrive like for any other app. The app documentation explains the AI acc
 frontend/        Vue 3 + TypeScript, own components, vue-i18n
 backend/         NestJS; talks to HA over its WebSocket and REST APIs and serves the built UI
 homeace-studio/  app definition for HA: config.yaml, Dockerfile, DOCS.md, CHANGELOG.md
-scripts/         build-addon.mjs (assembles the app folder), screenshots.mjs (README pictures)
+scripts/         build-addon.mjs (assembles the app folder), screenshots.mjs and recordings.mjs
+                 (README pictures and clips)
 docs/            setup, architecture, API, decisions
 ```
 

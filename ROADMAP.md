@@ -6,27 +6,12 @@ Details of each release are in the [changelog](homeace-studio/CHANGELOG.md).
 
 Status: ✅ released · 🔨 in progress · 📋 planned · 🅿️ on hold
 
-## In progress: the next big update
-
-The parts are released together, after a test round on a real Home Assistant.
+## Planned next
 
 | Status | Feature | What it means |
 | --- | --- | --- |
-| 📋 | What's new | After an update a small icon next to the gear shows the highlights of the new version in plain words, with links to the new features; "OK" hides it, the gear menu keeps it |
-| 🔨 | Helper settings | Ranges, steps, units, options, lengths, durations and more, with checks before saving |
-| 🔨 | Duplicate helpers | A copy of a helper with its settings, folder, labels and area |
-| 📋 | Scene editor | Edit the devices and states of a scene, with a live preview |
-| 📋 | Entities by drag & drop | Optional list of entities (area → device → function); drop one on *When*, *And only if* or *Then* to create a block with suggestions; tap instead of drag on phones |
-| 📋 | Settings per user | Each Home Assistant user keeps their own view settings |
-| 📋 | Manage labels | Create, rename, recolor and delete labels right in the label picker; deleting says where the label is used |
-| 📋 | Icons from icon packs | Icons from custom icon packs (e.g. Font Awesome or custom icons from HACS) show up and can be picked, when opened from the Home Assistant sidebar |
-| 📋 | Info column | When the details pane is wide, a narrow column shows folder, area, labels, last run, where it is used and the note at a glance |
-
-## Planned after that
-
-| Status | Feature | What it means |
-| --- | --- | --- |
-| 📋 | Template and group helpers | Edit and duplicate them too (Home Assistant stores them differently) |
+| 📋 | Template, group and schedule helpers | Edit and duplicate them too (Home Assistant stores template and group helpers differently; schedule helpers need a week plan of their own) |
+| 📋 | Settings on phones | The settings window as a list of sections, each opening as its own page, like the settings of a phone |
 | 📋 | Visual blueprint editor | Build blueprints from scratch or from any automation, inputs panel, preview of the form users see, use a blueprint and turn it back into a normal automation |
 
 ## On hold
@@ -39,6 +24,7 @@ The parts are released together, after a test round on a real Home Assistant.
 
 | Version | Highlights |
 | --- | --- |
+| ✅ 0.14.0 | Edit scenes without your lights changing, and create them with "New"; devices in folders, moved several at once and dragged into flows; helper settings and duplicate helpers; manage labels, with a warning where one is still used; a settings window that follows the Home Assistant user, with "Good to know"; icons from icon packs; what's new after an update; ready for Home Assistant 2026.12 |
 | ✅ 0.13.0 | Five languages: Russian from the community, French and Spanish (machine-assisted, corrections welcome); first start in the browser language |
 | ✅ 0.12.1 | Opening an entry no longer loads the whole entity registry: far less CPU when clicking through |
 | ✅ 0.12.0 | Change an entity ID with every reference; aliases, hidden, disabled; rename in place (double click, F2) with undo; duplicate with folder, labels and area; sort folders; fold the details pane |

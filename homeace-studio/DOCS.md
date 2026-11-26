@@ -12,6 +12,8 @@ A clearer UI for automations, scripts, scenes and helpers.
 
 Since HA 2026.2, add-ons are called **apps** in the UI; it is the same thing.
 
+HomeAce Studio needs Home Assistant 2025.8 or newer.
+
 1. Settings → Apps → App store → ⋮ → Repositories: add
    `https://github.com/shadowtsw/homeace-studio`.
 2. Open "HomeAce Studio" in the app store, install, start, and turn on "Show in sidebar".

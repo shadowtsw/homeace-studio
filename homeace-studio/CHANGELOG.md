@@ -1,7 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.14.0
 
+- Needs Home Assistant 2025.8 or newer.
 - Folders for devices: the new filter "Entitäten" shows lights, sensors and every other plain entity,
   each in its folder after the automations and helpers there. Drag one onto a folder to sort it in, or
   onto "Ohne Kategorie" to take it out. Or tick several and pick "Verschieben nach …", or drag one of them. The folders

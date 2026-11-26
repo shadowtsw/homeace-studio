@@ -75,6 +75,7 @@ New HA command: add a row here ([recipes.md](recipes.md#new-ha-command-or-rest-c
 | 2026.12 | WS `supervisor/api` needs an admin | Not affected: we only call the Supervisor's REST `/addons/self/info` with `SUPERVISOR_TOKEN` |
 | Supervisor 2026.12 (new installs), 2027.05 (all) | Apps lose `NET_RAW`, `MKNOD`, `AUDIT_WRITE`, `SETFCAP` | Not affected: no raw sockets, device nodes or `setcap` |
 | 2027.8 | Device fields `config_entries`, `config_entries_subentries`, `primary_config_entry` removed | Not affected: not read |
+| seen in 2026.12.0b1 | `config/entity_registry/update` refuses `area_id` for an entity without a name of its own ("set the area on its device instead") | Not affected: we only set the own area of entries (automations, scripts, scenes, helpers), which have their own name. Area for plain entities: put it on the device |
 
 ## Check log
 
@@ -83,3 +84,4 @@ One line per checked HA release (see [recipes.md](recipes.md#ha-release-check)).
 | HA version | Checked on | Found | Tested on |
 | --- | --- | --- | --- |
 | 2026.12 (beta 0) | 2026-11-25 | Read the beta notes (still unfinished) and the developer blog since 2026-08: child devices and target `exclude` (both fixed the same day, see Known changes), the rest does not affect us. The new `button.*` triggers and condition come from HA's catalog | not tested yet; 🔴 rows after the release on 2026-12-02 |
+| 2026.12 (beta 1) | 2026-11-26 | Throwaway HA `2026.12.0b1` in Docker with the demo integration, app built from `5b8f004` and again from `a2d07bb` on a fresh HA (with the fixes for hand-started runs and script names in the catalog): every 🔴 and 🟠 quick check green through the API (29/29, results checked in HA), five flows in the UI (new and old syntax, floor + label target, `exclude`, if/then) without unknown blocks or console errors; `button.*` in the catalog with German names; editing a scene switched nothing. New: area refused on entities without an own name (Known changes, not affected). Not testable there: HA user (ingress), Supervisor, icon packs | throwaway HA 2026.12.0b1; own HA after the release on 2026-12-02 still open |
