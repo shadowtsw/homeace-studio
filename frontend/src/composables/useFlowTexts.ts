@@ -39,6 +39,8 @@ const LABEL_KEYS = [
   "attribute",
   "from",
   "to",
+  "not_from",
+  "not_to",
   "for",
   "above",
   "below",

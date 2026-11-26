@@ -373,6 +373,8 @@ const fr: MessageSchema = {
       attribute: "Attribut",
       from: "de",
       to: "à",
+      not_from: "pas depuis",
+      not_to: "pas vers",
       for: "pendant",
       above: "au-dessus de",
       below: "en dessous de",

@@ -147,7 +147,12 @@ have nothing to check (`noCondition`).
 - **Choices** (`entityFit`): triggers and conditions from the entity's states (device class tells a
   motion sensor from a door contact; passing states like "opening" are left out); a measured value
   offers "Steigt über / Fällt unter …" with its current value as the limit, so the block is valid at
-  once. Actions only those HA describes (catalog), named by HA, with HA's defaults and `target.entity_id`.
+  once. A scene or button ("wird ausgelöst") and an entity without known states ("ändert sich") get a
+  state trigger with `not_from` and `not_to` set to `unavailable`/`unknown` (`anyRealChange`):
+  without them it fires when the device drops out and comes back (a button "presses itself" when its
+  device restarts), and with them HA also ignores changes of attributes alone. Both show as chips
+  ("nicht von", "nicht zu"; `CLASSIC_TRIGGER_FIELDS` in `toDisplayFlow.ts`, `LABEL_KEYS` in
+  `useFlowTexts.ts`). Actions only those HA describes (catalog), named by HA, with HA's defaults and `target.entity_id`.
   Sensors say why they cannot be told anything. One choice goes in at once. A script offers
   "Ausführen" (a direct call `action: script.<scriptKey>`, which waits, as HA's own editor adds a
   script; needs no catalog entry, so a script created a moment ago works too) and "Starten, ohne zu

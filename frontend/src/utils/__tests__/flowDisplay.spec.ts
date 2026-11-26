@@ -183,6 +183,30 @@ describe("toDisplayFlow", () => {
     expect(flow.actions[1]?.branches[1]?.blocks[0]?.id).toBe("actions.1.then.0");
   });
 
+  it("shows which states a state trigger leaves out", () => {
+    // What a button dropped on "Wenn" becomes: never on dropping out or coming back
+    const flow = toDisplayFlow(
+      automation({
+        triggers: [
+          {
+            trigger: "state",
+            entity_id: "input_boolean.abwesend",
+            not_from: ["unavailable", "unknown"],
+            not_to: ["unavailable", "unknown"],
+          },
+        ],
+      }),
+      catalog,
+      { ...texts, labels: { ...texts.labels, not_from: "nicht von", not_to: "nicht zu" } },
+    );
+
+    expect(shown(flow.triggers[0]?.chips)).toEqual([
+      { kind: "entity", text: "Abwesend" },
+      { kind: "value", label: "nicht von", text: "unavailable, unknown" },
+      { kind: "value", label: "nicht zu", text: "unavailable, unknown" },
+    ]);
+  });
+
   it("shows floors, labels and what the target leaves out, and does not call them missing", () => {
     const withTarget: EditorCatalog = {
       ...catalog,

@@ -61,7 +61,7 @@ const KEY_SEPARATOR = ".";
 
 /** Classic trigger kinds HA keeps outside the catalog, with the fields shown as chips. */
 const CLASSIC_TRIGGER_FIELDS: Record<string, string[]> = {
-  state: ["attribute", "from", "to", "for"],
+  state: ["attribute", "from", "to", "not_from", "not_to", "for"],
   numeric_state: ["attribute", "above", "below", "for"],
   time: ["at"],
   time_pattern: ["hours", "minutes", "seconds"],

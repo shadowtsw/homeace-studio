@@ -135,11 +135,27 @@ describe("entity blocks", () => {
     const fit = entityFit(scene, "trigger", catalog);
 
     expect(labels(fit)).toEqual([{ key: "fires" }]);
+    // Never when the device drops out or comes back, or it would "fire" on its own
     expect("choices" in fit && fit.choices[0]?.item).toEqual({
       trigger: "state",
       entity_id: "scene.abend",
+      not_from: ["unavailable", "unknown"],
+      not_to: ["unavailable", "unknown"],
     });
     expect(entityFit(scene, "condition", catalog)).toEqual({ reason: "noCondition" });
+  });
+
+  it("lets an entity without known states change, but not by dropping out", () => {
+    const weather = entity("sensor.wetter", { state: "sonnig" });
+    const fit = entityFit(weather, "trigger", catalog);
+
+    expect(labels(fit)).toEqual([{ key: "changes" }]);
+    expect("choices" in fit && fit.choices[0]?.item).toEqual({
+      trigger: "state",
+      entity_id: "sensor.wetter",
+      not_from: ["unavailable", "unknown"],
+      not_to: ["unavailable", "unknown"],
+    });
   });
 
   it("offers automations only the actions HA describes", () => {

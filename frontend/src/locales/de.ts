@@ -367,6 +367,8 @@ export default {
       attribute: "Attribut",
       from: "von",
       to: "zu",
+      not_from: "nicht von",
+      not_to: "nicht zu",
       for: "für",
       above: "über",
       below: "unter",

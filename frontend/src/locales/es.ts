@@ -369,6 +369,8 @@ const es: MessageSchema = {
       attribute: "Atributo",
       from: "de",
       to: "a",
+      not_from: "no desde",
+      not_to: "no hacia",
       for: "durante",
       above: "por encima de",
       below: "por debajo de",

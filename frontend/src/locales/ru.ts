@@ -367,6 +367,8 @@ const ru: MessageSchema = {
       attribute: "Атрибут",
       from: "с",
       to: "на",
+      not_from: "не из",
+      not_to: "не в",
       for: "в течение",
       above: "выше",
       below: "ниже",

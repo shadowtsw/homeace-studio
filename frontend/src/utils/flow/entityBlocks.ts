@@ -37,6 +37,24 @@ const NUMBER_DOMAINS = new Set(["sensor", "number", "input_number", "counter"]);
 const MOMENT_DOMAINS = new Set(["scene", "button", "input_button"]);
 /** States a device only passes through; not worth a choice. */
 const PASSING_STATES = new Set(["opening", "closing", "locking", "unlocking", "jammed"]);
+/**
+ * States that are no real change: the device dropped out, or has no state yet. A state trigger
+ * without a target fires on them too, so a button would "press itself" when its device restarts.
+ */
+const NOT_REAL_STATES = ["unavailable", "unknown"];
+
+/**
+ * A state trigger for any real change of the entity: never on dropping out or coming back. With
+ * `not_from`/`not_to` set, HA also ignores changes of attributes alone.
+ */
+function anyRealChange(entityId: string): Raw {
+  return {
+    trigger: "state",
+    entity_id: entityId,
+    not_from: [...NOT_REAL_STATES],
+    not_to: [...NOT_REAL_STATES],
+  };
+}
 
 /** What a device can be told to do, in the order offered. Only those HA describes are shown. */
 const ACTIONS_BY_DOMAIN: Record<string, string[]> = {
@@ -137,13 +155,13 @@ function triggerChoices(entity: EntityOption): EntityChoice[] {
 
   // A scene or a button: it fires, that is all
   if (MOMENT_DOMAINS.has(entity.domain)) {
-    return [{ label: { key: "fires" }, item: { trigger: "state", entity_id: entityId } }];
+    return [{ label: { key: "fires" }, item: anyRealChange(entityId) }];
   }
 
   // Known states, else "changes" in any way
   const states = statesOf(entity);
   if (states.length === 0) {
-    return [{ label: { key: "changes" }, item: { trigger: "state", entity_id: entityId } }];
+    return [{ label: { key: "changes" }, item: anyRealChange(entityId) }];
   }
 
   const words = TRIGGER_WORD[stateKindOf(entity)];
