@@ -76,6 +76,9 @@ the list:
   "Verschieben nach …" (the folder dialog) and "Aus Ordner nehmen". Entries and entities are ticked
   separately (`studio.checkedIds` / `checkedEntityIds`): ticking one kind clears the other, with a
   toast that says so, so the bar always fits what is ticked.
+- **Selection bars float** at the bottom of the list column (`.entry-list__dock`), over the rows, and
+  the list gets room at its end. Before, the bar above the filters pushed the list down on the first
+  tick, so the next box moved away under the pointer.
   Dragging a ticked entity onto a folder takes all ticked ones along (`dropEntity` in StudioView),
   like ticked entries.
 - **Label chips:** with "Labels in der Liste zeigen" on (per user, off by default), each row shows its

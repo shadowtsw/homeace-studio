@@ -55,54 +55,6 @@
         <input v-model="search" type="search" :placeholder="t('list.search')" autocomplete="off" />
       </label>
 
-      <div
-        v-if="checkedIds.size > 0"
-        ref="bulkBar"
-        class="entry-list__bulk"
-        role="toolbar"
-        :aria-label="t('list.bulk')"
-      >
-        <b>{{ t("list.checkedCount", { count: checkedIds.size }) }}</b>
-        <button class="btn btn--primary" type="button" @click="emit('moveChecked')">
-          <span class="mdi mdi-folder-move-outline" />{{ t("list.moveTo") }}
-        </button>
-        <button class="btn" type="button" @click="emit('setAreaChecked')">
-          <span class="mdi mdi-map-marker-outline" />{{ t("areas.set.button") }}
-        </button>
-        <button
-          class="btn"
-          type="button"
-          data-label-toggle
-          @click="bulkBar && emit('labelChecked', bulkBar)"
-        >
-          <span class="mdi mdi-label-outline" />{{ t("labels.add") }}
-        </button>
-        <button class="btn" type="button" @click="emit('uncategorizeChecked')">
-          {{ t("list.takeOut") }}
-        </button>
-        <button class="btn entry-list__bulk-quiet" type="button" @click="checkAll">
-          {{ t("list.checkAll") }}
-        </button>
-        <button
-          class="icon-btn"
-          type="button"
-          :aria-label="t('list.clearChecked')"
-          :title="t('list.clearChecked')"
-          @click="emit('check', [...checkedIds], false)"
-        >
-          <span class="mdi mdi-close" />
-        </button>
-      </div>
-
-      <EntityBulkBar
-        v-if="checkedIds.size === 0 && checkedEntityIds.size > 0"
-        :count="checkedEntityIds.size"
-        @move="emit('moveCheckedEntities')"
-        @take-out="emit('uncategorizeCheckedEntities')"
-        @check-all="emit('checkEntities', visibleEntityIds, true)"
-        @clear="emit('checkEntities', [...checkedEntityIds], false)"
-      />
-
       <ListScopeTabs
         :scopes="scopes"
         :counts="scopeCounts"
@@ -111,7 +63,10 @@
       />
     </div>
 
-    <div class="entry-list__body">
+    <div
+      class="entry-list__body"
+      :class="{ 'entry-list__body--docked': checkedIds.size > 0 || checkedEntityIds.size > 0 }"
+    >
       <p v-if="entries.length === 0 && entities.length === 0" class="entry-list__empty">
         {{ isRealCategory && !isSearching ? t("list.emptyFolder") : t("list.empty") }}
       </p>
@@ -184,6 +139,56 @@
       <p v-if="isShowingEntities && isRealCategory && !hasEntities" class="entry-list__hint">
         <span class="mdi mdi-devices" />{{ t("list.noEntitiesHere") }}
       </p>
+    </div>
+    <!-- Floats over the list, so ticking never pushes the rows away from the pointer -->
+    <div v-if="checkedIds.size > 0 || checkedEntityIds.size > 0" class="entry-list__dock">
+      <div
+        v-if="checkedIds.size > 0"
+        ref="bulkBar"
+        class="entry-list__bulk"
+        role="toolbar"
+        :aria-label="t('list.bulk')"
+      >
+        <b>{{ t("list.checkedCount", { count: checkedIds.size }) }}</b>
+        <button class="btn btn--primary" type="button" @click="emit('moveChecked')">
+          <span class="mdi mdi-folder-move-outline" />{{ t("list.moveTo") }}
+        </button>
+        <button class="btn" type="button" @click="emit('setAreaChecked')">
+          <span class="mdi mdi-map-marker-outline" />{{ t("areas.set.button") }}
+        </button>
+        <button
+          class="btn"
+          type="button"
+          data-label-toggle
+          @click="bulkBar && emit('labelChecked', bulkBar)"
+        >
+          <span class="mdi mdi-label-outline" />{{ t("labels.add") }}
+        </button>
+        <button class="btn" type="button" @click="emit('uncategorizeChecked')">
+          {{ t("list.takeOut") }}
+        </button>
+        <button class="btn entry-list__bulk-quiet" type="button" @click="checkAll">
+          {{ t("list.checkAll") }}
+        </button>
+        <button
+          class="icon-btn"
+          type="button"
+          :aria-label="t('list.clearChecked')"
+          :title="t('list.clearChecked')"
+          @click="emit('check', [...checkedIds], false)"
+        >
+          <span class="mdi mdi-close" />
+        </button>
+      </div>
+
+      <EntityBulkBar
+        v-else
+        :count="checkedEntityIds.size"
+        @move="emit('moveCheckedEntities')"
+        @take-out="emit('uncategorizeCheckedEntities')"
+        @check-all="emit('checkEntities', visibleEntityIds, true)"
+        @clear="emit('checkEntities', [...checkedEntityIds], false)"
+      />
     </div>
   </section>
 </template>
@@ -465,10 +470,24 @@ function groupLabel(path: string | null): string {
 
 <style scoped>
 .entry-list {
+  position: relative;
   display: flex;
   flex-direction: column;
   min-height: 0;
   height: 100%;
+}
+
+/* The selection bar floats at the bottom; an opaque ground, so rows behind do not shine through. */
+.entry-list__dock {
+  position: absolute;
+  /* Leaves the list's scrollbar free */
+  right: 18px;
+  bottom: 10px;
+  left: 10px;
+  z-index: 5;
+  border-radius: 10px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
 }
 
 .entry-list__head {
@@ -666,6 +685,11 @@ function groupLabel(path: string | null): string {
   flex: 1;
   overflow: auto;
   padding: 6px 10px 30px;
+}
+
+/* Room at the end, so the floating bar never hides the last rows */
+.entry-list__body--docked {
+  padding-bottom: 130px;
 }
 
 .entry-list__group {
