@@ -65,6 +65,7 @@ describe("EntitySortingService", () => {
     expect(byId.get("sensor.old_meter")).toMatchObject({ isInRegistry: false });
     expect(byId.get("light.terrace")?.categoryPath).toBe("House/Terrace");
     expect(context.integrations.fritz).toBe("AVM FRITZ!Box Tools");
+    expect(context.entries.find((entry) => entry.name === "Cooking mode")?.kind).toBe("automation");
     expect(context.devices.find((device) => device.name === "Kitchen fridge")).toMatchObject({
       areaId: null,
       manufacturer: "Shelly",

@@ -128,7 +128,7 @@ import { useEntitySortingStore } from "@/stores/entitySortingStore";
 import { useToastStore } from "@/stores/toastStore";
 import type { SortingRule } from "@/types/entitySorting";
 import { ruleIdeas } from "@/utils/entitySorting/ruleIdeas";
-import { ruleFor, ruleStats } from "@/utils/entitySorting/rules";
+import { ruleFor, ruleSideHits, ruleStats } from "@/utils/entitySorting/rules";
 
 import SortingRuleEditor from "./SortingRuleEditor.vue";
 
@@ -183,6 +183,17 @@ function ideaCount(idea: SortingRule): string {
   return t("entitySorting.entities", { count: matches }, matches);
 }
 
+/** Why a rule may catch less than expected: entries match, or entities are sorted already. */
+function sideHitTexts(rule: SortingRule): string[] {
+  if (!sorting.home) return [];
+
+  const hits = ruleSideHits(rule, sorting.home, sorting.options.isResortingSorted);
+  return [
+    ...(hits.entries ? [t("entitySorting.rules.entriesMatch", { count: hits.entries })] : []),
+    ...(hits.sorted ? [t("entitySorting.rules.sortedMatch", { count: hits.sorted })] : []),
+  ];
+}
+
 function statsText(rule: SortingRule, index: number): string {
   if (!sorting.home) return "";
 
@@ -191,6 +202,7 @@ function statsText(rule: SortingRule, index: number): string {
   if (stats.lost) parts.push(t("entitySorting.rules.lost", { count: stats.lost }));
   if (stats.withoutArea)
     parts.push(t("entitySorting.rules.withoutArea", { count: stats.withoutArea }));
+  parts.push(...sideHitTexts(rule));
 
   return parts.join(" · ");
 }

@@ -103,16 +103,7 @@ const isPhone = useMediaQuery("(max-width: 640px)");
 const openBundles = ref(new Set<string>());
 
 /** Bundles still offered and matching the filters and the search. */
-const visible = computed(() =>
-  props.group.bundles.filter((bundle) => {
-    if (!sorting.computation?.bundles.has(bundle.key)) return false;
-
-    const isOwn = !!sorting.choices.get(bundle.key)?.target;
-    if (!isOwn && !sorting.filters[sorting.confidenceOf(bundle.key)]) return false;
-
-    return matchesQuery(bundle, sorting.query.trim().toLowerCase());
-  }),
-);
+const visible = computed(() => props.group.bundles.filter((bundle) => sorting.isVisible(bundle)));
 const entityCount = computed(() =>
   visible.value.reduce((sum, bundle) => sum + bundle.entities.length, 0),
 );
@@ -139,15 +130,6 @@ const hintSummary = computed(() => {
 
   return [...kinds].slice(0, 3).map(texts.hint).join(", ");
 });
-
-function matchesQuery(bundle: SortingBundle, query: string): boolean {
-  if (!query) return true;
-
-  return (
-    bundle.name.toLowerCase().includes(query) ||
-    bundle.entities.some((entity) => entity.name.toLowerCase().includes(query))
-  );
-}
 
 function tickAll(): void {
   const isOn = !isAllTicked.value;

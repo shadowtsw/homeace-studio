@@ -13,7 +13,7 @@ import type { SortingState } from "../entitySorting/model";
 import { sortingOverview } from "../entitySorting/overview";
 import { fromDisplayTarget, toDisplayTarget } from "../entitySorting/placeholders";
 import { ruleIdeas } from "../entitySorting/ruleIdeas";
-import { ruleFor, ruleStats } from "../entitySorting/rules";
+import { ruleFor, ruleSideHits, ruleStats } from "../entitySorting/rules";
 import { meaningfulWords, wordKey } from "../entitySorting/words";
 import { NAMES, sampleHome, sampleState } from "./entitySortingFixture";
 
@@ -201,6 +201,21 @@ describe("technical folder", () => {
       entityId: "sensor.bewegung_kueche_akku",
       categoryPath: "Technik",
     });
+  });
+});
+
+describe("rule side hits", () => {
+  it("say when a rule matches a helper (not sorted by the tool) or a sorted entity", () => {
+    const home = sampleHome();
+    const rule = {
+      conditions: [
+        { type: "nameContains" as const, value: "taster" },
+        { type: "nameContains" as const, value: "kinderzimmer" },
+      ],
+      target: "Kinderzimmer/Taster",
+    };
+
+    expect(ruleSideHits(rule, home, false)).toEqual({ entries: 1, sorted: 0 });
   });
 });
 

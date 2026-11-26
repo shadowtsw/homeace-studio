@@ -31,6 +31,23 @@
     {{ t("entitySorting.suggestions.allSorted") }}
   </p>
 
+  <div v-else-if="!sections.length" class="suggestions__nothing">
+    <p>{{ t("entitySorting.suggestions.nothingForFilter") }}</p>
+    <div class="suggestions__nothing-actions">
+      <button
+        v-if="!sorting.filters.likely"
+        class="btn btn--sm"
+        type="button"
+        @click="sorting.filters.likely = true"
+      >
+        {{ t("entitySorting.suggestions.showLikely") }}
+      </button>
+      <button class="btn btn--sm" type="button" @click="showAll">
+        {{ t("entitySorting.suggestions.showAll") }}
+      </button>
+    </div>
+  </div>
+
   <div v-else class="kb-list">
     <section v-for="section in sections" :key="section.key" class="suggestions__section">
       <div class="suggestions__section-head">
@@ -110,37 +127,55 @@ const sections = computed(() => {
   const layout = sorting.layout;
   if (!layout) return [];
 
-  return [
-    {
-      key: "folder",
-      title: "entitySorting.suggestions.sectionFolder",
-      note: "entitySorting.suggestions.sectionFolderNote",
-      groups: layout.folder,
-    },
-    {
-      key: "fresh",
-      title: "entitySorting.suggestions.sectionNew",
-      note: "entitySorting.suggestions.sectionNewNote",
-      groups: layout.fresh,
-    },
-    {
-      key: "system",
-      title: "entitySorting.suggestions.sectionSystem",
-      note: "entitySorting.suggestions.sectionSystemNote",
-      groups: layout.system ? [layout.system] : [],
-    },
-    {
-      key: "rest",
-      title: "entitySorting.suggestions.sectionRest",
-      note: "entitySorting.suggestions.sectionRestNote",
-      groups: layout.rest ? [layout.rest] : [],
-    },
-  ].filter((section) => section.groups.length);
+  return (
+    [
+      {
+        key: "folder",
+        title: "entitySorting.suggestions.sectionFolder",
+        note: "entitySorting.suggestions.sectionFolderNote",
+        groups: layout.folder,
+      },
+      {
+        key: "fresh",
+        title: "entitySorting.suggestions.sectionNew",
+        note: "entitySorting.suggestions.sectionNewNote",
+        groups: layout.fresh,
+      },
+      {
+        key: "system",
+        title: "entitySorting.suggestions.sectionSystem",
+        note: "entitySorting.suggestions.sectionSystemNote",
+        groups: layout.system ? [layout.system] : [],
+      },
+      {
+        key: "rest",
+        title: "entitySorting.suggestions.sectionRest",
+        note: "entitySorting.suggestions.sectionRestNote",
+        groups: layout.rest ? [layout.rest] : [],
+      },
+    ]
+      // A section shows only with a row the filters and the search let through.
+      .map((section) => ({
+        ...section,
+        groups: section.groups.filter((group) => group.bundles.some(sorting.isVisible)),
+      }))
+      .filter((section) => section.groups.length)
+  );
 });
 
-const allGroups = computed<SortingGroup[]>(() =>
-  sections.value.flatMap((section) => section.groups),
-);
+const allGroups = computed<SortingGroup[]>(() => {
+  const layout = sorting.layout;
+  if (!layout) return [];
+
+  return [...layout.folder, ...layout.fresh, layout.system, layout.rest].filter(
+    (group): group is SortingGroup => !!group,
+  );
+});
+
+function showAll(): void {
+  sorting.filters = { rule: true, sure: true, likely: true, unclear: true };
+  sorting.query = "";
+}
 
 /** Existing folders and the new ones of this session, for "Anderer Ordner …". */
 const folderOptions = computed(() => {
@@ -249,6 +284,26 @@ onKeyStroke("Escape", () => {
 
 .suggestions__live > .mdi {
   color: var(--accent);
+}
+
+.suggestions__nothing {
+  display: grid;
+  justify-items: start;
+  gap: 10px;
+  padding: 16px;
+  border: 1px dashed var(--line-strong);
+  border-radius: 12px;
+  color: var(--muted);
+}
+
+.suggestions__nothing p {
+  margin: 0;
+}
+
+.suggestions__nothing-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .suggestions__empty {

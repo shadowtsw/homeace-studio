@@ -1499,6 +1499,10 @@ export default {
       matches: "passt auf 1 Entität | passt auf {count} Entitäten",
       lost: "bei {count} gewinnt eine genauere oder frühere Regel",
       withoutArea: "{count} ohne Bereich ausgelassen",
+      entriesMatch:
+        "{count} Einträge passen auch (Automationen, Skripte, Szenen oder Helfer), die sortiert das Werkzeug noch nicht",
+      sortedMatch:
+        "{count} haben schon einen Ordner (siehe „Auch bereits einsortierte umsortieren“)",
       and: "UND",
       when: "Wenn",
       folder: "Ordner",
@@ -1551,6 +1555,11 @@ export default {
       liveNew: "{count} mit neuem Ziel",
       liveLess: "{count} unsicherer",
       reorder: "Liste neu ordnen",
+      nothingForFilter:
+        "Für diesen Filter gibt es nichts. Wahrscheinliche und unklare Vorschläge sind ausgeblendet.",
+      showLikely: "„wahrscheinlich“ dazu",
+      showAll: "Alles zeigen",
+      footerHidden: "davon {count} ausgeblendet",
       sectionFolder: "In vorhandene Ordner",
       sectionFolderNote: "Sortiert nach Wirkung: die großen, sicheren Gruppen zuerst.",
       sectionNew: "Neue Ordner",

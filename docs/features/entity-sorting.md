@@ -36,7 +36,7 @@ page stays complete.
 | Reasons, confidences, origins and rule conditions as text; placeholders `{Bereich}` ↔ `{area}` | `composables/useSortingTexts.ts`, `utils/entitySorting/placeholders.ts` |
 | Window and steps: overview (funnel), rules (editor, ideas), proposals (groups, rows, phone sheet), apply, result | `components/entitySorting/` |
 | Entry in the tools tab with beta label and count | `components/settings/SettingsToolsTab.vue`, `components/common/BetaBadge.vue` |
-| Folder path to type or pick from the tree (rule target, "Eigener Pfad"); reusable | `components/common/FolderPathField.vue` |
+| Folder path to type (own suggestion list, ↑↓ Enter) or pick from the tree; the tree panel alone for "Anderer Ordner …" in step 3 | `components/common/FolderPathField.vue`, `FolderTreePanel.vue` |
 | Numbers of step 1, rule ideas | `utils/entitySorting/overview.ts`, `ruleIdeas.ts` |
 
 ## Backend rules
@@ -117,6 +117,8 @@ texts; reasons come back as data (`SortingReason`) and are written by the UI.
 - Phone (≤ 640 px): a group opens as a sheet from below (`sheetGroupKey`); the stepper shows numbers
   and the current label only. Keyboard: ↑↓ between rows, Space ticks, Enter opens the entities.
 - Entity IDs only with "Technische Details" on.
+- Filters start with "Regel" + "sicher" (what is pre-ticked). **Ticked rows always show**, whatever the filter; filters only add the rest, so everything that is applied is in sight. Empty sections hide; with nothing left, a hint offers "wahrscheinlich" or all.
+- Rule stats also say when entries (automations, scripts, scenes, helpers) or already sorted entities match (`ruleSideHits`): a rule aimed at a helper otherwise silently catches nothing (owner, test9).
 - Rules, turned-down folders and kept-out bundles are saved right away (`PUT /memory`); ticks are not.
 - Beta: `BetaBadge` in the tools row and the title, a note with the GitHub issues link in step 1 and in
   the result. Public texts say "(Beta)"; the badge goes once a version passed without bigger reports.

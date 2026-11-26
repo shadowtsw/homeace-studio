@@ -71,6 +71,16 @@ export type SortingFlow = {
   uses: { entityId: string; roles: SortingRole[] }[];
 };
 
+/** An automation, script, scene or helper; only used to say when a rule matches one. */
+export type SortingEntryInfo = {
+  entityId: string;
+  name: string;
+  kind: EntryKind;
+  categoryPath: string | null;
+  labels: string[];
+  areaId: string | null;
+};
+
 export type SortingContext = {
   entities: SortingEntity[];
   devices: SortingDevice[];
@@ -78,6 +88,7 @@ export type SortingContext = {
   floors: SortingFloor[];
   integrations: Record<string, string>;
   flows: SortingFlow[];
+  entries: SortingEntryInfo[];
   folders: string[];
   /** Entry kinds, "entity" or "empty" per folder; scenes-only folders say nothing about devices. */
   folderKinds: Record<string, string[]>;

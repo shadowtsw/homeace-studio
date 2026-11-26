@@ -1524,6 +1524,10 @@ const fr: MessageSchema = {
       matches: "correspond à 1 entité | correspond à {count} entités",
       lost: "pour {count}, une règle plus précise ou plus haute gagne",
       withoutArea: "{count} sans pièce ignorées",
+      entriesMatch:
+        "{count} entrées correspondent aussi (automatisations, scripts, scènes ou entrées d'aide) ; l'outil ne les classe pas encore",
+      sortedMatch:
+        "{count} ont déjà un dossier (voir « Reclasser aussi les entités qui ont un dossier »)",
       and: "ET",
       when: "Si",
       folder: "Dossier",
@@ -1576,6 +1580,11 @@ const fr: MessageSchema = {
       liveNew: "{count} avec une nouvelle cible",
       liveLess: "{count} moins sûres",
       reorder: "Trier la liste à nouveau",
+      nothingForFilter:
+        "Rien pour ce filtre. Les propositions probables et incertaines sont masquées.",
+      showLikely: "Ajouter « probable »",
+      showAll: "Tout afficher",
+      footerHidden: "dont {count} masquées",
       sectionFolder: "Dans des dossiers existants",
       sectionFolderNote: "Triés par effet : les grands groupes sûrs d’abord.",
       sectionNew: "Nouveaux dossiers",

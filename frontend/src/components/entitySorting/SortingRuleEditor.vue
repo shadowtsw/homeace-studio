@@ -105,7 +105,7 @@ import { useSortingTexts } from "@/composables/useSortingTexts";
 import { useEntitySortingStore } from "@/stores/entitySortingStore";
 import type { SortingCondition, SortingConditionType, SortingRule } from "@/types/entitySorting";
 import { fromDisplayTarget } from "@/utils/entitySorting/placeholders";
-import { ruleMatches, ruleStats, ruleTarget } from "@/utils/entitySorting/rules";
+import { ruleMatches, ruleSideHits, ruleStats, ruleTarget } from "@/utils/entitySorting/rules";
 
 /** One rule being written: AND-ed conditions, a folder with placeholders, and a live preview. */
 const props = defineProps<{
@@ -183,9 +183,21 @@ const preview = computed(() => {
     (examples.length
       ? t("entitySorting.rules.previewExamples", { examples: examples.join(", ") })
       : "") +
-    "."
+    "." +
+    sideHits(home)
   );
 });
+
+/** Entries that match too, or sorted entities: why a rule may catch fewer than expected. */
+function sideHits(home: NonNullable<typeof sorting.home>): string {
+  const hits = ruleSideHits(draft.value, home, sorting.options.isResortingSorted);
+  const parts = [
+    ...(hits.entries ? [t("entitySorting.rules.entriesMatch", { count: hits.entries })] : []),
+    ...(hits.sorted ? [t("entitySorting.rules.sortedMatch", { count: hits.sorted })] : []),
+  ];
+
+  return parts.length ? ` ${parts.join(". ")}.` : "";
+}
 
 type ValueOption = { value: string; label: string };
 

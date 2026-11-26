@@ -103,6 +103,20 @@ export type SortingFlow = {
   uses: { entityId: string; roles: DependencyRole[] }[];
 };
 
+/**
+ * An automation, script, scene or helper. The tool does not sort them (yet); rules only say when
+ * one of them matches, so a rule meant for a helper does not silently catch nothing.
+ */
+export type SortingEntryInfo = {
+  entityId: string;
+  name: string;
+  kind: EntryKind;
+  categoryPath: string | null;
+  /** Label names. */
+  labels: string[];
+  areaId: string | null;
+};
+
 /** Everything the tool computes its proposals from (`GET /api/entity-sorting`). */
 export type SortingContext = {
   entities: SortingEntity[];
@@ -112,6 +126,7 @@ export type SortingContext = {
   /** Integration domain → name; a missing domain falls back to the domain itself. */
   integrations: Record<string, string>;
   flows: SortingFlow[];
+  entries: SortingEntryInfo[];
   /** Every folder path that exists: from entries, entities and empty folders. */
   folders: string[];
   /**

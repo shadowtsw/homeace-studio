@@ -99,6 +99,48 @@ export function ruleFor(
   };
 }
 
+/** What a rule matches beyond the offered entities: entries, and entities sorted already. */
+export type RuleSideHits = { entries: number; sorted: number };
+
+/**
+ * Why a rule may catch fewer than expected: it matches automations, scripts, scenes or helpers (the
+ * tool does not sort them yet), or entities that have a folder (only with "umsortieren").
+ */
+export function ruleSideHits(
+  rule: SortingRule,
+  home: SortingHome,
+  isResortingSorted: boolean,
+): RuleSideHits {
+  const entries = home.context.entries.filter((entry) =>
+    ruleMatches(
+      rule,
+      {
+        entityId: entry.entityId,
+        name: entry.name,
+        domain: entry.entityId.split(".")[0] ?? "",
+        deviceId: null,
+        areaId: entry.areaId,
+        deviceClass: null,
+        entityCategory: null,
+        integration: null,
+        labels: entry.labels,
+        categoryPath: entry.categoryPath,
+        isDisabled: false,
+        isHidden: false,
+        isInRegistry: true,
+      },
+      home,
+    ),
+  ).length;
+  const sorted = isResortingSorted
+    ? 0
+    : home.context.entities.filter(
+        (entity) => entity.isInRegistry && entity.categoryPath && ruleMatches(rule, entity, home),
+      ).length;
+
+  return { entries, sorted };
+}
+
 export type RuleStats = {
   matches: number;
   /** Matched, but the target needs an area (or floor) the entity lacks. */

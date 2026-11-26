@@ -10,6 +10,7 @@ import { layoutSorting, pretick } from "@/utils/entitySorting/layout";
 import type {
   BundleChoice,
   Confidence,
+  SortingBundle,
   SortingComputation,
   SortingLayout,
   SortingNames,
@@ -20,6 +21,13 @@ import type {
 
 export const SORTING_STEP = { overview: 1, rules: 2, suggestions: 3, apply: 4, result: 5 } as const;
 export type SortingStep = (typeof SORTING_STEP)[keyof typeof SORTING_STEP];
+
+const DEFAULT_FILTERS: Record<Confidence, boolean> = {
+  rule: true,
+  sure: true,
+  likely: false,
+  unclear: false,
+};
 
 const DEFAULT_OPTIONS: SortingOptions = {
   includeHidden: false,
@@ -59,12 +67,8 @@ export const useEntitySortingStore = defineStore("entitySorting", () => {
   const changes = shallowRef(new Map<string, SuggestionChange>());
   /** On a phone a group opens as a sheet from below; its key while open. */
   const sheetGroupKey = ref<string | null>(null);
-  const filters = ref<Record<Confidence, boolean>>({
-    rule: true,
-    sure: true,
-    likely: true,
-    unclear: true,
-  });
+  /** What is pre-ticked shows by default; the rest is one click away (owner's wish, test9). */
+  const filters = ref<Record<Confidence, boolean>>({ ...DEFAULT_FILTERS });
   const query = ref("");
   /** Changed in the last recompute only: these rows light up once. */
   const flashing = shallowRef(new Set<string>());
@@ -186,6 +190,8 @@ export const useEntitySortingStore = defineStore("entitySorting", () => {
     step.value = SORTING_STEP.overview;
     choices.value = new Map();
     excluded.value = new Set();
+    filters.value = { ...DEFAULT_FILTERS };
+    query.value = "";
     groupNames.value = new Map();
     void load();
   }
@@ -323,6 +329,34 @@ export const useEntitySortingStore = defineStore("entitySorting", () => {
     return computation.value?.suggestions.get(key)?.confidence ?? "unclear";
   }
 
+  /** A row shows when it is ticked or matches the filters, and when it matches the search. */
+  function isVisible(bundle: SortingBundle): boolean {
+    if (!computation.value?.bundles.has(bundle.key)) return false;
+
+    // Ticked rows always show: what is applied is always in sight. Filters add the rest.
+    const choice = choices.value.get(bundle.key);
+    const isShownAnyway = !!choice?.target || !!choice?.isOn;
+    if (!isShownAnyway && !filters.value[confidenceOf(bundle.key)]) return false;
+
+    const needle = query.value.trim().toLowerCase();
+    return (
+      !needle ||
+      bundle.name.toLowerCase().includes(needle) ||
+      bundle.entities.some((entity) => entity.name.toLowerCase().includes(needle))
+    );
+  }
+
+  /** Entities that would be applied although their row is filtered out. */
+  const hiddenMoveCount = computed(() => {
+    const hidden = new Set(
+      [...(computation.value?.bundles.values() ?? [])]
+        .filter((bundle) => !isVisible(bundle))
+        .flatMap((bundle) => bundle.entities.map((entity) => entity.entityId)),
+    );
+
+    return moves.value.filter((move) => hidden.has(move.entityId)).length;
+  });
+
   return {
     isOpen,
     isLoading,
@@ -367,5 +401,7 @@ export const useEntitySortingStore = defineStore("entitySorting", () => {
     resetIgnored,
     setOptions,
     confidenceOf,
+    isVisible,
+    hiddenMoveCount,
   };
 });

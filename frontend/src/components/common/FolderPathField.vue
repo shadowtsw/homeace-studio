@@ -5,87 +5,66 @@
         ref="input"
         v-model="path"
         class="field-input folder-path-field__input"
-        :list="listId"
         :placeholder="placeholder"
         :aria-label="label"
+        role="combobox"
+        :aria-expanded="suggestions.length > 0"
         autocomplete="off"
+        @focus="isTyping = true"
+        @input="onInput"
+        @keydown="onKey"
       />
-      <datalist :id="listId">
-        <option v-for="folder in folders" :key="folder" :value="folder" />
-      </datalist>
       <button
         class="btn btn--sm folder-path-field__open"
         type="button"
-        :aria-expanded="isOpen"
+        :aria-expanded="isTreeOpen"
         :title="t('folderPicker.open')"
-        @click="toggle"
+        @click="isTreeOpen ? (isTreeOpen = false) : openTree()"
       >
         <span class="mdi mdi-file-tree-outline" />{{ t("folderPicker.open") }}
       </button>
     </div>
 
-    <div
-      v-if="isOpen"
+    <ul v-if="suggestions.length" class="folder-path-field__suggestions" role="listbox">
+      <li
+        v-for="(folder, index) in suggestions"
+        :key="folder"
+        role="option"
+        :aria-selected="index === active"
+        :class="{ 'folder-path-field__suggestion--active': index === active }"
+        @mousedown.prevent="pick(folder)"
+        @mousemove="active = index"
+      >
+        <span class="mdi mdi-folder-outline" />
+        <span>
+          {{ split(folder).before }}<mark>{{ split(folder).match }}</mark
+          >{{ split(folder).after }}
+        </span>
+      </li>
+    </ul>
+
+    <FolderTreePanel
+      v-if="isTreeOpen"
       class="folder-path-field__panel"
-      role="dialog"
-      :aria-label="t('folderPicker.title')"
-      @keydown.escape.stop="close"
-    >
-      <div class="folder-path-field__head">
-        <input
-          ref="search"
-          v-model="query"
-          class="field-input"
-          type="search"
-          :placeholder="t('folderPicker.search')"
-          :aria-label="t('folderPicker.search')"
-        />
-        <PopoverClose @close="close" />
-      </div>
-      <ul class="folder-path-field__tree">
-        <li
-          v-for="row in rows"
-          :key="row.node.path"
-          :style="{ paddingLeft: `${row.depth * 16}px` }"
-        >
-          <button
-            v-if="row.node.children.length && !query"
-            class="folder-path-field__toggle"
-            type="button"
-            :aria-label="
-              expanded.has(row.node.path) ? t('folderPicker.collapse') : t('folderPicker.expand')
-            "
-            @click="toggleNode(row.node.path)"
-          >
-            <span
-              class="mdi"
-              :class="expanded.has(row.node.path) ? 'mdi-chevron-down' : 'mdi-chevron-right'"
-            />
-          </button>
-          <span v-else class="folder-path-field__spacer" />
-          <button class="folder-path-field__folder" type="button" @click="pick(row.node.path)">
-            <span class="mdi mdi-folder-outline" />
-            <span>{{ query ? row.node.path : row.node.name }}</span>
-          </button>
-        </li>
-        <li v-if="!rows.length" class="folder-path-field__empty">{{ t("folderPicker.none") }}</li>
-      </ul>
-    </div>
+      :folders="folders"
+      :current="path"
+      @pick="pick"
+      @close="isTreeOpen = false"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { onClickOutside } from "@vueuse/core";
-import { computed, nextTick, ref, useId, useTemplateRef } from "vue";
+import { computed, nextTick, ref, useTemplateRef } from "vue";
 import { useI18n } from "vue-i18n";
 
-import { buildCategoryTree, type CategoryNode } from "@/utils/categoryTree";
-
-import PopoverClose from "./PopoverClose.vue";
+import FolderTreePanel from "./FolderTreePanel.vue";
 
 /**
- * A folder path to type or to pick from the folder tree. Picking fills the path; with
- * `appendsSeparator` a "/" follows, so the user can go on typing (or add a placeholder).
+ * A folder path to type or to pick from the folder tree, in HomeAce's look. While typing, matching
+ * folders show below (↑↓ and Enter); "Aus dem Baum …" opens the tree. With `appendsSeparator` a "/"
+ * follows a picked folder, so the user can go on typing or add a placeholder.
  */
 const props = defineProps<{
   folders: readonly string[];
@@ -96,71 +75,92 @@ const props = defineProps<{
 
 const path = defineModel<string>({ required: true });
 
+const MAX_SUGGESTIONS = 8;
+
 const { t } = useI18n();
-const listId = useId();
 const root = useTemplateRef("root");
 const input = useTemplateRef("input");
-const searchInput = useTemplateRef("search");
-const isOpen = ref(false);
-const query = ref("");
-const expanded = ref(new Set<string>());
+const isTreeOpen = ref(false);
+/** The list shows only while the user types, not when the field just has a value. */
+const isTyping = ref(false);
+const active = ref(-1);
 
-const tree = computed(() => buildCategoryTree([], [], props.folders));
+/** The part of the path being typed: what follows the last "/" of a known folder, or all of it. */
+const needle = computed(() => path.value.trim().toLowerCase());
 
-type Row = { node: CategoryNode; depth: number };
+const suggestions = computed(() => {
+  if (!isTyping.value || !needle.value) return [];
 
-/** Visible rows: the open branches, or every match while searching. */
-const rows = computed<Row[]>(() => {
-  const result: Row[] = [];
-  const needle = query.value.trim().toLowerCase();
-  const walk = (nodes: CategoryNode[], depth: number): void => {
-    for (const node of nodes) {
-      if (needle) {
-        if (node.path.toLowerCase().includes(needle)) result.push({ node, depth: 0 });
-        walk(node.children, depth + 1);
-      } else {
-        result.push({ node, depth });
-        if (expanded.value.has(node.path)) walk(node.children, depth + 1);
-      }
-    }
-  };
-  walk(tree.value, 0);
-
-  return result;
+  return props.folders
+    .filter(
+      (folder) =>
+        folder.toLowerCase().includes(needle.value) && folder.toLowerCase() !== needle.value,
+    )
+    .sort((first, second) => rank(first) - rank(second) || first.localeCompare(second))
+    .slice(0, MAX_SUGGESTIONS);
 });
 
-async function toggle(): Promise<void> {
-  if (isOpen.value) return close();
-
-  isOpen.value = true;
-  query.value = "";
-  // Open the branch of what is typed already, so the user sees where it is.
-  const levels = path.value.split("/").filter(Boolean);
-  expanded.value = new Set(levels.map((_, index) => levels.slice(0, index + 1).join("/")));
-  await nextTick();
-  searchInput.value?.focus();
+/** Folders starting with what is typed come first. */
+function rank(folder: string): number {
+  return folder.toLowerCase().startsWith(needle.value) ? 0 : 1;
 }
 
-function close(): void {
-  isOpen.value = false;
+function split(folder: string): { before: string; match: string; after: string } {
+  const start = folder.toLowerCase().indexOf(needle.value);
+  if (start < 0) return { before: folder, match: "", after: "" };
+
+  const end = start + needle.value.length;
+  return {
+    before: folder.slice(0, start),
+    match: folder.slice(start, end),
+    after: folder.slice(end),
+  };
 }
 
-function toggleNode(nodePath: string): void {
-  const next = new Set(expanded.value);
-  if (!next.delete(nodePath)) next.add(nodePath);
-  expanded.value = next;
+function onInput(): void {
+  isTyping.value = true;
+  active.value = -1;
 }
 
-async function pick(nodePath: string): Promise<void> {
-  path.value = props.appendsSeparator ? `${nodePath}/` : nodePath;
-  close();
+function onKey(event: KeyboardEvent): void {
+  if (!suggestions.value.length) return;
+
+  if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+    const step = event.key === "ArrowDown" ? 1 : -1;
+    const count = suggestions.value.length;
+    active.value = (active.value + step + count) % count;
+  } else if (event.key === "Enter" && active.value >= 0) {
+    pick(suggestions.value[active.value] as string);
+  } else if (event.key === "Escape") {
+    isTyping.value = false;
+  } else {
+    return;
+  }
+  // The list handled it: no form submit, no closing of the window around.
+  event.preventDefault();
+  event.stopPropagation();
+}
+
+async function openTree(): Promise<void> {
+  isTyping.value = false;
+  isTreeOpen.value = true;
+}
+
+async function pick(folder: string): Promise<void> {
+  path.value = props.appendsSeparator ? `${folder}/` : folder;
+  isTreeOpen.value = false;
+  isTyping.value = false;
+  active.value = -1;
   await nextTick();
   const element = input.value;
   element?.focus();
   element?.setSelectionRange(path.value.length, path.value.length);
 }
 
-onClickOutside(root, close);
+onClickOutside(root, () => {
+  isTreeOpen.value = false;
+  isTyping.value = false;
+});
 
 /** For callers that insert at the cursor (placeholders). */
 defineExpose({ input });
@@ -187,84 +187,47 @@ defineExpose({ input });
   height: 36px;
 }
 
+.folder-path-field__suggestions,
 .folder-path-field__panel {
   position: absolute;
   top: calc(100% + 4px);
   left: 0;
   z-index: 5;
-  display: grid;
-  gap: 8px;
+}
+
+.folder-path-field__suggestions {
   width: min(420px, 100%);
-  min-width: 260px;
-  max-height: 340px;
-  padding: 10px;
-  overflow: hidden;
+  min-width: 240px;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
   border: 1px solid var(--line-strong);
   border-radius: 12px;
   background: var(--surface);
   box-shadow: var(--shadow);
-  grid-template-rows: auto minmax(0, 1fr);
 }
 
-.folder-path-field__head {
+.folder-path-field__suggestions li {
   display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.folder-path-field__tree {
-  margin: 0;
-  padding: 0;
-  overflow: auto;
-  list-style: none;
-}
-
-.folder-path-field__tree li {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-}
-
-.folder-path-field__toggle,
-.folder-path-field__spacer {
-  display: grid;
-  flex: none;
-  place-items: center;
-  width: 24px;
-  height: 28px;
-  border: 0;
-  background: none;
-  color: var(--faint);
-  cursor: pointer;
-}
-
-.folder-path-field__folder {
-  display: flex;
-  flex: 1;
   align-items: center;
   gap: 6px;
-  min-width: 0;
-  height: 28px;
-  padding: 0 6px;
-  border: 0;
+  height: 30px;
+  padding: 0 8px;
   border-radius: 6px;
-  background: none;
   cursor: pointer;
-  text-align: left;
 }
 
-.folder-path-field__folder:hover,
-.folder-path-field__folder:focus-visible {
-  background: var(--accent-soft);
-  color: var(--accent);
-}
-
-.folder-path-field__folder .mdi {
+.folder-path-field__suggestions .mdi {
   color: var(--faint);
 }
 
-.folder-path-field__empty {
-  padding: 6px;
-  color: var(--muted);
+.folder-path-field__suggestions mark {
+  background: none;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.folder-path-field__suggestion--active {
+  background: var(--accent-soft);
 }
 </style>

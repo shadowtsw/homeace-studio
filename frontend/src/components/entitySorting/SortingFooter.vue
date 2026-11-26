@@ -107,15 +107,19 @@ const placeholderHint = computed(() => {
     floor: `{${words.floor}}`,
   });
 });
-const tickedText = computed(() =>
-  t("entitySorting.suggestions.footer", {
-    bundles: t(
-      "entitySorting.suggestions.bundles",
-      { count: sorting.tickedCount },
-      sorting.tickedCount,
-    ),
-    entities: t("entitySorting.entities", { count: sorting.moves.length }, sorting.moves.length),
-  }),
+const tickedText = computed(
+  () =>
+    t("entitySorting.suggestions.footer", {
+      bundles: t(
+        "entitySorting.suggestions.bundles",
+        { count: sorting.tickedCount },
+        sorting.tickedCount,
+      ),
+      entities: t("entitySorting.entities", { count: sorting.moves.length }, sorting.moves.length),
+    }) +
+    (sorting.hiddenMoveCount
+      ? ` · ${t("entitySorting.suggestions.footerHidden", { count: sorting.hiddenMoveCount })}`
+      : ""),
 );
 </script>
 

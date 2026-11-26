@@ -69,22 +69,36 @@
             {{ t("entitySorting.rules.cancel") }}
           </button>
         </template>
-        <select
-          v-else
-          class="field-input bundle-row__pick"
-          :aria-label="t('entitySorting.suggestions.chooseFolder')"
-          @change="onPick"
-        >
-          <option value="">
+        <span v-else ref="picker" class="bundle-row__picker">
+          <button
+            class="bundle-row__pick-button"
+            type="button"
+            :aria-expanded="isTreeOpen"
+            @click="isTreeOpen = !isTreeOpen"
+          >
+            <span class="mdi mdi-file-tree-outline" />
             {{
               target
                 ? t("entitySorting.suggestions.otherFolder")
                 : t("entitySorting.suggestions.chooseFolder")
             }}
-          </option>
-          <option v-for="path in folderOptions" :key="path" :value="path">{{ path }}</option>
-          <option :value="NEW_FOLDER">{{ t("entitySorting.suggestions.newFolder") }}</option>
-        </select>
+          </button>
+          <FolderTreePanel
+            v-if="isTreeOpen"
+            class="bundle-row__tree"
+            :folders="folderOptions"
+            :current="target ?? ''"
+            @pick="pickFolder"
+            @close="isTreeOpen = false"
+          >
+            <template #footer>
+              <button class="btn btn--sm" type="button" @click="startNaming">
+                <span class="mdi mdi-folder-plus-outline" />
+                {{ t("entitySorting.suggestions.newFolder") }}
+              </button>
+            </template>
+          </FolderTreePanel>
+        </span>
       </div>
     </div>
     <div class="bundle-row__actions">
@@ -152,9 +166,11 @@
 </template>
 
 <script setup lang="ts">
+import { onClickOutside } from "@vueuse/core";
 import { computed, nextTick, ref, useTemplateRef } from "vue";
 import { useI18n } from "vue-i18n";
 
+import FolderTreePanel from "@/components/common/FolderTreePanel.vue";
 import { useSortingTexts } from "@/composables/useSortingTexts";
 import { useEntitySortingStore } from "@/stores/entitySortingStore";
 import { useSettingsStore } from "@/stores/settingsStore";
@@ -178,14 +194,16 @@ const emit = defineEmits<{
   toggle: [];
 }>();
 
-const NEW_FOLDER = "\u0000new";
-
 const { t } = useI18n();
 const sorting = useEntitySortingStore();
 const settings = useSettingsStore();
 const toasts = useToastStore();
 const texts = useSortingTexts();
 const isNaming = ref(false);
+const isTreeOpen = ref(false);
+const picker = useTemplateRef("picker");
+
+onClickOutside(picker, () => (isTreeOpen.value = false));
 const newName = ref("");
 const nameInput = useTemplateRef("nameInput");
 
@@ -261,18 +279,16 @@ function ownTargetOf(entity: SortingEntity): string | null {
     : null;
 }
 
-async function onPick(event: Event): Promise<void> {
-  const select = event.target as HTMLSelectElement;
-  const value = select.value;
-  select.value = "";
+function pickFolder(path: string): void {
+  isTreeOpen.value = false;
+  sorting.pick(props.bundle.key, path);
+}
 
-  if (value === NEW_FOLDER) {
-    isNaming.value = true;
-    await nextTick();
-    nameInput.value?.focus();
-  } else if (value) {
-    sorting.pick(props.bundle.key, value);
-  }
+async function startNaming(): Promise<void> {
+  isTreeOpen.value = false;
+  isNaming.value = true;
+  await nextTick();
+  nameInput.value?.focus();
 }
 
 function takeNewName(): void {
@@ -467,6 +483,36 @@ function onKey(event: KeyboardEvent): void {
   height: 26px;
   padding: 0 6px;
   font-size: 12px;
+}
+
+.bundle-row__picker {
+  position: relative;
+}
+
+.bundle-row__pick-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 26px;
+  padding: 0 9px;
+  border: 1px solid var(--line-strong);
+  border-radius: 7px;
+  background: var(--surface-2);
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.bundle-row__pick-button:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.bundle-row__tree {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 6;
 }
 
 .bundle-row__actions {

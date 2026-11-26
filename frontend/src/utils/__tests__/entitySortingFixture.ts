@@ -221,6 +221,16 @@ export function sampleContext(): SortingContext {
       flow("PV laden", "Energie", [["binary_sensor.jemand_zuhause", "condition"]]),
       flow("Rauchalarm", null, [["binary_sensor.rauch_eg", "trigger"]]),
     ],
+    entries: [
+      {
+        entityId: "input_boolean.kinderzimmer_board_taster",
+        name: "Kinderzimmer-Board-Taster",
+        kind: "helper",
+        categoryPath: null,
+        labels: [],
+        areaId: null,
+      },
+    ],
     folders: [
       "Haus/Küche/Licht",
       "Haus/Küche/Kochen",

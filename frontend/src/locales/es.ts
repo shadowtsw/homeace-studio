@@ -1507,6 +1507,10 @@ const es: MessageSchema = {
       matches: "encaja con 1 entidad | encaja con {count} entidades",
       lost: "en {count} gana una regla más precisa o anterior",
       withoutArea: "{count} sin área omitidas",
+      entriesMatch:
+        "{count} entradas también encajan (automatizaciones, scripts, escenas o ayudantes); la herramienta aún no las ordena",
+      sortedMatch:
+        "{count} ya tienen carpeta (ver «Reordenar también entidades que ya tienen carpeta»)",
       and: "Y",
       when: "Si",
       folder: "Carpeta",
@@ -1558,6 +1562,11 @@ const es: MessageSchema = {
       liveNew: "{count} con destino nuevo",
       liveLess: "{count} menos seguras",
       reorder: "Ordenar la lista de nuevo",
+      nothingForFilter:
+        "No hay nada para este filtro. Las propuestas probables y dudosas están ocultas.",
+      showLikely: "Añadir «probable»",
+      showAll: "Mostrar todo",
+      footerHidden: "{count} de ellas ocultas",
       sectionFolder: "En carpetas existentes",
       sectionFolderNote: "Ordenado por efecto: primero los grupos grandes y seguros.",
       sectionNew: "Carpetas nuevas",
