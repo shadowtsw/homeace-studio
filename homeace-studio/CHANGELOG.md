@@ -83,6 +83,10 @@
   "Was ist neu") also close with an X, not only by clicking next to them.
 - "Neu" → "Szene" creates an empty scene in the chosen folder and opens it in the scene editor; add
   devices by dragging them in or with "Gerät hinzufügen".
+- The run history says "Von Hand gestartet" for an automation started with "Ausführen" instead of
+  "Von einer Automation oder einem Skript gestartet".
+- "Aktion hinzufügen" lists your scripts by their name instead of `script.<key>`. Actions that Home
+  Assistant has no translation for show its English name instead of their technical key.
 
 ## 0.13.0
 
