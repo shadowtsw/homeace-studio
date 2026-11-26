@@ -101,6 +101,9 @@ Choosing a tree node always sets `isNavOpen = false`, and opening an entry alway
   CSS on the tokens, so it follows light/dark and the language; no screenshot to keep up to date). The
   sketch reuses the app's own words (`areas.viewFolders`, `detail.tabs.*`, `save.save`); change the
   sketch when the top bar, the detail tabs or the save footer move. The window opens on this topic.
+- **Über HomeAce** ends with the maker's signature "crafted with ♥ by shadowtsw" (link to the GitHub
+  profile, `AUTHOR_URL`). The owner wanted a personal note; it is the same English words in every
+  language, like a hand-written signature, so it has no locale keys.
 - **Rules:** a setting only exists when users really want it differently. Texts describe what the
   user notices, never how it is built (technical detail only behind "Technische Details").
 - Phone: for now the window fills the screen with the tabs on top; a list → page layout comes later.

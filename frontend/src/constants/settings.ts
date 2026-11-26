@@ -21,6 +21,8 @@ export const SETTINGS_TABS: readonly { tab: SettingsTab; icon: string }[] = [
 
 /** Where users report a bug or suggest an idea. */
 export const ISSUES_URL = "https://github.com/shadowtsw/homeace-studio/issues";
+/** The maker's GitHub profile, for the signature under "Über HomeAce". */
+export const AUTHOR_URL = "https://github.com/shadowtsw";
 
 /**
  * Topics of "Gut zu wissen". They explain how HomeAce Studio behaves, never how it is built. Every

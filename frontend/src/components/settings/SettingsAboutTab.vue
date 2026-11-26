@@ -25,13 +25,20 @@
       :hint="haUserText"
     />
   </div>
+  <!-- The maker's signature: the same English words in every language, like a hand-written one -->
+  <p class="settings-about__signature">
+    crafted with
+    <span class="mdi mdi-heart settings-about__heart" role="img" aria-label="love" />
+    by
+    <a :href="AUTHOR_URL" target="_blank" rel="noopener noreferrer">shadowtsw</a>
+  </p>
 </template>
 
 <script setup lang="ts">
 import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 
-import { ISSUES_URL } from "@/constants/settings";
+import { AUTHOR_URL, ISSUES_URL } from "@/constants/settings";
 import { RELEASES_URL } from "@/constants/whatsNew";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { useSettingsWindowStore } from "@/stores/settingsWindowStore";
@@ -59,3 +66,25 @@ const haUserText = computed(() => {
     : t("settings.haUserMissing");
 });
 </script>
+
+<style scoped>
+.settings-about__signature {
+  margin: 18px 0 4px;
+  color: var(--faint);
+  font-size: 12px;
+  text-align: center;
+}
+
+.settings-about__heart {
+  color: var(--err);
+}
+
+.settings-about__signature a {
+  color: inherit;
+  text-decoration: underline dotted;
+}
+
+.settings-about__signature a:hover {
+  color: var(--fg);
+}
+</style>
