@@ -36,12 +36,28 @@ HOMEACE_DEMO=true PORT=3100 STATIC_DIR=../frontend/dist node dist/main.js   # ht
 For frontend work, `HOMEACE_DEMO=true npm run start:dev` plus `npm run dev` in `frontend/` works too.
 In PowerShell set the variable with `$env:HOMEACE_DEMO = "true"` first.
 
-### README screenshots
+### README screenshots and clips
 
 `node scripts/screenshots.mjs` takes the pictures in `docs/images/` from a running demo on port 3100
 (`--url`, `--out` to change). It drives the installed Edge or Chrome headless through the DevTools
 protocol, so it needs no extra package; `BROWSER_PATH` points to another browser. The pictures only
-ever show the demo home, never real data.
+ever show the demo home, never real data. `--locale de` takes them in another language (for posts,
+with `--out` outside the repo), `--with-posts` adds the pictures meant only for posts, `--only a.png,b.png`
+takes just those.
+
+`node scripts/recordings.mjs` records the short clips (drag into a flow, scene editor, sort into a
+folder) as GIFs into `docs/images/`, and with `--mp4-out <folder>` also as MP4 for posts. It needs
+ffmpeg on the PATH. The clips change the demo (a new automation, a sorted device), so take the
+screenshots first and restart the demo before recording again.
+
+Both share `scripts/devtools.mjs` (start the browser, click, open the app). Pitfalls found on the way:
+
+- Edge starts extensions, updates and sync next to the page; after about 15 s every screenshot then
+  waits seconds to minutes. The quiet start options in `devtools.mjs` prevent that.
+- A frontend build under a Windows short path (`C:\Users\ABCDEF~1\…`) loads Vue twice and the page stays
+  blank ("reading '_s'"); build the demo from a long path.
+- Clips are filmed in stop motion (each pointer step one frame of fixed length), because a screenshot
+  takes longer than a frame lasts. Drags and clicks are the page's own events under a drawn pointer.
 
 ## POC step 1: nested categories
 
