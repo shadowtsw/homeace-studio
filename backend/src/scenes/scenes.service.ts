@@ -119,10 +119,13 @@ export class ScenesService {
       }),
     );
 
-    await this.scenes.saveConfig(found.id, {
-      ...found.config,
-      entities,
-      metadata: nextMetadata,
+    await this.scenes.saveConfig({
+      id: found.id,
+      config: {
+        ...found.config,
+        entities,
+        metadata: nextMetadata,
+      },
     });
     this.logger.log(`Saved scene ${entityId}`);
 

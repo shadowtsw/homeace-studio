@@ -31,6 +31,21 @@ type PendingRequest = {
 
 export type HaEventHandler = (event: HaEvent) => void;
 
+export type HaCallOptions = {
+  type: string;
+  payload?: Record<string, unknown>;
+};
+
+export type HaSnapshotOptions = {
+  type: string;
+  payload?: Record<string, unknown>;
+};
+
+export type HaSubscribeOptions = {
+  eventType: string;
+  handler: HaEventHandler;
+};
+
 /**
  * One shared WebSocket connection to Home Assistant, used by every module.
  *
@@ -60,7 +75,7 @@ export class HaConnectionService implements OnModuleDestroy {
    * Sends one command and resolves with its `result`.
    * HA's WebSocket API is untyped, so the caller declares the shape it expects for this command.
    */
-  async call<TResult>(type: string, payload: Record<string, unknown> = {}): Promise<TResult> {
+  async call<TResult>({ type, payload = {} }: HaCallOptions): Promise<TResult> {
     await this.ensureConnected();
 
     const result = await this.request({ id: this.nextId++, type, payload });
@@ -72,7 +87,7 @@ export class HaConnectionService implements OnModuleDestroy {
    * For subscription commands that send their data as the first event (e.g.
    * `trigger_platforms/subscribe`): subscribes, resolves with that first event, then unsubscribes.
    */
-  async snapshot<TEvent>(type: string, payload: Record<string, unknown> = {}): Promise<TEvent> {
+  async snapshot<TEvent>({ type, payload = {} }: HaSnapshotOptions): Promise<TEvent> {
     await this.ensureConnected();
 
     const id = this.nextId++;
@@ -99,7 +114,9 @@ export class HaConnectionService implements OnModuleDestroy {
 
     const event = await firstEvent;
     // Only the first answer is needed; later updates would just pile up.
-    void this.call(HA_COMMAND.unsubscribeEvents, { subscription: id }).catch(() => undefined);
+    void this.call({ type: HA_COMMAND.unsubscribeEvents, payload: { subscription: id } }).catch(
+      () => undefined,
+    );
 
     return event as TEvent;
   }
@@ -127,7 +144,7 @@ export class HaConnectionService implements OnModuleDestroy {
   }
 
   /** Calls `handler` for every event of this type, also after reconnects. */
-  subscribe(eventType: string, handler: HaEventHandler): void {
+  subscribe({ eventType, handler }: HaSubscribeOptions): void {
     const handlers = this.handlersByEventType.get(eventType) ?? [];
     this.handlersByEventType.set(eventType, [...handlers, handler]);
 
@@ -242,7 +259,7 @@ export class HaConnectionService implements OnModuleDestroy {
   /** @returns Whether HA accepted the subscription; on failure a reconnect is scheduled. */
   private async sendSubscription(eventType: string): Promise<boolean> {
     try {
-      await this.call(HA_COMMAND.subscribeEvents, { event_type: eventType });
+      await this.call({ type: HA_COMMAND.subscribeEvents, payload: { event_type: eventType } });
       return true;
     } catch (error) {
       this.logger.warn(`Subscribing to "${eventType}" failed: ${String(error)}`);

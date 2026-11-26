@@ -83,7 +83,7 @@ describe("EditorService", () => {
 
     const flow = await service.getFlow("automation.licht");
 
-    expect(loadConfig).toHaveBeenCalledWith("automation", "automation.licht");
+    expect(loadConfig).toHaveBeenCalledWith({ kind: "automation", entityId: "automation.licht" });
     expect(flow.entityNames).toEqual({ "input_button.licht": "Licht aus" });
     expect(flow.isEditable).toBe(true);
   });
@@ -122,9 +122,13 @@ describe("EditorService", () => {
 
     const flow = await service.saveFlow({ entityId: "automation.licht", config: edited });
 
-    expect(saveConfig).toHaveBeenCalledWith("automation", "1718034411822", {
-      ...edited,
-      id: "1718034411822",
+    expect(saveConfig).toHaveBeenCalledWith({
+      kind: "automation",
+      key: "1718034411822",
+      config: {
+        ...edited,
+        id: "1718034411822",
+      },
     });
     expect(flow.config).toMatchObject({ alias: "Licht neu", unknown_field: { a: 1 } });
     expect(flow.isEditable).toBe(true);
@@ -139,7 +143,7 @@ describe("EditorService", () => {
 
     await service.saveFlow({ entityId: "script.gute_nacht", config: script });
 
-    expect(saveConfig).toHaveBeenCalledWith("script", "gute_nacht", script);
+    expect(saveConfig).toHaveBeenCalledWith({ kind: "script", key: "gute_nacht", config: script });
   });
 
   it("refuses to save flows HA does not keep in its files", async () => {

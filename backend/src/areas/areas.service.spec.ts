@@ -18,7 +18,7 @@ describe("AreasService", () => {
 
     expect(area).toEqual({ areaId: "bedroom", name: "Bedroom", icon: "mdi:bed" });
     expect(
-      (await ha.call<HaArea[]>(HA_COMMAND.areaRegistryList)).map((item) => item.name),
+      (await ha.call<HaArea[]>({ type: HA_COMMAND.areaRegistryList })).map((item) => item.name),
     ).toContain("Bedroom");
   });
 
@@ -56,7 +56,7 @@ describe("AreasService", () => {
 
     await service.delete("garage");
 
-    const devices = await ha.call<HaDevice[]>(HA_COMMAND.deviceRegistryList);
+    const devices = await ha.call<HaDevice[]>({ type: HA_COMMAND.deviceRegistryList });
     expect(devices.find((device) => device.name === "Wallbox")?.area_id).toBeNull();
     await expect(service.delete("garage")).rejects.toMatchObject({
       response: { message: "AREA_NOT_FOUND" },

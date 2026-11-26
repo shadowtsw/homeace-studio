@@ -13,23 +13,26 @@ export class HaSortingSourcesRepository implements SortingSourcesRepository {
   constructor(private readonly ha: HaConnectionService) {}
 
   floors(): Promise<HaFloor[]> {
-    return this.ha.call<HaFloor[]>(HA_COMMAND.floorRegistryList);
+    return this.ha.call<HaFloor[]>({ type: HA_COMMAND.floorRegistryList });
   }
 
   labels(): Promise<HaLabel[]> {
-    return this.ha.call<HaLabel[]>(HA_COMMAND.labelRegistryList);
+    return this.ha.call<HaLabel[]>({ type: HA_COMMAND.labelRegistryList });
   }
 
   entityCategories(): Promise<HaCategory[]> {
-    return this.ha.call<HaCategory[]>(HA_COMMAND.categoryRegistryList, {
-      scope: CATEGORY_SCOPE.entities,
+    return this.ha.call<HaCategory[]>({
+      type: HA_COMMAND.categoryRegistryList,
+      payload: {
+        scope: CATEGORY_SCOPE.entities,
+      },
     });
   }
 
   /** Names only make proposals nicer; without them the tool still works with the domains. */
   async integrationNames(): Promise<Record<string, string>> {
     try {
-      const manifests = await this.ha.call<HaManifest[]>(HA_COMMAND.manifestList);
+      const manifests = await this.ha.call<HaManifest[]>({ type: HA_COMMAND.manifestList });
 
       return Object.fromEntries(manifests.map((manifest) => [manifest.domain, manifest.name]));
     } catch (error) {

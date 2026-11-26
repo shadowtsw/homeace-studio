@@ -39,10 +39,13 @@ export class LabelsService {
     const name = fields.name.trim();
     await this.requireFreeName({ name, ownId: null });
 
-    const created = await this.ha.call<HaLabel>(HA_COMMAND.labelRegistryCreate, {
-      name,
-      color: fields.color ?? null,
-      icon: fields.icon ?? null,
+    const created = await this.ha.call<HaLabel>({
+      type: HA_COMMAND.labelRegistryCreate,
+      payload: {
+        name,
+        color: fields.color ?? null,
+        icon: fields.icon ?? null,
+      },
     });
     return toLabel(created);
   }
@@ -59,13 +62,13 @@ export class LabelsService {
     if (fields.color !== undefined) payload.color = fields.color;
     if (fields.icon !== undefined) payload.icon = fields.icon;
 
-    return toLabel(await this.ha.call<HaLabel>(HA_COMMAND.labelRegistryUpdate, payload));
+    return toLabel(await this.ha.call<HaLabel>({ type: HA_COMMAND.labelRegistryUpdate, payload }));
   }
 
   /** HA takes the label away from everything that carries it; flows naming it lose that target. */
   async delete(labelId: string): Promise<void> {
     await this.requireLabel(labelId);
-    await this.ha.call(HA_COMMAND.labelRegistryDelete, { label_id: labelId });
+    await this.ha.call({ type: HA_COMMAND.labelRegistryDelete, payload: { label_id: labelId } });
   }
 
   /** What deleting the label would touch, for the warning before it goes. */
@@ -75,7 +78,7 @@ export class LabelsService {
   }
 
   private list(): Promise<HaLabel[]> {
-    return this.ha.call<HaLabel[]>(HA_COMMAND.labelRegistryList);
+    return this.ha.call<HaLabel[]>({ type: HA_COMMAND.labelRegistryList });
   }
 
   private async requireLabel(labelId: string): Promise<void> {

@@ -39,7 +39,7 @@ describe("HaRestService", () => {
   it("posts JSON and throws HA's message on errors", async () => {
     fetchMock.mockResolvedValue(answer(400, { message: "Message malformed: bad" }));
 
-    const result = service.post("config/automation/config/1", { alias: "A" });
+    const result = service.post({ path: "config/automation/config/1", body: { alias: "A" } });
 
     await expect(result).rejects.toEqual(new HaRestError(400, "Message malformed: bad"));
     expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({

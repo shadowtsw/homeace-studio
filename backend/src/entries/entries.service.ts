@@ -89,7 +89,7 @@ export class EntriesService {
    */
   async update({ entityId, changes }: UpdateOptions): Promise<Entry> {
     await this.requireRegistered(entityId);
-    await this.entries.update(entityId, normalizeChanges(changes));
+    await this.entries.update({ entityId, changes: normalizeChanges(changes) });
 
     return this.requireEntry(entityId);
   }
@@ -112,7 +112,7 @@ export class EntriesService {
       );
     }
 
-    await this.entries.callService(entry.domain, service, entityId);
+    await this.entries.callService({ domain: entry.domain, service, entityId });
   }
 
   /** Saves favorite and note (overlay only). */

@@ -33,15 +33,19 @@ export class TracesService {
    */
   async keepRuns({ entityId, count }: KeepRunsOptions): Promise<{ storedTraces: number }> {
     const { kind, key } = await this.flows.requireStoredFlow(entityId);
-    const stored = (await this.editor.loadStoredConfig(kind, key)) ?? {};
+    const stored = (await this.editor.loadStoredConfig({ kind, key })) ?? {};
     const trace =
       stored.trace && typeof stored.trace === "object"
         ? (stored.trace as Record<string, unknown>)
         : {};
 
-    await this.editor.saveConfig(kind, key, {
-      ...stored,
-      trace: { ...trace, stored_traces: count },
+    await this.editor.saveConfig({
+      kind,
+      key,
+      config: {
+        ...stored,
+        trace: { ...trace, stored_traces: count },
+      },
     });
 
     return { storedTraces: count };
@@ -51,15 +55,18 @@ export class TracesService {
     const kind = entityId.split(".")[0] ?? "";
     if (!FLOW_KINDS.includes(kind)) return { entityId, storedTraces: 0, runs: [] };
 
-    const config = await this.editor.loadConfig(kind as FlowKind, entityId);
+    const config = await this.editor.loadConfig({ kind: kind as FlowKind, entityId });
     const storedTraces = storedTracesOf(config);
     // HA files runs under the automation id or the script key; without one it keeps none.
-    const itemId = await this.editor.loadStorageKey(kind as FlowKind, entityId, config);
+    const itemId = await this.editor.loadStorageKey({ kind: kind as FlowKind, entityId, config });
     if (!itemId) return { entityId, storedTraces, runs: [] };
 
-    const summaries = await this.ha.call<HaTrace[]>(HA_COMMAND.traceList, {
-      domain: kind,
-      item_id: itemId,
+    const summaries = await this.ha.call<HaTrace[]>({
+      type: HA_COMMAND.traceList,
+      payload: {
+        domain: kind,
+        item_id: itemId,
+      },
     });
     const runs = await Promise.all(
       summaries.map((summary) => this.loadRun({ domain: kind, itemId, summary })),
@@ -83,10 +90,13 @@ export class TracesService {
     summary: HaTrace;
   }): Promise<Run> {
     try {
-      const trace = await this.ha.call<HaTrace>(HA_COMMAND.traceGet, {
-        domain,
-        item_id: itemId,
-        run_id: summary.run_id,
+      const trace = await this.ha.call<HaTrace>({
+        type: HA_COMMAND.traceGet,
+        payload: {
+          domain,
+          item_id: itemId,
+          run_id: summary.run_id,
+        },
       });
       return toRun(trace);
     } catch {

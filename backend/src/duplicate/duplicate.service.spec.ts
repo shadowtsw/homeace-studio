@@ -59,8 +59,11 @@ describe("DuplicateService", () => {
       state: "off",
     });
 
-    const config = await editor.loadConfig("automation", entityId);
-    const source = await editor.loadConfig("automation", "automation.terrace_light_on_motion");
+    const config = await editor.loadConfig({ kind: "automation", entityId });
+    const source = await editor.loadConfig({
+      kind: "automation",
+      entityId: "automation.terrace_light_on_motion",
+    });
     expect(config.triggers).toEqual(source.triggers);
     expect(config.id).not.toBe(source.id);
   });
@@ -74,7 +77,7 @@ describe("DuplicateService", () => {
     });
 
     expect(entityId).not.toBe("script.terrace_evening_mood");
-    const config = await editor.loadConfig("script", entityId);
+    const config = await editor.loadConfig({ kind: "script", entityId });
     expect(config.alias).toBe("Evening mood 2");
     expect(Array.isArray(config.sequence)).toBe(true);
   });

@@ -68,7 +68,7 @@ export class HelpersService {
    */
   async create(dto: CreateHelperDto): Promise<{ entityId: string }> {
     const payload = this.toPayload(dto);
-    const helperId = await this.helpers.create(dto.type, payload);
+    const helperId = await this.helpers.create({ type: dto.type, payload });
     const entityId = await this.waitForEntityId({ type: dto.type, helperId });
 
     if (!entityId) {
@@ -114,7 +114,7 @@ export class HelpersService {
       );
     }
 
-    await this.helpers.remove(type, registration.uniqueId);
+    await this.helpers.remove({ type, helperId: registration.uniqueId });
     await this.overlay.update((overlay) => removeExtras({ overlay, entityId }));
 
     if (registration.categoryId) {
@@ -154,7 +154,7 @@ export class HelpersService {
       buildUpdatePayload({ type: helper.type, stored: helper.stored, settings }),
     );
 
-    await this.helpers.update(helper.type, helper.helperId, payload);
+    await this.helpers.update({ type: helper.type, helperId: helper.helperId, payload });
     this.logger.log(`Saved the settings of ${entityId}`);
 
     return this.settings(entityId);
@@ -168,10 +168,10 @@ export class HelpersService {
    */
   async copy({ entityId, name, categoryPath }: CopyOptions): Promise<string> {
     const helper = await this.requireStorageHelper(entityId);
-    const helperId = await this.helpers.create(
-      helper.type,
-      buildCopyPayload({ stored: helper.stored, name }),
-    );
+    const helperId = await this.helpers.create({
+      type: helper.type,
+      payload: buildCopyPayload({ stored: helper.stored, name }),
+    });
     const copyId = await this.waitForEntityId({ type: helper.type, helperId });
 
     if (!copyId) {
@@ -213,7 +213,7 @@ export class HelpersService {
       );
     }
 
-    const stored = await this.helpers.findStored(type, registration.uniqueId);
+    const stored = await this.helpers.findStored({ type, helperId: registration.uniqueId });
 
     if (!stored) throw notFound();
 
@@ -260,7 +260,7 @@ export class HelpersService {
     helperId: string;
   }): Promise<string | null> {
     for (let attempt = 0; attempt < ENTITY_LOOKUP_ATTEMPTS; attempt++) {
-      const entityId = await this.helpers.findEntityId(type, helperId);
+      const entityId = await this.helpers.findEntityId({ type, helperId });
 
       if (entityId) return entityId;
 

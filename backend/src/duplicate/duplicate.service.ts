@@ -44,7 +44,7 @@ export class DuplicateService {
     }
 
     const { kind, key } = await this.flowEditor.requireStoredFlow(entityId);
-    const source = await this.editor.loadStoredConfig(kind, key);
+    const source = await this.editor.loadStoredConfig({ kind, key });
     const entry = (await this.entries.findAll()).find((item) => item.entityId === entityId);
 
     if (!source || !entry) {

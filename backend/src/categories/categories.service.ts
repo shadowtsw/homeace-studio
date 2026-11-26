@@ -77,7 +77,7 @@ export class CategoriesService {
 
     if (targetId === currentCategoryId) return;
 
-    await this.categories.assign(entityId, scope, targetId);
+    await this.categories.assign({ entityId, scope, categoryId: targetId });
 
     if (currentCategoryId) {
       await this.cleanUp({ scope, categoryId: currentCategoryId });
@@ -92,7 +92,7 @@ export class CategoriesService {
    */
   async moveEntity({ entityId, targetPath }: MoveEntityOptions): Promise<void> {
     const scope = CATEGORY_SCOPE.entities;
-    const currentCategoryId = await this.categories.findEntityCategory(entityId, scope);
+    const currentCategoryId = await this.categories.findEntityCategory({ entityId, scope });
 
     if (currentCategoryId === undefined) {
       throw new BadRequestException(
@@ -150,7 +150,7 @@ export class CategoriesService {
           continue;
         }
 
-        await this.categories.assign(move.entityId, scope, targetId);
+        await this.categories.assign({ entityId: move.entityId, scope, categoryId: targetId });
 
         if (targetId) currentOf.set(move.entityId, targetId);
         else currentOf.delete(move.entityId);
@@ -192,7 +192,7 @@ export class CategoriesService {
     const renames = plans.flat();
 
     for (const { scope, categoryId, newName } of renames) {
-      await this.categories.rename(scope, categoryId, newName);
+      await this.categories.rename({ scope, categoryId, name: newName });
     }
 
     // Empty folders and folder colors move along, so the folder keeps its subfolders and looks.
@@ -274,7 +274,7 @@ export class CategoriesService {
     scope: CategoryScope;
     path: string;
   }): Promise<string> {
-    const created = await this.categories.create(scope, path);
+    const created = await this.categories.create({ scope, name: path });
     await this.overlay.update((overlay) => ({
       ...overlay,
       ownedCategoryIds: [...overlay.ownedCategoryIds, created.categoryId],
@@ -293,11 +293,11 @@ export class CategoriesService {
 
     if (!overlay.ownedCategoryIds.includes(categoryId)) return;
 
-    const assignedCount = await this.categories.countAssigned(scope, categoryId);
+    const assignedCount = await this.categories.countAssigned({ scope, categoryId });
 
     if (assignedCount > 0) return;
 
-    await this.categories.delete(scope, categoryId);
+    await this.categories.delete({ scope, categoryId });
     await this.overlay.update((current) => ({
       ...current,
       ownedCategoryIds: current.ownedCategoryIds.filter((id) => id !== categoryId),

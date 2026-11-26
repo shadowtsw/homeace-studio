@@ -73,11 +73,11 @@ export class HomeSnapshotService implements OnModuleInit {
     const [entries, states, registry, devices, areas, traces] = await Promise.all([
       this.entries.findAll(),
       this.editor.loadStates(),
-      this.ha.call<HaEntityRegistryEntry[]>(HA_COMMAND.entityRegistryList),
-      this.ha.call<HaDevice[]>(HA_COMMAND.deviceRegistryList),
-      this.ha.call<HaArea[]>(HA_COMMAND.areaRegistryList),
+      this.ha.call<HaEntityRegistryEntry[]>({ type: HA_COMMAND.entityRegistryList }),
+      this.ha.call<HaDevice[]>({ type: HA_COMMAND.deviceRegistryList }),
+      this.ha.call<HaArea[]>({ type: HA_COMMAND.areaRegistryList }),
       // Without the trace integration there is simply no run history.
-      this.ha.call<HaTrace[]>(HA_COMMAND.traceList).catch((): HaTrace[] => []),
+      this.ha.call<HaTrace[]>({ type: HA_COMMAND.traceList }).catch((): HaTrace[] => []),
     ]);
     const flows = entries.filter((entry) => (FLOW_KINDS as readonly string[]).includes(entry.kind));
     const configs = new Map<string, unknown>();
@@ -87,7 +87,10 @@ export class HomeSnapshotService implements OnModuleInit {
         try {
           configs.set(
             entry.entityId,
-            await this.editor.loadConfig(entry.kind as FlowKind, entry.entityId),
+            await this.editor.loadConfig({
+              kind: entry.kind as FlowKind,
+              entityId: entry.entityId,
+            }),
           );
         } catch {
           // A flow HA cannot hand out (e.g. broken YAML) is simply left out.

@@ -1,9 +1,9 @@
-import type { HaConnectionService } from "../ha/ha-connection.service";
+import type { HaCallOptions, HaConnectionService } from "../ha/ha-connection.service";
 import { LookupsController } from "./lookups.controller";
 
 describe("LookupsController", () => {
   it("maps areas and labels to camelCase and sorts them by name", async () => {
-    const call = jest.fn((type: string) =>
+    const call = jest.fn(({ type }: HaCallOptions) =>
       Promise.resolve(
         type === "config/area_registry/list"
           ? [
@@ -57,7 +57,7 @@ describe("LookupsController", () => {
       { floorId: "og", name: "Obergeschoss", icon: "mdi:home-floor-1" },
       { floorId: "attic", name: "Attic", icon: null },
     ]);
-    expect(call).toHaveBeenCalledWith("config/floor_registry/list");
+    expect(call).toHaveBeenCalledWith({ type: "config/floor_registry/list" });
   });
 
   it("lists entities with name, domain, state, select options, device and area", async () => {
@@ -94,7 +94,7 @@ describe("LookupsController", () => {
       "config/label_registry/list": [],
       "config/category_registry/list": [],
     };
-    const call = jest.fn((type: string) => Promise.resolve(answers[type]));
+    const call = jest.fn(({ type }: HaCallOptions) => Promise.resolve(answers[type]));
     const controller = new LookupsController({ call } as unknown as HaConnectionService);
 
     const entities = await controller.entities();

@@ -55,7 +55,7 @@ async function startLoggedIn<T>(
   service: HaConnectionService,
   type: string,
 ): Promise<{ socket: FakeSocket; result: Promise<T> }> {
-  const result = service.call<T>(type);
+  const result = service.call<T>({ type });
   const socket = FakeSocket.instances[0];
 
   socket.receive({ type: "auth_required" });
@@ -100,8 +100,8 @@ describe("HaConnectionService", () => {
     const first = jest.fn();
     const second = jest.fn();
 
-    service.subscribe("state_changed", first);
-    service.subscribe("state_changed", second);
+    service.subscribe({ eventType: "state_changed", handler: first });
+    service.subscribe({ eventType: "state_changed", handler: second });
     const socket = FakeSocket.instances[0];
     await logIn(socket);
     socket.receive({ id: socket.lastCommandId(), type: "result", success: true, result: null });
@@ -118,7 +118,7 @@ describe("HaConnectionService", () => {
 
   it("reconnects on its own after a drop and subscribes again", async () => {
     jest.useFakeTimers({ doNotFake: ["setImmediate"] });
-    service.subscribe("state_changed", jest.fn());
+    service.subscribe({ eventType: "state_changed", handler: jest.fn() });
     const first = FakeSocket.instances[0];
     await logIn(first);
     first.receive({ id: first.lastCommandId(), type: "result", success: true, result: null });
@@ -161,7 +161,7 @@ describe("HaConnectionService", () => {
   });
 
   it("rejects when HA refuses the token", async () => {
-    const result = service.call("get_states");
+    const result = service.call({ type: "get_states" });
     const socket = FakeSocket.instances[0];
 
     socket.receive({ type: "auth_required" });
@@ -176,7 +176,7 @@ describe("HaConnectionService", () => {
     socket.close();
     await expect(result).rejects.toThrow("Home Assistant disconnected");
 
-    void service.call("get_states").catch(() => undefined);
+    void service.call({ type: "get_states" }).catch(() => undefined);
     expect(FakeSocket.instances).toHaveLength(2);
   });
 });

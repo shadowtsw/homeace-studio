@@ -27,8 +27,11 @@ export class LiveService implements OnModuleInit {
 
   onModuleInit(): void {
     for (const eventType of LIVE_EVENT_TYPES) {
-      this.ha.subscribe(eventType, (event) => {
-        if (isRelevantChange(event)) this.changes.next();
+      this.ha.subscribe({
+        eventType,
+        handler: (event) => {
+          if (isRelevantChange(event)) this.changes.next();
+        },
       });
     }
   }

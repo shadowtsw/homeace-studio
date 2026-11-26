@@ -131,9 +131,12 @@ export class RenameService {
 
     const references = await this.references(entityId);
 
-    await this.ha.call(HA_COMMAND.entityRegistryUpdate, {
-      entity_id: entityId,
-      new_entity_id: newEntityId,
+    await this.ha.call({
+      type: HA_COMMAND.entityRegistryUpdate,
+      payload: {
+        entity_id: entityId,
+        new_entity_id: newEntityId,
+      },
     });
     await this.overlay.update((current) =>
       carryOver({ overlay: current, from: entityId, to: newEntityId }),
@@ -149,7 +152,7 @@ export class RenameService {
       }
 
       const { kind, key } = await this.flows.requireStoredFlow(reference.entityId);
-      const stored = await this.editor.loadStoredConfig(kind, key);
+      const stored = await this.editor.loadStoredConfig({ kind, key });
       if (!stored) {
         skipped.push(reference);
         continue;
@@ -159,7 +162,7 @@ export class RenameService {
         string,
         unknown
       >;
-      await this.editor.saveConfig(kind, key, next);
+      await this.editor.saveConfig({ kind, key, config: next });
       updated.push(reference);
     }
 

@@ -61,7 +61,7 @@ export class FlowsService {
     // A copy takes the whole flow; only the id (automations) and the name are new.
     const config = copyOf ? { ...copyOf, ...pickIdentity(fresh.config) } : fresh.config;
 
-    await this.editor.saveConfig(dto.kind, key, config).catch((error: unknown) => {
+    await this.editor.saveConfig({ kind: dto.kind, key, config }).catch((error: unknown) => {
       throw toFlowError(error);
     });
 
@@ -96,9 +96,9 @@ export class FlowsService {
    */
   async delete(entityId: string): Promise<void> {
     const { kind, key } = await this.editorService.requireStoredFlow(entityId);
-    const categoryId = await this.editor.loadCategoryId(kind, entityId);
+    const categoryId = await this.editor.loadCategoryId({ kind, entityId });
 
-    await this.editor.deleteConfig(kind, key);
+    await this.editor.deleteConfig({ kind, key });
     await this.overlay.update((overlay) => removeExtras({ overlay, entityId }));
 
     if (categoryId) await this.categories.cleanUp({ scope: kind, categoryId });
@@ -134,8 +134,8 @@ export class FlowsService {
       base: scriptKeyFor(name),
       isTaken: async (candidate) => {
         const [stored, entityId] = await Promise.all([
-          this.editor.loadStoredConfig(kind, candidate),
-          this.editor.findEntityId(kind, candidate),
+          this.editor.loadStoredConfig({ kind, key: candidate }),
+          this.editor.findEntityId({ kind, key: candidate }),
         ]);
         return stored !== null || entityId !== null;
       },
@@ -153,7 +153,7 @@ export class FlowsService {
     key: string;
   }): Promise<string | null> {
     for (let attempt = 0; attempt < FLOW_LOOKUP_ATTEMPTS; attempt++) {
-      const entityId = await this.editor.findEntityId(kind, key);
+      const entityId = await this.editor.findEntityId({ kind, key });
 
       if (entityId) return entityId;
 

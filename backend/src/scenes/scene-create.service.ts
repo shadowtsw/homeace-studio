@@ -36,9 +36,11 @@ export class SceneCreateService {
     const id = String(this.now());
 
     // Write the empty scene; HA reloads its scenes on its own
-    await this.scenes.saveConfig(id, { id, name, entities: {} }).catch((error: unknown) => {
-      throw toFlowError(error);
-    });
+    await this.scenes
+      .saveConfig({ id, config: { id, name, entities: {} } })
+      .catch((error: unknown) => {
+        throw toFlowError(error);
+      });
 
     // Wait for HA to register it, then sort it into its folder
     const entityId = await this.waitForEntityId(id);

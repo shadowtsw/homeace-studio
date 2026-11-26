@@ -59,7 +59,7 @@ describe("HelpersService", () => {
     });
 
     expect(result).toEqual({ entityId: "input_boolean.gaestemodus" });
-    expect(create).toHaveBeenCalledWith("input_boolean", { name: "Gästemodus" });
+    expect(create).toHaveBeenCalledWith({ type: "input_boolean", payload: { name: "Gästemodus" } });
     expect(assign).toHaveBeenCalledWith({
       entityId: "input_boolean.gaestemodus",
       scope: "helpers",
@@ -103,7 +103,7 @@ describe("HelpersService", () => {
 
     await service.delete("input_boolean.gaestemodus");
 
-    expect(remove).toHaveBeenCalledWith("input_boolean", "gaestemodus");
+    expect(remove).toHaveBeenCalledWith({ type: "input_boolean", helperId: "gaestemodus" });
     expect(cleanUp).toHaveBeenCalledWith({ scope: "helpers", categoryId: "cat-1" });
     expect(overlay.data.favorites).toEqual([]);
   });
@@ -161,14 +161,18 @@ describe("HelpersService", () => {
         },
       });
 
-      expect(update).toHaveBeenCalledWith("input_number", "helligkeit", {
-        name: "Helligkeit",
-        icon: "mdi:brightness-6",
-        initial: 30,
-        min: 0,
-        max: 255,
-        step: 1,
-        mode: "box",
+      expect(update).toHaveBeenCalledWith({
+        type: "input_number",
+        helperId: "helligkeit",
+        payload: {
+          name: "Helligkeit",
+          icon: "mdi:brightness-6",
+          initial: 30,
+          min: 0,
+          max: 255,
+          step: 1,
+          mode: "box",
+        },
       });
     });
 
@@ -203,15 +207,18 @@ describe("HelpersService", () => {
         categoryPath: "Haus/Terrasse",
       });
 
-      expect(create).toHaveBeenCalledWith("input_number", {
-        name: "Helligkeit (Kopie)",
-        icon: "mdi:brightness-6",
-        min: 10,
-        max: 100,
-        step: 5,
-        mode: "slider",
-        unit_of_measurement: "%",
-        initial: 30,
+      expect(create).toHaveBeenCalledWith({
+        type: "input_number",
+        payload: {
+          name: "Helligkeit (Kopie)",
+          icon: "mdi:brightness-6",
+          min: 10,
+          max: 100,
+          step: 5,
+          mode: "slider",
+          unit_of_measurement: "%",
+          initial: 30,
+        },
       });
       expect(assign).toHaveBeenCalledWith(
         expect.objectContaining({ scope: "helpers", targetPath: "Haus/Terrasse" }),

@@ -60,7 +60,10 @@ describe("RenameService", () => {
 
     expect(result.entityId).toBe("input_number.patio_brightness");
     expect(result.updated.map((item) => item.entityId)).toEqual(["script.terrace_evening_mood"]);
-    const script = await editor.loadConfig("script", "script.terrace_evening_mood");
+    const script = await editor.loadConfig({
+      kind: "script",
+      entityId: "script.terrace_evening_mood",
+    });
     expect(JSON.stringify(script)).toContain("input_number.patio_brightness");
     expect(JSON.stringify(script)).not.toContain("input_number.terrace_brightness");
 
@@ -80,9 +83,9 @@ describe("RenameService", () => {
 
     expect(result.updated).toEqual([]);
     expect(result.skipped.map((item) => item.entityId)).toEqual(["script.good_night"]);
-    expect(JSON.stringify(await editor.loadConfig("script", "script.good_night"))).toContain(
-      "script.all_off",
-    );
+    expect(
+      JSON.stringify(await editor.loadConfig({ kind: "script", entityId: "script.good_night" })),
+    ).toContain("script.all_off");
   });
 
   it("refuses a taken ID and another domain", async () => {

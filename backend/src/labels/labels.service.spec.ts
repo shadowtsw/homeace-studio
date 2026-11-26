@@ -13,7 +13,7 @@ function setup() {
   const snapshot = {
     get: async () => ({
       entries: [],
-      registry: await ha.call<HaEntityRegistryEntry[]>(HA_COMMAND.entityRegistryList),
+      registry: await ha.call<HaEntityRegistryEntry[]>({ type: HA_COMMAND.entityRegistryList }),
       devices: [],
       areas: [],
       configs: new Map(),
@@ -24,7 +24,7 @@ function setup() {
 }
 
 const names = async (ha: DemoHaConnectionService) =>
-  (await ha.call<HaLabel[]>(HA_COMMAND.labelRegistryList)).map((label) => label.name);
+  (await ha.call<HaLabel[]>({ type: HA_COMMAND.labelRegistryList })).map((label) => label.name);
 
 describe("LabelsService", () => {
   it("creates a label with colour and icon", async () => {
@@ -77,7 +77,9 @@ describe("LabelsService", () => {
     await service.delete("lights");
 
     expect(await names(ha)).not.toContain("Lights");
-    const registry = await ha.call<HaEntityRegistryEntry[]>(HA_COMMAND.entityRegistryList);
+    const registry = await ha.call<HaEntityRegistryEntry[]>({
+      type: HA_COMMAND.entityRegistryList,
+    });
     expect(registry.some((entry) => entry.labels.includes("lights"))).toBe(false);
     await expect(service.delete("lights")).rejects.toMatchObject({
       response: { message: "LABEL_NOT_FOUND" },

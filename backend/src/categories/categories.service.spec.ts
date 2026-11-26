@@ -6,7 +6,15 @@ import type { OverlayRepository } from "../overlay/repositories/overlay.reposito
 import type { CategoryScope } from "./categories.constants";
 import { CategoriesService } from "./categories.service";
 import type { Category } from "./category.model";
-import type { CategoryRepository } from "./repositories/category.repository";
+import type {
+  CategoryRepository,
+  CreateCategoryOptions,
+  RenameCategoryOptions,
+  DeleteCategoryOptions,
+  AssignCategoryOptions,
+  CountAssignedOptions,
+  FindEntityCategoryOptions,
+} from "./repositories/category.repository";
 
 /** In-memory HA categories per scope plus entity assignments, enough to play HA's side. */
 class FakeCategories implements CategoryRepository {
@@ -30,18 +38,18 @@ class FakeCategories implements CategoryRepository {
 
   list = (scope: CategoryScope) => Promise.resolve([...(this.byScope.get(scope) ?? [])]);
 
-  create = (scope: CategoryScope, name: string) => {
+  create = ({ scope, name }: CreateCategoryOptions) => {
     const categoryId = this.seed(scope, name);
     return Promise.resolve({ categoryId, name });
   };
 
-  rename = (scope: CategoryScope, categoryId: string, name: string) => {
+  rename = ({ scope, categoryId, name }: RenameCategoryOptions) => {
     const category = this.byScope.get(scope)?.find((item) => item.categoryId === categoryId);
     if (category) category.name = name;
     return Promise.resolve();
   };
 
-  delete = (scope: CategoryScope, categoryId: string) => {
+  delete = ({ scope, categoryId }: DeleteCategoryOptions) => {
     const remaining = (this.byScope.get(scope) ?? []).filter(
       (item) => item.categoryId !== categoryId,
     );
@@ -49,14 +57,14 @@ class FakeCategories implements CategoryRepository {
     return Promise.resolve();
   };
 
-  assign = (entityId: string, scope: CategoryScope, categoryId: string | null) => {
+  assign = ({ entityId, scope, categoryId }: AssignCategoryOptions) => {
     if (this.unregistered.has(entityId))
       return Promise.reject(new HaCommandError("not_found", "Entity not found"));
     this.assignments.set(`${scope}:${entityId}`, categoryId);
     return Promise.resolve();
   };
 
-  countAssigned = (scope: CategoryScope, categoryId: string) => {
+  countAssigned = ({ scope, categoryId }: CountAssignedOptions) => {
     const assigned = [...this.assignments.entries()].filter(
       ([key, value]) => key.startsWith(`${scope}:`) && value === categoryId,
     );
@@ -66,7 +74,7 @@ class FakeCategories implements CategoryRepository {
   /** Entities HA has no registry entry for. */
   readonly unregistered = new Set<string>();
 
-  findEntityCategory = (entityId: string, scope: CategoryScope) =>
+  findEntityCategory = ({ entityId, scope }: FindEntityCategoryOptions) =>
     Promise.resolve(
       this.unregistered.has(entityId)
         ? undefined

@@ -17,6 +17,11 @@ export class HaRestError extends Error {
   }
 }
 
+export type HaPostOptions = {
+  path: string;
+  body: unknown;
+};
+
 /**
  * HA's REST API, for the few things the WebSocket API cannot do, like saving an automation
  * into automations.yaml (`/api/config/automation/config/<id>`).
@@ -37,7 +42,7 @@ export class HaRestService {
     return (await this.readOrThrow(response)) as TResult;
   }
 
-  async post<TResult>(path: string, body: unknown): Promise<TResult> {
+  async post<TResult>({ path, body }: HaPostOptions): Promise<TResult> {
     const response = await this.send({ method: "POST", path, body });
 
     return (await this.readOrThrow(response)) as TResult;

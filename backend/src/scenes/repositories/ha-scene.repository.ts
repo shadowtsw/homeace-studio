@@ -6,7 +6,7 @@ import { HaRestService } from "../../ha/ha-rest.service";
 import { HA_COMMAND, HA_ERROR_CODE, HA_REST_PATH } from "../../ha/ha.constants";
 import type { HaEntityRegistryEntry, HaState } from "../../ha/ha.types";
 import type { SceneValue } from "../scene.model";
-import type { SceneRepository } from "./scene.repository";
+import type { SceneRepository, SaveConfigOptions } from "./scene.repository";
 
 const SCENE_DOMAIN = "scene";
 const APPLY_SERVICE = "apply";
@@ -25,8 +25,11 @@ export class HaSceneRepository implements SceneRepository {
 
   async findStorageId(entityId: string): Promise<string | null> {
     try {
-      const entry = await this.ha.call<HaEntityRegistryEntry>(HA_COMMAND.entityRegistryGet, {
-        entity_id: entityId,
+      const entry = await this.ha.call<HaEntityRegistryEntry>({
+        type: HA_COMMAND.entityRegistryGet,
+        payload: {
+          entity_id: entityId,
+        },
       });
       return entry.unique_id || null;
     } catch (error) {
@@ -36,7 +39,9 @@ export class HaSceneRepository implements SceneRepository {
   }
 
   async findEntityId(id: string): Promise<string | null> {
-    const entries = await this.ha.call<HaEntityRegistryEntry[]>(HA_COMMAND.entityRegistryList);
+    const entries = await this.ha.call<HaEntityRegistryEntry[]>({
+      type: HA_COMMAND.entityRegistryList,
+    });
     const prefix = SCENE_DOMAIN + ".";
     // Scenes from scenes.yaml: the id there is the unique_id
     const match = entries.find(
@@ -50,25 +55,28 @@ export class HaSceneRepository implements SceneRepository {
     return this.rest.get<Record<string, unknown>>(this.path(id));
   }
 
-  async saveConfig(id: string, config: Record<string, unknown>): Promise<void> {
-    await this.rest.post(this.path(id), config);
+  async saveConfig({ id, config }: SaveConfigOptions): Promise<void> {
+    await this.rest.post({ path: this.path(id), body: config });
   }
 
   loadStates(): Promise<HaState[]> {
-    return this.ha.call<HaState[]>(HA_COMMAND.getStates);
+    return this.ha.call<HaState[]>({ type: HA_COMMAND.getStates });
   }
 
   async loadTemperatureUnit(): Promise<string> {
-    const config = await this.ha.call<HaCoreConfig>(HA_COMMAND.getConfig);
+    const config = await this.ha.call<HaCoreConfig>({ type: HA_COMMAND.getConfig });
 
     return config.unit_system?.temperature || DEFAULT_TEMPERATURE_UNIT;
   }
 
   async apply(entities: Record<string, SceneValue>): Promise<void> {
-    await this.ha.call(HA_COMMAND.callService, {
-      domain: SCENE_DOMAIN,
-      service: APPLY_SERVICE,
-      service_data: { entities },
+    await this.ha.call({
+      type: HA_COMMAND.callService,
+      payload: {
+        domain: SCENE_DOMAIN,
+        service: APPLY_SERVICE,
+        service_data: { entities },
+      },
     });
   }
 

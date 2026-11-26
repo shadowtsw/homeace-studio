@@ -9,26 +9,52 @@ export type HelperRegistration = {
   categoryId: string | null;
 };
 
+export type CreateHelperOptions = {
+  type: HelperType;
+  payload: Record<string, unknown>;
+};
+
+export type FindStoredOptions = {
+  type: HelperType;
+  helperId: string;
+};
+
+export type UpdateHelperOptions = {
+  type: HelperType;
+  helperId: string;
+  payload: Record<string, unknown>;
+};
+
+export type RemoveHelperOptions = {
+  type: HelperType;
+  helperId: string;
+};
+
+export type FindEntityIdOptions = {
+  type: HelperType;
+  helperId: string;
+};
+
 export interface HelperRepository {
   /**
    * Creates the helper in HA.
    *
    * @returns HA's storage id of the new helper (also the unique_id of its entity).
    */
-  create(type: HelperType, payload: Record<string, unknown>): Promise<string>;
+  create(options: CreateHelperOptions): Promise<string>;
 
   /** The entity ID of a helper, or null while HA has not registered its entity yet. */
-  findEntityId(type: HelperType, helperId: string): Promise<string | null>;
+  findEntityId(options: FindEntityIdOptions): Promise<string | null>;
 
   /** Registry facts about an entity, or null when HA's registry does not know it. */
   findRegistration(entityId: string): Promise<HelperRegistration | null>;
 
   /** The stored helper as `<type>/list` has it (with its settings), or null if HA has none. */
-  findStored(type: HelperType, helperId: string): Promise<Record<string, unknown> | null>;
+  findStored(options: FindStoredOptions): Promise<Record<string, unknown> | null>;
 
   /** Replaces a stored helper via `<type>/update`; the payload must carry all its fields. */
-  update(type: HelperType, helperId: string, payload: Record<string, unknown>): Promise<void>;
+  update(options: UpdateHelperOptions): Promise<void>;
 
   /** Deletes a helper of one of the storage types via `<type>/delete`. */
-  remove(type: HelperType, helperId: string): Promise<void>;
+  remove(options: RemoveHelperOptions): Promise<void>;
 }

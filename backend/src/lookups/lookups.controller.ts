@@ -33,7 +33,7 @@ export class LookupsController {
 
   @Get("areas")
   async areas(): Promise<Area[]> {
-    const areas = await this.ha.call<HaArea[]>(HA_COMMAND.areaRegistryList);
+    const areas = await this.ha.call<HaArea[]>({ type: HA_COMMAND.areaRegistryList });
     const mapped = areas.map((area) => ({
       areaId: area.area_id,
       name: area.name,
@@ -50,13 +50,16 @@ export class LookupsController {
   @Get("entities")
   async entities(): Promise<EntityOption[]> {
     const [states, registry, devices, areas, labels, entityCategories] = await Promise.all([
-      this.ha.call<HaState[]>(HA_COMMAND.getStates),
-      this.ha.call<HaEntityRegistryEntry[]>(HA_COMMAND.entityRegistryList),
-      this.ha.call<HaDevice[]>(HA_COMMAND.deviceRegistryList),
-      this.ha.call<HaArea[]>(HA_COMMAND.areaRegistryList),
-      this.ha.call<HaLabel[]>(HA_COMMAND.labelRegistryList),
-      this.ha.call<HaCategory[]>(HA_COMMAND.categoryRegistryList, {
-        scope: CATEGORY_SCOPE.entities,
+      this.ha.call<HaState[]>({ type: HA_COMMAND.getStates }),
+      this.ha.call<HaEntityRegistryEntry[]>({ type: HA_COMMAND.entityRegistryList }),
+      this.ha.call<HaDevice[]>({ type: HA_COMMAND.deviceRegistryList }),
+      this.ha.call<HaArea[]>({ type: HA_COMMAND.areaRegistryList }),
+      this.ha.call<HaLabel[]>({ type: HA_COMMAND.labelRegistryList }),
+      this.ha.call<HaCategory[]>({
+        type: HA_COMMAND.categoryRegistryList,
+        payload: {
+          scope: CATEGORY_SCOPE.entities,
+        },
       }),
     ]);
 
@@ -66,7 +69,7 @@ export class LookupsController {
   /** Floors in HA's order (by level, then name), for flows that target a floor. */
   @Get("floors")
   async floors(): Promise<Floor[]> {
-    const floors = await this.ha.call<HaFloor[]>(HA_COMMAND.floorRegistryList);
+    const floors = await this.ha.call<HaFloor[]>({ type: HA_COMMAND.floorRegistryList });
     const level = (floor: HaFloor): number => floor.level ?? Number.MAX_SAFE_INTEGER;
     const sorted = [...floors].sort(
       (first, second) => level(first) - level(second) || byName(first, second),
@@ -86,7 +89,9 @@ export class LookupsController {
   @Get("icon-packs/resources")
   async iconPackResources(): Promise<string[]> {
     try {
-      const resources = await this.ha.call<HaLovelaceResource[]>(HA_COMMAND.lovelaceResources);
+      const resources = await this.ha.call<HaLovelaceResource[]>({
+        type: HA_COMMAND.lovelaceResources,
+      });
       return iconResourceUrls(resources);
     } catch {
       return [];
@@ -95,7 +100,7 @@ export class LookupsController {
 
   @Get("labels")
   async labels(): Promise<Label[]> {
-    const labels = await this.ha.call<HaLabel[]>(HA_COMMAND.labelRegistryList);
+    const labels = await this.ha.call<HaLabel[]>({ type: HA_COMMAND.labelRegistryList });
     const mapped = labels.map((label) => ({
       labelId: label.label_id,
       name: label.name,

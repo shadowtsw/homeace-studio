@@ -32,10 +32,13 @@ describe("SceneCreateService", () => {
     const result = await service.create({ name: " Kino ", categoryPath: "Haus/Wohnzimmer" });
 
     expect(result).toEqual({ entityId: "scene.kino" });
-    expect(saveConfig).toHaveBeenCalledWith(String(NOW), {
+    expect(saveConfig).toHaveBeenCalledWith({
       id: String(NOW),
-      name: "Kino",
-      entities: {},
+      config: {
+        id: String(NOW),
+        name: "Kino",
+        entities: {},
+      },
     });
     expect(assign).toHaveBeenCalledWith({
       entityId: "scene.kino",

@@ -1,6 +1,11 @@
 import type { HaState } from "../../ha/ha.types";
 import type { SceneValue } from "../scene.model";
 
+export type SaveConfigOptions = {
+  id: string;
+  config: Record<string, unknown>;
+};
+
 export interface SceneRepository {
   /** The id of a scene in scenes.yaml (its entity's unique_id), or null when HA has none. */
   findStorageId(entityId: string): Promise<string | null>;
@@ -12,7 +17,7 @@ export interface SceneRepository {
   loadConfig(id: string): Promise<Record<string, unknown> | null>;
 
   /** Writes the scene's config to scenes.yaml; HA reloads its scenes. */
-  saveConfig(id: string, config: Record<string, unknown>): Promise<void>;
+  saveConfig(options: SaveConfigOptions): Promise<void>;
 
   loadStates(): Promise<HaState[]>;
 

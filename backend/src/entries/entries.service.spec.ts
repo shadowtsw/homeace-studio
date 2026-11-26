@@ -4,7 +4,7 @@ import type { CategoriesService } from "../categories/categories.service";
 import { EMPTY_OVERLAY, type Overlay } from "../overlay/overlay.model";
 import { EntriesService } from "./entries.service";
 import type { Entry } from "./entry.model";
-import type { EntryRepository } from "./repositories/entry.repository";
+import type { EntryRepository, UpdateEntryOptions } from "./repositories/entry.repository";
 
 function entry(overrides: Partial<Entry>): Entry {
   return {
@@ -112,10 +112,13 @@ describe("EntriesService", () => {
       changes: { name: "  ", icon: "", labelIds: ["licht"] },
     });
 
-    expect(update).toHaveBeenCalledWith("script.example", {
-      name: null,
-      icon: null,
-      labelIds: ["licht"],
+    expect(update).toHaveBeenCalledWith({
+      entityId: "script.example",
+      changes: {
+        name: null,
+        icon: null,
+        labelIds: ["licht"],
+      },
     });
   });
 
@@ -127,10 +130,9 @@ describe("EntriesService", () => {
       changes: { aliases: [" Licht ", "", "licht", "Lampe"] },
     });
 
-    expect(update).toHaveBeenCalledWith(
-      "script.example",
-      expect.objectContaining({ aliases: ["Licht", "Lampe"] }),
-    );
+    const [[sent]] = update.mock.calls as [[UpdateEntryOptions]];
+    expect(sent.entityId).toBe("script.example");
+    expect(sent.changes.aliases).toEqual(["Licht", "Lampe"]);
   });
 
   it("maps actions to the service of the domain", async () => {
@@ -142,8 +144,16 @@ describe("EntriesService", () => {
     await service.runAction({ entityId: "automation.licht", action: "turnOff" });
     await service.runAction({ entityId: "input_button.klingel", action: "run" });
 
-    expect(callService).toHaveBeenNthCalledWith(1, "automation", "turn_off", "automation.licht");
-    expect(callService).toHaveBeenNthCalledWith(2, "input_button", "press", "input_button.klingel");
+    expect(callService).toHaveBeenNthCalledWith(1, {
+      domain: "automation",
+      service: "turn_off",
+      entityId: "automation.licht",
+    });
+    expect(callService).toHaveBeenNthCalledWith(2, {
+      domain: "input_button",
+      service: "press",
+      entityId: "input_button.klingel",
+    });
   });
 
   it("rejects actions the domain does not have", async () => {

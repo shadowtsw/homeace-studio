@@ -6,7 +6,7 @@ import type { OverlayRepository } from "../overlay/repositories/overlay.reposito
 import { EditorService } from "./editor.service";
 import { firstFreeKey, scriptKeyFor } from "./flow-key";
 import { FlowsService } from "./flows.service";
-import type { EditorRepository } from "./repositories/editor.repository";
+import type { EditorRepository, FindEntityIdOptions } from "./repositories/editor.repository";
 
 const NOW = 1_763_600_000_000;
 
@@ -73,14 +73,18 @@ describe("FlowsService", () => {
       }),
     ).resolves.toEqual({ entityId: "automation.neu" });
 
-    expect(saveConfig).toHaveBeenCalledWith("automation", String(NOW), {
-      id: String(NOW),
-      alias: "Licht Flur",
-      description: "",
-      triggers: [],
-      conditions: [],
-      actions: [],
-      mode: "single",
+    expect(saveConfig).toHaveBeenCalledWith({
+      kind: "automation",
+      key: String(NOW),
+      config: {
+        id: String(NOW),
+        alias: "Licht Flur",
+        description: "",
+        triggers: [],
+        conditions: [],
+        actions: [],
+        mode: "single",
+      },
     });
     expect(categories.assign).toHaveBeenCalledWith({
       entityId: "automation.neu",
@@ -91,17 +95,21 @@ describe("FlowsService", () => {
   });
 
   it("creates a script under a free key", async () => {
-    const findEntityId = jest.fn((_kind: string, key: string) =>
+    const findEntityId = jest.fn(({ key }: FindEntityIdOptions) =>
       Promise.resolve(key === "gute_nacht" ? "script.gute_nacht" : null),
     );
     const { service, saveConfig } = setup({ findEntityId });
 
     await service.create({ dto: { kind: "script", name: "Gute Nacht" } });
 
-    expect(saveConfig).toHaveBeenCalledWith("script", "gute_nacht_2", {
-      alias: "Gute Nacht",
-      sequence: [],
-      mode: "single",
+    expect(saveConfig).toHaveBeenCalledWith({
+      kind: "script",
+      key: "gute_nacht_2",
+      config: {
+        alias: "Gute Nacht",
+        sequence: [],
+        mode: "single",
+      },
     });
   });
 
@@ -122,7 +130,7 @@ describe("FlowsService", () => {
 
     await service.delete("automation.alt");
 
-    expect(deleteConfig).toHaveBeenCalledWith("automation", "17");
+    expect(deleteConfig).toHaveBeenCalledWith({ kind: "automation", key: "17" });
     expect(overlay.update).toHaveBeenCalled();
     expect(categories.cleanUp).toHaveBeenCalledWith({ scope: "automation", categoryId: "cat-1" });
   });

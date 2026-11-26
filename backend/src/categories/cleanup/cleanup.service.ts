@@ -77,15 +77,23 @@ export class CleanupService {
 
     for (const operation of operations) {
       if (operation.kind === "rename") {
-        await this.categories.rename(operation.scope, operation.categoryId, operation.to);
+        await this.categories.rename({
+          scope: operation.scope,
+          categoryId: operation.categoryId,
+          name: operation.to,
+        });
         continue;
       }
 
       for (const entityId of operation.entityIds) {
-        await this.categories.assign(entityId, operation.scope, operation.targetCategoryId);
+        await this.categories.assign({
+          entityId,
+          scope: operation.scope,
+          categoryId: operation.targetCategoryId,
+        });
       }
 
-      await this.categories.delete(operation.scope, operation.categoryId);
+      await this.categories.delete({ scope: operation.scope, categoryId: operation.categoryId });
       deletedIds.push(operation.categoryId);
     }
 

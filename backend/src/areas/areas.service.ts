@@ -33,9 +33,12 @@ export class AreasService {
     const trimmed = name.trim();
     await this.requireFreeName({ name: trimmed, ownId: null });
 
-    const created = await this.ha.call<HaArea>(HA_COMMAND.areaRegistryCreate, {
-      name: trimmed,
-      icon,
+    const created = await this.ha.call<HaArea>({
+      type: HA_COMMAND.areaRegistryCreate,
+      payload: {
+        name: trimmed,
+        icon,
+      },
     });
     return toArea(created);
   }
@@ -50,17 +53,17 @@ export class AreasService {
     }
     if (changes.icon !== undefined) payload.icon = changes.icon;
 
-    return toArea(await this.ha.call<HaArea>(HA_COMMAND.areaRegistryUpdate, payload));
+    return toArea(await this.ha.call<HaArea>({ type: HA_COMMAND.areaRegistryUpdate, payload }));
   }
 
   /** HA takes the area away from its devices and entities; they stay. */
   async delete(areaId: string): Promise<void> {
     await this.requireArea(areaId);
-    await this.ha.call(HA_COMMAND.areaRegistryDelete, { area_id: areaId });
+    await this.ha.call({ type: HA_COMMAND.areaRegistryDelete, payload: { area_id: areaId } });
   }
 
   private list(): Promise<HaArea[]> {
-    return this.ha.call<HaArea[]>(HA_COMMAND.areaRegistryList);
+    return this.ha.call<HaArea[]>({ type: HA_COMMAND.areaRegistryList });
   }
 
   private async requireArea(areaId: string): Promise<void> {

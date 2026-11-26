@@ -1,5 +1,10 @@
-import { HaConnectionService, type HaEventHandler } from "../ha/ha-connection.service";
-import { HaRestService } from "../ha/ha-rest.service";
+import {
+  HaConnectionService,
+  type HaCallOptions,
+  type HaSnapshotOptions,
+  type HaSubscribeOptions,
+} from "../ha/ha-connection.service";
+import { HaRestService, type HaPostOptions } from "../ha/ha-rest.service";
 import { DEMO_ENDPOINT } from "./demo.constants";
 import type { FakeHa } from "./fake-ha";
 
@@ -13,16 +18,16 @@ export class DemoHaConnectionService extends HaConnectionService {
     super({ ...DEMO_ENDPOINT });
   }
 
-  override call<TResult>(type: string, payload: Record<string, unknown> = {}): Promise<TResult> {
+  override call<TResult>({ type, payload = {} }: HaCallOptions): Promise<TResult> {
     // Like the real connection: errors arrive as a rejected promise, never synchronously.
     return Promise.resolve().then(() => this.fake.call({ type, payload }) as TResult);
   }
 
-  override snapshot<TEvent>(type: string): Promise<TEvent> {
+  override snapshot<TEvent>({ type }: HaSnapshotOptions): Promise<TEvent> {
     return Promise.resolve().then(() => this.fake.snapshot(type) as TEvent);
   }
 
-  override subscribe(eventType: string, handler: HaEventHandler): void {
+  override subscribe({ eventType, handler }: HaSubscribeOptions): void {
     this.fake.subscribe({ eventType, handler });
   }
 
@@ -41,7 +46,7 @@ export class DemoHaRestService extends HaRestService {
     return Promise.resolve().then(() => this.fake.restGet(path) as TResult | null);
   }
 
-  override post<TResult>(path: string, body: unknown): Promise<TResult> {
+  override post<TResult>({ path, body }: HaPostOptions): Promise<TResult> {
     return Promise.resolve().then(() => this.fake.restPost({ path, body }) as TResult);
   }
 

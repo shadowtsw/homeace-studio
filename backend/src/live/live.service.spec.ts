@@ -1,6 +1,10 @@
 import { firstValueFrom, take, toArray } from "rxjs";
 
-import type { HaConnectionService, HaEventHandler } from "../ha/ha-connection.service";
+import type {
+  HaConnectionService,
+  HaEventHandler,
+  HaSubscribeOptions,
+} from "../ha/ha-connection.service";
 import { LIVE_DEBOUNCE_MS, LiveService } from "./live.service";
 
 describe("LiveService", () => {
@@ -8,7 +12,7 @@ describe("LiveService", () => {
     jest.useFakeTimers();
     const handlers = new Map<string, HaEventHandler>();
     const ha = {
-      subscribe: (eventType: string, handler: HaEventHandler) => handlers.set(eventType, handler),
+      subscribe: ({ eventType, handler }: HaSubscribeOptions) => handlers.set(eventType, handler),
     } as unknown as HaConnectionService;
     const service = new LiveService(ha);
     service.onModuleInit();

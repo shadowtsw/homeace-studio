@@ -71,7 +71,7 @@ export class EditorService {
    */
   async getFlow(entityId: string): Promise<Flow> {
     const kind = requireFlowKind(entityId);
-    const config = await this.editor.loadConfig(kind, entityId);
+    const config = await this.editor.loadConfig({ kind, entityId });
     const storageKey = await this.findStorageKey({ kind, entityId, config });
 
     return this.describe({ entityId, kind, config, isEditable: storageKey !== null });
@@ -97,9 +97,11 @@ export class EditorService {
     // The id ties the automation to its entity; it must not change through an edit.
     const toSave = kind === FLOW_KIND.automation ? { ...config, id: storageKey } : config;
 
-    await this.editor.saveConfig(kind, storageKey, toSave).catch((error: unknown) => {
-      throw toFlowError(error);
-    });
+    await this.editor
+      .saveConfig({ kind, key: storageKey, config: toSave })
+      .catch((error: unknown) => {
+        throw toFlowError(error);
+      });
 
     this.logger.log(`Saved flow of ${entityId}`);
 
@@ -116,7 +118,7 @@ export class EditorService {
    */
   async requireStoredFlow(entityId: string): Promise<{ kind: FlowKind; key: string }> {
     const kind = requireFlowKind(entityId);
-    const current = await this.editor.loadConfig(kind, entityId);
+    const current = await this.editor.loadConfig({ kind, entityId });
     const key = await this.findStorageKey({ kind, entityId, config: current });
 
     if (key === null) {
@@ -140,11 +142,11 @@ export class EditorService {
   }): Promise<string | null> {
     if (isFromBlueprint(config)) return null;
 
-    const key = await this.editor.loadStorageKey(kind, entityId, config);
+    const key = await this.editor.loadStorageKey({ kind, entityId, config });
 
     if (key === null) return null;
 
-    const stored = await this.editor.loadStoredConfig(kind, key);
+    const stored = await this.editor.loadStoredConfig({ kind, key });
 
     return stored === null ? null : key;
   }
