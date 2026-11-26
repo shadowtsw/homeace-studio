@@ -34,18 +34,37 @@ export const useLookupsStore = defineStore("lookups", () => {
     }
   }
 
+  /** The load that is running, so overlapping reloads wait for it instead of racing it. */
+  let running: Promise<void> | null = null;
+  /** Fresh data was asked for while a load was running: load once more after it. */
+  let isOutdated = false;
+
   /**
    * Loads the entity list once, when the first entity picker opens; `isFresh` reads it again, for
-   * views that show states right now (dependencies).
+   * views that show states right now (dependencies) and after live updates. At most one load runs;
+   * fresh reloads asked for meanwhile become a single one after it, so an older answer never
+   * overwrites a newer one and a busy HA does not pile up requests.
    */
   async function loadEntities(isFresh = false): Promise<void> {
     if (entities.value.length > 0 && !isFresh) return;
-
-    try {
-      entities.value = await fetchEntities();
-    } catch (error) {
-      console.error("Loading the entities failed", error);
+    if (running) {
+      if (isFresh) isOutdated = true;
+      return running;
     }
+
+    running = (async () => {
+      do {
+        isOutdated = false;
+        try {
+          entities.value = await fetchEntities();
+        } catch (error) {
+          console.error("Loading the entities failed", error);
+        }
+      } while (isOutdated);
+    })().finally(() => {
+      running = null;
+    });
+    return running;
   }
 
   // A helper or script created after the entity list was loaded must be known too, or dragging it

@@ -11,6 +11,7 @@ HA WebSocket ──state_changed, *_registry_updated──► LiveService (isRel
    ──► useLiveUpdates (VueUse useEventSource, autoReconnect)
         → entriesStore.refresh()   → StudioView watch → cleanup, check-up, dependencies, traces, entry areas
         → editorStore.refreshFlow() → hasRemoteChange if a draft's base differs
+        → lookups.loadEntities(true) → only while plain entities are shown (filter "Entitäten")
         → ai.loadPlans()
 tab visible again → entries, folders and AI plans reload once (events may have been missed)
 ```
@@ -32,6 +33,10 @@ tab visible again → entries, folders and AI plans reload once (events may have
   scene, HA-managed helpers) and only when the **state** changes. Attribute-only changes like
   `last_triggered` do not count, and neither do sensors or config-entry helpers, which change constantly.
 - Changes that do not come from HA (a new AI plan) call `LiveService.notify()`.
+- The entity list reloads in full (every state), so `lookupsStore.loadEntities` runs one load at a
+  time: fresh reloads asked for meanwhile become a single one after it. An older answer never
+  overwrites a newer one, and a busy HA does not pile up requests. Sending the changed states along
+  instead of reloading is a planned later step.
 - `HaConnectionService` reconnects every 5 s while subscriptions exist and subscribes again.
 - Every quiet reload must keep what the user is doing: drafts stay, forms keep the user's edits
   (see [../ui/detail.md](../ui/detail.md)), and selections stay.
