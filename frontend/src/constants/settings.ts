@@ -36,6 +36,7 @@ export const GOOD_TO_KNOW_TOPIC = {
   whereStored: "whereStored",
   filters: "filters",
   labels: "labels",
+  sortingEntities: "sortingEntities",
 } as const;
 
 export type GoodToKnowTopic = (typeof GOOD_TO_KNOW_TOPIC)[keyof typeof GOOD_TO_KNOW_TOPIC];
@@ -50,4 +51,5 @@ export const GOOD_TO_KNOW_TOPICS: readonly { topic: GoodToKnowTopic; icon: strin
   { topic: GOOD_TO_KNOW_TOPIC.whereStored, icon: "mdi-account-outline" },
   { topic: GOOD_TO_KNOW_TOPIC.filters, icon: "mdi-filter-outline" },
   { topic: GOOD_TO_KNOW_TOPIC.labels, icon: "mdi-label-outline" },
+  { topic: GOOD_TO_KNOW_TOPIC.sortingEntities, icon: "mdi-auto-fix" },
 ];

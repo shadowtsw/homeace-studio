@@ -6,6 +6,13 @@
   each in its folder after the automations and helpers there. Drag one onto a folder to sort it in, or
   onto "Ohne Kategorie" to take it out. Or tick several and pick "Verschieben nach …", or drag one of them. The folders
   are stored in Home Assistant and its backups, without crowding HA's own label and category lists.
+- New tool "Entitäten einsortieren" (beta) under Einstellungen → Werkzeuge, for homes with many
+  entities without a folder: all entities of a device count as one decision, and the tool proposes a
+  folder for each and says why. You review them grouped by folder; every tick makes the other
+  proposals better without the list jumping. Optional rules like "Label Licht → Licht/{Bereich}" go first, new folders
+  are proposed for the rest, and anything can stay without a folder on purpose. Nothing changes before
+  "Anwenden", and the last run can be undone, also later. Proposals that are off can be reported on
+  GitHub.
 - Drag entities into flows: drop a motion sensor on "Wenn" and pick "Bewegung erkannt", a lamp on
   "Dann" and pick HA's "Einschalten". Fitting sections light up, the others say why not (a sensor
   cannot be switched). Branches of a Wenn/Sonst block are targets of their own; dropped next to them,

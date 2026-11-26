@@ -73,6 +73,11 @@ const fr: MessageSchema = {
         text: "Une étiquette que vous attribuez ici est une étiquette de Home Assistant. Vous la voyez partout là-bas, aussi sur les appareils et les pièces.",
         more: "Si vous renommez une étiquette, elle change partout. Si vous la supprimez, elle disparaît partout, aussi là où un flux commande tous les appareils avec cette étiquette. Ce flux ne fait alors plus rien, sans prévenir.",
       },
+      sortingEntities: {
+        title: "Classer les entités apprend en route",
+        text: "L'outil sous Outils propose des dossiers adaptés aux entités qui n'en ont pas et dit pourquoi pour chacune. Chaque coche améliore les autres propositions.",
+        more: "C'est une bêta : vous voyez chaque proposition avant d'appliquer, et le dernier passage peut être annulé. Vos règles et propositions refusées sont gardées pour tous les utilisateurs, les coches seulement jusqu'à la fermeture.",
+      },
     },
     open: "Paramètres",
     title: "Paramètres",

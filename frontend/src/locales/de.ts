@@ -68,6 +68,11 @@ export default {
         text: "Ein Label, das du hier vergibst, ist ein Label von Home Assistant. Du siehst es dort überall, auch an Geräten und Bereichen.",
         more: "Benennst du ein Label um, ändert es sich überall. Löschst du es, verschwindet es überall, auch dort, wo ein Ablauf alle Geräte mit diesem Label schaltet. Der Ablauf tut dann still nichts mehr.",
       },
+      sortingEntities: {
+        title: "Entitäten einsortieren lernt mit",
+        text: "Das Werkzeug unter Werkzeuge schlägt für Entitäten ohne Ordner passende Ordner vor und sagt bei jedem, warum. Jeder Haken macht die übrigen Vorschläge besser.",
+        more: "Es ist eine Beta: Vor dem Anwenden siehst du jeden Vorschlag, und der letzte Durchlauf lässt sich rückgängig machen. Deine Regeln und abgelehnten Vorschläge merkt es sich für alle Benutzer, die Haken nur bis zum Schließen.",
+      },
     },
     open: "Einstellungen",
     title: "Einstellungen",

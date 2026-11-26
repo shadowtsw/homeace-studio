@@ -68,6 +68,11 @@ const en: MessageSchema = {
         text: "A label you give here is a Home Assistant label. You see it everywhere there, on devices and areas too.",
         more: "If you rename a label, it changes everywhere. If you delete it, it disappears everywhere, also where a flow switches all devices with this label. That flow then silently does nothing.",
       },
+      sortingEntities: {
+        title: "Sorting entities learns as you go",
+        text: "The tool under Tools proposes fitting folders for entities without one and says why for each. Every tick makes the other proposals better.",
+        more: "It is a beta: you see every proposal before applying, and the last run can be undone. Your rules and turned-down proposals are kept for all users, the ticks only until you close it.",
+      },
     },
     open: "Settings",
     title: "Settings",

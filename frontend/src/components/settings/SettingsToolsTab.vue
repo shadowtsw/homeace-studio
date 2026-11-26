@@ -14,7 +14,11 @@
         {{ t("settings.toolOpen") }}
       </button>
     </SettingsRow>
-    <SettingsRow :title="t('settings.sortEntities')" :hint="t('settings.sortEntitiesHint')">
+    <SettingsRow
+      :title="t('settings.sortEntities')"
+      :hint="t('settings.sortEntitiesHint')"
+      :more-topic="GOOD_TO_KNOW_TOPIC.sortingEntities"
+    >
       <template #badges>
         <BetaBadge />
         <span v-if="unsortedCount" class="tools-tab__count">
@@ -33,6 +37,7 @@ import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 
 import BetaBadge from "@/components/common/BetaBadge.vue";
+import { GOOD_TO_KNOW_TOPIC } from "@/constants/settings";
 import { useEntriesStore } from "@/stores/entriesStore";
 import { useLookupsStore } from "@/stores/lookupsStore";
 

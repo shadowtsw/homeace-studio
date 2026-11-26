@@ -72,6 +72,11 @@ const es: MessageSchema = {
         text: "Una etiqueta que asignas aquí es una etiqueta de Home Assistant. La ves en todas partes allí, también en dispositivos y áreas.",
         more: "Si renombras una etiqueta, cambia en todas partes. Si la borras, desaparece en todas partes, también donde un flujo controla todos los dispositivos con esa etiqueta. Ese flujo deja de hacer nada sin avisar.",
       },
+      sortingEntities: {
+        title: "Ordenar entidades aprende sobre la marcha",
+        text: "La herramienta en Herramientas propone carpetas adecuadas para las entidades sin carpeta y dice por qué en cada una. Cada marca mejora las demás propuestas.",
+        more: "Es una beta: ves cada propuesta antes de aplicar, y la última pasada se puede deshacer. Tus reglas y propuestas rechazadas se guardan para todos los usuarios; las marcas, solo hasta cerrar.",
+      },
     },
     open: "Ajustes",
     title: "Ajustes",
