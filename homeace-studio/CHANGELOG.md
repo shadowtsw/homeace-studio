@@ -29,10 +29,25 @@
 - Automations and scripts that switch a whole floor or everything with a label show it ("Etage
   Erdgeschoss", "Label Nachtlicht") instead of asking for a device, and what such a block leaves out
   shows as "ohne Küche".
+- Settings window: the gear opens a larger window with tabs (Allgemein, Bearbeiten, Werkzeuge,
+  KI-Zugang, Gut zu wissen, Über HomeAce) instead of the short menu. The language sits right next to
+  the gear ("DE ▾"). Every setting shows whether it applies to you on every device or only on this
+  one.
+- Your settings follow you: opened from Home Assistant's sidebar, HomeAce Studio knows which HA user
+  you are. What you set on purpose (language, technical details, auto-save, kept runs) follows you to
+  every device; what it remembers on its own (column widths, chosen filters) stays on the device. The
+  first time, the values of this browser are taken over. Every HA user keeps their own view.
+- "Gut zu wissen" in the settings: short answers on how HomeAce Studio behaves, e.g. why editing a
+  scene switches nothing or what happens when a folder is renamed in Home Assistant. The first topic,
+  "Was ist was", names the three columns (Navigation, Liste, Details), so everyone uses the same words
+  when helping each other.
+- "Durchläufe merken" (tab "Bearbeiten"): how many runs Home Assistant keeps for new automations and
+  scripts (5, 10, 20 or 50). More runs help when you look for an error.
+- The Home Assistant name of a folder only shows with "Technische Details" switched on.
 
 - What's new: after an update, a gift next to the gear shows the highlights of the new version in
-  plain words. "Zeigen" leads to the feature, "OK" puts the gift away; the gear menu keeps
-  "Was ist neu" for later. Skipped updates show too; a fresh install starts without it.
+  plain words. "Zeigen" leads to the feature, "OK" puts the gift away; "Über HomeAce" in the
+  settings keeps "Was ist neu" for later. Skipped updates show too; a fresh install starts without it.
 - Helper settings: storage helpers (toggle, button, number, text, dropdown, date/time, counter, timer)
   have a tab "Einstellungen" for their ranges, steps, options, lengths and durations. A setting that
   Home Assistant would refuse is marked in red before saving. Fields HomeAce Studio does not show stay
@@ -49,7 +64,7 @@
   fan speed) stays as it is and is named. Scenes outside scenes.yaml are shown read-only.
 - "In HA speichern" moved to a footer at the bottom of the details, always in view, for flows,
   helper settings and scenes. The header and tabs of the details no longer scroll away.
-- "Szenen automatisch speichern" in the gear menu (off by default): scenes save shortly after the
+- "Szenen automatisch speichern" in the settings, tab "Bearbeiten" (off by default): scenes save shortly after the
   last change. The footer shows "Speichert gleich von selbst …" and then "Automatisch gespeichert",
   with "Alles rückgängig" back to how the scene was when you opened it.
 - Unsaved helper settings and scene edits are no longer lost when you open another tab or entry. Like
