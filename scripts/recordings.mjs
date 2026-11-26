@@ -36,6 +36,12 @@ const only = argument("--only", "").split(",").filter(Boolean);
 
 const VIEW = { width: 1280, height: 800, scale: 1, isMobile: false };
 const ONLY_ENTITIES = { "homeace.scopes": JSON.stringify(["entities"]) };
+/** Demo entities ticked in the folder clip, in this order; the first one is dragged. */
+const TICKED_FOR_FOLDER = [
+  "light.living_room_floor_lamp",
+  "light.living_room",
+  "switch.power_strip_outlet_1",
+];
 
 // ---------------------------------------------------------------------------------------------
 // Film: frames with their durations
@@ -345,14 +351,21 @@ const CLIPS = [
       // folder at the end shows the result anyway.
       await evaluate(
         page,
-        `document.head.insertAdjacentHTML("beforeend", "<style>.toast-host{display:none}</style>")`,
+        // !important: the toast host's own scoped style would win otherwise
+        `document.head.insertAdjacentHTML("beforeend", "<style>.toast-host{display:none !important}</style>")`,
       );
     },
     record: async (hand) => {
+      // Tick three, then drag one of them: all three go along
+      for (const entityId of TICKED_FOR_FOLDER) {
+        await hand.clickOn(`[data-plain-entity-id="${entityId}"] .entity-list-row__check`);
+        await hand.wait(250);
+      }
+      await hand.wait(600);
       await hand.drag({
         from: [".entity-list-row", "Floor lamp"],
         to: [".category-tree-node", "House"],
-        label: "Floor lamp",
+        label: `Floor lamp +${TICKED_FOR_FOLDER.length - 1}`,
         hoverMs: 500,
       });
       await hand.wait(800);
