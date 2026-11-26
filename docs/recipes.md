@@ -89,6 +89,8 @@ beta week, so a fix can be ready on release day. The areas and quick checks are 
    (developers.home-assistant.io/blog) since the last check. Look for the words of the touchpoint table:
    registry, category, label, area, device, entity, trace, automation, script, scene, the helper types,
    trigger, condition, translations, frontend, WebSocket, ingress, Supervisor, apps.
+   Also look for anything new around blueprints (schema, versions, import, re-import, editor). Our planned
+   blueprint editor builds on them; write it in the Check log even when it does not break anything.
 2. **Test** on a real HA, at best a throwaway one with the beta, otherwise the own HA right after the
    release. Run the quick checks of every hit, and the 🔴 rows every time. `node scripts/ha-check/run.mjs`
    does this for the beta on its own: a fresh HA and the app from the working tree in Docker, then the
