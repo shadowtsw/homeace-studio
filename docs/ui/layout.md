@@ -22,7 +22,7 @@ they help each other. Use exactly these words in every user text (app, README, D
 | Top bar (connection status, live dot, language menu, gear, What's new) | `components/layout/AppTopBar.vue`, `LanguageMenu.vue`, `WhatsNewMenu.vue` |
 | Settings window (tabs, one file per tab, scope symbol per setting) | `components/settings/SettingsWindow.vue`, `SettingsRow.vue`, `Settings*Tab.vue`, `stores/settingsWindowStore.ts`, `constants/settings.ts` |
 | Splitters between the columns | `components/layout/PaneSplitter.vue`, limits in `constants/layout.ts` |
-| Every dialog and the toasts of the page | `components/layout/StudioDialogs.vue`, `components/common/ToastHost.vue` |
+| Every dialog and the toasts of the page | `components/layout/StudioDialogs.vue` with its topic parts `components/areas/AreaDialogs.vue`, `components/entries/EntryDialogs.vue`, `components/layout/CreateDialogs.vue` (folder, helper, automation/script); `components/common/ToastHost.vue` |
 | Actions with toasts and error texts | `composables/actions/useCategoryActions.ts` (move, rename, order), `useCreateActions.ts` (folders, helpers, flows), `useEntryActions.ts` (entry actions), `useAreaActions.ts` |
 
 ## Grid and splitters

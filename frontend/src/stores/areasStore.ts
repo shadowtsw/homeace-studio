@@ -9,7 +9,7 @@ export type AreaDraft =
 
 /**
  * Which area dialog is open. A store, because the properties form deep in the detail opens the
- * same dialog as the area tree; StudioDialogs shows it and useAreaActions saves.
+ * same dialog as the area tree; AreaDialogs shows it and useAreaActions saves.
  */
 export const useAreasStore = defineStore("areas", () => {
   const draft = shallowRef<AreaDraft | null>(null);

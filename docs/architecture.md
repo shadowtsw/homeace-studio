@@ -82,7 +82,7 @@ frontend/src/
   views/StudioView.vue   the one page; wires Navigation · List · Detail        ui/layout.md
   components/<feature>/  one folder per feature (categories, entries, flow, scenes, helpers, areas, …)
   components/common/     DialogFrame, ConfirmDialog, SaveFooter, InlineNameInput, SwitchToggle, ToastHost
-  components/layout/     AppTopBar, LanguageMenu, WhatsNewMenu, PaneSplitter, StudioDialogs
+  components/layout/     AppTopBar, LanguageMenu, WhatsNewMenu, PaneSplitter, StudioDialogs, CreateDialogs
   components/settings/   the settings window and one file per tab
   composables/           useStudioData, usePreference, useLiveUpdates, … and topic folders:
                          actions/ (page actions with toasts), dragDrop/, scenes/, panels/, texts/

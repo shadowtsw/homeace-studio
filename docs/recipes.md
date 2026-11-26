@@ -60,8 +60,9 @@ Checklists for changes that touch several places. Feature-specific recipes are o
 
 - No UI library: scoped plain CSS on the tokens in `frontend/src/styles/tokens.css` (light + dark).
   Shared button classes are in `base.css` (`btn`, `btn--primary`, `icon-btn`).
-- Dialogs use `components/common/DialogFrame.vue` and are mounted in `StudioDialogs.vue`. Confirmations
-  use `ConfirmDialog.vue`.
+- Dialogs use `components/common/DialogFrame.vue` and are mounted in `StudioDialogs.vue`, or in one of
+  its topic parts (`areas/AreaDialogs.vue`, `entries/EntryDialogs.vue`, `layout/CreateDialogs.vue`).
+  Confirmations use `ConfirmDialog.vue`.
 - Feedback goes through `toastStore.show(text, tone?, undo?)`, and errors through
   `messages.textFor(error, t("errors.actionFailed"))`.
 - Every text in all five locales ([features/i18n.md](features/i18n.md)). Technical details only behind

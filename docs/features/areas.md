@@ -32,6 +32,7 @@ serves it to the filter (`areaIdsOf`), the area nav counts and the row notes (`u
 | Area nav, nodes | `frontend/src/components/areas/AreaNav.vue`, `AreaNavNode.vue` |
 | New / edit area (name + icon guessed from the name) | `components/areas/AreaDialog.vue`, `utils/areas/areaIcons.ts` (`guessAreaIcon`) |
 | Set the own area of ticked rows | `components/areas/SetAreaDialog.vue` |
+| The area dialogs on the page (new/edit, delete with counts, set, "Ordnung in einem Klick") | `components/areas/AreaDialogs.vue` |
 | "Ordnung in einem Klick": folders from areas | `components/areas/AreaTidyDialog.vue`, `utils/areas/areaTidy.ts` (`tidyCandidates`, `planAreaTidy`, `folderForArea`) |
 | Which area dialog is open (the properties form opens it too) | `stores/areasStore.ts` |
 | Saving with toasts, inline rename with undo | `composables/actions/useAreaActions.ts` |
