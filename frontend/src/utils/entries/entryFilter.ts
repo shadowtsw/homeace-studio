@@ -10,7 +10,9 @@ import { isSameOrBelow } from "../categories/categoryPath";
 import { showsKind } from "./listScopes";
 
 export type EntryFilter = {
-  /** The chosen filters of the list; "Alle" or single kinds (plain entities are filtered elsewhere). */
+  /**
+   * The chosen filters of the list; "Alle" or single kinds (plain entities are filtered elsewhere).
+   */
   scopes: readonly ListScope[];
   /** A category path, or one of {@link CATEGORY_FILTER}. */
   category: string;
@@ -38,15 +40,20 @@ export function areaFilter(areaId: string | null): string {
   return AREA_FILTER_PREFIX + (areaId ?? "");
 }
 
+export type IsInCategoryOptions = {
+  /** The entry to check. */
+  entry: Entry;
+  /** A category path, one of {@link CATEGORY_FILTER} or an area selection. */
+  category: string;
+  /** Areas of an entry; needed for area selections only. */
+  areaIdsOf?: AreaIdsOf;
+};
+
 /**
  * Whether an entry belongs to a tree selection. A category includes everything below it:
  * "Haus" matches "Haus" and "Haus/Terrasse", but not "Hausflur".
- *
- * @param entry - The entry to check.
- * @param category - A category path, one of {@link CATEGORY_FILTER} or an area selection.
- * @param areaIdsOf - Areas of an entry; needed for area selections only.
  */
-export function isInCategory(entry: Entry, category: string, areaIdsOf?: AreaIdsOf): boolean {
+export function isInCategory({ entry, category, areaIdsOf }: IsInCategoryOptions): boolean {
   const area = areaOfFilter(category);
 
   if (area !== undefined) {
@@ -58,7 +65,9 @@ export function isInCategory(entry: Entry, category: string, areaIdsOf?: AreaIds
   if (category === CATEGORY_FILTER.uncategorized) return entry.categoryPath === null;
   if (category === CATEGORY_FILTER.favorites) return entry.isFavorite;
 
-  return entry.categoryPath !== null && isSameOrBelow(entry.categoryPath, category);
+  return (
+    entry.categoryPath !== null && isSameOrBelow({ path: entry.categoryPath, ancestor: category })
+  );
 }
 
 /** Whether a tree selection is not a folder: all, favorites, uncategorized, check-up or an area. */
@@ -69,13 +78,17 @@ export function isSpecialCategory(category: string): boolean {
   );
 }
 
+export type MatchesSearchOptions = {
+  /** The entry to check. */
+  entry: Entry;
+  /** User input; blank matches everything. */
+  search: string;
+};
+
 /**
  * Whether an entry matches a free-text search on name or entity ID (case-insensitive).
- *
- * @param entry - The entry to check.
- * @param search - User input; blank matches everything.
  */
-export function matchesSearch(entry: Entry, search: string): boolean {
+export function matchesSearch({ entry, search }: MatchesSearchOptions): boolean {
   const query = search.trim().toLowerCase();
 
   if (!query) return true;
@@ -83,17 +96,22 @@ export function matchesSearch(entry: Entry, search: string): boolean {
   return entry.name.toLowerCase().includes(query) || entry.entityId.includes(query);
 }
 
+export type FilterEntriesOptions = {
+  entries: readonly Entry[];
+  filter: EntryFilter;
+};
+
 /**
  * Applies scope, tree selection and search to a list of entries.
  *
  * @returns Matching entries in their original order.
  */
-export function filterEntries(entries: readonly Entry[], filter: EntryFilter): Entry[] {
+export function filterEntries({ entries, filter }: FilterEntriesOptions): Entry[] {
   return entries.filter(
     (entry) =>
-      showsKind(filter.scopes, entry.kind) &&
-      isInCategory(entry, filter.category, filter.areaIdsOf) &&
-      matchesSearch(entry, filter.search),
+      showsKind({ scopes: filter.scopes, kind: entry.kind }) &&
+      isInCategory({ entry, category: filter.category, areaIdsOf: filter.areaIdsOf }) &&
+      matchesSearch({ entry, search: filter.search }),
   );
 }
 
@@ -154,13 +172,19 @@ type GroupContext = {
   groupCount: number;
 };
 
+export type IsGroupOpenByDefaultOptions = {
+  group: EntryGroup;
+  context: GroupContext;
+};
+
 /**
  * Whether a group of the list starts expanded. Subfolders start collapsed so a folder reads as an
  * overview; the folder's own entries, the open entry and search results stay visible.
  *
- * @example isGroupOpenByDefault({ path: "Haus/Pool", entries }, { category: "Haus", … }) // false
+ * @example
+ * isGroupOpenByDefault({ group: { path: "Haus/Pool", entries }, context: { category: "Haus", … } }) // false
  */
-export function isGroupOpenByDefault(group: EntryGroup, context: GroupContext): boolean {
+export function isGroupOpenByDefault({ group, context }: IsGroupOpenByDefaultOptions): boolean {
   if (context.isSearching || context.groupCount === 1) return true;
   if (group.entries.some((entry) => entry.entityId === context.selectedEntityId)) return true;
   if (!isSpecialCategory(context.category)) return group.path === context.category;

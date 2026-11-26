@@ -37,14 +37,14 @@ describe("entry actions", () => {
     expect(canToggle(entry({}))).toBe(true);
     expect(canToggle(entry({ domain: "input_boolean" }))).toBe(true);
     expect(canToggle(entry({ domain: "scene" }))).toBe(false);
-    expect(supportsAction(entry({ domain: "scene" }), "run")).toBe(true);
-    expect(supportsAction(entry({ domain: "input_button" }), "run")).toBe(true);
-    expect(supportsAction(entry({ domain: "input_number" }), "run")).toBe(false);
+    expect(supportsAction({ entry: entry({ domain: "scene" }), action: "run" })).toBe(true);
+    expect(supportsAction({ entry: entry({ domain: "input_button" }), action: "run" })).toBe(true);
+    expect(supportsAction({ entry: entry({ domain: "input_number" }), action: "run" })).toBe(false);
   });
 
   it("offers nothing for disabled entities", () => {
     expect(canToggle(entry({ isDisabled: true }))).toBe(false);
-    expect(supportsAction(entry({ isDisabled: true }), "run")).toBe(false);
+    expect(supportsAction({ entry: entry({ isDisabled: true }), action: "run" })).toBe(false);
   });
 
   it("switches off what is on and on what is off", () => {

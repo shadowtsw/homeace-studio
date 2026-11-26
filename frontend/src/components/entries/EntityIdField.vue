@@ -41,7 +41,9 @@ const emit = defineEmits<{
 
 const { t } = useI18n();
 
-const suggestion = computed(() => suggestEntityId(props.entry.entityId, props.entry.name));
+const suggestion = computed(() =>
+  suggestEntityId({ entityId: props.entry.entityId, name: props.entry.name }),
+);
 </script>
 
 <style scoped>

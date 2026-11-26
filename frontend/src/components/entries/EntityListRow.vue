@@ -111,7 +111,7 @@ function startDrag(event: DragEvent): void {
   release();
   if (!event.dataTransfer) return;
 
-  setDraggedPlainEntity(event.dataTransfer, props.entity.entityId);
+  setDraggedPlainEntity({ transfer: event.dataTransfer, entityId: props.entity.entityId });
   // Drop targets read it here: browsers hide the drag data until the drop
   drag.start(props.entity);
 }

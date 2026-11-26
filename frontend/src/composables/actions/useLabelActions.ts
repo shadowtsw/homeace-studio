@@ -23,7 +23,10 @@ export function useLabelActions() {
   const messages = useMessagesStore();
 
   const fail = (error: unknown): void =>
-    toasts.show(messages.textFor(error, t("errors.actionFailed")), "error");
+    toasts.show({
+      text: messages.textFor({ error, fallback: t("errors.actionFailed") }),
+      tone: "error",
+    });
 
   /** How many entries carry each label, for the numbers in the picker. */
   const counts = computed(() => {
@@ -37,8 +40,8 @@ export function useLabelActions() {
   async function create(name: string): Promise<Label | null> {
     try {
       const color = freeLabelColor(lookups.labels.map((label) => label.color));
-      const label = await store.create(name, color);
-      toasts.show(t("labels.toast.created", { name: label.name }));
+      const label = await store.create({ name, color });
+      toasts.show({ text: t("labels.toast.created", { name: label.name }) });
       return label;
     } catch (error) {
       fail(error);
@@ -46,10 +49,16 @@ export function useLabelActions() {
     }
   }
 
-  async function update(labelId: string, fields: LabelFields): Promise<boolean> {
+  async function update({
+    labelId,
+    fields,
+  }: {
+    labelId: string;
+    fields: LabelFields;
+  }): Promise<boolean> {
     try {
-      const label = await store.update(labelId, fields);
-      toasts.show(t("labels.toast.updated", { name: label.name }));
+      const label = await store.update({ labelId, fields });
+      toasts.show({ text: t("labels.toast.updated", { name: label.name }) });
       return true;
     } catch (error) {
       fail(error);
@@ -68,7 +77,7 @@ export function useLabelActions() {
   async function confirmDelete(): Promise<void> {
     try {
       const label = await store.confirmDelete();
-      if (label) toasts.show(t("labels.toast.deleted", { name: label.name }));
+      if (label) toasts.show({ text: t("labels.toast.deleted", { name: label.name }) });
     } catch (error) {
       fail(error);
     }
@@ -78,7 +87,13 @@ export function useLabelActions() {
    * Mehrfachauswahl: when every ticked entry has the label, it is taken away from all; otherwise
    * every ticked entry gets it. Each entry keeps its other labels.
    */
-  async function toggleOnEntries(labelId: string, entityIds: readonly string[]): Promise<void> {
+  async function toggleOnEntries({
+    labelId,
+    entityIds,
+  }: {
+    labelId: string;
+    entityIds: readonly string[];
+  }): Promise<void> {
     // Who has it now
     const entries = entriesStore.entries.filter((entry) => entityIds.includes(entry.entityId));
     const hasLabel = (entry: (typeof entries)[number]): boolean =>
@@ -91,16 +106,16 @@ export function useLabelActions() {
       for (const entry of changing) {
         const ids = entry.labels.map((label) => label.labelId);
         const labelIds = isRemoving ? ids.filter((id) => id !== labelId) : [...ids, labelId];
-        await entriesStore.updateEntry(entry.entityId, { labelIds });
+        await entriesStore.updateEntry({ entityId: entry.entityId, changes: { labelIds } });
       }
 
       const name = lookups.labels.find((label) => label.labelId === labelId)?.name ?? labelId;
       const count = changing.length;
-      toasts.show(
-        isRemoving
+      toasts.show({
+        text: isRemoving
           ? t("labels.toast.removedMany", { name, count }, count)
           : t("labels.toast.addedMany", { name, count }, count),
-      );
+      });
     } catch (error) {
       fail(error);
     }

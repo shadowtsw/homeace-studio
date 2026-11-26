@@ -9,8 +9,13 @@ import type { EntryKind } from "@/types/entry";
 
 const isKind = (scope: ListScope): boolean => (ENTRY_KINDS as readonly string[]).includes(scope);
 
+export type ShowsKindOptions = {
+  scopes: readonly ListScope[];
+  kind: EntryKind;
+};
+
 /** Whether the chosen filters include entries of this kind; "Alle" means every entry. */
-export function showsKind(scopes: readonly ListScope[], kind: EntryKind): boolean {
+export function showsKind({ scopes, kind }: ShowsKindOptions): boolean {
   return scopes.includes(SCOPE_ALL) || scopes.includes(kind);
 }
 
@@ -19,14 +24,19 @@ export function showsEntities(scopes: readonly ListScope[]): boolean {
   return scopes.includes(SCOPE_ENTITIES);
 }
 
+export type ToggleScopeOptions = {
+  scopes: readonly ListScope[];
+  scope: ListScope;
+};
+
 /**
  * Adds or removes one filter (Strg/⌘+Klick, or the filter's menu). "Alle" and single kinds exclude
  * each other; when nothing is left, "Alle" is chosen.
  *
- * @example toggleScope(["automation"], "entities") // ["automation", "entities"]
- * @example toggleScope(["all", "entities"], "script") // ["entities", "script"]
+ * @example toggleScope({ scopes: ["automation"], scope: "entities" }) // ["automation", "entities"]
+ * @example toggleScope({ scopes: ["all", "entities"], scope: "script" }) // ["entities", "script"]
  */
-export function toggleScope(scopes: readonly ListScope[], scope: ListScope): ListScope[] {
+export function toggleScope({ scopes, scope }: ToggleScopeOptions): ListScope[] {
   // Remove a chosen filter
   if (scopes.includes(scope)) {
     const rest = scopes.filter((item) => item !== scope);

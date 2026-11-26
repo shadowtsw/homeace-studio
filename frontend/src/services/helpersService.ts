@@ -13,7 +13,7 @@ export type NewHelper = {
 
 /** @returns The entity ID of the new helper, e.g. "input_boolean.gaestemodus". */
 export async function createHelper(helper: NewHelper): Promise<string> {
-  const result = await apiPost<{ entityId: string }>("/helpers", helper);
+  const result = await apiPost<{ entityId: string }>({ path: "/helpers", body: helper });
 
   return result.entityId;
 }
@@ -26,18 +26,30 @@ const settingsPath = (entityId: string): string =>
 
 /** Reads the settings of a storage helper (input_*, counter, timer). */
 export function fetchHelperSettings(entityId: string): Promise<HelperSettingsView> {
-  return apiFetch<HelperSettingsView>(settingsPath(entityId));
+  return apiFetch<HelperSettingsView>({ path: settingsPath(entityId) });
 }
 
+export type SaveHelperSettingsOptions = {
+  entityId: string;
+  settings: HelperSettings;
+};
+
 /** Saves the settings; @returns them as HA now has them. */
-export function saveHelperSettings(
-  entityId: string,
-  settings: HelperSettings,
-): Promise<HelperSettingsView> {
-  return apiSend<HelperSettingsView>("PUT", settingsPath(entityId), { settings });
+export function saveHelperSettings({
+  entityId,
+  settings,
+}: SaveHelperSettingsOptions): Promise<HelperSettingsView> {
+  return apiSend<HelperSettingsView>({
+    method: "PUT",
+    path: settingsPath(entityId),
+    body: { settings },
+  });
 }
 
 /** Deletes a helper in HA (storage helpers only). */
 export async function deleteHelper(entityId: string): Promise<void> {
-  await apiFetch<null>(`/helpers/${encodeURIComponent(entityId)}`, { method: "DELETE" });
+  await apiFetch<null>({
+    path: `/helpers/${encodeURIComponent(entityId)}`,
+    options: { method: "DELETE" },
+  });
 }

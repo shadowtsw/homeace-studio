@@ -20,7 +20,15 @@ export const useToastStore = defineStore("toast", () => {
   const toasts = ref<Toast[]>([]);
   let nextId = 1;
 
-  function show(text: string, tone: ToastTone = "success", undo?: () => void): void {
+  function show({
+    text,
+    tone = "success",
+    undo,
+  }: {
+    text: string;
+    tone?: ToastTone;
+    undo?: () => void;
+  }): void {
     const id = nextId++;
     toasts.value = [...toasts.value, { id, text, tone, undo }];
     setTimeout(() => dismiss(id), undo ? UNDO_DURATION_MS : TOAST_DURATION_MS[tone]);

@@ -52,10 +52,10 @@ describe("isFormEdited", () => {
   it("ignores spaces around the name and the order of labels", () => {
     const form = { ...base, name: " Flurlicht ", labelIds: ["licht"] };
 
-    expect(isFormEdited(form, base)).toBe(false);
+    expect(isFormEdited({ form, base })).toBe(false);
   });
 
   it("sees a removed area", () => {
-    expect(isFormEdited({ ...base, areaId: null }, base)).toBe(true);
+    expect(isFormEdited({ form: { ...base, areaId: null }, base })).toBe(true);
   });
 });

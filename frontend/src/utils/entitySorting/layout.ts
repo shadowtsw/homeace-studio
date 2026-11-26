@@ -23,10 +23,12 @@ export function confidenceRank(confidence: Confidence): number {
 type Stage = {
   keyOf: (bundle: SortingBundle) => string | null;
   /** The group for a bucket; `path` is the folder it proposes. */
-  groupFor: (
-    key: string,
-    bundles: SortingBundle[],
-  ) => { key: string; type: "folder" | "new"; path: string; origin: GroupOrigin };
+  groupFor: (bucket: { key: string; bundles: SortingBundle[] }) => {
+    key: string;
+    type: "folder" | "new";
+    path: string;
+    origin: GroupOrigin;
+  };
 };
 
 /**
@@ -43,24 +45,33 @@ export function layoutSorting(input: {
   const { computation, home, names } = input;
   const groups = new Map<string, SortingGroup>();
   const groupOf = new Map<string, SortingGroup>();
-  const ensure = (
-    key: string,
-    type: SortingGroup["type"],
-    target: string | null,
-    origin: GroupOrigin | null,
-  ): SortingGroup => {
+  type EnsureOptions = {
+    key: string;
+    type: SortingGroup["type"];
+    target: string | null;
+    origin: GroupOrigin | null;
+  };
+
+  const ensure = ({ key, type, target, origin }: EnsureOptions): SortingGroup => {
     const group = groups.get(key) ?? { key, type, target, origin, bundles: [] };
     groups.set(key, group);
     return group;
   };
-  const put = (group: SortingGroup, bundle: SortingBundle): void => {
+  const put = ({ group, bundle }: { group: SortingGroup; bundle: SortingBundle }): void => {
     group.bundles.push(bundle);
     groupOf.set(bundle.key, group);
   };
   const folderGroup = (path: string): SortingGroup =>
-    ensure(`folder:${path}`, "folder", path, null);
-  const newGroup = (key: string, path: string, origin: GroupOrigin): SortingGroup =>
-    ensure(key, "new", path, origin);
+    ensure({ key: `folder:${path}`, type: "folder", target: path, origin: null });
+  const newGroup = ({
+    key,
+    path,
+    origin,
+  }: {
+    key: string;
+    path: string;
+    origin: GroupOrigin;
+  }): SortingGroup => ensure({ key, type: "new", target: path, origin });
 
   let unclear: SortingBundle[] = [];
 
@@ -69,17 +80,19 @@ export function layoutSorting(input: {
     if (!suggestion) continue;
 
     if (bundle.isSystem && suggestion.confidence !== "rule") {
-      put(ensure("system", "system", null, null), bundle);
+      put({ group: ensure({ key: "system", type: "system", target: null, origin: null }), bundle });
     } else if (suggestion.confidence !== "unclear" && suggestion.target) {
       const origin: GroupOrigin =
         suggestion.ruleNumber !== null
           ? { kind: "rule", ruleNumber: suggestion.ruleNumber }
           : { kind: "area" };
       const target = suggestion.target;
-      put(
-        suggestion.isNew ? newGroup(`new:${target}`, target, origin) : folderGroup(target),
+      put({
+        group: suggestion.isNew
+          ? newGroup({ key: `new:${target}`, path: target, origin })
+          : folderGroup(target),
         bundle,
-      );
+      });
     } else {
       unclear.push(bundle);
     }
@@ -94,7 +107,7 @@ export function layoutSorting(input: {
               .path
           : null;
       },
-      groupFor: (path) => ({
+      groupFor: ({ key: path }) => ({
         key: computation.folders.has(path) ? `folder:${path}` : `new:${path}`,
         type: computation.folders.has(path) ? "folder" : "new",
         path,
@@ -103,7 +116,7 @@ export function layoutSorting(input: {
     },
     {
       keyOf: (bundle) => [...bundle.words.keys()][0] ?? null,
-      groupFor: (word, bundles) => ({
+      groupFor: ({ key: word, bundles }) => ({
         key: `name:${word}`,
         type: "new",
         path: (bundles[0]?.name ?? word).split(" ")[0] ?? word,
@@ -113,7 +126,7 @@ export function layoutSorting(input: {
     {
       keyOf: (bundle) =>
         bundle.integration && !HUB_INTEGRATIONS.has(bundle.integration) ? bundle.integration : null,
-      groupFor: (integration) => ({
+      groupFor: ({ key: integration }) => ({
         key: `integration:${integration}`,
         type: "new",
         path: home.context.integrations[integration] ?? integration,
@@ -125,7 +138,7 @@ export function layoutSorting(input: {
         const deviceClass = bundle.main.deviceClass;
         return deviceClass && names.deviceClasses[deviceClass] ? deviceClass : null;
       },
-      groupFor: (deviceClass) => ({
+      groupFor: ({ key: deviceClass }) => ({
         key: `deviceClass:${deviceClass}`,
         type: "new",
         path: names.deviceClasses[deviceClass] ?? deviceClass,
@@ -143,7 +156,7 @@ export function layoutSorting(input: {
 
     const grouped = new Set<SortingBundle>();
     buckets.forEach((bundles, key) => {
-      const spec = stage.groupFor(key, bundles);
+      const spec = stage.groupFor({ key, bundles });
       const entityCount = bundles.reduce((sum, bundle) => sum + bundle.entities.length, 0);
       const isBigEnough = bundles.length >= GROUP_MIN_BUNDLES || entityCount >= GROUP_MIN_ENTITIES;
 
@@ -152,16 +165,18 @@ export function layoutSorting(input: {
       const group =
         spec.type === "folder"
           ? folderGroup(spec.path)
-          : newGroup(spec.key, spec.path, spec.origin);
+          : newGroup({ key: spec.key, path: spec.path, origin: spec.origin });
       bundles.forEach((bundle) => {
-        put(group, bundle);
+        put({ group, bundle });
         grouped.add(bundle);
       });
     });
     unclear = unclear.filter((bundle) => !grouped.has(bundle));
   }
 
-  unclear.forEach((bundle) => put(ensure("rest", "rest", null, null), bundle));
+  unclear.forEach((bundle) =>
+    put({ group: ensure({ key: "rest", type: "rest", target: null, origin: null }), bundle }),
+  );
 
   const confidenceOf = (bundle: SortingBundle): Confidence =>
     computation.suggestions.get(bundle.key)?.confidence ?? "unclear";

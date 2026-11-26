@@ -183,10 +183,10 @@ const {
   onDragOver,
   onDragLeave,
   onDrop,
-} = useEntryDropTarget(
-  (entityId) => emit("dropEntry", null, entityId),
-  (entityId) => emit("dropEntity", null, entityId),
-);
+} = useEntryDropTarget({
+  onEntryDropped: (entityId) => emit("dropEntry", null, entityId),
+  onPlainEntityDropped: (entityId) => emit("dropEntity", null, entityId),
+});
 
 /** Which folders are open is pure UI state of this tree. */
 const expandedPaths = ref(new Set<string>());

@@ -106,7 +106,7 @@ const query = ref("");
 const editing = ref<Label | null>(null);
 const panel = useTemplateRef("panel");
 const search = useTemplateRef("search");
-const placement = useNoCoverPlacement(toRef(props, "field"), panel);
+const placement = useNoCoverPlacement({ field: toRef(props, "field"), panel });
 const style = placement.style;
 
 const shown = computed(() => {

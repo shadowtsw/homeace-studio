@@ -4,8 +4,13 @@ export const ENTRY_DRAG_TYPE = "application/x-homeace-entity";
 /** The part of DataTransfer we use; keeps the helpers testable without a browser. */
 type EntryTransfer = Pick<DataTransfer, "types" | "getData" | "setData">;
 
+export type SetDraggedEntityOptions = {
+  transfer: EntryTransfer;
+  entityId: string;
+};
+
 /** Puts an entity ID on a drag that starts at a list row. */
-export function setDraggedEntity(transfer: EntryTransfer, entityId: string): void {
+export function setDraggedEntity({ transfer, entityId }: SetDraggedEntityOptions): void {
   transfer.setData(ENTRY_DRAG_TYPE, entityId);
 }
 
@@ -30,8 +35,15 @@ export function getDraggedEntity(transfer: EntryTransfer | null): string | null 
  */
 export const PLAIN_ENTITY_DRAG_TYPE = "application/x-homeace-plain-entity";
 
-/** Puts a plain entity on a drag; a browser silently refuses a drop whose effect was not allowed. */
-export function setDraggedPlainEntity(transfer: DataTransfer, entityId: string): void {
+export type SetDraggedPlainEntityOptions = {
+  transfer: DataTransfer;
+  entityId: string;
+};
+
+/**
+ * Puts a plain entity on a drag; a browser silently refuses a drop whose effect was not allowed.
+ */
+export function setDraggedPlainEntity({ transfer, entityId }: SetDraggedPlainEntityOptions): void {
   transfer.setData(PLAIN_ENTITY_DRAG_TYPE, entityId);
   transfer.effectAllowed = "copyMove";
 }

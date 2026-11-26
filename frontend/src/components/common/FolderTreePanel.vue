@@ -77,7 +77,9 @@ const query = ref("");
 const levels = (props.current ?? "").split("/").filter(Boolean);
 const expanded = ref(new Set(levels.map((_, index) => levels.slice(0, index + 1).join("/"))));
 
-const tree = computed(() => buildCategoryTree([], [], props.folders));
+const tree = computed(() =>
+  buildCategoryTree({ categoryPaths: [], savedFolders: [], allCategoryPaths: props.folders }),
+);
 
 type Row = { node: CategoryNode; depth: number };
 

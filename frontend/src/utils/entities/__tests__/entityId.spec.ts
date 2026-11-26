@@ -11,13 +11,15 @@ describe("slugifyName", () => {
 
 describe("suggestEntityId", () => {
   it("suggests an ID that fits the name", () => {
-    expect(suggestEntityId("timer.terrace_light_delay", "Terrace delay")).toBe(
+    expect(suggestEntityId({ entityId: "timer.terrace_light_delay", name: "Terrace delay" })).toBe(
       "timer.terrace_delay",
     );
   });
 
   it("says nothing when the ID fits or the name gives none", () => {
-    expect(suggestEntityId("input_boolean.guest_mode", "Guest mode")).toBeNull();
-    expect(suggestEntityId("input_boolean.guest_mode", "!!!")).toBeNull();
+    expect(
+      suggestEntityId({ entityId: "input_boolean.guest_mode", name: "Guest mode" }),
+    ).toBeNull();
+    expect(suggestEntityId({ entityId: "input_boolean.guest_mode", name: "!!!" })).toBeNull();
   });
 });

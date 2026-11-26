@@ -1,41 +1,63 @@
 import { CATEGORY_SEPARATOR } from "@/constants/entries";
 
+export type IsSameOrBelowOptions = {
+  path: string;
+  ancestor: string;
+};
+
 /**
  * Whether `path` is `ancestor` itself or lies below it. Compares whole levels, so "Hausflur" is
  * not below "Haus". Same rule as the backend (categories/category-path.ts).
  */
-export function isSameOrBelow(path: string, ancestor: string): boolean {
+export function isSameOrBelow({ path, ancestor }: IsSameOrBelowOptions): boolean {
   return path === ancestor || path.startsWith(ancestor + CATEGORY_SEPARATOR);
 }
+
+export type ReplacePathPrefixOptions = {
+  path: string;
+  from: string;
+  to: string;
+};
 
 /**
  * Swaps the leading `from` part of a path for `to`.
  *
- * @example replacePathPrefix("Haus/Terrasse", "Haus", "Heim") // "Heim/Terrasse"
+ * @example
+ * replacePathPrefix({ path: "Haus/Terrasse", from: "Haus", to: "Heim" }) // "Heim/Terrasse"
  */
-export function replacePathPrefix(path: string, from: string, to: string): string {
+export function replacePathPrefix({ path, from, to }: ReplacePathPrefixOptions): string {
   return to + path.slice(from.length);
 }
+
+export type RenameLastLevelOptions = {
+  path: string;
+  newName: string;
+};
 
 /**
  * The path of a folder after giving its last level a new name.
  *
- * @example renameLastLevel("Haus/Terrasse", "Balkon") // "Haus/Balkon"
+ * @example renameLastLevel({ path: "Haus/Terrasse", newName: "Balkon" }) // "Haus/Balkon"
  */
-export function renameLastLevel(path: string, newName: string): string {
+export function renameLastLevel({ path, newName }: RenameLastLevelOptions): string {
   const levels = path.split(CATEGORY_SEPARATOR);
   levels[levels.length - 1] = newName;
 
   return levels.join(CATEGORY_SEPARATOR);
 }
 
+export type FolderColorOptions = {
+  path: string;
+  colors: Readonly<Record<string, string>>;
+};
+
 /**
  * Color a folder shows: its own, else that of the nearest parent with one, else null (default).
  * Saves coloring every subfolder by hand.
  *
- * @example folderColor("Haus/Terrasse/Licht", { Haus: "#c9862f" }) // "#c9862f"
+ * @example folderColor({ path: "Haus/Terrasse/Licht", colors: { Haus: "#c9862f" } }) // "#c9862f"
  */
-export function folderColor(path: string, colors: Readonly<Record<string, string>>): string | null {
+export function folderColor({ path, colors }: FolderColorOptions): string | null {
   const levels = path.split(CATEGORY_SEPARATOR);
 
   for (let depth = levels.length; depth > 0; depth--) {

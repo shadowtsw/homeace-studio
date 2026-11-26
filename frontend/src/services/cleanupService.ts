@@ -41,12 +41,15 @@ export type CleanupStep = {
 };
 
 export function fetchCleanup(): Promise<CleanupOverview> {
-  return apiFetch<CleanupOverview>("/categories/cleanup");
+  return apiFetch<CleanupOverview>({ path: "/categories/cleanup" });
 }
 
 export async function previewCleanup(changes: CleanupChange[]): Promise<CleanupStep[]> {
-  const result = await apiPost<{ steps: CleanupStep[] }>("/categories/cleanup/preview", {
-    changes,
+  const result = await apiPost<{ steps: CleanupStep[] }>({
+    path: "/categories/cleanup/preview",
+    body: {
+      changes,
+    },
   });
 
   return result.steps;
@@ -54,17 +57,20 @@ export async function previewCleanup(changes: CleanupChange[]): Promise<CleanupS
 
 /** @returns How many category names were converted. */
 export async function applyCleanup(changes: CleanupChange[]): Promise<number> {
-  const result = await apiPost<{ categoryCount: number }>("/categories/cleanup/apply", {
-    changes,
+  const result = await apiPost<{ categoryCount: number }>({
+    path: "/categories/cleanup/apply",
+    body: {
+      changes,
+    },
   });
 
   return result.categoryCount;
 }
 
 export async function ignoreProposal(key: string): Promise<void> {
-  await apiPost<null>("/categories/cleanup/ignore", { key });
+  await apiPost<null>({ path: "/categories/cleanup/ignore", body: { key } });
 }
 
 export async function restoreProposals(): Promise<void> {
-  await apiFetch<null>("/categories/cleanup/ignore", { method: "DELETE" });
+  await apiFetch<null>({ path: "/categories/cleanup/ignore", options: { method: "DELETE" } });
 }

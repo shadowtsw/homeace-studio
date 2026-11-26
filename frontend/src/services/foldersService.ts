@@ -10,26 +10,39 @@ export type FolderOverview = {
 };
 
 export function fetchFolders(): Promise<FolderOverview> {
-  return apiFetch<FolderOverview>("/folders");
+  return apiFetch<FolderOverview>({ path: "/folders" });
 }
 
 /** @returns The folder path as the backend stored it (levels trimmed). */
 export async function createFolder(path: string): Promise<string> {
-  const result = await apiPost<{ path: string }>("/folders", { path });
+  const result = await apiPost<{ path: string }>({ path: "/folders", body: { path } });
 
   return result.path;
 }
 
 export async function deleteFolder(path: string): Promise<void> {
-  await apiFetch<null>(`/folders?path=${encodeURIComponent(path)}`, { method: "DELETE" });
+  await apiFetch<null>({
+    path: `/folders?path=${encodeURIComponent(path)}`,
+    options: { method: "DELETE" },
+  });
 }
+
+export type SetFolderOrderOptions = {
+  parent: string;
+  order: string[];
+};
 
 /** The own order of a folder's subfolders; an empty list goes back to A–Z. */
-export async function setFolderOrder(parent: string, order: string[]): Promise<void> {
-  await apiSend<null>("PUT", "/folders/order", { parent, order });
+export async function setFolderOrder({ parent, order }: SetFolderOrderOptions): Promise<void> {
+  await apiSend<null>({ method: "PUT", path: "/folders/order", body: { parent, order } });
 }
 
+export type SetFolderColorOptions = {
+  path: string;
+  color: string | null;
+};
+
 /** @param color - "#rrggbb", or null for the default color. */
-export async function setFolderColor(path: string, color: string | null): Promise<void> {
-  await apiSend<null>("PUT", "/folders/color", { path, color });
+export async function setFolderColor({ path, color }: SetFolderColorOptions): Promise<void> {
+  await apiSend<null>({ method: "PUT", path: "/folders/color", body: { path, color } });
 }

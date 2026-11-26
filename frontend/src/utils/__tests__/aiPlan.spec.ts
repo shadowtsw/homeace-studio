@@ -63,20 +63,26 @@ describe("AI plan review", () => {
   });
 
   it("marks a target as new unless it exists or a ticked rename creates it", () => {
-    expect(isNewFolder("House/Bath", ["House"], PLAN, new Set())).toBe(true);
-    expect(isNewFolder("House", ["House"], PLAN, new Set())).toBe(false);
-    expect(isNewFolder("House/Security", [], PLAN, new Set(["op1"]))).toBe(false);
+    expect(
+      isNewFolder({ path: "House/Bath", allPaths: ["House"], plan: PLAN, selected: new Set() }),
+    ).toBe(true);
+    expect(
+      isNewFolder({ path: "House", allPaths: ["House"], plan: PLAN, selected: new Set() }),
+    ).toBe(false);
+    expect(
+      isNewFolder({ path: "House/Security", allPaths: [], plan: PLAN, selected: new Set(["op1"]) }),
+    ).toBe(false);
   });
 
   it("builds the address and the client setup, with the token masked for display", () => {
-    const url = mcpUrl(OVERVIEW, "192.0.2.10");
+    const url = mcpUrl({ overview: OVERVIEW, hostname: "192.0.2.10" });
 
     expect(url).toBe("http://192.0.2.10:8098/mcp");
-    expect(mcpUrl({ ...OVERVIEW, hostPort: null }, "x")).toBeNull();
-    expect(mcpSnippet(MCP_CLIENT.claudeCode, url ?? "", "T")).toContain(
+    expect(mcpUrl({ overview: { ...OVERVIEW, hostPort: null }, hostname: "x" })).toBeNull();
+    expect(mcpSnippet({ client: MCP_CLIENT.claudeCode, url: url ?? "", token: "T" })).toContain(
       "claude mcp add --transport http homeace http://192.0.2.10:8098/mcp",
     );
-    expect(JSON.parse(mcpSnippet(MCP_CLIENT.json, "u", "T"))).toEqual({
+    expect(JSON.parse(mcpSnippet({ client: MCP_CLIENT.json, url: "u", token: "T" }))).toEqual({
       mcpServers: { homeace: { type: "http", url: "u", headers: { Authorization: "Bearer T" } } },
     });
     expect(maskToken(OVERVIEW.token ?? "")).toMatch(/^hac_ab•+CDEF$/);

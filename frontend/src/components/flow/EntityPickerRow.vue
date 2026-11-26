@@ -45,7 +45,9 @@ const emit = defineEmits<{
 
 const icon = computed(() => DOMAIN_ICON[props.entity.domain] ?? FALLBACK_DOMAIN_ICON);
 const toStateText = useStateText();
-const stateText = computed(() => toStateText(props.entity.state, props.entity.unit));
+const stateText = computed(() =>
+  toStateText({ state: props.entity.state, unit: props.entity.unit }),
+);
 </script>
 
 <style scoped>

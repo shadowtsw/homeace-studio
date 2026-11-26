@@ -46,7 +46,7 @@ export function useScenePreview({ sceneId, entities, nameOf, fail }: ScenePrevie
       deviceId,
       setTimeout(() => {
         pending.delete(deviceId);
-        previewScene(sceneId(), valueOf(deviceId)).catch(fail);
+        previewScene({ entityId: sceneId(), entities: valueOf(deviceId) }).catch(fail);
       }, PREVIEW_DELAY_MS),
     );
   }
@@ -54,16 +54,16 @@ export function useScenePreview({ sceneId, entities, nameOf, fail }: ScenePrevie
   async function togglePreview(): Promise<void> {
     try {
       if (isPreviewing.value) {
-        await restoreScene(sceneId());
+        await restoreScene({ entityId: sceneId() });
         isPreviewing.value = false;
         trying.clear();
-        toasts.show(t("scene.toast.restored"));
+        toasts.show({ text: t("scene.toast.restored") });
       } else {
         const shown = entities();
-        await previewScene(sceneId(), shown);
+        await previewScene({ entityId: sceneId(), entities: shown });
         isPreviewing.value = true;
         trying.clear();
-        toasts.show(t("scene.toast.previewOn", Object.keys(shown).length));
+        toasts.show({ text: t("scene.toast.previewOn", Object.keys(shown).length) });
       }
     } catch (error) {
       fail(error);
@@ -75,13 +75,13 @@ export function useScenePreview({ sceneId, entities, nameOf, fail }: ScenePrevie
 
     try {
       if (trying.has(deviceId)) {
-        await restoreScene(sceneId(), [deviceId]);
+        await restoreScene({ entityId: sceneId(), entityIds: [deviceId] });
         trying.delete(deviceId);
-        toasts.show(t("scene.toast.triedBack", { name }));
+        toasts.show({ text: t("scene.toast.triedBack", { name }) });
       } else {
-        await previewScene(sceneId(), valueOf(deviceId));
+        await previewScene({ entityId: sceneId(), entities: valueOf(deviceId) });
         trying.add(deviceId);
-        toasts.show(t("scene.toast.tried", { name }));
+        toasts.show({ text: t("scene.toast.tried", { name }) });
       }
     } catch (error) {
       fail(error);
@@ -92,13 +92,13 @@ export function useScenePreview({ sceneId, entities, nameOf, fail }: ScenePrevie
   async function restoreDevice(deviceId: string): Promise<void> {
     if (!isShown(deviceId)) return;
 
-    await restoreScene(sceneId(), [deviceId]).catch(fail);
+    await restoreScene({ entityId: sceneId(), entityIds: [deviceId] }).catch(fail);
     trying.delete(deviceId);
   }
 
   /** The values changed as a whole (discarded, undone): a running preview shows them. */
   function showAgain(): void {
-    if (isPreviewing.value) previewScene(sceneId(), entities()).catch(fail);
+    if (isPreviewing.value) previewScene({ entityId: sceneId(), entities: entities() }).catch(fail);
   }
 
   /** Leaving the scene: the devices go back to how they were. */
@@ -107,8 +107,8 @@ export function useScenePreview({ sceneId, entities, nameOf, fail }: ScenePrevie
 
     isPreviewing.value = false;
     trying.clear();
-    restoreScene(leftSceneId)
-      .then(() => toasts.show(t("scene.toast.restored")))
+    restoreScene({ entityId: leftSceneId })
+      .then(() => toasts.show({ text: t("scene.toast.restored") }))
       .catch(fail);
   }
 

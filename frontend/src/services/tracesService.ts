@@ -41,13 +41,22 @@ export type Run = {
 
 export type RunHistory = { entityId: string; storedTraces: number; runs: Run[] };
 
+export type KeepRunsOptions = {
+  entityId: string;
+  count: number;
+};
+
 /** Writes `trace.stored_traces` into the flow's config; HA keeps that many runs from now on. */
-export async function keepRuns(entityId: string, count: number): Promise<void> {
-  await apiSend<{ storedTraces: number }>("PUT", `/traces/${encodeURIComponent(entityId)}/stored`, {
-    count,
+export async function keepRuns({ entityId, count }: KeepRunsOptions): Promise<void> {
+  await apiSend<{ storedTraces: number }>({
+    method: "PUT",
+    path: `/traces/${encodeURIComponent(entityId)}/stored`,
+    body: {
+      count,
+    },
   });
 }
 
 export function fetchRunHistory(entityId: string): Promise<RunHistory> {
-  return apiFetch<RunHistory>(`/traces/${encodeURIComponent(entityId)}`);
+  return apiFetch<RunHistory>({ path: `/traces/${encodeURIComponent(entityId)}` });
 }

@@ -69,8 +69,13 @@ export function existingFolders(paths: Iterable<string>): Set<string> {
   return folders;
 }
 
+export type IsSceneOnlyOptions = {
+  path: string;
+  home: SortingHome;
+};
+
 /** A folder only scenes live in ("Z2MQTT/Szenen/Küche"): no model for where devices go. */
-export function isSceneOnly(path: string, home: SortingHome): boolean {
+export function isSceneOnly({ path, home }: IsSceneOnlyOptions): boolean {
   const kinds = home.context.folderKinds[path];
 
   return !!kinds && kinds.length > 0 && kinds.every((kind) => kind === "scene");
@@ -79,16 +84,21 @@ export function isSceneOnly(path: string, home: SortingHome): boolean {
 /** A place where area folders live, and how many there are: "" is the top level. */
 export type AreaParent = { parent: string; count: number };
 
+export type AreaParentsOptions = {
+  home: SortingHome;
+  folders: Set<string>;
+};
+
 /**
  * Where folders named like an area sit today, most first: "Haus" for "Haus/Küche" and "Haus/Bad",
  * "" when they lie at the top. Folders with scenes only do not count.
  */
-export function areaParents(home: SortingHome, folders: Set<string>): AreaParent[] {
+export function areaParents({ home, folders }: AreaParentsOptions): AreaParent[] {
   const areaKeys = new Set([...home.areas.values()].map((area) => wordKey(area.name)));
   const counts = new Map<string, number>();
 
   for (const path of folders) {
-    if (!areaKeys.has(wordKey(lastLevel(path))) || isSceneOnly(path, home)) continue;
+    if (!areaKeys.has(wordKey(lastLevel(path))) || isSceneOnly({ path, home })) continue;
 
     const parent = path.split("/").slice(0, -1).join("/");
     counts.set(parent, (counts.get(parent) ?? 0) + 1);
@@ -120,7 +130,7 @@ export function areaFolder(input: {
   if (folders.has(preferred)) return { path: preferred, exists: true };
 
   const existing = [...folders]
-    .filter((path) => wordKey(lastLevel(path)) === key && !isSceneOnly(path, home))
+    .filter((path) => wordKey(lastLevel(path)) === key && !isSceneOnly({ path, home }))
     .sort((first, second) => first.split("/").length - second.split("/").length)[0];
 
   return existing ? { path: existing, exists: true } : { path: preferred, exists: false };

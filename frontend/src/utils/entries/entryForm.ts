@@ -21,8 +21,13 @@ export function entryFormValuesOf(entry: Entry): EntryFormValues {
 const isSameLabelSet = (first: readonly string[], second: readonly string[]): boolean =>
   [...first].sort().join() === [...second].sort().join();
 
+export type IsFormEditedOptions = {
+  form: EntryFormValues;
+  base: EntryFormValues;
+};
+
 /** Whether the user changed something since the form was filled from `base`. */
-export function isFormEdited(form: EntryFormValues, base: EntryFormValues): boolean {
+export function isFormEdited({ form, base }: IsFormEditedOptions): boolean {
   return (
     form.name.trim() !== base.name ||
     form.icon.trim() !== base.icon ||

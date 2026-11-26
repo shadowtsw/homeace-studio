@@ -1,12 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { buildBundles } from "../bundles";
-import {
-  collectMoves,
-  computeSorting,
-  suggestionChanges,
-  type SortingInput,
-} from "../compute";
+import { collectMoves, computeSorting, suggestionChanges, type SortingInput } from "../compute";
 import { areaParents } from "../home";
 import { layoutSorting, pretick } from "../layout";
 import type { SortingState } from "../model";
@@ -47,7 +42,10 @@ describe("words", () => {
 describe("bundles", () => {
   it("makes one decision per device and leaves out YAML, disabled and kept-out entities", () => {
     const home = sampleHome();
-    const bundles = buildBundles(home, sampleState({ ignored: new Set(["entity:zone.home"]) }));
+    const bundles = buildBundles({
+      home,
+      state: sampleState({ ignored: new Set(["entity:zone.home"]) }),
+    });
 
     expect(bundles.get("dKitchenMotion")?.entities.map((entity) => entity.entityId)).toEqual([
       "binary_sensor.bewegung_kueche",
@@ -111,7 +109,9 @@ describe("suggestions", () => {
     const next = computeSorting({ home, state, names: NAMES, previous: computation, layout });
 
     expect(next.suggestions.get(water)).toMatchObject({ target: "Klima", confidence: "likely" });
-    expect(suggestionChanges(computation, next, circuit).get(water)).toBe("surer");
+    expect(
+      suggestionChanges({ before: computation, after: next, actedOn: circuit }).get(water),
+    ).toBe("surer");
   });
 
   it("never proposes a turned-down folder again", () => {
@@ -143,7 +143,7 @@ describe("rules", () => {
       target: "Licht/Küche",
       confidence: "rule",
     });
-    expect(kidsLight && ruleFor(kidsLight, state.rules, home)).toEqual({
+    expect(kidsLight && ruleFor({ entity: kidsLight, rules: state.rules, home })).toEqual({
       ruleNumber: 2,
       target: "Kinder",
       isConflict: true,
@@ -158,7 +158,7 @@ describe("rules", () => {
     };
     const entities = [...home.entities.values()];
 
-    expect(ruleStats(rule, 0, [rule], entities, home)).toEqual({
+    expect(ruleStats({ rule, ruleIndex: 0, rules: [rule], entities, home })).toEqual({
       matches: 0,
       withoutArea: 2,
       lost: 0,
@@ -215,7 +215,10 @@ describe("rule side hits", () => {
       target: "Kinderzimmer/Taster",
     };
 
-    expect(ruleSideHits(rule, home, false)).toEqual({ entries: 1, sorted: 0 });
+    expect(ruleSideHits({ rule, home, isResortingSorted: false })).toEqual({
+      entries: 1,
+      sorted: 0,
+    });
   });
 });
 
@@ -251,8 +254,10 @@ describe("placeholders", () => {
   const words = { area: "Bereich", floor: "Etage" };
 
   it("show {area} in the UI language and read it back, case-insensitive", () => {
-    expect(toDisplayTarget("Licht/{area}/{floor}", words)).toBe("Licht/{Bereich}/{Etage}");
-    expect(fromDisplayTarget(" Licht / {bereich} ", words)).toBe("Licht/{area}");
+    expect(toDisplayTarget({ target: "Licht/{area}/{floor}", words })).toBe(
+      "Licht/{Bereich}/{Etage}",
+    );
+    expect(fromDisplayTarget({ text: " Licht / {bereich} ", words })).toBe("Licht/{area}");
   });
 });
 
@@ -287,7 +292,7 @@ describe("area folders", () => {
   it("ignore folders with scenes only when learning where area folders go", () => {
     const opened = open();
 
-    expect(areaParents(opened.home, opened.computation.folders)[0]).toEqual({
+    expect(areaParents({ home: opened.home, folders: opened.computation.folders })[0]).toEqual({
       parent: "Haus",
       count: 2,
     });
@@ -314,6 +319,6 @@ describe("area folders", () => {
     const home = sampleHome();
     const folders = new Set(["Küche", "Bad", "Haus/Kinderzimmer"]);
 
-    expect(areaParents(home, folders)[0]).toEqual({ parent: "", count: 2 });
+    expect(areaParents({ home, folders })[0]).toEqual({ parent: "", count: 2 });
   });
 });

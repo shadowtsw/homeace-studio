@@ -17,16 +17,19 @@ export type AreaNoteTexts = {
 
 const NOTE_SEPARATOR = " · ";
 
+export type AreaNoteOptions = {
+  links: readonly EntryAreaLink[];
+  areaId: string;
+  texts: AreaNoteTexts;
+};
+
 /**
  * Why an entry is in the selected area, and where else it is.
  *
- * @example areaNote(links, "terrace", texts) // "über Bewegungsmelder Terrasse · auch in Garten"
+ * @example
+ * areaNote({ links, areaId: "terrace", texts }) // "über Bewegungsmelder Terrasse · auch in Garten"
  */
-export function areaNote(
-  links: readonly EntryAreaLink[],
-  areaId: string,
-  texts: AreaNoteTexts,
-): string {
+export function areaNote({ links, areaId, texts }: AreaNoteOptions): string {
   const here = links.find((link) => link.areaId === areaId);
   const others = links.filter((link) => link.areaId !== areaId).map((link) => link.name);
   const parts = [

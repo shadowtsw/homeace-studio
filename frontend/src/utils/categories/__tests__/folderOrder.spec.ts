@@ -14,7 +14,10 @@ describe("applyFolderOrder", () => {
       node("Sicherheit"),
     ];
 
-    const sorted = applyFolderOrder(tree, { "": ["Sicherheit", "Haus"], Haus: ["Haus/Flur"] });
+    const sorted = applyFolderOrder({
+      nodes: tree,
+      order: { "": ["Sicherheit", "Haus"], Haus: ["Haus/Flur"] },
+    });
 
     expect(sorted.map((item) => item.path)).toEqual(["Sicherheit", "Haus", "Energie"]);
     expect(sorted[1]?.children.map((item) => item.path)).toEqual(["Haus/Flur", "Haus/Bad"]);
@@ -23,8 +26,12 @@ describe("applyFolderOrder", () => {
 
 describe("moveSibling", () => {
   it("moves a folder before or after another", () => {
-    expect(moveSibling(["A", "B", "C"], "C", "A", true)).toEqual(["C", "A", "B"]);
-    expect(moveSibling(["A", "B", "C"], "A", "C", false)).toEqual(["B", "C", "A"]);
+    expect(
+      moveSibling({ siblings: ["A", "B", "C"], moved: "C", target: "A", isBefore: true }),
+    ).toEqual(["C", "A", "B"]);
+    expect(
+      moveSibling({ siblings: ["A", "B", "C"], moved: "A", target: "C", isBefore: false }),
+    ).toEqual(["B", "C", "A"]);
   });
 });
 

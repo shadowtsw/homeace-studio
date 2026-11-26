@@ -30,13 +30,13 @@ export const usePreferencesStore = defineStore("preferences", () => {
   const saveTimers = new Map<string, ReturnType<typeof setTimeout>>();
 
   /** Called by usePreference for every preference; only scope "user" is synced. */
-  function track(preference: Preference, value: Ref<unknown>): void {
+  function track({ preference, value }: { preference: Preference; value: Ref<unknown> }): void {
     if (preference.scope !== PREFERENCE_SCOPE.user) return;
 
     const name = preferenceName(preference);
     tracked.set(name, { preference, value });
     applyServerValue(name);
-    watch(value, (next) => scheduleSave(name, next), { deep: true });
+    watch(value, (next) => scheduleSave({ name, value: next }), { deep: true });
   }
 
   function applyServerValue(name: string): void {
@@ -47,20 +47,20 @@ export const usePreferencesStore = defineStore("preferences", () => {
     if (!isSameValue(entry.value.value, serverValue)) entry.value.value = serverValue;
   }
 
-  function scheduleSave(name: string, value: unknown): void {
+  function scheduleSave({ name, value }: { name: string; value: unknown }): void {
     // Nothing to do without a user, before the first answer, or for a value the backend has
     if (!haUser.value || !serverValues || isSameValue(serverValues[name], value)) return;
 
     clearTimeout(saveTimers.get(name));
     saveTimers.set(
       name,
-      setTimeout(() => void save(name, value), SAVE_DELAY_MS),
+      setTimeout(() => void save({ name, value }), SAVE_DELAY_MS),
     );
   }
 
-  async function save(name: string, value: unknown): Promise<void> {
+  async function save({ name, value }: { name: string; value: unknown }): Promise<void> {
     try {
-      serverValues = await savePreference(name, value);
+      serverValues = await savePreference({ name, value });
     } catch (error) {
       console.error(`Saving the setting ${name} failed`, error);
     }
@@ -74,7 +74,7 @@ export const usePreferencesStore = defineStore("preferences", () => {
       isStored: localStorage.getItem(preference.storageKey) !== null,
     }));
 
-    return valuesToHandOver(kept, exceptNames);
+    return valuesToHandOver({ kept, exceptNames });
   }
 
   /** Who is there, and their settings; the first visit through HA hands over this browser's. */
@@ -101,7 +101,7 @@ export const usePreferencesStore = defineStore("preferences", () => {
     // The backend's values win; settings it does not know yet get this browser's value
     for (const name of tracked.keys()) applyServerValue(name);
     const missing = keptInBrowser(new Set(Object.keys(serverValues)));
-    for (const [name, value] of Object.entries(missing)) void save(name, value);
+    for (const [name, value] of Object.entries(missing)) void save({ name, value });
   }
 
   return { haUser, track, load };

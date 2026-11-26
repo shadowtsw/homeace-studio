@@ -352,7 +352,9 @@ let checkAnchor: string | null = null;
 
 function onCheck(entityId: string, withShift: boolean): void {
   const isChecked = !props.checkedIds.has(entityId);
-  const ids = withShift ? rangeBetween(visibleIds.value, checkAnchor, entityId) : [entityId];
+  const ids = withShift
+    ? rangeBetween({ order: visibleIds.value, anchor: checkAnchor, target: entityId })
+    : [entityId];
 
   // A range takes the state of the clicked row, so shift-click can also untick a range.
   emit("check", ids, isChecked);
@@ -376,7 +378,7 @@ let entityCheckAnchor: string | null = null;
 function onEntityCheck(entityId: string, withShift: boolean): void {
   const isChecked = !props.checkedEntityIds.has(entityId);
   const ids = withShift
-    ? rangeBetween(visibleEntityIds.value, entityCheckAnchor, entityId)
+    ? rangeBetween({ order: visibleEntityIds.value, anchor: entityCheckAnchor, target: entityId })
     : [entityId];
 
   emit("checkEntities", ids, isChecked);
@@ -388,7 +390,7 @@ function addFolder(): void {
   emit("addFolder", isRealCategory.value ? props.category : null);
 }
 
-const groups = computed(() => groupListItems(props.entries, props.entities));
+const groups = computed(() => groupListItems({ entries: props.entries, entities: props.entities }));
 const hasEntities = computed(() => props.entities.length > 0);
 
 /** Plain entities shown per group at first; more come with "Weitere … anzeigen". */
@@ -429,11 +431,14 @@ function isOpen(group: ListGroup): boolean {
 
   return (
     toggledGroups.value[group.path ?? NO_CATEGORY_KEY] ??
-    isGroupOpenByDefault(group, {
-      category: props.category,
-      selectedEntityId: props.selectedEntityId,
-      isSearching: isSearching.value,
-      groupCount: groups.value.length,
+    isGroupOpenByDefault({
+      group,
+      context: {
+        category: props.category,
+        selectedEntityId: props.selectedEntityId,
+        isSearching: isSearching.value,
+        groupCount: groups.value.length,
+      },
     })
   );
 }

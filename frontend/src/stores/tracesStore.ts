@@ -45,8 +45,8 @@ export const useTracesStore = defineStore("traces", () => {
   }
 
   /** Errors go to the caller. */
-  async function keepMore(entityId: string, count: number): Promise<void> {
-    await keepRuns(entityId, count);
+  async function keepMore({ entityId, count }: { entityId: string; count: number }): Promise<void> {
+    await keepRuns({ entityId, count });
     await load(entityId);
   }
 

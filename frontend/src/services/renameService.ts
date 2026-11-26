@@ -19,14 +19,23 @@ export type RenameResult = {
 const entryPath = (entityId: string): string => `/entries/${encodeURIComponent(entityId)}`;
 
 export function fetchReferences(entityId: string): Promise<EntityReference[]> {
-  return apiFetch<EntityReference[]>(`${entryPath(entityId)}/references`);
+  return apiFetch<EntityReference[]>({ path: `${entryPath(entityId)}/references` });
 }
 
+export type RenameEntityOptions = {
+  entityId: string;
+  newEntityId: string;
+  withReferences: boolean;
+};
+
 /** Changes the entity ID in HA, and in the flows that name it when `withReferences`. */
-export function renameEntity(
-  entityId: string,
-  newEntityId: string,
-  withReferences: boolean,
-): Promise<RenameResult> {
-  return apiPost<RenameResult>(`${entryPath(entityId)}/rename`, { newEntityId, withReferences });
+export function renameEntity({
+  entityId,
+  newEntityId,
+  withReferences,
+}: RenameEntityOptions): Promise<RenameResult> {
+  return apiPost<RenameResult>({
+    path: `${entryPath(entityId)}/rename`,
+    body: { newEntityId, withReferences },
+  });
 }

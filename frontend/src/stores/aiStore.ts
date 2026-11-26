@@ -59,8 +59,14 @@ export const useAiStore = defineStore("ai", () => {
     reviewPlanId.value = null;
   }
 
-  async function apply(planId: string, operationIds: string[]): Promise<ApplyResult> {
-    const result = await applyAiPlan(planId, operationIds);
+  async function apply({
+    planId,
+    operationIds,
+  }: {
+    planId: string;
+    operationIds: string[];
+  }): Promise<ApplyResult> {
+    const result = await applyAiPlan({ planId, operationIds });
     await loadPlans();
 
     return result;

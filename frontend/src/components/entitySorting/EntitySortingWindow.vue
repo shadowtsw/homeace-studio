@@ -29,7 +29,14 @@
           {{ t("entitySorting.loading") }}
         </p>
         <div v-else-if="sorting.loadError && !sorting.home" class="sorting-window__state">
-          <p>{{ messages.textFor(sorting.loadError, t("entitySorting.loadFailed")) }}</p>
+          <p>
+            {{
+              messages.textFor({
+                error: sorting.loadError,
+                fallback: t("entitySorting.loadFailed"),
+              })
+            }}
+          </p>
           <button class="btn" type="button" @click="sorting.load()">
             {{ t("entitySorting.retry") }}
           </button>
@@ -137,10 +144,13 @@ function close(): void {
 async function undo(): Promise<void> {
   try {
     const count = await run.undo();
-    toasts.show(t("entitySorting.result.undone", { count }, count));
+    toasts.show({ text: t("entitySorting.result.undone", { count }, count) });
     sorting.goTo(SORTING_STEP.overview);
   } catch (error) {
-    toasts.show(messages.textFor(error, t("errors.actionFailed")), "error");
+    toasts.show({
+      text: messages.textFor({ error, fallback: t("errors.actionFailed") }),
+      tone: "error",
+    });
   }
 }
 

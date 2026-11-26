@@ -12,24 +12,31 @@ import { useMessagesStore } from "@/stores/messagesStore";
 import { useStudioStore } from "@/stores/studioStore";
 import { useToastStore } from "@/stores/toastStore";
 
+type SaveOrderOptions = {
+  parent: string;
+  order: string[];
+  /** The order before, for "Rückgängig". */
+  previous: string[];
+};
+
 type CategoryActions = {
   /** A move or rename is running; controls lock meanwhile. */
   isBusy: Ref<boolean>;
   /** The folder in the rename dialog; null when the dialog is closed. */
   renamingPath: Ref<string | null>;
-  moveEntry: (entityId: string, categoryPath: string | null) => Promise<void>;
+  moveEntry: (options: { entityId: string; categoryPath: string | null }) => Promise<void>;
   /** The entries in the "move to" dialog; null when it is closed. */
   movingIds: Ref<string[] | null>;
   startMoveMany: (entityIds: string[]) => void;
   cancelMoveMany: () => void;
   /** Moves several entries; null takes them out of their category. Clears the ticked rows. */
-  moveEntries: (entityIds: string[], categoryPath: string | null) => Promise<void>;
+  moveEntries: (options: { entityIds: string[]; categoryPath: string | null }) => Promise<void>;
   /** The plain entity in the "move to" dialog; null when it is closed. */
   movingEntity: Ref<EntityOption | null>;
   startMoveEntity: (entity: EntityOption) => void;
   cancelMoveEntity: () => void;
   /** Puts a plain entity (light, sensor …) into a folder; null takes it out. */
-  moveEntity: (entityId: string, categoryPath: string | null) => Promise<void>;
+  moveEntity: (options: { entityId: string; categoryPath: string | null }) => Promise<void>;
   startRename: (path: string) => void;
   cancelRename: () => void;
   confirmRename: (newPath: string) => Promise<void>;
@@ -38,16 +45,19 @@ type CategoryActions = {
   startInlineRename: (path: string) => void;
   cancelInlineRename: () => void;
   /** Renames the last level of a folder in place, with "Rückgängig" in the toast. */
-  renameInline: (path: string, name: string) => Promise<void>;
+  renameInline: (options: { path: string; name: string }) => Promise<void>;
   /** Saves siblings in a new order (own order, only in HomeAce Studio), with "Rückgängig". */
-  saveOrder: (parent: string, order: string[], previous: string[]) => Promise<void>;
+  saveOrder: (options: SaveOrderOptions) => Promise<void>;
   /** Back to A–Z everywhere, with "Rückgängig". */
   resetOrder: () => Promise<void>;
   /** "Ordnung in einem Klick" is open. */
   isAreaTidyOpen: Ref<boolean>;
   startAreaTidy: () => void;
   cancelAreaTidy: () => void;
-  /** Moves every entry into the folder of its area. @returns The first folder, to open it; null when nothing moved. */
+  /**
+   * Moves every entry into the folder of its area. @returns The first folder, to open it; null when
+   * nothing moved.
+   */
   confirmAreaTidy: (moves: readonly TidyMove[]) => Promise<string | null>;
 };
 
@@ -70,10 +80,19 @@ export function useCategoryActions(): CategoryActions {
   const movingEntity = ref<EntityOption | null>(null);
 
   function showError(error: unknown): void {
-    toasts.show(messages.textFor(error, t("errors.actionFailed")), "error");
+    toasts.show({
+      text: messages.textFor({ error, fallback: t("errors.actionFailed") }),
+      tone: "error",
+    });
   }
 
-  async function moveEntry(entityId: string, categoryPath: string | null): Promise<void> {
+  async function moveEntry({
+    entityId,
+    categoryPath,
+  }: {
+    entityId: string;
+    categoryPath: string | null;
+  }): Promise<void> {
     const entry = entriesStore.entries.find((item) => item.entityId === entityId);
 
     // Dropping an entry on the folder it is already in does nothing.
@@ -82,11 +101,11 @@ export function useCategoryActions(): CategoryActions {
     isBusy.value = true;
 
     try {
-      await entriesStore.moveEntry(entityId, categoryPath);
+      await entriesStore.moveEntry({ entityId, categoryPath });
       const text = categoryPath
         ? t("toast.moved", { name: entry.name, path: categoryPath })
         : t("toast.movedOut", { name: entry.name });
-      toasts.show(text);
+      toasts.show({ text });
     } catch (error) {
       showError(error);
     } finally {
@@ -94,12 +113,18 @@ export function useCategoryActions(): CategoryActions {
     }
   }
 
-  async function moveEntity(entityId: string, categoryPath: string | null): Promise<void> {
+  async function moveEntity({
+    entityId,
+    categoryPath,
+  }: {
+    entityId: string;
+    categoryPath: string | null;
+  }): Promise<void> {
     // Already there, or HA has no registry entry for it (then it cannot have a folder)
     const entity = lookups.entities.find((item) => item.entityId === entityId);
     if (!entity || entity.categoryPath === categoryPath) return;
     if (!entity.isInRegistry) {
-      toasts.show(t("entityRow.hintNoFolder"), "error");
+      toasts.show({ text: t("entityRow.hintNoFolder"), tone: "error" });
       return;
     }
 
@@ -107,16 +132,16 @@ export function useCategoryActions(): CategoryActions {
 
     try {
       // Move in HA, then read the entities again so list and tree show it
-      await moveEntityToFolder(entityId, categoryPath);
+      await moveEntityToFolder({ entityId, categoryPath });
       await lookups.loadEntities(true);
       movingEntity.value = null;
 
       const name = entity.name;
-      toasts.show(
-        categoryPath
+      toasts.show({
+        text: categoryPath
           ? t("toast.entityMoved", { name, path: categoryPath })
           : t("toast.entityMovedOut", { name }),
-      );
+      });
     } catch (error) {
       showError(error);
     } finally {
@@ -124,36 +149,45 @@ export function useCategoryActions(): CategoryActions {
     }
   }
 
-  async function moveEntries(entityIds: string[], categoryPath: string | null): Promise<void> {
+  async function moveEntries({
+    entityIds,
+    categoryPath,
+  }: {
+    entityIds: string[];
+    categoryPath: string | null;
+  }): Promise<void> {
     if (entityIds.length === 0) return;
 
     isBusy.value = true;
 
     try {
-      const { failed } = await entriesStore.moveEntries(entityIds, categoryPath);
+      const { failed } = await entriesStore.moveEntries({ entityIds, categoryPath });
       const moved = entityIds.length - failed.length;
 
       if (moved > 0) {
-        toasts.show(
-          categoryPath
+        toasts.show({
+          text: categoryPath
             ? t("toast.movedMany", { count: moved, path: categoryPath }, moved)
             : t("toast.movedOutMany", { count: moved }, moved),
-        );
+        });
       }
 
       if (failed.length > 0) {
-        const reason = messages.textFor(failed[0]?.error, t("errors.actionFailed"));
-        toasts.show(
-          t("toast.moveFailed", { count: failed.length, reason }, failed.length),
-          "error",
-        );
+        const reason = messages.textFor({
+          error: failed[0]?.error,
+          fallback: t("errors.actionFailed"),
+        });
+        toasts.show({
+          text: t("toast.moveFailed", { count: failed.length, reason }, failed.length),
+          tone: "error",
+        });
       }
 
       movingIds.value = null;
-      studio.setChecked(
-        entityIds.filter((id) => !failed.some((item) => item.entityId === id)),
-        false,
-      );
+      studio.setChecked({
+        entityIds: entityIds.filter((id) => !failed.some((item) => item.entityId === id)),
+        isChecked: false,
+      });
     } finally {
       isBusy.value = false;
     }
@@ -184,8 +218,8 @@ export function useCategoryActions(): CategoryActions {
       const folders = [...new Set(done.map((move) => move.to))];
 
       if (done.length > 0) {
-        toasts.show(
-          t(
+        toasts.show({
+          text: t(
             "areas.tidy.done",
             {
               count: done.length,
@@ -193,15 +227,18 @@ export function useCategoryActions(): CategoryActions {
             },
             done.length,
           ),
-        );
+        });
       }
 
       if (failed.length > 0) {
-        const reason = messages.textFor(failed[0]?.error, t("errors.actionFailed"));
-        toasts.show(
-          t("toast.moveFailed", { count: failed.length, reason }, failed.length),
-          "error",
-        );
+        const reason = messages.textFor({
+          error: failed[0]?.error,
+          fallback: t("errors.actionFailed"),
+        });
+        toasts.show({
+          text: t("toast.moveFailed", { count: failed.length, reason }, failed.length),
+          tone: "error",
+        });
       }
 
       isAreaTidyOpen.value = false;
@@ -214,20 +251,32 @@ export function useCategoryActions(): CategoryActions {
   const inlineRenamingPath = ref<string | null>(null);
 
   /** Renames a folder in every scope; the open folder follows. @returns Whether it worked. */
-  async function renameFolder(from: string, to: string, isUndo: boolean): Promise<boolean> {
+  async function renameFolder({
+    from,
+    to,
+    isUndo,
+  }: {
+    from: string;
+    to: string;
+    isUndo: boolean;
+  }): Promise<boolean> {
     isBusy.value = true;
 
     try {
-      await entriesStore.renameCategory(from, to);
+      await entriesStore.renameCategory({ from, to });
       await foldersStore.load();
       if (studio.category === from || studio.category.startsWith(`${from}${CATEGORY_SEPARATOR}`)) {
         studio.selectCategory(to + studio.category.slice(from.length));
       }
       const last = (path: string): string => path.split(CATEGORY_SEPARATOR).pop() ?? path;
-      if (isUndo) toasts.show(t("toast.undone"));
+      if (isUndo) toasts.show({ text: t("toast.undone") });
       else {
-        toasts.show(t("toast.renamedFolder", { from: last(from), to: last(to) }), "success", () => {
-          void renameFolder(to, from, true);
+        toasts.show({
+          text: t("toast.renamedFolder", { from: last(from), to: last(to) }),
+          tone: "success",
+          undo: () => {
+            void renameFolder({ from: to, to: from, isUndo: true });
+          },
         });
       }
       return true;
@@ -239,11 +288,15 @@ export function useCategoryActions(): CategoryActions {
     }
   }
 
-  async function saveOrder(parent: string, order: string[], previous: string[]): Promise<void> {
+  async function saveOrder({ parent, order, previous }: SaveOrderOptions): Promise<void> {
     try {
-      await foldersStore.setOrder(parent, order);
-      toasts.show(t("toast.orderSaved"), "success", () => {
-        void foldersStore.setOrder(parent, previous).catch(showError);
+      await foldersStore.setOrder({ parent, children: order });
+      toasts.show({
+        text: t("toast.orderSaved"),
+        tone: "success",
+        undo: () => {
+          void foldersStore.setOrder({ parent, children: previous }).catch(showError);
+        },
       });
     } catch (error) {
       showError(error);
@@ -253,27 +306,32 @@ export function useCategoryActions(): CategoryActions {
   async function resetOrder(): Promise<void> {
     const before = { ...foldersStore.order };
     try {
-      for (const parent of Object.keys(before)) await foldersStore.setOrder(parent, []);
-      toasts.show(t("toast.orderReset"), "success", () => {
-        void (async () => {
-          for (const [parent, order] of Object.entries(before))
-            await foldersStore.setOrder(parent, order);
-        })().catch(showError);
+      for (const parent of Object.keys(before))
+        await foldersStore.setOrder({ parent, children: [] });
+      toasts.show({
+        text: t("toast.orderReset"),
+        tone: "success",
+        undo: () => {
+          void (async () => {
+            for (const [parent, order] of Object.entries(before))
+              await foldersStore.setOrder({ parent, children: order });
+          })().catch(showError);
+        },
       });
     } catch (error) {
       showError(error);
     }
   }
 
-  async function renameInline(path: string, name: string): Promise<void> {
+  async function renameInline({ path, name }: { path: string; name: string }): Promise<void> {
     inlineRenamingPath.value = null;
     if (name.includes(CATEGORY_SEPARATOR)) {
-      toasts.show(t("nav.slashInName"), "error");
+      toasts.show({ text: t("nav.slashInName"), tone: "error" });
       return;
     }
     const levels = path.split(CATEGORY_SEPARATOR);
     const to = [...levels.slice(0, -1), name].join(CATEGORY_SEPARATOR);
-    if (to !== path) await renameFolder(path, to, false);
+    if (to !== path) await renameFolder({ from: path, to, isUndo: false });
   }
 
   async function confirmRename(newPath: string): Promise<void> {
@@ -284,10 +342,10 @@ export function useCategoryActions(): CategoryActions {
     isBusy.value = true;
 
     try {
-      const renamedCount = await entriesStore.renameCategory(from, newPath);
+      const renamedCount = await entriesStore.renameCategory({ from, to: newPath });
       // Empty folders below it were renamed in the overlay too.
       await foldersStore.load();
-      toasts.show(t("toast.renamed", { count: renamedCount }, renamedCount));
+      toasts.show({ text: t("toast.renamed", { count: renamedCount }, renamedCount) });
       renamingPath.value = null;
     } catch (error) {
       showError(error);

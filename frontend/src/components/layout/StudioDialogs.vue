@@ -13,7 +13,7 @@
     :areas="lookups.areas"
     :is-busy="areaActions.isBusy.value"
     @cancel="areas.closeDraft"
-    @confirm="areaActions.saveDraft"
+    @confirm="(name, icon) => areaActions.saveDraft({ name, icon })"
   />
   <ConfirmDialog
     v-if="areas.deleting"
@@ -59,7 +59,10 @@
     :all-paths="allPaths"
     :is-busy="actions.isBusy.value"
     @cancel="actions.cancelMoveMany"
-    @confirm="(path) => actions.moveEntries(actions.movingIds.value ?? [], path)"
+    @confirm="
+      (path) =>
+        actions.moveEntries({ entityIds: actions.movingIds.value ?? [], categoryPath: path })
+    "
   />
   <MoveEntriesDialog
     v-if="actions.movingEntity.value"
@@ -68,7 +71,13 @@
     :all-paths="allPaths"
     :is-busy="actions.isBusy.value"
     @cancel="actions.cancelMoveEntity"
-    @confirm="(path) => actions.moveEntity(actions.movingEntity.value?.entityId ?? '', path)"
+    @confirm="
+      (path) =>
+        actions.moveEntity({
+          entityId: actions.movingEntity.value?.entityId ?? '',
+          categoryPath: path,
+        })
+    "
   />
   <NewFolderDialog
     v-if="create.folderDraft.value"
@@ -157,7 +166,9 @@
     :taken-ids="takenIds"
     :is-busy="entryActions.isBusy.value"
     @cancel="entryActions.cancelRenameId"
-    @confirm="entryActions.confirmRenameId"
+    @confirm="
+      (newEntityId, withReferences) => entryActions.confirmRenameId({ newEntityId, withReferences })
+    "
   />
   <FolderColorDialog
     v-if="colorPath"
@@ -279,7 +290,7 @@ function closeSetArea(): void {
 }
 
 async function setArea(areaId: string | null): Promise<void> {
-  await props.areaActions.setOwnArea(areas.settingIds ?? [], areaId);
+  await props.areaActions.setOwnArea({ entityIds: areas.settingIds ?? [], areaId });
   setAreaPreset.value = null;
 }
 
@@ -322,7 +333,10 @@ async function confirmAreaTidy(
   if (path) emit("tidied", path);
 }
 
-/** Who still uses the entry about to be deleted (it is the open one, so its dependencies are loaded). */
+/**
+ * Who still uses the entry about to be deleted (it is the open one, so its dependencies are
+ * loaded).
+ */
 // "Gibt es schon" needs every entity ID HA has.
 watch(
   () => props.entryActions.renamingId.value,
@@ -359,7 +373,7 @@ async function onPlanApplied(): Promise<void> {
 
 async function onCleanedUp(categoryCount: number): Promise<void> {
   cleanup.close();
-  toasts.show(t("toast.cleanedUp", { count: categoryCount }, categoryCount));
+  toasts.show({ text: t("toast.cleanedUp", { count: categoryCount }, categoryCount) });
   await entriesStore.load();
 }
 
@@ -384,7 +398,7 @@ async function createFlow(flow: NewFlow): Promise<void> {
 async function pickColor(color: string | null): Promise<void> {
   if (!props.colorPath) return;
 
-  await props.entryActions.setFolderColor(props.colorPath, color);
+  await props.entryActions.setFolderColor({ path: props.colorPath, color });
   emit("closeColor");
 }
 </script>

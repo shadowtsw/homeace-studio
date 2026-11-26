@@ -41,7 +41,7 @@
           @reorder="reorderFolder"
           @reset-order="actions.resetOrder"
           @start-inline-rename="actions.startInlineRename"
-          @rename-inline="(path, name) => actions.renameInline(path, name)"
+          @rename-inline="(path, name) => actions.renameInline({ path, name })"
           @cancel-inline-rename="actions.cancelInlineRename"
           @update:mode="setNavMode"
           @select="selectCategory"
@@ -69,7 +69,7 @@
               @edit="(areaId) => withArea(areaId, areas.startEdit)"
               @delete="(areaId) => withArea(areaId, areas.startDelete)"
               @drop-entry="dropOnArea"
-              @rename-area="(areaId, name) => areaActions.renameArea(areaId, name)"
+              @rename-area="(areaId, name) => areaActions.renameArea({ areaId, name })"
             />
           </template>
         </CategoryTree>
@@ -107,7 +107,7 @@
           :is-list-labels-visible="settings.isListLabelsVisible"
           :area-view="areaView"
           :renaming-id="studio.renaming?.place === 'list' ? studio.renaming.entityId : null"
-          @start-rename="(entityId) => studio.startRename(entityId, 'list')"
+          @start-rename="(entityId) => studio.startRename({ entityId, place: 'list' })"
           @duplicate="duplicateFromList"
           @rename="renameEntry"
           @cancel-rename="studio.stopRename()"
@@ -118,11 +118,15 @@
           @check="checkEntries"
           @check-entities="checkEntities"
           @move-checked-entities="entityMove.start([...studio.checkedEntityIds])"
-          @uncategorize-checked-entities="entityMove.move([...studio.checkedEntityIds], null)"
+          @uncategorize-checked-entities="
+            entityMove.move({ entityIds: [...studio.checkedEntityIds], categoryPath: null })
+          "
           @move-checked="actions.startMoveMany([...studio.checkedIds])"
-          @uncategorize-checked="actions.moveEntries([...studio.checkedIds], null)"
+          @uncategorize-checked="
+            actions.moveEntries({ entityIds: [...studio.checkedIds], categoryPath: null })
+          "
           @set-area-checked="areas.startSetArea([...studio.checkedIds])"
-          @act="entryActions.act"
+          @act="(entry, action) => entryActions.act({ entry, action })"
           @label-checked="(bar) => (bulkLabelField = bulkLabelField ? null : bar)"
           @select-scope="studio.selectScope"
           @toggle-scope="studio.toggleListScope"
@@ -205,9 +209,11 @@
       :partial-ids="bulkLabels.some"
       :counts="labelActions.counts.value"
       :is-busy="labelActions.isBusy.value"
-      @toggle="(labelId) => labelActions.toggleOnEntries(labelId, [...studio.checkedIds])"
+      @toggle="
+        (labelId) => labelActions.toggleOnEntries({ labelId, entityIds: [...studio.checkedIds] })
+      "
       @create="createBulkLabel"
-      @update="(labelId, fields) => void labelActions.update(labelId, fields)"
+      @update="(labelId, fields) => void labelActions.update({ labelId, fields })"
       @delete="deleteBulkLabel"
       @close="bulkLabelField = null"
     />
@@ -224,7 +230,10 @@
       :all-paths="data.allCategoryPaths.value"
       :is-busy="entityMove.isBusy.value"
       @cancel="entityMove.cancel"
-      @confirm="(path) => entityMove.move(entityMove.movingIds.value ?? [], path)"
+      @confirm="
+        (path) =>
+          entityMove.move({ entityIds: entityMove.movingIds.value ?? [], categoryPath: path })
+      "
     />
     <QuickMenu
       v-if="entityMenu.menu.value"
@@ -354,10 +363,12 @@ function dropOnArea(areaId: string | null, entityId: string): void {
     studio.checkedIds.has(entityId) && studio.checkedIds.size > 1
       ? [...studio.checkedIds]
       : [entityId];
-  void areaActions.setOwnArea(ids, areaId);
+  void areaActions.setOwnArea({ entityIds: ids, areaId });
 }
 
-/** Switching to the areas opens the first one; back to the folders, an area selection becomes "all". */
+/**
+ * Switching to the areas opens the first one; back to the folders, an area selection becomes "all".
+ */
 function setNavMode(mode: NavMode): void {
   layout.navMode = mode;
 
@@ -375,7 +386,9 @@ function onTidied(path: string): void {
   selectCategory(path);
 }
 
-/** Entries without a folder that have an area; "Ordnung in einem Klick" shows when there are any. */
+/**
+ * Entries without a folder that have an area; "Ordnung in einem Klick" shows when there are any.
+ */
 const looseAreaCount = computed(
   () =>
     tidyCandidates({ entries: entriesStore.entries, linksOf: entryAreas.linksOf }).filter(
@@ -402,7 +415,7 @@ const areaView = computed((): AreaListView | null => {
   const notes = Object.fromEntries(
     data.visibleEntries.value.map((entry) => [
       entry.entityId,
-      areaNote(entryAreas.linksOf(entry.entityId), areaId, texts),
+      areaNote({ links: entryAreas.linksOf(entry.entityId), areaId, texts }),
     ]),
   );
 
@@ -485,7 +498,9 @@ const colorPath = ref<string | null>(null);
 
 const isBusy = computed(() => actions.isBusy.value || entryActions.isBusy.value);
 
-/** Wraps a detail handler so it only runs while an entry is open (the detail is empty otherwise). */
+/**
+ * Wraps a detail handler so it only runs while an entry is open (the detail is empty otherwise).
+ */
 function onSelected<Args extends unknown[]>(
   handler: (entry: Entry, ...args: Args) => Promise<unknown> | void,
 ): (...args: Args) => void {
@@ -496,35 +511,40 @@ function onSelected<Args extends unknown[]>(
   };
 }
 
-const onMove = onSelected((entry, path: string | null) => actions.moveEntry(entry.entityId, path));
-const onSave = onSelected((entry, changes: EntryChanges) =>
-  entryActions.save(entry.entityId, changes),
+const onMove = onSelected((entry, path: string | null) =>
+  actions.moveEntry({ entityId: entry.entityId, categoryPath: path }),
 );
-const onAct = onSelected((entry, action: EntryAction) => entryActions.act(entry, action));
+const onSave = onSelected((entry, changes: EntryChanges) =>
+  entryActions.save({ entityId: entry.entityId, changes }),
+);
+const onAct = onSelected((entry, action: EntryAction) => entryActions.act({ entry, action }));
 const onToggleFavorite = onSelected((entry) => entryActions.toggleFavorite(entry));
-const onSaveNote = onSelected((entry, note: string) => entryActions.saveNote(entry, note));
+const onSaveNote = onSelected((entry, note: string) => entryActions.saveNote({ entry, note }));
 const onDelete = onSelected((entry) => entryActions.askDelete(entry));
 const onAskDisable = onSelected((entry) => entryActions.askDisable(entry));
-const onDuplicate = onSelected((entry) => entryActions.duplicate(entry));
+const onDuplicate = onSelected((entry) => entryActions.duplicate({ entry }));
 const onRenameId = onSelected((entry, preset: string | null) =>
-  entryActions.startRenameId(entry, preset),
+  entryActions.startRenameId({ entry, preset }),
 );
 const onSaveFlow = onSelected(async (entry) => {
   try {
     await editorStore.save();
-    toasts.show(t("toast.flowSaved", { name: entry.name }));
+    toasts.show({ text: t("toast.flowSaved", { name: entry.name }) });
   } catch (error) {
-    toasts.show(messages.textFor(error, t("errors.actionFailed")), "error");
+    toasts.show({
+      text: messages.textFor({ error, fallback: t("errors.actionFailed") }),
+      tone: "error",
+    });
   }
 });
 
 const navWidth = computed({
   get: () => layout.paneWidths.nav,
-  set: (width: number) => layout.setPaneWidth(PANE.nav, width),
+  set: (width: number) => layout.setPaneWidth({ pane: PANE.nav, width }),
 });
 const listWidth = computed({
   get: () => layout.paneWidths.list,
-  set: (width: number) => layout.setPaneWidth(PANE.list, width),
+  set: (width: number) => layout.setPaneWidth({ pane: PANE.list, width }),
 });
 
 const connectionStatus = computed<ConnectionStatus>(() => {
@@ -542,9 +562,12 @@ function selectCategory(path: string): void {
 async function ignoreFinding(key: string): Promise<void> {
   try {
     await checkup.ignore(key);
-    toasts.show(t("toast.findingIgnored"));
+    toasts.show({ text: t("toast.findingIgnored") });
   } catch (error) {
-    toasts.show(messages.textFor(error, t("errors.actionFailed")), "error");
+    toasts.show({
+      text: messages.textFor({ error, fallback: t("errors.actionFailed") }),
+      tone: "error",
+    });
   }
 }
 
@@ -589,7 +612,11 @@ const bulkLabels = computed(() => {
 /** A new label goes to every ticked entry at once. */
 async function createBulkLabel(name: string): Promise<void> {
   const label = await labelActions.create(name);
-  if (label) await labelActions.toggleOnEntries(label.labelId, [...studio.checkedIds]);
+  if (label)
+    await labelActions.toggleOnEntries({
+      labelId: label.labelId,
+      entityIds: [...studio.checkedIds],
+    });
 }
 
 function deleteBulkLabel(label: Label): void {
@@ -598,34 +625,35 @@ function deleteBulkLabel(label: Label): void {
 }
 
 function openEntity(entity: EntityOption, anchor: HTMLElement): void {
-  entityMenu.open(entity, anchor);
+  entityMenu.open({ entity, anchor });
 }
 
 function dropEntry(path: string | null, entityId: string): void {
   if (studio.checkedIds.has(entityId) && studio.checkedIds.size > 1) {
-    void actions.moveEntries([...studio.checkedIds], path);
+    void actions.moveEntries({ entityIds: [...studio.checkedIds], categoryPath: path });
   } else {
-    void actions.moveEntry(entityId, path);
+    void actions.moveEntry({ entityId, categoryPath: path });
   }
 }
 
 /** A ticked entity dropped on a folder takes all ticked ones along, like entries do. */
 function dropEntity(path: string | null, entityId: string): void {
   if (studio.checkedEntityIds.has(entityId) && studio.checkedEntityIds.size > 1) {
-    void entityMove.move([...studio.checkedEntityIds], path);
+    void entityMove.move({ entityIds: [...studio.checkedEntityIds], categoryPath: path });
   } else {
-    void actions.moveEntity(entityId, path);
+    void actions.moveEntity({ entityId, categoryPath: path });
   }
 }
 
 /** Entries and entities are ticked separately; ticking one kind clears the other, and says so. */
 function checkEntries(entityIds: string[], isChecked: boolean): void {
-  if (studio.setChecked(entityIds, isChecked)) toasts.show(t("toast.entityCheckCleared"));
+  if (studio.setChecked({ entityIds, isChecked }))
+    toasts.show({ text: t("toast.entityCheckCleared") });
 }
 
 function checkEntities(entityIds: string[], isChecked: boolean): void {
-  if (studio.setEntityChecked(entityIds, isChecked)) {
-    toasts.show(t("toast.entryCheckCleared"));
+  if (studio.setEntityChecked({ entityIds, isChecked })) {
+    toasts.show({ text: t("toast.entryCheckCleared") });
   }
 }
 
@@ -649,23 +677,27 @@ function reorderFolder(moved: string, target: string, isBefore: boolean): void {
   };
   const siblings = (find(data.tree.value) ?? []).map((node) => node.path);
   const previous = foldersStore.order[parent] ?? [];
-  void actions.saveOrder(parent, moveSibling(siblings, moved, target, isBefore), [...previous]);
+  void actions.saveOrder({
+    parent,
+    order: moveSibling({ siblings, moved, target, isBefore }),
+    previous: [...previous],
+  });
 }
 
 function renameEntry(entityId: string, name: string): void {
   studio.stopRename();
   const entry = entriesStore.entries.find((item) => item.entityId === entityId);
-  if (entry) void entryActions.rename(entry, name);
+  if (entry) void entryActions.rename({ entry, name });
 }
 
 function duplicateFromList(entityId: string): void {
   const entry = entriesStore.entries.find((item) => item.entityId === entityId);
-  if (entry) void entryActions.duplicate(entry, "list");
+  if (entry) void entryActions.duplicate({ entry, place: "list" });
 }
 
 function startTitleRename(): void {
   const entityId = data.selectedEntry.value?.entityId;
-  if (entityId) studio.startRename(entityId, "title");
+  if (entityId) studio.startRename({ entityId, place: "title" });
 }
 
 const TYPING_TARGETS = ["INPUT", "TEXTAREA", "SELECT"];
@@ -680,7 +712,7 @@ useEventListener(window, "keydown", (event: KeyboardEvent) => {
 
   event.preventDefault();
   const row = document.querySelector(`[data-entity-id="${CSS.escape(entry.entityId)}"]`);
-  studio.startRename(entry.entityId, row ? "list" : "title");
+  studio.startRename({ entityId: entry.entityId, place: row ? "list" : "title" });
 });
 
 function selectEntry(entityId: string): void {

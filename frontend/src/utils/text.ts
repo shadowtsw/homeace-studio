@@ -1,16 +1,18 @@
 const PLACEHOLDER = /\{(\w+)\}/g;
 
+export type FillPlaceholdersOptions = {
+  /** e.g. "Die Kategorie „{path}“ gibt es schon." */
+  template: string;
+  /** Values by placeholder name; missing ones stay as written. */
+  params: Record<string, string | number>;
+};
+
 /**
  * Fills `{name}` placeholders in a catalog text.
  *
- * @param template - e.g. "Die Kategorie „{path}“ gibt es schon."
- * @param params - Values by placeholder name; missing ones stay as written.
- * @example fillPlaceholders("Hallo {name}", { name: "Tim" }) // "Hallo Tim"
+ * @example fillPlaceholders({ template: "Hallo {name}", params: { name: "Tim" } }) // "Hallo Tim"
  */
-export function fillPlaceholders(
-  template: string,
-  params: Record<string, string | number>,
-): string {
+export function fillPlaceholders({ template, params }: FillPlaceholdersOptions): string {
   return template.replace(PLACEHOLDER, (placeholder, name: string) =>
     name in params ? String(params[name]) : placeholder,
   );

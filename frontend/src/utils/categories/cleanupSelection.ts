@@ -46,8 +46,13 @@ export function toChanges(choices: CleanupChoice[]): CleanupChange[] {
   return changes;
 }
 
+export type SameTargetAsOptions = {
+  choice: SplitChoice;
+  choices: CleanupChoice[];
+};
+
 /** Another ticked line that ends in the same folder; HA then merges them. */
-export function sameTargetAs(choice: SplitChoice, choices: CleanupChoice[]): SplitChoice | null {
+export function sameTargetAs({ choice, choices }: SameTargetAsOptions): SplitChoice | null {
   if (!choice.isOn) return null;
 
   const target = normalizeFolderPath(choice.to);

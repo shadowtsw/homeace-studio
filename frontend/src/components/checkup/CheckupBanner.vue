@@ -105,12 +105,14 @@ function text(finding: CheckupFinding): string {
       const since = finding.refs[0]?.since;
       return t("checkup.banner.unavailable", {
         names: finding.refs.map((ref) => ref.name ?? ref.entityId).join(", "),
-        since: since ? relativeTime(since, now, locale.value) : "?",
+        since: since ? relativeTime({ iso: since, now, locale: locale.value }) : "?",
       });
     }
     case "failed":
       return t("checkup.banner.failed", {
-        time: finding.failedAt ? relativeTime(finding.failedAt, now, locale.value) : "?",
+        time: finding.failedAt
+          ? relativeTime({ iso: finding.failedAt, now, locale: locale.value })
+          : "?",
         error: finding.error ? errorText(finding.error) : "",
       });
     case "unused":
@@ -118,7 +120,7 @@ function text(finding: CheckupFinding): string {
     case "stale": {
       const when = finding.lastTriggered
         ? t("checkup.banner.stale", {
-            time: relativeTime(finding.lastTriggered, now, locale.value),
+            time: relativeTime({ iso: finding.lastTriggered, now, locale: locale.value }),
           })
         : t("checkup.banner.staleNever");
       return `${when} ${finding.isOn ? t("checkup.banner.stillNeeded") : t("checkup.banner.isOff")}`;

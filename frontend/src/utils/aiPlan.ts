@@ -24,13 +24,15 @@ export function moveGroups(plan: AiPlan): MoveGroup[] {
   return [...groups].map(([to, operations]) => ({ to, operations }));
 }
 
+export type IsNewFolderOptions = {
+  path: string;
+  allPaths: readonly string[];
+  plan: AiPlan;
+  selected: ReadonlySet<string>;
+};
+
 /** A target folder HA does not have yet (and no ticked rename creates). */
-export function isNewFolder(
-  path: string,
-  allPaths: readonly string[],
-  plan: AiPlan,
-  selected: ReadonlySet<string>,
-): boolean {
+export function isNewFolder({ path, allPaths, plan, selected }: IsNewFolderOptions): boolean {
   const renamedTo = renamesOf(plan)
     .filter((op) => selected.has(op.id))
     .map((op) => op.to);
@@ -38,11 +40,16 @@ export function isNewFolder(
   return !allPaths.includes(path) && !renamedTo.includes(path);
 }
 
+export type McpUrlOptions = {
+  overview: McpOverview;
+  hostname: string;
+};
+
 /**
  * Address an AI client uses. The browser reaches HA under `hostname`, and the MCP port is mapped
  * on the same host; null while no host port is set.
  */
-export function mcpUrl(overview: McpOverview, hostname: string): string | null {
+export function mcpUrl({ overview, hostname }: McpUrlOptions): string | null {
   return overview.hostPort === null
     ? null
     : `http://${hostname}:${overview.hostPort}${overview.path}`;
@@ -51,8 +58,14 @@ export function mcpUrl(overview: McpOverview, hostname: string): string | null {
 export const MCP_CLIENT = { claudeCode: "claudeCode", json: "json" } as const;
 export type McpClient = (typeof MCP_CLIENT)[keyof typeof MCP_CLIENT];
 
+export type McpSnippetOptions = {
+  client: McpClient;
+  url: string;
+  token: string;
+};
+
 /** Setup for an AI client; `token` may be masked for display. */
-export function mcpSnippet(client: McpClient, url: string, token: string): string {
+export function mcpSnippet({ client, url, token }: McpSnippetOptions): string {
   if (client === MCP_CLIENT.claudeCode) {
     return `claude mcp add --transport http homeace ${url} \\\n  --header "Authorization: Bearer ${token}"`;
   }

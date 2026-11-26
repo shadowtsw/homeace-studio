@@ -41,17 +41,29 @@ describe("area selections", () => {
 
   it("matches entries by their own or derived areas", () => {
     expect(
-      isInCategory(entry({ entityId: "automation.terrace" }), areaFilter("garden"), areaIdsOf),
+      isInCategory({
+        entry: entry({ entityId: "automation.terrace" }),
+        category: areaFilter("garden"),
+        areaIdsOf,
+      }),
     ).toBe(true);
     expect(
-      isInCategory(entry({ entityId: "automation.terrace" }), areaFilter("hallway"), areaIdsOf),
+      isInCategory({
+        entry: entry({ entityId: "automation.terrace" }),
+        category: areaFilter("hallway"),
+        areaIdsOf,
+      }),
     ).toBe(false);
   });
 
   it('puts entries without any area under "no area"', () => {
-    expect(isInCategory(entry({}), areaFilter(null), areaIdsOf)).toBe(true);
+    expect(isInCategory({ entry: entry({}), category: areaFilter(null), areaIdsOf })).toBe(true);
     expect(
-      isInCategory(entry({ entityId: "automation.terrace" }), areaFilter(null), areaIdsOf),
+      isInCategory({
+        entry: entry({ entityId: "automation.terrace" }),
+        category: areaFilter(null),
+        areaIdsOf,
+      }),
     ).toBe(false);
   });
 
@@ -65,17 +77,31 @@ describe("area selections", () => {
 
 describe("isInCategory", () => {
   it("includes subcategories but not categories that only start with the same letters", () => {
-    expect(isInCategory(entry({ categoryPath: "Haus/Terrasse" }), "Haus")).toBe(true);
-    expect(isInCategory(entry({ categoryPath: "Haus" }), "Haus")).toBe(true);
-    expect(isInCategory(entry({ categoryPath: "Hausflur" }), "Haus")).toBe(false);
+    expect(
+      isInCategory({ entry: entry({ categoryPath: "Haus/Terrasse" }), category: "Haus" }),
+    ).toBe(true);
+    expect(isInCategory({ entry: entry({ categoryPath: "Haus" }), category: "Haus" })).toBe(true);
+    expect(isInCategory({ entry: entry({ categoryPath: "Hausflur" }), category: "Haus" })).toBe(
+      false,
+    );
   });
 
   it("handles the special selections all and uncategorized", () => {
-    expect(isInCategory(entry({ categoryPath: "Haus" }), CATEGORY_FILTER.all)).toBe(true);
-    expect(isInCategory(entry({ categoryPath: null }), CATEGORY_FILTER.uncategorized)).toBe(true);
-    expect(isInCategory(entry({ categoryPath: "Haus" }), CATEGORY_FILTER.uncategorized)).toBe(
-      false,
-    );
+    expect(
+      isInCategory({ entry: entry({ categoryPath: "Haus" }), category: CATEGORY_FILTER.all }),
+    ).toBe(true);
+    expect(
+      isInCategory({
+        entry: entry({ categoryPath: null }),
+        category: CATEGORY_FILTER.uncategorized,
+      }),
+    ).toBe(true);
+    expect(
+      isInCategory({
+        entry: entry({ categoryPath: "Haus" }),
+        category: CATEGORY_FILTER.uncategorized,
+      }),
+    ).toBe(false);
   });
 });
 
@@ -92,16 +118,25 @@ describe("filterEntries", () => {
   ];
 
   it("combines scope, category and search on name or entity ID", () => {
-    const byScope = filterEntries(entries, { scopes: ["script"], category: "__all", search: "" });
-    const bySearch = filterEntries(entries, {
-      scopes: ["all"],
-      category: "Haus",
-      search: "TERRASSE",
+    const byScope = filterEntries({
+      entries,
+      filter: { scopes: ["script"], category: "__all", search: "" },
     });
-    const byEntityId = filterEntries(entries, {
-      scopes: ["all"],
-      category: "__all",
-      search: "gaeste",
+    const bySearch = filterEntries({
+      entries,
+      filter: {
+        scopes: ["all"],
+        category: "Haus",
+        search: "TERRASSE",
+      },
+    });
+    const byEntityId = filterEntries({
+      entries,
+      filter: {
+        scopes: ["all"],
+        category: "__all",
+        search: "gaeste",
+      },
     });
 
     expect(byScope.map((item) => item.name)).toEqual(["Gute Nacht"]);
@@ -138,20 +173,32 @@ describe("isGroupOpenByDefault", () => {
   const context = { category: "Haus", selectedEntityId: null, isSearching: false, groupCount: 2 };
 
   it("opens the folder's own entries and keeps subfolders collapsed", () => {
-    expect(isGroupOpenByDefault(own, context)).toBe(true);
-    expect(isGroupOpenByDefault(sub, context)).toBe(false);
+    expect(isGroupOpenByDefault({ group: own, context })).toBe(true);
+    expect(isGroupOpenByDefault({ group: sub, context })).toBe(false);
   });
 
   it("opens subfolders while searching, with the open entry, or when they are all there is", () => {
-    expect(isGroupOpenByDefault(sub, { ...context, isSearching: true })).toBe(true);
-    expect(isGroupOpenByDefault(sub, { ...context, selectedEntityId: "automation.b" })).toBe(true);
-    expect(isGroupOpenByDefault(sub, { ...context, groupCount: 1 })).toBe(true);
+    expect(isGroupOpenByDefault({ group: sub, context: { ...context, isSearching: true } })).toBe(
+      true,
+    );
+    expect(
+      isGroupOpenByDefault({
+        group: sub,
+        context: { ...context, selectedEntityId: "automation.b" },
+      }),
+    ).toBe(true);
+    expect(isGroupOpenByDefault({ group: sub, context: { ...context, groupCount: 1 } })).toBe(true);
   });
 
   it("starts collapsed under All, open under Favorites", () => {
-    expect(isGroupOpenByDefault(sub, { ...context, category: CATEGORY_FILTER.all })).toBe(false);
-    expect(isGroupOpenByDefault(sub, { ...context, category: CATEGORY_FILTER.favorites })).toBe(
-      true,
-    );
+    expect(
+      isGroupOpenByDefault({ group: sub, context: { ...context, category: CATEGORY_FILTER.all } }),
+    ).toBe(false);
+    expect(
+      isGroupOpenByDefault({
+        group: sub,
+        context: { ...context, category: CATEGORY_FILTER.favorites },
+      }),
+    ).toBe(true);
   });
 });

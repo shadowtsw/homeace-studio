@@ -11,26 +11,26 @@ import {
 
 describe("category path helpers", () => {
   it("compares whole levels", () => {
-    expect(isSameOrBelow("Haus/Terrasse", "Haus")).toBe(true);
-    expect(isSameOrBelow("Hausflur", "Haus")).toBe(false);
+    expect(isSameOrBelow({ path: "Haus/Terrasse", ancestor: "Haus" })).toBe(true);
+    expect(isSameOrBelow({ path: "Hausflur", ancestor: "Haus" })).toBe(false);
   });
 
   it("swaps a prefix and renames the last level", () => {
-    expect(replacePathPrefix("Haus/Terrasse/Licht", "Haus/Terrasse", "Haus/Balkon")).toBe(
-      "Haus/Balkon/Licht",
-    );
-    expect(renameLastLevel("Haus/Terrasse", "Balkon")).toBe("Haus/Balkon");
-    expect(renameLastLevel("Haus", "Heim")).toBe("Heim");
+    expect(
+      replacePathPrefix({ path: "Haus/Terrasse/Licht", from: "Haus/Terrasse", to: "Haus/Balkon" }),
+    ).toBe("Haus/Balkon/Licht");
+    expect(renameLastLevel({ path: "Haus/Terrasse", newName: "Balkon" })).toBe("Haus/Balkon");
+    expect(renameLastLevel({ path: "Haus", newName: "Heim" })).toBe("Heim");
     expect(lastLevel("Haus/Terrasse")).toBe("Terrasse");
   });
 
   it("inherits the color of the nearest colored parent", () => {
     const colors = { Haus: "#c9862f", "Haus/Garten": "#76a43a" };
 
-    expect(folderColor("Haus/Terrasse/Licht", colors)).toBe("#c9862f");
-    expect(folderColor("Haus/Garten/Pool", colors)).toBe("#76a43a");
-    expect(folderColor("Haus", colors)).toBe("#c9862f");
-    expect(folderColor("Hausflur", colors)).toBeNull();
+    expect(folderColor({ path: "Haus/Terrasse/Licht", colors })).toBe("#c9862f");
+    expect(folderColor({ path: "Haus/Garten/Pool", colors })).toBe("#76a43a");
+    expect(folderColor({ path: "Haus", colors })).toBe("#c9862f");
+    expect(folderColor({ path: "Hausflur", colors })).toBeNull();
   });
 });
 

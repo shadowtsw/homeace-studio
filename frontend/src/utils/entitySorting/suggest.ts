@@ -30,8 +30,13 @@ const NOTHING: Omit<Suggestion, "isUsedEverywhere"> = {
   ruleNumber: null,
 };
 
+export type SystemFolderOptions = {
+  bundle: SortingBundle;
+  context: SuggestContext;
+};
+
 /** "System/Sonne", "System/Zonen", "System/Backup" … in the UI language. */
-export function systemFolder(bundle: SortingBundle, context: SuggestContext): string {
+export function systemFolder({ bundle, context }: SystemFolderOptions): string {
   const { names, home } = context;
   const integration = bundle.integration ?? "";
   const kind =
@@ -41,11 +46,18 @@ export function systemFolder(bundle: SortingBundle, context: SuggestContext): st
   return `${names.system}/${name}`;
 }
 
-/** The proposal for one bundle: a rule decides alone, otherwise area, flows and learned words vote. */
-export function suggest(bundle: SortingBundle, context: SuggestContext): Suggestion {
+export type SuggestOptions = {
+  bundle: SortingBundle;
+  context: SuggestContext;
+};
+
+/**
+ * The proposal for one bundle: a rule decides alone, otherwise area, flows and learned words vote.
+ */
+export function suggest({ bundle, context }: SuggestOptions): Suggestion {
   const { home, state, folders } = context;
   const isNew = (path: string): boolean => !folders.has(path);
-  const rule = ruleFor(bundle.main, state.rules, home);
+  const rule = ruleFor({ entity: bundle.main, rules: state.rules, home });
 
   if (rule) {
     return {
@@ -61,7 +73,7 @@ export function suggest(bundle: SortingBundle, context: SuggestContext): Suggest
   }
 
   if (bundle.isSystem) {
-    const target = systemFolder(bundle, context);
+    const target = systemFolder({ bundle, context });
 
     return {
       ...NOTHING,
@@ -80,18 +92,23 @@ export function suggest(bundle: SortingBundle, context: SuggestContext): Suggest
   if (area) {
     const folder = areaFolder({ area, folders, parent: context.areaParent, home });
     const pattern = folder.exists ? null : context.areaParent || null;
-    votes.add(folder.path, AREA_WEIGHT, { kind: "area", areaName: area.name, pattern }, "area");
+    votes.add({
+      folder: folder.path,
+      weight: AREA_WEIGHT,
+      reason: { kind: "area", areaName: area.name, pattern },
+      hint: "area",
+    });
   }
 
-  const isUsedEverywhere = addFlowVotes(bundle, home, votes);
+  const isUsedEverywhere = addFlowVotes({ bundle, home, votes });
 
-  for (const vote of learnedVotes(bundle, context.learn)) {
-    votes.add(
-      vote.folder,
-      vote.weight,
-      { kind: "similar", count: vote.count, word: vote.word },
-      "similar",
-    );
+  for (const vote of learnedVotes({ bundle, index: context.learn })) {
+    votes.add({
+      folder: vote.folder,
+      weight: vote.weight,
+      reason: { kind: "similar", count: vote.count, word: vote.word },
+      hint: "similar",
+    });
   }
 
   const decision = decide(votes);
@@ -124,7 +141,15 @@ export function suggest(bundle: SortingBundle, context: SuggestContext): Suggest
  *
  * @returns Whether some entity of the bundle is used everywhere.
  */
-function addFlowVotes(bundle: SortingBundle, home: SortingHome, votes: FolderVotes): boolean {
+function addFlowVotes({
+  bundle,
+  home,
+  votes,
+}: {
+  bundle: SortingBundle;
+  home: SortingHome;
+  votes: FolderVotes;
+}): boolean {
   let isUsedEverywhere = false;
 
   for (const entity of bundle.entities) {
@@ -145,12 +170,12 @@ function addFlowVotes(bundle: SortingBundle, home: SortingHome, votes: FolderVot
     }
 
     for (const use of uses) {
-      votes.add(
-        use.flow.categoryPath ?? "",
-        use.weight,
-        { kind: "flow", role: use.role, flowName: use.flow.name },
-        "flow",
-      );
+      votes.add({
+        folder: use.flow.categoryPath ?? "",
+        weight: use.weight,
+        reason: { kind: "flow", role: use.role, flowName: use.flow.name },
+        hint: "flow",
+      });
     }
   }
 

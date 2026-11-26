@@ -56,8 +56,10 @@ export function tracePathOf(blockId: string): string {
   return segments.join("/");
 }
 
-/** Whether a branch of a reached block was taken, from HA's `choice` ("then", "else", 2, "default"). */
-function isBranchTaken(branchKey: string, choice: unknown): boolean {
+/**
+ * Whether a branch of a reached block was taken, from HA's `choice` ("then", "else", 2, "default").
+ */
+function isBranchTaken({ branchKey, choice }: { branchKey: string; choice: unknown }): boolean {
   if (branchKey === "then" || branchKey === "else" || branchKey === "default") {
     return choice === branchKey;
   }
@@ -79,11 +81,16 @@ function wantedText(result: Record<string, unknown>): string | null {
   return null;
 }
 
+export type RunStatesForOptions = {
+  run: Run;
+  flow: DisplayFlow;
+};
+
 /**
  * What every block of a flow did in a run, keyed by block id. Blocks without a recorded step were
  * not reached, sit in a branch that was not taken, or are disabled.
  */
-export function runStatesFor(run: Run, flow: DisplayFlow): Map<string, BlockRunState> {
+export function runStatesFor({ run, flow }: RunStatesForOptions): Map<string, BlockRunState> {
   const byPath = new Map<string, RunStep[]>();
   for (const step of run.steps) byPath.set(step.path, [...(byPath.get(step.path) ?? []), step]);
 
@@ -100,7 +107,13 @@ export function runStatesFor(run: Run, flow: DisplayFlow): Map<string, BlockRunS
       : { value: null, wanted: null };
   };
 
-  const stateOf = (block: DisplayBlock, isSkipped: boolean): BlockRunState => {
+  const stateOf = ({
+    block,
+    isSkipped,
+  }: {
+    block: DisplayBlock;
+    isSkipped: boolean;
+  }): BlockRunState => {
     const path = tracePathOf(block.id);
     const steps = byPath.get(path);
 
@@ -132,9 +145,9 @@ export function runStatesFor(run: Run, flow: DisplayFlow): Map<string, BlockRunS
     return { ...blank, status: "done", delaySeconds: delay, choice };
   };
 
-  const walk = (blocks: DisplayBlock[], isSkipped: boolean): void => {
+  const walk = ({ blocks, isSkipped }: { blocks: DisplayBlock[]; isSkipped: boolean }): void => {
     for (const block of blocks) {
-      const state = stateOf(block, isSkipped);
+      const state = stateOf({ block, isSkipped });
       states.set(block.id, state);
 
       const blockSteps = byPath.get(tracePathOf(block.id));
@@ -146,15 +159,16 @@ export function runStatesFor(run: Run, flow: DisplayFlow): Map<string, BlockRunS
         // "then.0" → "then"; "choose.1.conditions.0" → "choose.1".
         const parts = firstId.slice(block.id.length + 1).split(".");
         const key = parts[0] === "choose" ? parts.slice(0, 2).join(".") : (parts[0] ?? "");
-        const isTaken = step !== undefined && isBranchTaken(key, step.result?.choice);
-        walk(branch.blocks, isSkipped || (step !== undefined && !isTaken));
+        const isTaken =
+          step !== undefined && isBranchTaken({ branchKey: key, choice: step.result?.choice });
+        walk({ blocks: branch.blocks, isSkipped: isSkipped || (step !== undefined && !isTaken) });
       }
     }
   };
 
-  walk(flow.triggers, false);
-  walk(flow.conditions, false);
-  walk(flow.actions, false);
+  walk({ blocks: flow.triggers, isSkipped: false });
+  walk({ blocks: flow.conditions, isSkipped: false });
+  walk({ blocks: flow.actions, isSkipped: false });
 
   return states;
 }

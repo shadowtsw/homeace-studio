@@ -106,9 +106,9 @@ const state = computed((): { text: string; tone: "plain" | "warn" | "err" } | nu
   const option = props.option;
   if (!option) return null;
   if (option.state === "unavailable")
-    return { text: toStateText(option.state, null), tone: "warn" };
+    return { text: toStateText({ state: option.state, unit: null }), tone: "warn" };
 
-  return { text: toStateText(option.state, option.unit), tone: "plain" };
+  return { text: toStateText({ state: option.state, unit: option.unit }), tone: "plain" };
 });
 </script>
 

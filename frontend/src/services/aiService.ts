@@ -9,7 +9,10 @@ export type McpOverview = {
   token: string | null;
   path: string;
   containerPort: number;
-  /** Host port of the MCP endpoint; null while the user has not set one in the app's network options. */
+  /**
+   * Host port of the MCP endpoint; null while the user has not set one in the app's network
+   * options.
+   */
   hostPort: number | null;
   isAddon: boolean;
   lastConnection: McpConnection | null;
@@ -47,25 +50,33 @@ export type AiPlan = {
 export type ApplyResult = { appliedCount: number; failed: { operationId: string }[] };
 
 export function fetchMcp(): Promise<McpOverview> {
-  return apiFetch<McpOverview>("/mcp");
+  return apiFetch<McpOverview>({ path: "/mcp" });
 }
 
 export function setMcpEnabled(isEnabled: boolean): Promise<McpOverview> {
-  return apiSend<McpOverview>("PUT", "/mcp", { isEnabled });
+  return apiSend<McpOverview>({ method: "PUT", path: "/mcp", body: { isEnabled } });
 }
 
 export function renewMcpToken(): Promise<McpOverview> {
-  return apiPost<McpOverview>("/mcp/token", {});
+  return apiPost<McpOverview>({ path: "/mcp/token", body: {} });
 }
 
 export function fetchAiPlans(): Promise<AiPlan[]> {
-  return apiFetch<AiPlan[]>("/ai-plans");
+  return apiFetch<AiPlan[]>({ path: "/ai-plans" });
 }
 
-export function applyAiPlan(planId: string, operationIds: string[]): Promise<ApplyResult> {
-  return apiPost<ApplyResult>(`/ai-plans/${encodeURIComponent(planId)}/apply`, { operationIds });
+export type ApplyAiPlanOptions = {
+  planId: string;
+  operationIds: string[];
+};
+
+export function applyAiPlan({ planId, operationIds }: ApplyAiPlanOptions): Promise<ApplyResult> {
+  return apiPost<ApplyResult>({
+    path: `/ai-plans/${encodeURIComponent(planId)}/apply`,
+    body: { operationIds },
+  });
 }
 
 export async function rejectAiPlan(planId: string): Promise<void> {
-  await apiPost<null>(`/ai-plans/${encodeURIComponent(planId)}/reject`, {});
+  await apiPost<null>({ path: `/ai-plans/${encodeURIComponent(planId)}/reject`, body: {} });
 }

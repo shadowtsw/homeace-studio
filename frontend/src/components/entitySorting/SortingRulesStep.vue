@@ -14,7 +14,9 @@
         <div class="rules__body">
           <template v-for="(condition, position) in rule.conditions" :key="position">
             <span v-if="position" class="rules__and">{{ t("entitySorting.rules.and") }}</span>
-            <span class="rules__condition">{{ texts.condition(condition, sorting.home) }}</span>
+            <span class="rules__condition">{{
+              texts.condition({ item: condition, home: sorting.home })
+            }}</span>
           </template>
           <span class="rules__arrow">→</span>
           <span class="rules__target"
@@ -84,7 +86,9 @@
         @click="add(idea)"
       >
         {{
-          idea.conditions.map((condition) => texts.condition(condition, sorting.home)).join(" · ")
+          idea.conditions
+            .map((condition) => texts.condition({ item: condition, home: sorting.home }))
+            .join(" · ")
         }}
         →
         {{ texts.target(idea.target) }}
@@ -158,7 +162,7 @@ const coverage = computed(() => {
 
   if (home) {
     for (const entity of scope.value) {
-      const hit = ruleFor(entity, sorting.rules, home);
+      const hit = ruleFor({ entity, rules: sorting.rules, home });
       if (!hit) continue;
 
       covered++;
@@ -179,7 +183,13 @@ const ideas = computed(() =>
 function ideaCount(idea: SortingRule): string {
   if (!sorting.home) return "";
 
-  const { matches } = ruleStats(idea, null, sorting.rules, scope.value, sorting.home);
+  const { matches } = ruleStats({
+    rule: idea,
+    ruleIndex: null,
+    rules: sorting.rules,
+    entities: scope.value,
+    home: sorting.home,
+  });
   return t("entitySorting.entities", { count: matches }, matches);
 }
 
@@ -187,7 +197,11 @@ function ideaCount(idea: SortingRule): string {
 function sideHitTexts(rule: SortingRule): string[] {
   if (!sorting.home) return [];
 
-  const hits = ruleSideHits(rule, sorting.home, sorting.options.isResortingSorted);
+  const hits = ruleSideHits({
+    rule,
+    home: sorting.home,
+    isResortingSorted: sorting.options.isResortingSorted,
+  });
   return [
     ...(hits.entries ? [t("entitySorting.rules.entriesMatch", { count: hits.entries })] : []),
     ...(hits.sorted ? [t("entitySorting.rules.sortedMatch", { count: hits.sorted })] : []),
@@ -197,7 +211,13 @@ function sideHitTexts(rule: SortingRule): string[] {
 function statsText(rule: SortingRule, index: number): string {
   if (!sorting.home) return "";
 
-  const stats = ruleStats(rule, index, sorting.rules, scope.value, sorting.home);
+  const stats = ruleStats({
+    rule,
+    ruleIndex: index,
+    rules: sorting.rules,
+    entities: scope.value,
+    home: sorting.home,
+  });
   const parts = [t("entitySorting.rules.matches", { count: stats.matches }, stats.matches)];
   if (stats.lost) parts.push(t("entitySorting.rules.lost", { count: stats.lost }));
   if (stats.withoutArea)
@@ -210,7 +230,7 @@ function statsText(rule: SortingRule, index: number): string {
 async function add(rule: SortingRule): Promise<void> {
   editing.value = null;
   await sorting.setRules([...sorting.rules, rule]);
-  toasts.show(t("entitySorting.rules.added", { number: sorting.rules.length }));
+  toasts.show({ text: t("entitySorting.rules.added", { number: sorting.rules.length }) });
 }
 
 async function replace(index: number, rule: SortingRule): Promise<void> {
@@ -229,10 +249,14 @@ async function swap(first: number, second: number): Promise<void> {
 async function remove(index: number): Promise<void> {
   const removed = sorting.rules[index] as SortingRule;
   await sorting.setRules(sorting.rules.filter((_, position) => position !== index));
-  toasts.show(t("entitySorting.rules.deleted", { number: index + 1 }), "success", () => {
-    const next = [...sorting.rules];
-    next.splice(index, 0, removed);
-    void sorting.setRules(next);
+  toasts.show({
+    text: t("entitySorting.rules.deleted", { number: index + 1 }),
+    tone: "success",
+    undo: () => {
+      const next = [...sorting.rules];
+      next.splice(index, 0, removed);
+      void sorting.setRules(next);
+    },
   });
 }
 </script>

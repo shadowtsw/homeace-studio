@@ -27,11 +27,13 @@ export type SortingInput = {
   layout: SortingLayout | null;
 };
 
+export type TargetOfOptions = {
+  bundle: SortingBundle;
+  input: Omit<SortingInput, "home" | "names">;
+};
+
 /** The folder a bundle goes to now, from the shown computation and layout. */
-export function targetOf(
-  bundle: SortingBundle,
-  input: Omit<SortingInput, "home" | "names">,
-): string | null {
+export function targetOf({ bundle, input }: TargetOfOptions): string | null {
   return effectiveTarget({
     choice: input.state.choices.get(bundle.key),
     suggestion: input.previous?.suggestions.get(bundle.key),
@@ -46,9 +48,9 @@ export function targetOf(
  */
 export function computeSorting(input: SortingInput): SortingComputation {
   const { home, state, names } = input;
-  const bundles = buildBundles(home, state);
+  const bundles = buildBundles({ home, state });
   const folders = existingFolders(home.context.folders);
-  const areaParent = state.areaParent ?? areaParents(home, folders)[0]?.parent ?? "";
+  const areaParent = state.areaParent ?? areaParents({ home, folders })[0]?.parent ?? "";
   const ticked = new Map<
     string,
     { folder: string; isCorrection: boolean; bundle: SortingBundle }
@@ -56,7 +58,7 @@ export function computeSorting(input: SortingInput): SortingComputation {
 
   bundles.forEach((bundle) => {
     const choice = state.choices.get(bundle.key);
-    const folder = choice?.isOn ? targetOf(bundle, input) : null;
+    const folder = choice?.isOn ? targetOf({ bundle, input }) : null;
 
     if (folder) ticked.set(bundle.key, { folder, isCorrection: !!choice?.target, bundle });
   });
@@ -67,26 +69,32 @@ export function computeSorting(input: SortingInput): SortingComputation {
     names,
     folders,
     areaParent,
-    learn: buildLearnIndex(home, ticked),
+    learn: buildLearnIndex({ home, ticked }),
   };
   const suggestions = new Map(
-    [...bundles.values()].map((bundle) => [bundle.key, suggest(bundle, context)]),
+    [...bundles.values()].map((bundle) => [bundle.key, suggest({ bundle, context })]),
   );
 
   return { bundles, suggestions, folders, areaParent };
 }
 
+export type EntityTargetOptions = {
+  entity: SortingEntity;
+  bundle: SortingBundle;
+  input: Pick<SortingInput, "home" | "state">;
+};
+
 /**
  * Where one entity of a bundle goes when it should not follow its device: a rule for that entity
  * ("Firmware → Technik/Updates"), or the folder for technical entities when they go separately.
  */
-export function entityTarget(
-  entity: SortingEntity,
-  bundle: SortingBundle,
-  input: Pick<SortingInput, "home" | "state">,
-): { target: string; ruleNumber: number | null } | null {
+export function entityTarget({
+  entity,
+  bundle,
+  input,
+}: EntityTargetOptions): { target: string; ruleNumber: number | null } | null {
   const { home, state } = input;
-  const rule = ruleFor(entity, state.rules, home);
+  const rule = ruleFor({ entity, rules: state.rules, home });
 
   if (rule && entity !== bundle.main) return { target: rule.target, ruleNumber: rule.ruleNumber };
   if (
@@ -115,13 +123,13 @@ export function collectMoves(input: {
   computation.bundles.forEach((bundle) => {
     if (!state.choices.get(bundle.key)?.isOn) return;
 
-    const target = targetOf(bundle, shown);
+    const target = targetOf({ bundle, input: shown });
     if (!target) return;
 
     for (const entity of bundle.entities) {
       if (state.excluded.has(entity.entityId)) continue;
 
-      const own = entityTarget(entity, bundle, input);
+      const own = entityTarget({ entity, bundle, input });
       moves.push({ entityId: entity.entityId, categoryPath: own?.target ?? target });
     }
   });
@@ -129,15 +137,21 @@ export function collectMoves(input: {
   return moves;
 }
 
+export type SuggestionChangesOptions = {
+  before: SortingComputation;
+  after: SortingComputation;
+  actedOn: string | null;
+};
+
 /**
  * What changed between two computations, for the "sicherer geworden" hint. The bundle the user just
  * acted on is left out: its own change is no news.
  */
-export function suggestionChanges(
-  before: SortingComputation,
-  after: SortingComputation,
-  actedOn: string | null,
-): Map<string, SuggestionChange> {
+export function suggestionChanges({
+  before,
+  after,
+  actedOn,
+}: SuggestionChangesOptions): Map<string, SuggestionChange> {
   const changes = new Map<string, SuggestionChange>();
 
   after.suggestions.forEach((next, key) => {

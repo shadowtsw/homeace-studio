@@ -7,12 +7,20 @@ const UNITS: [Intl.RelativeTimeFormatUnit, number][] = [
   ["minute", 60],
 ];
 
+export type RelativeTimeOptions = {
+  iso: string;
+  now: Date;
+  locale: string;
+};
+
 /**
  * "vor 3 Tagen" / "3 days ago" for a time in the past, in the largest unit that fits.
  *
- * @example relativeTime("2026-11-17T12:00:00Z", new Date("2026-11-20T12:00:00Z"), "de") // "vor 3 Tagen"
+ * @example
+ * relativeTime({ iso: "2026-11-17T12:00:00Z", now: new Date("2026-11-20T12:00:00Z"), locale: "de" })
+ *   // "vor 3 Tagen"
  */
-export function relativeTime(iso: string, now: Date, locale: string): string {
+export function relativeTime({ iso, now, locale }: RelativeTimeOptions): string {
   const seconds = Math.round((Date.parse(iso) - now.getTime()) / 1000);
   const format = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
 

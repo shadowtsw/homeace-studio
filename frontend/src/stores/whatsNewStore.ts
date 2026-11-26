@@ -21,12 +21,12 @@ import {
  * The confirmed version follows the user (scope "user"), like the other settings.
  */
 export const useWhatsNewStore = defineStore("whatsNew", () => {
-  const version = effectiveVersion(__APP_VERSION__, WHATS_NEW);
-  const firstSeenVersion = initialSeenVersion(
-    hadEarlierVisit(),
-    version,
-    LAST_VERSION_WITHOUT_WHATS_NEW,
-  );
+  const version = effectiveVersion({ appVersion: __APP_VERSION__, releases: WHATS_NEW });
+  const firstSeenVersion = initialSeenVersion({
+    hadEarlierVisit: hadEarlierVisit(),
+    currentVersion: version,
+    lastVersionWithout: LAST_VERSION_WITHOUT_WHATS_NEW,
+  });
   const seenVersion = usePreference({
     preference: PREFERENCES.seenVersion,
     defaultValue: firstSeenVersion,
@@ -35,14 +35,20 @@ export const useWhatsNewStore = defineStore("whatsNew", () => {
   /** Opened from the gear menu: the current release only, also when it was confirmed already. */
   const isCurrentOnly = ref(false);
 
-  const unseen = computed(() => unseenReleases(WHATS_NEW, seenVersion.value, version));
+  const unseen = computed(() =>
+    unseenReleases({
+      releases: WHATS_NEW,
+      seenVersion: seenVersion.value,
+      currentVersion: version,
+    }),
+  );
   const hasUnseen = computed(() => unseen.value.length > 0);
   /** Whether the running version has highlights at all (not yet while developing a release). */
-  const hasHighlights = currentRelease(WHATS_NEW, version) !== null;
+  const hasHighlights = currentRelease({ releases: WHATS_NEW, currentVersion: version }) !== null;
   /** What the popover lists, newest first; skipped releases follow the newest one. */
   const releases = computed<WhatsNewRelease[]>(() => {
     if (!isCurrentOnly.value && unseen.value.length > 0) return unseen.value;
-    const current = currentRelease(WHATS_NEW, version);
+    const current = currentRelease({ releases: WHATS_NEW, currentVersion: version });
     return current ? [current] : [];
   });
 

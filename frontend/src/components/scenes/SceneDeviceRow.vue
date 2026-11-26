@@ -86,12 +86,15 @@
               :key="preset"
               type="button"
               class="scene-row__chip"
-              :class="{ 'is-on': !controls.hs && whitePresetOf(controls.kelvin, caps) === preset }"
-              @click="change({ kelvin: presetKelvin(preset, caps) })"
+              :class="{
+                'is-on':
+                  !controls.hs && whitePresetOf({ kelvin: controls.kelvin, caps }) === preset,
+              }"
+              @click="change({ kelvin: presetKelvin({ preset, caps }) })"
             >
               <span
                 class="scene-row__dot"
-                :style="{ background: kelvinToCss(presetKelvin(preset, caps)) }"
+                :style="{ background: kelvinToCss(presetKelvin({ preset, caps })) }"
               />
               {{ t(`scene.white.${preset}`) }}
             </button>
@@ -161,8 +164,7 @@
       <span class="mdi mdi-archive-outline" />
       <span>
         {{ t("scene.extras") }}
-        <b>{{ extras.map(([key, val]) => extraText(key, val)).join(" · ") }}</b
-        >.
+        <b>{{ extras.map(([key, val]) => extraText(key, val)).join(" · ") }}</b>.
         {{ t("scene.extrasKept") }}
         <span class="scene-row__hint" :title="t('scene.extrasChangeHint')">
           {{ t("scene.extrasChange") }}
@@ -235,14 +237,14 @@ onClickOutside(menuRoot, () => (isMenuOpen.value = false));
 const domain = computed(() => props.device.domain);
 const icon = computed(() => DOMAIN_ICON[domain.value] ?? "mdi-devices");
 const attributes = computed(() => props.device.current?.attributes ?? {});
-const controls = computed(() => readControls(domain.value, props.value));
+const controls = computed(() => readControls({ domain: domain.value, value: props.value }));
 // A device working with a low and a high limit gets no single temperature (it would refuse it)
 const hasSingleTarget = computed(() =>
-  hasSingleTargetTemperature(attributes.value, controls.value.hvacMode),
+  hasSingleTargetTemperature({ attributes: attributes.value, hvacMode: controls.value.hvacMode }),
 );
 const caps = computed(() => lightCaps(attributes.value));
-const tone = computed(() => toneOf(controls.value, caps.value));
-const extras = computed(() => extrasOf(domain.value, props.value));
+const tone = computed(() => toneOf({ controls: controls.value, caps: caps.value }));
+const extras = computed(() => extrasOf({ domain: domain.value, value: props.value }));
 const currentValue = computed(() => ({
   state: props.device.current?.state,
   ...attributes.value,
@@ -258,7 +260,7 @@ const climate = computed(() => ({
 }));
 
 function change(next: Partial<SceneControls>): void {
-  emit("change", writeControls(domain.value, props.value, next));
+  emit("change", writeControls({ domain: domain.value, value: props.value, change: next }));
 }
 
 function pick(action: "take" | "remove"): void {
@@ -278,7 +280,7 @@ function hvacLabel(mode: string): string {
 /** "an · 25 %", "40 % offen", "heizen · 22 °C" … for the "gerade:" line. */
 function describe(value: SceneValue | null): string {
   if (!value || value.state === undefined) return "–";
-  const read = readControls(domain.value, value);
+  const read = readControls({ domain: domain.value, value });
 
   if (domain.value === "cover") {
     if (read.position === 0) return t("scene.closed");

@@ -17,7 +17,7 @@ type IconWindow = Window & { customIcons?: Record<string, IconSet> };
 
 /** Dashboard resources that look like icon packs (see backend icon-resources.ts). */
 export function fetchIconPackResources(): Promise<string[]> {
-  return apiFetch<string[]>("/icon-packs/resources");
+  return apiFetch<string[]>({ path: "/icon-packs/resources" });
 }
 
 /** HA's page around HomeAce Studio when it was opened from the sidebar, else null. */

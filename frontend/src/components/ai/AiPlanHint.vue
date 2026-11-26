@@ -67,7 +67,7 @@ watch(
       (plan) => ids.includes(plan.id) && !previous.includes(plan.id),
     );
 
-    if (arrived) toasts.show(t("toast.aiArrived", { client: clientName(arrived) }));
+    if (arrived) toasts.show({ text: t("toast.aiArrived", { client: clientName(arrived) }) });
   },
 );
 </script>

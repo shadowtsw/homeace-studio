@@ -27,5 +27,5 @@ export type DependencyUse = {
 export type Dependencies = { entityId: string; uses: DependencyUse[]; usedBy: DependencyUser[] };
 
 export function fetchDependencies(entityId: string): Promise<Dependencies> {
-  return apiFetch<Dependencies>(`/dependencies/${encodeURIComponent(entityId)}`);
+  return apiFetch<Dependencies>({ path: `/dependencies/${encodeURIComponent(entityId)}` });
 }

@@ -4,9 +4,9 @@ import { fillPlaceholders, mdiIconClass } from "../text";
 
 describe("fillPlaceholders", () => {
   it("fills known placeholders and leaves unknown ones as written", () => {
-    expect(fillPlaceholders("„{path}“ gibt es schon ({count})", { path: "Haus" })).toBe(
-      "„Haus“ gibt es schon ({count})",
-    );
+    expect(
+      fillPlaceholders({ template: "„{path}“ gibt es schon ({count})", params: { path: "Haus" } }),
+    ).toBe("„Haus“ gibt es schon ({count})");
   });
 });
 

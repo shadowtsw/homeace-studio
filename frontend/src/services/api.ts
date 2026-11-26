@@ -35,12 +35,17 @@ export class ApiError extends Error {
   }
 }
 
+export type ApiFetchOptions = {
+  path: string;
+  options?: RequestInit;
+};
+
 /**
  * Sends a request and returns `data` of the response envelope. All requests go through here.
  *
  * @throws ApiError with the backend's message ID, or NETWORK_ERROR when no answer arrived.
  */
-export async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
+export async function apiFetch<T>({ path, options }: ApiFetchOptions): Promise<T> {
   let response: Response;
 
   try {
@@ -61,18 +66,32 @@ export async function apiFetch<T>(path: string, options?: RequestInit): Promise<
 
 type BodyMethod = "POST" | "PATCH" | "PUT";
 
+export type ApiSendOptions = {
+  method: BodyMethod;
+  path: string;
+  body: unknown;
+};
+
 /** Sends a JSON body with POST, PATCH or PUT. */
-export function apiSend<T>(method: BodyMethod, path: string, body: unknown): Promise<T> {
-  return apiFetch<T>(path, {
-    method,
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
+export function apiSend<T>({ method, path, body }: ApiSendOptions): Promise<T> {
+  return apiFetch<T>({
+    path,
+    options: {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    },
   });
 }
 
+export type ApiPostOptions = {
+  path: string;
+  body?: unknown;
+};
+
 /** Sends a JSON body with POST. */
-export function apiPost<T>(path: string, body: unknown = {}): Promise<T> {
-  return apiSend<T>("POST", path, body);
+export function apiPost<T>({ path, body = {} }: ApiPostOptions): Promise<T> {
+  return apiSend<T>({ method: "POST", path, body });
 }
 
 /** A proxy error page or an empty body is no envelope; treat it as "no usable answer". */

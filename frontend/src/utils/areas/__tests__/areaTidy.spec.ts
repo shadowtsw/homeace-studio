@@ -40,12 +40,18 @@ const base: TidyInput = {
 
 describe("folderForArea", () => {
   it("uses an existing folder with the area's name, also a deeper one", () => {
-    expect(folderForArea("Terrasse", ["Haus", "Haus/Terrasse"])).toBe("Haus/Terrasse");
-    expect(folderForArea("terrasse", ["Terrasse", "Haus/Terrasse"])).toBe("Terrasse");
+    expect(folderForArea({ areaName: "Terrasse", folderPaths: ["Haus", "Haus/Terrasse"] })).toBe(
+      "Haus/Terrasse",
+    );
+    expect(
+      folderForArea({ areaName: "terrasse", folderPaths: ["Terrasse", "Haus/Terrasse"] }),
+    ).toBe("Terrasse");
   });
 
   it("makes a new top-level folder otherwise", () => {
-    expect(folderForArea("Garten", ["Haus", "Haus/Gartenhaus"])).toBe("Garten");
+    expect(folderForArea({ areaName: "Garten", folderPaths: ["Haus", "Haus/Gartenhaus"] })).toBe(
+      "Garten",
+    );
   });
 });
 
@@ -103,16 +109,16 @@ describe("areaNote", () => {
   ];
 
   it("says through what the entry is here and where else it is", () => {
-    expect(areaNote(links, "terrace", texts)).toBe("uses:Lamp · also Garten");
+    expect(areaNote({ links, areaId: "terrace", texts })).toBe("uses:Lamp · also Garten");
   });
 
   it("says nothing for the own area", () => {
     expect(
-      areaNote(
-        [{ areaId: "terrace", name: "Terrasse", source: "own", via: null }],
-        "terrace",
+      areaNote({
+        links: [{ areaId: "terrace", name: "Terrasse", source: "own", via: null }],
+        areaId: "terrace",
         texts,
-      ),
+      }),
     ).toBe("");
   });
 });

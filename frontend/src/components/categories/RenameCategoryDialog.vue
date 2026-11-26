@@ -27,7 +27,9 @@
         <div v-for="path in affectedPaths" :key="path" class="rename-dialog__change">
           <code>{{ path }}</code>
           <span class="mdi mdi-arrow-right" />
-          <code class="rename-dialog__new">{{ replacePathPrefix(path, folderPath, newPath) }}</code>
+          <code class="rename-dialog__new">{{
+            replacePathPrefix({ path, from: folderPath, to: newPath })
+          }}</code>
         </div>
       </div>
 
@@ -49,7 +51,12 @@ import { computed, onMounted, ref, useId, useTemplateRef } from "vue";
 import { useI18n } from "vue-i18n";
 
 import { CATEGORY_SEPARATOR } from "@/constants/entries";
-import { isSameOrBelow, lastLevel, renameLastLevel, replacePathPrefix } from "@/utils/categories/categoryPath";
+import {
+  isSameOrBelow,
+  lastLevel,
+  renameLastLevel,
+  replacePathPrefix,
+} from "@/utils/categories/categoryPath";
 
 const props = defineProps<{
   /** The folder to rename, e.g. "Haus/Terrasse". */
@@ -70,9 +77,11 @@ const input = useTemplateRef("input");
 const name = ref(lastLevel(props.folderPath));
 
 const trimmedName = computed(() => name.value.trim());
-const newPath = computed(() => renameLastLevel(props.folderPath, trimmedName.value));
+const newPath = computed(() =>
+  renameLastLevel({ path: props.folderPath, newName: trimmedName.value }),
+);
 const affectedPaths = computed(() =>
-  props.allPaths.filter((path) => isSameOrBelow(path, props.folderPath)),
+  props.allPaths.filter((path) => isSameOrBelow({ path, ancestor: props.folderPath })),
 );
 
 const problem = computed(() => {

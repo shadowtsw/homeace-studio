@@ -102,7 +102,7 @@ const selected = ref(props.value.trim());
 const panel = useTemplateRef("panel");
 const search = useTemplateRef("search");
 const grid = useTemplateRef("grid");
-const placement = useNoCoverPlacement(toRef(props, "field"), panel);
+const placement = useNoCoverPlacement({ field: toRef(props, "field"), panel });
 const style = placement.style;
 
 /** Every icon as "pack:name", pack icons first (they are the reason to open the search). */

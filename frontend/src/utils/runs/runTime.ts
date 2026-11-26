@@ -7,12 +7,16 @@ const UNITS_BY_LOCALE: Partial<Record<string, typeof UNITS>> = {
   ru: { h: "ч", min: "мин", s: "с" },
 };
 
+export type RunDurationOptions = {
+  seconds: number;
+  /** For the decimal comma and the units. */
+  locale: string;
+};
+
 /**
  * How long a run took, short: "0,4 s", "48 s", "5 min 03 s", "1 h 05 min" ("5 мин 03 с" in ru).
- *
- * @param locale - For the decimal comma and the units.
  */
-export function runDuration(seconds: number, locale: string): string {
+export function runDuration({ seconds, locale }: RunDurationOptions): string {
   const unit = UNITS_BY_LOCALE[locale] ?? UNITS;
 
   if (seconds < 10) {
@@ -29,8 +33,13 @@ export function runDuration(seconds: number, locale: string): string {
   return `${Math.floor(whole / 3600)} ${unit.h} ${pad(Math.floor((whole % 3600) / 60))} ${unit.min}`;
 }
 
+export type ClockTimeOptions = {
+  iso: string;
+  locale: string;
+};
+
 /** "19:42" in the local time zone. */
-export function clockTime(iso: string, locale: string): string {
+export function clockTime({ iso, locale }: ClockTimeOptions): string {
   return new Intl.DateTimeFormat(locale, { hour: "2-digit", minute: "2-digit" }).format(
     new Date(iso),
   );
@@ -38,10 +47,17 @@ export function clockTime(iso: string, locale: string): string {
 
 export type DayTexts = { today: string; yesterday: string };
 
+export type DayLabelOptions = {
+  iso: string;
+  now: Date;
+  locale: string;
+  texts: DayTexts;
+};
+
 /**
  * The day of a run for the list headings: "Heute", "Gestern", the weekday within a week, else the date.
  */
-export function dayLabel(iso: string, now: Date, locale: string, texts: DayTexts): string {
+export function dayLabel({ iso, now, locale, texts }: DayLabelOptions): string {
   const day = new Date(iso);
   const startOf = (date: Date): number =>
     new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();

@@ -26,43 +26,67 @@ const versions = (list: WhatsNewRelease[]): string[] => list.map((item) => item.
 
 describe("effectiveVersion", () => {
   it("takes the version of a released image", () => {
-    expect(effectiveVersion("0.15.0", RELEASES)).toBe("0.15.0");
+    expect(effectiveVersion({ appVersion: "0.15.0", releases: RELEASES })).toBe("0.15.0");
   });
 
   it("shows the newest highlights in a local test build", () => {
-    expect(effectiveVersion("local", RELEASES)).toBe("0.16.0");
-    expect(effectiveVersion("dev", [])).toBe("dev");
+    expect(effectiveVersion({ appVersion: "local", releases: RELEASES })).toBe("0.16.0");
+    expect(effectiveVersion({ appVersion: "dev", releases: [] })).toBe("dev");
   });
 });
 
 describe("unseenReleases", () => {
   it("lists what came after the confirmed version, up to the running one", () => {
-    expect(versions(unseenReleases(RELEASES, "0.14.0", "0.16.0"))).toEqual(["0.16.0", "0.15.0"]);
+    expect(
+      versions(
+        unseenReleases({ releases: RELEASES, seenVersion: "0.14.0", currentVersion: "0.16.0" }),
+      ),
+    ).toEqual(["0.16.0", "0.15.0"]);
   });
 
   it("never shows highlights of a version that is not installed yet", () => {
-    expect(versions(unseenReleases(RELEASES, "0.13.0", "0.15.0"))).toEqual(["0.15.0", "0.14.0"]);
+    expect(
+      versions(
+        unseenReleases({ releases: RELEASES, seenVersion: "0.13.0", currentVersion: "0.15.0" }),
+      ),
+    ).toEqual(["0.15.0", "0.14.0"]);
   });
 
   it("is empty once the running version is confirmed", () => {
-    expect(unseenReleases(RELEASES, "0.16.0", "0.16.0")).toEqual([]);
+    expect(
+      unseenReleases({ releases: RELEASES, seenVersion: "0.16.0", currentVersion: "0.16.0" }),
+    ).toEqual([]);
   });
 });
 
 describe("currentRelease", () => {
   it("is the newest release up to the running version", () => {
-    expect(currentRelease(RELEASES, "0.15.2")?.version).toBe("0.15.0");
-    expect(currentRelease(RELEASES, "0.13.0")).toBeNull();
+    expect(currentRelease({ releases: RELEASES, currentVersion: "0.15.2" })?.version).toBe(
+      "0.15.0",
+    );
+    expect(currentRelease({ releases: RELEASES, currentVersion: "0.13.0" })).toBeNull();
   });
 });
 
 describe("initialSeenVersion", () => {
   it("has nothing to catch up on for a fresh install", () => {
-    expect(initialSeenVersion(false, "0.16.0", "0.13.0")).toBe("0.16.0");
+    expect(
+      initialSeenVersion({
+        hadEarlierVisit: false,
+        currentVersion: "0.16.0",
+        lastVersionWithout: "0.13.0",
+      }),
+    ).toBe("0.16.0");
   });
 
   it("shows everything since the last version without the feature to earlier users", () => {
-    expect(initialSeenVersion(true, "0.16.0", "0.13.0")).toBe("0.13.0");
+    expect(
+      initialSeenVersion({
+        hadEarlierVisit: true,
+        currentVersion: "0.16.0",
+        lastVersionWithout: "0.13.0",
+      }),
+    ).toBe("0.13.0");
   });
 });
 

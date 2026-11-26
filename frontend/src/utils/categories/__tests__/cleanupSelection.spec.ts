@@ -58,11 +58,11 @@ describe("clean-up selection", () => {
     const first = choices[0] as SplitChoice;
     const second = choices[1] as SplitChoice;
 
-    expect(sameTargetAs(second, choices)?.from).toBe("Büro - Licht");
+    expect(sameTargetAs({ choice: second, choices })?.from).toBe("Büro - Licht");
 
     second.to = "Büro//";
     expect(normalizeFolderPath(second.to)).toBeNull();
-    expect(sameTargetAs(first, choices)).toBeNull();
+    expect(sameTargetAs({ choice: first, choices })).toBeNull();
     expect(toChanges(choices).map((change) => change.from)).not.toContain("Büro-Licht");
   });
 });

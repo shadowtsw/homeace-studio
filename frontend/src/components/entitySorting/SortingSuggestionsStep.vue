@@ -181,7 +181,7 @@ function showAll(): void {
 const folderOptions = computed(() => {
   const paths = new Set(sorting.computation?.folders ?? []);
   sorting.layout?.fresh.forEach((group) => {
-    const target = groupTarget(group, sorting.groupNames);
+    const target = groupTarget({ group, groupNames: sorting.groupNames });
     if (target) paths.add(target);
   });
 
@@ -212,7 +212,7 @@ const sheetTitle = computed(() => {
   if (group.type === "system") return t("entitySorting.suggestions.sectionSystem");
   if (group.type === "rest") return t("entitySorting.suggestions.sectionRest");
 
-  return groupTarget(group, sorting.groupNames) ?? "";
+  return groupTarget({ group, groupNames: sorting.groupNames }) ?? "";
 });
 
 // The first and biggest group starts open, so the list shows what the tool does.

@@ -18,7 +18,7 @@ describe("drag and drop of entries", () => {
   it("round-trips the entity ID through the transfer", () => {
     const transfer = fakeTransfer();
 
-    setDraggedEntity(transfer, "automation.licht");
+    setDraggedEntity({ transfer, entityId: "automation.licht" });
 
     expect(carriesEntity(transfer)).toBe(true);
     expect(getDraggedEntity(transfer)).toBe("automation.licht");

@@ -40,14 +40,20 @@ export const useFoldersStore = defineStore("folders", () => {
     await load();
   }
 
-  async function setColor(path: string, color: string | null): Promise<void> {
-    await setFolderColor(path, color);
+  async function setColor({ path, color }: { path: string; color: string | null }): Promise<void> {
+    await setFolderColor({ path, color });
     await load();
   }
 
   /** Errors go to the caller. */
-  async function setOrder(parent: string, children: string[]): Promise<void> {
-    await setFolderOrder(parent, children);
+  async function setOrder({
+    parent,
+    children,
+  }: {
+    parent: string;
+    children: string[];
+  }): Promise<void> {
+    await setFolderOrder({ parent, order: children });
     await load();
   }
 

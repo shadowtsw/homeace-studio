@@ -21,18 +21,23 @@ export type KeptPreference = {
   isStored: boolean;
 };
 
+export type ValuesToHandOverOptions = {
+  /** The preferences of scope "user" with their current values. */
+  kept: readonly KeptPreference[];
+  /** Names the backend already has; they are left out. */
+  exceptNames?: ReadonlySet<string>;
+};
+
 /**
  * The values this browser can hand to the backend: only those the browser really stored, so a
  * default (e.g. the browser language before the user picked one) does not become a choice.
  *
- * @param kept - The preferences of scope "user" with their current values.
- * @param exceptNames - Names the backend already has; they are left out.
  * @returns Name → value.
  */
-export function valuesToHandOver(
-  kept: readonly KeptPreference[],
-  exceptNames: ReadonlySet<string> = new Set(),
-): Record<string, unknown> {
+export function valuesToHandOver({
+  kept,
+  exceptNames = new Set(),
+}: ValuesToHandOverOptions): Record<string, unknown> {
   const storedPreferences = kept.filter(
     (preference) => preference.isStored && !exceptNames.has(preference.name),
   );

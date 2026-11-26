@@ -21,16 +21,17 @@ export type LearnIndex = {
   words: Map<string, WordFolders>;
 };
 
+export type BuildLearnIndexOptions = {
+  home: SortingHome;
+  /** Bundle key → folder and whether the user corrected it. */
+  ticked: Map<string, { folder: string; isCorrection: boolean; bundle: SortingBundle }>;
+};
+
 /**
  * Examples to learn from: bundles already sorted in HA (their most common folder) and bundles ticked
  * in this session. There is no stored model; every computation learns afresh.
- *
- * @param ticked - Bundle key → folder and whether the user corrected it.
  */
-export function buildLearnIndex(
-  home: SortingHome,
-  ticked: Map<string, { folder: string; isCorrection: boolean; bundle: SortingBundle }>,
-): LearnIndex {
+export function buildLearnIndex({ home, ticked }: BuildLearnIndexOptions): LearnIndex {
   const examples = new Map<string, LearnedExample>();
   const sorted = new Map<string, { name: string; folders: Map<string, number> }>();
 
@@ -75,12 +76,17 @@ export function buildLearnIndex(
 
 export type LearnedVote = { folder: string; weight: number; count: number; word: string };
 
+export type LearnedVotesOptions = {
+  bundle: SortingBundle;
+  index: LearnIndex;
+};
+
 /**
  * Votes from words the bundle shares with sorted ones ("ähnlich wie 3 einsortierte mit ‚Küche‘").
  * A word grows to full strength with LEARN_FULL_AT examples; a word spread over many folders says
  * nothing. The bundle never learns from itself.
  */
-export function learnedVotes(bundle: SortingBundle, index: LearnIndex): LearnedVote[] {
+export function learnedVotes({ bundle, index }: LearnedVotesOptions): LearnedVote[] {
   const own = index.examples.get(bundle.key);
   const votes: LearnedVote[] = [];
 

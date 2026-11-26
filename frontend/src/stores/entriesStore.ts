@@ -58,8 +58,14 @@ export const useEntriesStore = defineStore("entries", () => {
    * Moves an entry, then reloads: the backend may have created or deleted categories on the way.
    * Errors go to the caller, which shows them.
    */
-  async function moveEntry(entityId: string, categoryPath: string | null): Promise<void> {
-    await moveEntryRequest(entityId, categoryPath);
+  async function moveEntry({
+    entityId,
+    categoryPath,
+  }: {
+    entityId: string;
+    categoryPath: string | null;
+  }): Promise<void> {
+    await moveEntryRequest({ entityId, categoryPath });
     await load();
   }
 
@@ -69,10 +75,13 @@ export const useEntriesStore = defineStore("entries", () => {
    *
    * @returns The IDs that could not be moved, with their errors.
    */
-  function moveEntries(
-    entityIds: readonly string[],
-    categoryPath: string | null,
-  ): Promise<{ failed: { entityId: string; error: unknown }[] }> {
+  function moveEntries({
+    entityIds,
+    categoryPath,
+  }: {
+    entityIds: readonly string[];
+    categoryPath: string | null;
+  }): Promise<{ failed: { entityId: string; error: unknown }[] }> {
     return moveEach(entityIds.map((entityId) => ({ entityId, categoryPath })));
   }
 
@@ -88,7 +97,7 @@ export const useEntriesStore = defineStore("entries", () => {
 
     for (const { entityId, categoryPath } of moves) {
       try {
-        await moveEntryRequest(entityId, categoryPath);
+        await moveEntryRequest({ entityId, categoryPath });
       } catch (error) {
         failed.push({ entityId, error });
       }
@@ -100,8 +109,8 @@ export const useEntriesStore = defineStore("entries", () => {
   }
 
   /** Renames a folder in all scopes, then reloads. Errors go to the caller. */
-  async function renameCategory(from: string, to: string): Promise<number> {
-    const renamedCount = await renameCategoryRequest(from, to);
+  async function renameCategory({ from, to }: { from: string; to: string }): Promise<number> {
+    const renamedCount = await renameCategoryRequest({ from, to });
     await load();
 
     return renamedCount;
@@ -123,13 +132,25 @@ export const useEntriesStore = defineStore("entries", () => {
   }
 
   /** Changes name, icon, area or labels in HA. Errors go to the caller. */
-  async function updateEntry(entityId: string, changes: EntryChanges): Promise<void> {
-    replaceEntry(await updateEntryRequest(entityId, changes));
+  async function updateEntry({
+    entityId,
+    changes,
+  }: {
+    entityId: string;
+    changes: EntryChanges;
+  }): Promise<void> {
+    replaceEntry(await updateEntryRequest({ entityId, changes }));
   }
 
   /** Runs or switches an entry, then reloads to show the new state. Errors go to the caller. */
-  async function runAction(entityId: string, action: EntryAction): Promise<void> {
-    await runEntryAction(entityId, action);
+  async function runAction({
+    entityId,
+    action,
+  }: {
+    entityId: string;
+    action: EntryAction;
+  }): Promise<void> {
+    await runEntryAction({ entityId, action });
     await load();
   }
 
@@ -137,10 +158,13 @@ export const useEntriesStore = defineStore("entries", () => {
    * Saves favorite or note. The list shows the change at once and goes back if saving fails.
    * Errors go to the caller.
    */
-  async function updateExtras(
-    entityId: string,
-    extras: { isFavorite?: boolean; note?: string | null },
-  ): Promise<void> {
+  async function updateExtras({
+    entityId,
+    extras,
+  }: {
+    entityId: string;
+    extras: { isFavorite?: boolean; note?: string | null };
+  }): Promise<void> {
     const before = entries.value.find((entry) => entry.entityId === entityId);
 
     if (!before) return;
@@ -152,7 +176,7 @@ export const useEntriesStore = defineStore("entries", () => {
     });
 
     try {
-      await updateEntryExtras(entityId, extras);
+      await updateEntryExtras({ entityId, extras });
     } catch (error) {
       replaceEntry(before);
       throw error;

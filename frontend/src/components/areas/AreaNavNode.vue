@@ -87,9 +87,9 @@ const emit = defineEmits<{
 const isRenaming = ref(false);
 
 const { t } = useI18n();
-const { isDropOver, onDragOver, onDragLeave, onDrop } = useEntryDropTarget((entityId) =>
-  emit("dropEntry", entityId),
-);
+const { isDropOver, onDragOver, onDragLeave, onDrop } = useEntryDropTarget({
+  onEntryDropped: (entityId) => emit("dropEntry", entityId),
+});
 </script>
 
 <style scoped>

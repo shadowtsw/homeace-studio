@@ -13,16 +13,18 @@ type Side = "below" | "above";
  */
 let ownScrollUntil = 0;
 
+export type UseNoCoverPlacementOptions = {
+  field: Ref<HTMLElement | null>;
+  panel: Ref<HTMLElement | null>;
+};
+
 /**
  * Places a fixed panel next to a field it must never cover (the chips of the label picker): below
  * it, else above it; when neither fits, the field's scroll container moves it up and the panel opens
  * below, shorter if need be. Called again after the field grew (a new chip row), the panel stays on
  * its side and gets shorter before it flips. Unchanged, it stays still.
  */
-export function useNoCoverPlacement(
-  field: Ref<HTMLElement | null>,
-  panel: Ref<HTMLElement | null>,
-) {
+export function useNoCoverPlacement({ field, panel }: UseNoCoverPlacementOptions) {
   const style = ref<Record<string, string>>({});
   let side: Side | null = null;
 
@@ -40,34 +42,36 @@ export function useNoCoverPlacement(
     // Grown into it: stay on the same side and get shorter, if there is enough room left
     const roomBelow = window.innerHeight - MARGIN - (box.bottom + GAP);
     const roomAbove = box.top - GAP - MARGIN;
-    if (side === "below" && roomBelow >= MIN_HEIGHT) return setBelow(box, roomBelow);
+    if (side === "below" && roomBelow >= MIN_HEIGHT) return setBelow({ box, room: roomBelow });
     if (side === "above" && roomAbove >= MIN_HEIGHT)
-      return setAbove(box, roomAbove, current.height);
+      return setAbove({ box, room: roomAbove, height: current.height });
 
     // First placement: below, else above, else scroll the field up and open below
     const height = panelEl.scrollHeight;
-    if (height <= roomBelow) return setBelow(box, roomBelow);
-    if (height <= roomAbove) return setAbove(box, roomAbove, height);
+    if (height <= roomBelow) return setBelow({ box, room: roomBelow });
+    if (height <= roomAbove) return setAbove({ box, room: roomAbove, height });
 
     // Up to the top of its scroll area, not of the window: above it there may be a fixed header
     // (the detail's), which would then cover the field
     const scroller = scrollParentOf(fieldEl);
     // Nothing to scroll (inside a fixed panel): the side with more room, shorter
     if (!scroller) {
-      return roomAbove > roomBelow ? setAbove(box, roomAbove, height) : setBelow(box, roomBelow);
+      return roomAbove > roomBelow
+        ? setAbove({ box, room: roomAbove, height })
+        : setBelow({ box, room: roomBelow });
     }
     ownScrollUntil = Date.now() + 600;
     scroller.scrollTop += box.top - (scroller.getBoundingClientRect().top + GAP);
     box = fieldEl.getBoundingClientRect();
-    setBelow(box, window.innerHeight - MARGIN - (box.bottom + GAP));
+    setBelow({ box, room: window.innerHeight - MARGIN - (box.bottom + GAP) });
   }
 
-  function setBelow(box: DOMRect, room: number): void {
+  function setBelow({ box, room }: { box: DOMRect; room: number }): void {
     side = "below";
     style.value = { ...horizontal(box), top: `${box.bottom + GAP}px`, maxHeight: `${room}px` };
   }
 
-  function setAbove(box: DOMRect, room: number, height: number): void {
+  function setAbove({ box, room, height }: { box: DOMRect; room: number; height: number }): void {
     side = "above";
     const shown = Math.min(height, room);
     style.value = { ...horizontal(box), top: `${box.top - GAP - shown}px`, maxHeight: `${room}px` };

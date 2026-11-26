@@ -8,18 +8,25 @@ import {
 } from "@/constants/entries";
 import type { Entry } from "@/types/entry";
 
+export type SupportsActionOptions = {
+  /** Disabled entities have no state and cannot act. */
+  entry: Entry;
+  action: EntryAction;
+};
+
 /**
  * Whether HA supports an action for this entry (mirrors the backend).
- *
- * @param entry - Disabled entities have no state and cannot act.
  */
-export function supportsAction(entry: Entry, action: EntryAction): boolean {
+export function supportsAction({ entry, action }: SupportsActionOptions): boolean {
   return !entry.isDisabled && ACTION_DOMAINS[action].includes(entry.domain);
 }
 
 /** An on/off switch makes sense when the entry can be switched both ways. */
 export function canToggle(entry: Entry): boolean {
-  return supportsAction(entry, ENTRY_ACTION.turnOn) && supportsAction(entry, ENTRY_ACTION.turnOff);
+  return (
+    supportsAction({ entry, action: ENTRY_ACTION.turnOn }) &&
+    supportsAction({ entry, action: ENTRY_ACTION.turnOff })
+  );
 }
 
 export function isOn(entry: Entry): boolean {

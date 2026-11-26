@@ -4,11 +4,15 @@ import { hasOwnKeys } from "@/utils/whatsNew/earlierVisit";
 
 describe("hasOwnKeys", () => {
   it("finds keys of HomeAce Studio", () => {
-    expect(hasOwnKeys(["other", "homeace.paneWidths"], "homeace.seenVersion")).toBe(true);
+    expect(
+      hasOwnKeys({ keys: ["other", "homeace.paneWidths"], ignoredKey: "homeace.seenVersion" }),
+    ).toBe(true);
   });
 
   it("ignores other apps and the given key", () => {
-    expect(hasOwnKeys(["other", "homeace.seenVersion"], "homeace.seenVersion")).toBe(false);
-    expect(hasOwnKeys([], "homeace.seenVersion")).toBe(false);
+    expect(
+      hasOwnKeys({ keys: ["other", "homeace.seenVersion"], ignoredKey: "homeace.seenVersion" }),
+    ).toBe(false);
+    expect(hasOwnKeys({ keys: [], ignoredKey: "homeace.seenVersion" })).toBe(false);
   });
 });

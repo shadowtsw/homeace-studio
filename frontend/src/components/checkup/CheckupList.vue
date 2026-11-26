@@ -133,7 +133,7 @@ function reason(finding: CheckupFinding): string {
     case "failed":
       return finding.failedAt
         ? t("checkup.rows.failed", {
-            time: relativeTime(finding.failedAt, new Date(), locale.value),
+            time: relativeTime({ iso: finding.failedAt, now: new Date(), locale: locale.value }),
           })
         : t("checkup.kinds.failed");
     case "unused":
@@ -141,7 +141,11 @@ function reason(finding: CheckupFinding): string {
     case "stale": {
       const when = finding.lastTriggered
         ? t("checkup.rows.lastRun", {
-            time: relativeTime(finding.lastTriggered, new Date(), locale.value),
+            time: relativeTime({
+              iso: finding.lastTriggered,
+              now: new Date(),
+              locale: locale.value,
+            }),
           })
         : t("checkup.rows.never");
       return finding.isOn ? when : `${when} · ${t("checkup.rows.off")}`;
@@ -150,13 +154,16 @@ function reason(finding: CheckupFinding): string {
 }
 
 function showError(error: unknown): void {
-  toasts.show(messages.textFor(error, t("errors.actionFailed")), "error");
+  toasts.show({
+    text: messages.textFor({ error, fallback: t("errors.actionFailed") }),
+    tone: "error",
+  });
 }
 
 async function ignore(key: string): Promise<void> {
   try {
     await checkup.ignore(key);
-    toasts.show(t("toast.findingIgnored"));
+    toasts.show({ text: t("toast.findingIgnored") });
   } catch (error) {
     showError(error);
   }

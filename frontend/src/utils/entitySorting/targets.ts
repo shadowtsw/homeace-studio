@@ -1,15 +1,22 @@
 import type { BundleChoice, SortingGroup, Suggestion } from "./model";
 
+export type GroupTargetOptions = {
+  group: SortingGroup;
+  groupNames: ReadonlyMap<string, string>;
+};
+
 /** The folder a group stands for now: a new folder may have been renamed by the user. */
-export function groupTarget(
-  group: SortingGroup,
-  groupNames: ReadonlyMap<string, string>,
-): string | null {
+export function groupTarget({ group, groupNames }: GroupTargetOptions): string | null {
   return group.type === "new" ? (groupNames.get(group.key) ?? group.target) : group.target;
 }
 
+export type HasNewTargetOptions = {
+  suggestion: Suggestion;
+  group: SortingGroup | undefined;
+};
+
 /** The suggestion moved on since the list was ordered: it now names another folder. */
-export function hasNewTarget(suggestion: Suggestion, group: SortingGroup | undefined): boolean {
+export function hasNewTarget({ suggestion, group }: HasNewTargetOptions): boolean {
   if (!group || group.type === "system") return false;
 
   return (
@@ -32,8 +39,8 @@ export function effectiveTarget(input: {
   if (choice?.target) return choice.target;
   if (!suggestion) return null;
   if (!group) return suggestion.confidence !== "unclear" ? suggestion.target : null;
-  if (group.type === "system" || hasNewTarget(suggestion, group)) return suggestion.target;
+  if (group.type === "system" || hasNewTarget({ suggestion, group })) return suggestion.target;
   if (group.type === "rest") return null;
 
-  return groupTarget(group, groupNames);
+  return groupTarget({ group, groupNames });
 }

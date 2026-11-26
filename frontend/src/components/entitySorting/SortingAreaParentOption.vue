@@ -65,7 +65,9 @@ const pathField = useTemplateRef("pathField");
 const folderPaths = computed(() => [...(sorting.computation?.folders ?? [])].sort());
 
 const detected = computed(() =>
-  sorting.home && sorting.computation ? areaParents(sorting.home, sorting.computation.folders) : [],
+  sorting.home && sorting.computation
+    ? areaParents({ home: sorting.home, folders: sorting.computation.folders })
+    : [],
 );
 const current = computed(() => sorting.computation?.areaParent ?? "");
 const labelOf = (parent: string): string => parent || t("entitySorting.overview.areaParentTop");

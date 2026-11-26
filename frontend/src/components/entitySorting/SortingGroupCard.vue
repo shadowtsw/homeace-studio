@@ -18,7 +18,7 @@
           <span class="mdi mdi-folder-plus-outline" />
           <input
             class="field-input group-card__name"
-            :value="groupTarget(group, sorting.groupNames) ?? ''"
+            :value="groupTarget({ group, groupNames: sorting.groupNames }) ?? ''"
             :aria-label="t('entitySorting.suggestions.folderName')"
             @click.stop
             @change="rename"
@@ -118,10 +118,13 @@ const entityCount = computed(() =>
   visible.value.reduce((sum, bundle) => sum + bundle.entities.length, 0),
 );
 const targetFor = (bundle: SortingBundle): string | null =>
-  targetOf(bundle, {
-    state: sorting.state(),
-    previous: sorting.computation,
-    layout: sorting.layout,
+  targetOf({
+    bundle,
+    input: {
+      state: sorting.state(),
+      previous: sorting.computation,
+      layout: sorting.layout,
+    },
   });
 const tickable = computed(() => visible.value.filter((bundle) => targetFor(bundle)));
 const tickedCount = computed(
@@ -143,16 +146,13 @@ const hintSummary = computed(() => {
 
 function tickAll(): void {
   const isOn = !isAllTicked.value;
-  sorting.tickMany(
-    tickable.value.map((bundle) => bundle.key),
-    isOn,
-  );
+  sorting.tickMany({ keys: tickable.value.map((bundle) => bundle.key), isOn });
 }
 
 function rename(event: Event): void {
   const name = cleanFolderPath((event.target as HTMLInputElement).value);
 
-  if (name) sorting.renameGroup(props.group.key, name);
+  if (name) sorting.renameGroup({ key: props.group.key, name });
 }
 
 function onHeadClick(): void {

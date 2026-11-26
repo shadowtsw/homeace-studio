@@ -24,40 +24,47 @@ export type CategoryNode = {
   isCategory: boolean;
 };
 
+export type BuildCategoryTreeOptions = {
+  /** One path per entry (so repeats count entries); null means "no category" and is skipped. */
+  categoryPaths: readonly (string | null)[];
+  /** Empty folders the user created; they appear even without entries. */
+  savedFolders?: readonly string[];
+  /**
+   * Category paths of every scope. They add folders without counting, so the tree keeps its shape
+   * when a scope tab shows only automations or only helpers.
+   */
+  allCategoryPaths?: readonly (string | null)[];
+};
+
 /**
  * Builds the folder tree from HA category names that use "/" for levels.
  *
- * @param categoryPaths - One path per entry (so repeats count entries); null means "no category"
- *   and is skipped.
- * @param savedFolders - Empty folders the user created; they appear even without entries.
- * @param allCategoryPaths - Category paths of every scope. They add folders without counting, so
- *   the tree keeps its shape when a scope tab shows only automations or only helpers.
  * @returns Top-level nodes, each level sorted by name (case-insensitive).
- * @example buildCategoryTree(["Haus/Terrasse", "Haus"])
+ * @example buildCategoryTree({ categoryPaths: ["Haus/Terrasse", "Haus"] })
  *   // [{ path: "Haus", ownCount: 1, totalCount: 2, children: [{ path: "Haus/Terrasse", … }] }]
  */
-export function buildCategoryTree(
-  categoryPaths: readonly (string | null)[],
-  savedFolders: readonly string[] = [],
-  allCategoryPaths: readonly (string | null)[] = [],
-): CategoryNode[] {
+export function buildCategoryTree({
+  categoryPaths,
+  savedFolders = [],
+  allCategoryPaths = [],
+}: BuildCategoryTreeOptions): CategoryNode[] {
   const roots: CategoryNode[] = [];
   const nodesByPath = new Map<string, CategoryNode>();
 
   for (const folder of savedFolders) {
-    ensureNode(folder, roots, nodesByPath).isSavedFolder = true;
+    ensureNode({ path: folder, roots, nodesByPath }).isSavedFolder = true;
   }
 
   for (const path of [...categoryPaths, ...allCategoryPaths]) {
     if (!path) continue;
 
-    const node = ensureNode(path, roots, nodesByPath);
+    const node = ensureNode({ path, roots, nodesByPath });
     node.isFolderOnly = false;
     node.isCategory = true;
   }
 
   for (const path of categoryPaths) {
-    if (path) ensureNode(path, roots, nodesByPath).ownCount++;
+    if (path) ensureNode({ path, roots, nodesByPath }).ownCount++;
   }
 
   roots.forEach(sumTotalCounts);
@@ -67,18 +74,22 @@ export function buildCategoryTree(
 }
 
 /** Walks the levels of `path` and creates missing nodes on the way; returns the deepest one. */
-function ensureNode(
-  path: string,
-  roots: CategoryNode[],
-  nodesByPath: Map<string, CategoryNode>,
-): CategoryNode {
+function ensureNode({
+  path,
+  roots,
+  nodesByPath,
+}: {
+  path: string;
+  roots: CategoryNode[];
+  nodesByPath: Map<string, CategoryNode>;
+}): CategoryNode {
   const segments = path.split(CATEGORY_SEPARATOR);
   let siblings = roots;
   let current: CategoryNode | null = null;
 
   for (const [index, name] of segments.entries()) {
     const nodePath = segments.slice(0, index + 1).join(CATEGORY_SEPARATOR);
-    current = nodesByPath.get(nodePath) ?? addNode(nodePath, name, siblings, nodesByPath);
+    current = nodesByPath.get(nodePath) ?? addNode({ path: nodePath, name, siblings, nodesByPath });
     siblings = current.children;
   }
 
@@ -90,12 +101,14 @@ function ensureNode(
   return current;
 }
 
-function addNode(
-  path: string,
-  name: string,
-  siblings: CategoryNode[],
-  nodesByPath: Map<string, CategoryNode>,
-): CategoryNode {
+type AddNodeOptions = {
+  path: string;
+  name: string;
+  siblings: CategoryNode[];
+  nodesByPath: Map<string, CategoryNode>;
+};
+
+function addNode({ path, name, siblings, nodesByPath }: AddNodeOptions): CategoryNode {
   const node: CategoryNode = {
     path,
     name,

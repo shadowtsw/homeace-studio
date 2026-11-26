@@ -137,7 +137,7 @@ export const useEditorStore = defineStore("editor", () => {
     isSaving.value = true;
 
     try {
-      const saved = await saveFlow(entityId, draft.config);
+      const saved = await saveFlow({ entityId, config: draft.config });
       // The user may have opened another entry meanwhile; only this entry's draft is done.
       removeDraft(entityId);
       if (flow.value?.entityId === entityId) flow.value = saved;

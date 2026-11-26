@@ -94,7 +94,9 @@ const hasRemoteChange = computed(() => {
   return !isSameAsBase;
 });
 const problem = computed(() =>
-  type.value && draft.value ? helperSettingsProblem(type.value, draft.value) : null,
+  type.value && draft.value
+    ? helperSettingsProblem({ type: type.value, settings: draft.value })
+    : null,
 );
 const invalidFields = computed(() => problem.value?.fields ?? []);
 
@@ -127,12 +129,18 @@ async function save(): Promise<void> {
   isSaving.value = true;
 
   try {
-    const view = await saveHelperSettings(props.entry.entityId, draft.value);
+    const view = await saveHelperSettings({
+      entityId: props.entry.entityId,
+      settings: draft.value,
+    });
     saved.value = view.settings;
     draft.value = structuredClone(view.settings);
-    toasts.show(t("helperSettings.saved", { name: props.entry.name }));
+    toasts.show({ text: t("helperSettings.saved", { name: props.entry.name }) });
   } catch (error) {
-    toasts.show(messages.textFor(error, t("errors.actionFailed")), "error");
+    toasts.show({
+      text: messages.textFor({ error, fallback: t("errors.actionFailed") }),
+      tone: "error",
+    });
   } finally {
     isSaving.value = false;
   }

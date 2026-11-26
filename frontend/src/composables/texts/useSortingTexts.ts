@@ -18,7 +18,7 @@ type SortingTexts = {
   origin: (origin: GroupOrigin | null) => string;
   hint: (kind: HintKind) => string;
   conditionType: (type: SortingConditionType) => string;
-  condition: (condition: SortingCondition, home: SortingHome | null) => string;
+  condition: (options: { item: SortingCondition; home: SortingHome | null }) => string;
   placeholderWords: () => PlaceholderWords;
   /** A rule target as the user reads it: "Licht/{Bereich}". */
   target: (target: string) => string;
@@ -97,7 +97,7 @@ export function useSortingTexts(): SortingTexts {
   }
 
   /** "Bereich = Küche", "Name enthält „test“". */
-  function condition(item: SortingCondition, home: SortingHome | null): string {
+  function condition({ item, home }: { item: SortingCondition; home: SortingHome | null }): string {
     const type = t(`entitySorting.rules.types.${item.type}`);
     const value =
       item.type === "area"
@@ -120,6 +120,6 @@ export function useSortingTexts(): SortingTexts {
     conditionType: (type) => t(`entitySorting.rules.types.${type}`),
     condition,
     placeholderWords,
-    target: (target) => toDisplayTarget(target, placeholderWords()),
+    target: (target) => toDisplayTarget({ target, words: placeholderWords() }),
   };
 }

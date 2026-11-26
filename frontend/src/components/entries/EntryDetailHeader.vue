@@ -75,7 +75,7 @@
         />
       </label>
       <button
-        v-if="supportsAction(entry, ENTRY_ACTION.run)"
+        v-if="supportsAction({ entry, action: ENTRY_ACTION.run })"
         class="btn"
         type="button"
         :disabled="isBusy"
@@ -117,7 +117,13 @@ import InlineNameInput from "@/components/common/InlineNameInput.vue";
 import SwitchToggle from "@/components/common/SwitchToggle.vue";
 import { ENTRY_ACTION, ENTRY_KIND_ICON, type EntryAction } from "@/constants/entries";
 import type { Entry } from "@/types/entry";
-import { canDelete, canToggle, isOn, supportsAction, toggleAction } from "@/utils/entries/entryActions";
+import {
+  canDelete,
+  canToggle,
+  isOn,
+  supportsAction,
+  toggleAction,
+} from "@/utils/entries/entryActions";
 import AppIcon from "@/components/common/AppIcon.vue";
 
 const props = defineProps<{

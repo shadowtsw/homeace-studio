@@ -95,7 +95,7 @@
               v-for="entity in group.entities"
               :key="entity.entityId"
               :entity="entity"
-              :label="rowLabel(entity, 'card', deviceCounts)"
+              :label="rowLabel({ entity, where: 'card', deviceEntityCounts: deviceCounts })"
               :is-selected="selected.includes(entity.entityId)"
               :is-technical-details-visible="isTechnicalDetailsVisible"
               @pick="emit('pick', $event)"
@@ -104,7 +104,13 @@
           <EntityPickerRow
             v-else
             :entity="group.entities[0]!"
-            :label="rowLabel(group.entities[0]!, 'list', deviceCounts)"
+            :label="
+              rowLabel({
+                entity: group.entities[0]!,
+                where: 'list',
+                deviceEntityCounts: deviceCounts,
+              })
+            "
             :is-selected="selected.includes(group.entities[0]!.entityId)"
             :is-technical-details-visible="isTechnicalDetailsVisible"
             @pick="emit('pick', $event)"
@@ -123,7 +129,7 @@
           v-for="entity in results.slice(0, MAX_ROWS)"
           :key="entity.entityId"
           :entity="entity"
-          :label="rowLabel(entity, 'list', deviceCounts)"
+          :label="rowLabel({ entity, where: 'list', deviceEntityCounts: deviceCounts })"
           :place="entity.areaName ?? t('picker.noArea')"
           :is-selected="selected.includes(entity.entityId)"
           :is-technical-details-visible="isTechnicalDetailsVisible"
@@ -144,7 +150,7 @@
             v-for="entity in suggested"
             :key="entity.entityId"
             :entity="entity"
-            :label="rowLabel(entity, 'list', deviceCounts)"
+            :label="rowLabel({ entity, where: 'list', deviceEntityCounts: deviceCounts })"
             :place="entity.areaName ?? t('picker.noArea')"
             :is-selected="selected.includes(entity.entityId)"
             :is-technical-details-visible="isTechnicalDetailsVisible"
@@ -244,17 +250,27 @@ const mode = computed(() =>
 );
 
 const criterionChoices = computed(() =>
-  openCriterion.value ? criterionOptions(allowed.value, openCriterion.value) : [],
+  openCriterion.value
+    ? criterionOptions({ entities: allowed.value, key: openCriterion.value })
+    : [],
 );
 const results = computed(() =>
   allowed.value.filter(
-    (entity) => matchesCriteria(entity, criteria) && matchesQuery(entity, query.value, kindLabel),
+    (entity) =>
+      matchesCriteria({ entity, criteria }) &&
+      matchesQuery({ entity, query: query.value, kindLabel }),
   ),
 );
-const inArea = computed(() => allowed.value.filter((entity) => matchesCriteria(entity, criteria)));
+const inArea = computed(() =>
+  allowed.value.filter((entity) => matchesCriteria({ entity, criteria })),
+);
 const deviceGroups = computed(() => groupByDevice(inArea.value));
 const suggested = computed(() =>
-  suggestEntities(allowed.value, new Set(props.usedIds), props.areaId),
+  suggestEntities({
+    entities: allowed.value,
+    usedIds: new Set(props.usedIds),
+    areaId: props.areaId,
+  }),
 );
 const areaName = computed(
   () => props.entities.find((entity) => entity.areaId === props.areaId)?.areaName ?? null,

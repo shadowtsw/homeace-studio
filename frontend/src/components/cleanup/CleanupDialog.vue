@@ -54,9 +54,9 @@
                 <span v-if="!choice.isCertain" class="cleanup__tag cleanup__tag--warn">
                   <span class="mdi mdi-help-circle-outline" />{{ t("cleanup.uncertain") }}
                 </span>
-                <span v-if="sameTargetAs(choice, choices)" class="cleanup__tag">
+                <span v-if="sameTargetAs({ choice, choices })" class="cleanup__tag">
                   <span class="mdi mdi-call-merge" />{{
-                    t("cleanup.sameTarget", { name: sameTargetAs(choice, choices)?.from ?? "" })
+                    t("cleanup.sameTarget", { name: sameTargetAs({ choice, choices })?.from ?? "" })
                   }}
                 </span>
                 <span v-else-if="isExistingFolder(choice)" class="cleanup__tag">
@@ -351,13 +351,16 @@ function tickCertain(): void {
 }
 
 function showError(error: unknown): void {
-  toasts.show(messages.textFor(error, t("errors.actionFailed")), "error");
+  toasts.show({
+    text: messages.textFor({ error, fallback: t("errors.actionFailed") }),
+    tone: "error",
+  });
 }
 
 async function hide(key: string): Promise<void> {
   try {
     await cleanup.ignore(key);
-    toasts.show(t("toast.proposalHidden"));
+    toasts.show({ text: t("toast.proposalHidden") });
   } catch (error) {
     showError(error);
   }

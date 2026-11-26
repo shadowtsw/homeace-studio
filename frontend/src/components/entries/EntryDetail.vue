@@ -295,7 +295,9 @@ const shownRun = computed(() => {
   return history.runs.find((run) => run.runId === traces.shownRunId) ?? null;
 });
 const shownRunStates = computed(() =>
-  shownRun.value && props.displayFlow ? runStatesFor(shownRun.value, props.displayFlow) : null,
+  shownRun.value && props.displayFlow
+    ? runStatesFor({ run: shownRun.value, flow: props.displayFlow })
+    : null,
 );
 
 function showOnFlow(runId: string): void {
@@ -327,7 +329,7 @@ function selectTab(tab: Tab): void {
 watch(
   () => props.entry?.entityId,
   (entityId) => {
-    activeTab.value = startTab(tabs.value, pickedTab.value) ?? TAB.properties;
+    activeTab.value = startTab({ tabs: tabs.value, preferred: pickedTab.value }) ?? TAB.properties;
     traces.showOnFlow(null);
     void deps.load(entityId ?? null);
   },

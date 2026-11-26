@@ -158,10 +158,10 @@ const emit = defineEmits<{
 }>();
 
 const { t } = useI18n();
-const { isDropOver, onDragOver, onDragLeave, onDrop } = useEntryDropTarget(
-  (entityId) => emit("dropEntry", props.node.path, entityId),
-  (entityId) => emit("dropEntity", props.node.path, entityId),
-);
+const { isDropOver, onDragOver, onDragLeave, onDrop } = useEntryDropTarget({
+  onEntryDropped: (entityId) => emit("dropEntry", props.node.path, entityId),
+  onPlainEntityDropped: (entityId) => emit("dropEntity", props.node.path, entityId),
+});
 
 /** Where a dragged sibling folder would land: a line above or below this one. */
 const sortDrop = ref<"before" | "after" | null>(null);
@@ -221,7 +221,7 @@ function isSortableHereFor(moved: string): boolean {
 
 const hasChildren = computed(() => props.node.children.length > 0);
 /** Own color, or the one inherited from the nearest colored parent folder. */
-const color = computed(() => folderColor(props.node.path, props.colors));
+const color = computed(() => folderColor({ path: props.node.path, colors: props.colors }));
 const isExpanded = computed(() => props.expandedPaths.has(props.node.path));
 /** Nothing in the scope shown, but not one of the user's own empty folders. */
 const isEmptyHere = computed(

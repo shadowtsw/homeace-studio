@@ -38,16 +38,16 @@ export const useLabelsStore = defineStore("labels", () => {
   const reload = (): Promise<unknown> => Promise.all([lookups.load(), entriesStore.refresh()]);
 
   /** A new label; no entry carries it yet, so only the label list reloads. */
-  const create = (name: string, color: string | null): Promise<Label> =>
+  const create = ({ name, color }: { name: string; color: string | null }): Promise<Label> =>
     busy(async () => {
       const label = await createLabel({ name, color });
       await lookups.load();
       return label;
     });
 
-  const update = (labelId: string, fields: LabelFields): Promise<Label> =>
+  const update = ({ labelId, fields }: { labelId: string; fields: LabelFields }): Promise<Label> =>
     busy(async () => {
-      const label = await updateLabel(labelId, fields);
+      const label = await updateLabel({ labelId, fields });
       await reload();
       return label;
     });

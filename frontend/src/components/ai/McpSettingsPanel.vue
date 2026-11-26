@@ -129,7 +129,9 @@ const isTokenShown = ref(false);
 const selectedClient = ref<McpClient>(MCP_CLIENT.claudeCode);
 
 const isPortOpen = computed(() => mcp.value?.hostPort != null);
-const url = computed(() => (mcp.value ? mcpUrl(mcp.value, window.location.hostname) : null));
+const url = computed(() =>
+  mcp.value ? mcpUrl({ overview: mcp.value, hostname: window.location.hostname }) : null,
+);
 const shownToken = computed(() => {
   const token = mcp.value?.token;
   if (!token) return TOKEN_PLACEHOLDER;
@@ -137,10 +139,18 @@ const shownToken = computed(() => {
 });
 const canCopy = computed(() => Boolean(url.value && mcp.value?.token));
 const fullSnippet = computed(() =>
-  mcpSnippet(selectedClient.value, url.value ?? "", mcp.value?.token ?? TOKEN_PLACEHOLDER),
+  mcpSnippet({
+    client: selectedClient.value,
+    url: url.value ?? "",
+    token: mcp.value?.token ?? TOKEN_PLACEHOLDER,
+  }),
 );
 const shownSnippet = computed(() =>
-  mcpSnippet(selectedClient.value, url.value ?? "http://…/mcp", shownToken.value),
+  mcpSnippet({
+    client: selectedClient.value,
+    url: url.value ?? "http://…/mcp",
+    token: shownToken.value,
+  }),
 );
 
 const connectionText = computed(() => {
@@ -157,14 +167,17 @@ const connectionText = computed(() => {
 });
 
 function showError(error: unknown): void {
-  toasts.show(messages.textFor(error, t("errors.actionFailed")), "error");
+  toasts.show({
+    text: messages.textFor({ error, fallback: t("errors.actionFailed") }),
+    tone: "error",
+  });
 }
 
 async function setEnabled(isEnabled: boolean): Promise<void> {
   isBusy.value = true;
   try {
     await ai.setEnabled(isEnabled);
-    toasts.show(isEnabled ? t("toast.mcpOn") : t("toast.mcpOff"));
+    toasts.show({ text: isEnabled ? t("toast.mcpOn") : t("toast.mcpOff") });
   } catch (error) {
     showError(error);
   } finally {
@@ -177,7 +190,7 @@ async function renew(): Promise<void> {
   try {
     await ai.renewToken();
     isTokenShown.value = true;
-    toasts.show(t("toast.mcpRenewed"));
+    toasts.show({ text: t("toast.mcpRenewed") });
   } catch (error) {
     showError(error);
   } finally {
@@ -186,7 +199,7 @@ async function renew(): Promise<void> {
 }
 
 async function copy(text: string): Promise<void> {
-  toasts.show((await copyText(text)) ? t("toast.copied") : t("toast.copyFailed"));
+  toasts.show({ text: (await copyText(text)) ? t("toast.copied") : t("toast.copyFailed") });
 }
 </script>
 

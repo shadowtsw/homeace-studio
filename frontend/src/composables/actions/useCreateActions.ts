@@ -61,7 +61,10 @@ export function useCreateActions(): CreateActions {
     try {
       return await action();
     } catch (error) {
-      toasts.show(messages.textFor(error, t("errors.actionFailed")), "error");
+      toasts.show({
+        text: messages.textFor({ error, fallback: t("errors.actionFailed") }),
+        tone: "error",
+      });
       return null;
     } finally {
       isBusy.value = false;
@@ -73,7 +76,7 @@ export function useCreateActions(): CreateActions {
 
     if (storedPath === null) return null;
 
-    toasts.show(t("toast.folderCreated", { path: storedPath }));
+    toasts.show({ text: t("toast.folderCreated", { path: storedPath }) });
     folderDraft.value = null;
 
     return storedPath;
@@ -85,7 +88,7 @@ export function useCreateActions(): CreateActions {
       return true;
     });
 
-    if (isDone) toasts.show(t("toast.folderDeleted", { path }));
+    if (isDone) toasts.show({ text: t("toast.folderDeleted", { path }) });
   }
 
   async function confirmHelper(helper: NewHelper): Promise<string | null> {
@@ -93,7 +96,7 @@ export function useCreateActions(): CreateActions {
 
     if (entityId === null) return null;
 
-    toasts.show(t("toast.helperCreated", { name: helper.name }));
+    toasts.show({ text: t("toast.helperCreated", { name: helper.name }) });
     isHelperDialogOpen.value = false;
 
     return entityId;
@@ -107,9 +110,12 @@ export function useCreateActions(): CreateActions {
     if (settings.storedTraces === DEFAULT_STORED_TRACES) return;
 
     try {
-      await tracesStore.keepMore(entityId, settings.storedTraces);
+      await tracesStore.keepMore({ entityId, count: settings.storedTraces });
     } catch (error) {
-      toasts.show(messages.textFor(error, t("toast.storedTracesFailed")), "error");
+      toasts.show({
+        text: messages.textFor({ error, fallback: t("toast.storedTracesFailed") }),
+        tone: "error",
+      });
     }
   }
 
@@ -121,10 +127,10 @@ export function useCreateActions(): CreateActions {
 
     // Flows keep the user's default for kept runs (scenes have no runs), then report
     if (flow.kind === "scene") {
-      toasts.show(t("toast.sceneCreated", { name: flow.name }));
+      toasts.show({ text: t("toast.sceneCreated", { name: flow.name }) });
     } else {
       await keepRunsAsSet(entityId);
-      toasts.show(t("toast.flowCreated", { name: flow.name }));
+      toasts.show({ text: t("toast.flowCreated", { name: flow.name }) });
     }
     newFlowKind.value = null;
 

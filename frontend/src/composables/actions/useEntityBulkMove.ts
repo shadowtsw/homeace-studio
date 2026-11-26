@@ -14,7 +14,7 @@ type EntityBulkMove = {
   start: (entityIds: string[]) => void;
   cancel: () => void;
   /** Moves them into the folder (null: out of their folders), then unticks them. */
-  move: (entityIds: readonly string[], categoryPath: string | null) => Promise<void>;
+  move: (options: { entityIds: readonly string[]; categoryPath: string | null }) => Promise<void>;
 };
 
 /** Several ticked plain entities into one folder at once, or out of their folders. */
@@ -28,7 +28,13 @@ export function useEntityBulkMove(): EntityBulkMove {
   const movingIds = ref<string[] | null>(null);
   const isBusy = ref(false);
 
-  async function move(entityIds: readonly string[], categoryPath: string | null): Promise<void> {
+  async function move({
+    entityIds,
+    categoryPath,
+  }: {
+    entityIds: readonly string[];
+    categoryPath: string | null;
+  }): Promise<void> {
     // Only those that can have a folder and are not there yet
     const toMove = lookups.entities.filter(
       (entity) =>
@@ -41,7 +47,7 @@ export function useEntityBulkMove(): EntityBulkMove {
     try {
       // One after another: each one creates or cleans up categories in HA
       for (const entity of toMove) {
-        await moveEntityToFolder(entity.entityId, categoryPath);
+        await moveEntityToFolder({ entityId: entity.entityId, categoryPath });
       }
 
       // Read them again so list and tree show the new folders, then report
@@ -50,15 +56,18 @@ export function useEntityBulkMove(): EntityBulkMove {
       studio.clearChecked();
 
       const count = entityIds.length;
-      toasts.show(
-        categoryPath
+      toasts.show({
+        text: categoryPath
           ? t("toast.entitiesMoved", { count, path: categoryPath }, count)
           : t("toast.entitiesMovedOut", { count }, count),
-      );
+      });
     } catch (error) {
       // Some may have moved already; the list shows where each one is
       await lookups.loadEntities(true);
-      toasts.show(messages.textFor(error, t("errors.actionFailed")), "error");
+      toasts.show({
+        text: messages.textFor({ error, fallback: t("errors.actionFailed") }),
+        tone: "error",
+      });
     } finally {
       isBusy.value = false;
     }

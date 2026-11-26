@@ -57,14 +57,14 @@ export function useEntityMenu(options: EntityMenuOptions) {
     return flowKind.value === "script" ? t("flow.sequence") : t("flow.thenSection");
   };
 
-  function open(entity: EntityOption, anchor: HTMLElement): void {
+  function open({ entity, anchor }: { entity: EntityOption; anchor: HTMLElement }): void {
     // Where it can go in the open flow
     const flow = isFlowEditable.value ? displayFlow.value : null;
     const targets = flow ? dropTargets(flow) : [];
     const roots: BlockSection[] =
       flowKind.value === "script" ? ["action"] : ["trigger", "condition", "action"];
     const items: QuickMenuItem[] = flow
-      ? roots.flatMap((root) => rootItems(entity, root, targets))
+      ? roots.flatMap((root) => rootItems({ entity, root, targets }))
       : [];
 
     if (!flow) {
@@ -102,17 +102,21 @@ export function useEntityMenu(options: EntityMenuOptions) {
           return;
         }
         const target = targets.find((item) => item.key === id);
-        if (target) offerChoices(entity, target, anchor);
+        if (target) offerChoices({ entity, target, anchor });
       },
     };
   }
 
   /** One section: its own line and its branches, or a note why the entity does not fit there. */
-  function rootItems(
-    entity: EntityOption,
-    root: BlockSection,
-    targets: DropTarget[],
-  ): QuickMenuItem[] {
+  function rootItems({
+    entity,
+    root,
+    targets,
+  }: {
+    entity: EntityOption;
+    root: BlockSection;
+    targets: DropTarget[];
+  }): QuickMenuItem[] {
     const fit =
       entity.entityId === flowId.value
         ? { reason: "self" }
@@ -143,13 +147,21 @@ export function useEntityMenu(options: EntityMenuOptions) {
   }
 
   /** The second step: what it does there ("Bewegung erkannt", "Einschalten" …). */
-  function offerChoices(entity: EntityOption, target: DropTarget, anchor: HTMLElement): void {
+  function offerChoices({
+    entity,
+    target,
+    anchor,
+  }: {
+    entity: EntityOption;
+    target: DropTarget;
+    anchor: HTMLElement;
+  }): void {
     const fit = entityFit({ entity, section: target.section, catalog: catalog.value });
     if ("reason" in fit) return;
 
     const [only] = fit.choices;
     if (fit.choices.length === 1 && only) {
-      insert(target, only);
+      insert({ target, choice: only });
       return;
     }
 
@@ -158,16 +170,16 @@ export function useEntityMenu(options: EntityMenuOptions) {
       title: target.branch ? `${entity.shortName} · ${target.branch.label}` : entity.shortName,
       items: fit.choices.map((choice, index) => ({
         id: String(index),
-        label: choiceText(t, choice.label),
+        label: choiceText({ t, label: choice.label }),
       })),
       onPick: (id) => {
         const choice = fit.choices[Number(id)];
-        if (choice) insert(target, choice);
+        if (choice) insert({ target, choice });
       },
     };
   }
 
-  function insert(target: DropTarget, choice: EntityChoice): void {
+  function insert({ target, choice }: { target: DropTarget; choice: EntityChoice }): void {
     const id = nextBlockId(target);
     menu.value = null;
     applyChange({ type: "insert", listPath: target.listPath, item: choice.item });

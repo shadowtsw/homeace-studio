@@ -5,12 +5,18 @@ import { RULE_PLACEHOLDER } from "./constants";
 /** The placeholder words the UI shows, e.g. { area: "Bereich", floor: "Etage" }. */
 export type PlaceholderWords = { area: string; floor: string };
 
+export type ToDisplayTargetOptions = {
+  target: string;
+  words: PlaceholderWords;
+};
+
 /**
  * Rule targets store `{area}` and `{floor}`; the user reads and types them in their language.
  *
- * @example toDisplayTarget("Licht/{area}", { area: "Bereich", floor: "Etage" }) // "Licht/{Bereich}"
+ * @example
+ * toDisplayTarget({ target: "Licht/{area}", words: { area: "Bereich", floor: "Etage" } }) // "Licht/{Bereich}"
  */
-export function toDisplayTarget(target: string, words: PlaceholderWords): string {
+export function toDisplayTarget({ target, words }: ToDisplayTargetOptions): string {
   return target
     .split(RULE_PLACEHOLDER.area)
     .join(`{${words.area}}`)
@@ -18,8 +24,13 @@ export function toDisplayTarget(target: string, words: PlaceholderWords): string
     .join(`{${words.floor}}`);
 }
 
+export type FromDisplayTargetOptions = {
+  text: string;
+  words: PlaceholderWords;
+};
+
 /** The way back, case-insensitive: "licht/{bereich}" → "licht/{area}". */
-export function fromDisplayTarget(text: string, words: PlaceholderWords): string {
+export function fromDisplayTarget({ text, words }: FromDisplayTargetOptions): string {
   const pattern = (word: string): RegExp =>
     new RegExp(`\\{\\s*${word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*\\}`, "gi");
 

@@ -118,7 +118,7 @@ export const useEntitySortingStore = defineStore("entitySorting", () => {
       previous: before,
       layout: layout.value,
     });
-    const changed = before ? suggestionChanges(before, next, actedOn) : new Map();
+    const changed = before ? suggestionChanges({ before, after: next, actedOn }) : new Map();
 
     computation.value = next;
     flashing.value = new Set(changed.keys());
@@ -227,17 +227,17 @@ export const useEntitySortingStore = defineStore("entitySorting", () => {
     });
   }
 
-  function setChoice(key: string, choice: BundleChoice): void {
+  function setChoice({ key, choice }: { key: string; choice: BundleChoice }): void {
     choices.value = new Map(choices.value).set(key, choice);
     recompute(key);
   }
 
-  function tick(key: string, isOn: boolean): void {
-    setChoice(key, { ...choices.value.get(key), isOn, isTouched: true });
+  function tick({ key, isOn }: { key: string; isOn: boolean }): void {
+    setChoice({ key, choice: { ...choices.value.get(key), isOn, isTouched: true } });
   }
 
   /** A whole group at once, with one recompute. */
-  function tickMany(keys: string[], isOn: boolean): void {
+  function tickMany({ keys, isOn }: { keys: string[]; isOn: boolean }): void {
     const next = new Map(choices.value);
     keys.forEach((key) => next.set(key, { ...next.get(key), isOn, isTouched: true }));
     choices.value = next;
@@ -245,11 +245,11 @@ export const useEntitySortingStore = defineStore("entitySorting", () => {
   }
 
   /** A folder the user picked themselves: ticks the bundle and teaches twice. */
-  function pick(key: string, target: string): void {
-    setChoice(key, { isOn: true, isTouched: true, target });
+  function pick({ key, target }: { key: string; target: string }): void {
+    setChoice({ key, choice: { isOn: true, isTouched: true, target } });
   }
 
-  async function reject(key: string, path: string): Promise<void> {
+  async function reject({ key, path }: { key: string; path: string }): Promise<void> {
     const next = new Map(rejected.value);
     next.set(key, new Set([...(next.get(key) ?? []), path]));
     rejected.value = next;
@@ -258,7 +258,13 @@ export const useEntitySortingStore = defineStore("entitySorting", () => {
     await saveMemory();
   }
 
-  async function setIgnored(key: string, isIgnored: boolean): Promise<void> {
+  async function setIgnored({
+    key,
+    isIgnored,
+  }: {
+    key: string;
+    isIgnored: boolean;
+  }): Promise<void> {
     const next = new Set(ignored.value);
     if (isIgnored) next.add(key);
     else next.delete(key);
@@ -273,7 +279,7 @@ export const useEntitySortingStore = defineStore("entitySorting", () => {
     excluded.value = next;
   }
 
-  function renameGroup(key: string, name: string): void {
+  function renameGroup({ key, name }: { key: string; name: string }): void {
     groupNames.value = new Map(groupNames.value).set(key, name);
     recompute();
   }

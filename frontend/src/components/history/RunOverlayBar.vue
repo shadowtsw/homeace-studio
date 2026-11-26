@@ -36,11 +36,16 @@ const { t } = useI18n();
 const settings = useSettingsStore();
 
 const when = computed(() => {
-  const day = dayLabel(props.run.startedAt, new Date(), settings.locale, {
-    today: t("history.today"),
-    yesterday: t("history.yesterday"),
+  const day = dayLabel({
+    iso: props.run.startedAt,
+    now: new Date(),
+    locale: settings.locale,
+    texts: {
+      today: t("history.today"),
+      yesterday: t("history.yesterday"),
+    },
   });
-  return `${day}, ${clockTime(props.run.startedAt, settings.locale)}`;
+  return `${day}, ${clockTime({ iso: props.run.startedAt, locale: settings.locale })}`;
 });
 
 const tone = computed(() => {

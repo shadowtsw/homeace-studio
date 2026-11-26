@@ -11,6 +11,13 @@ import type { Confidence, HintKind, SortingReason } from "./model";
 
 type Vote = { weight: number; reason: SortingReason; hint: HintKind };
 
+export type AddVoteOptions = {
+  folder: string;
+  weight: number;
+  reason: SortingReason;
+  hint: HintKind;
+};
+
 /** Weighted votes per folder, collected from all hints of one bundle. */
 export class FolderVotes {
   private readonly byFolder = new Map<string, Vote[]>();
@@ -18,8 +25,12 @@ export class FolderVotes {
   constructor(private readonly rejected: ReadonlySet<string> = new Set()) {}
 
   /** Turned-down folders (and everything below them) get no votes. */
-  add(folder: string, weight: number, reason: SortingReason, hint: HintKind): void {
-    if (weight <= 0 || [...this.rejected].some((path) => isSameOrBelow(folder, path))) return;
+  add({ folder, weight, reason, hint }: AddVoteOptions): void {
+    const isRejected = [...this.rejected].some((path) =>
+      isSameOrBelow({ path: folder, ancestor: path }),
+    );
+
+    if (weight <= 0 || isRejected) return;
 
     this.byFolder.set(folder, [...(this.byFolder.get(folder) ?? []), { weight, reason, hint }]);
   }
@@ -85,14 +96,14 @@ export function decide(votes: FolderVotes): Decision | null {
   if (depthOf(best) === 1) {
     const parent = best;
     const children = [...mass.keys()].filter(
-      (path) => depthOf(path) === 2 && isSameOrBelow(path, parent),
+      (path) => depthOf(path) === 2 && isSameOrBelow({ path, ancestor: parent }),
     );
     best = children.sort((first, second) => massOf(second) - massOf(first))[0] ?? best;
   }
 
   const target = best;
   const isRelated = (path: string): boolean =>
-    isSameOrBelow(path, target) || isSameOrBelow(target, path);
+    isSameOrBelow({ path, ancestor: target }) || isSameOrBelow({ path: target, ancestor: path });
   const competitors = new Map<string, number>();
 
   entries.forEach(([folder, list]) => {
@@ -112,7 +123,7 @@ export function decide(votes: FolderVotes): Decision | null {
         : "unclear";
 
   const supporting = entries
-    .filter(([folder]) => isSameOrBelow(folder, target))
+    .filter(([folder]) => isSameOrBelow({ path: folder, ancestor: target }))
     .flatMap(([, list]) => list)
     .sort((first, second) => second.weight - first.weight);
   const reasons = uniqueReasons(supporting.map((vote) => vote.reason));

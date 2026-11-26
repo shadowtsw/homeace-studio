@@ -75,7 +75,7 @@ export function useSceneAutoSave(options: SceneAutoSaveOptions) {
     isSaving.value = true;
 
     try {
-      const result = await saveScene(entityId, sent);
+      const result = await saveScene({ entityId, entities: sent });
       const savedAt = new Date().toLocaleTimeString(locale.value, {
         hour: "2-digit",
         minute: "2-digit",
@@ -119,7 +119,7 @@ export function useSceneAutoSave(options: SceneAutoSaveOptions) {
 
     try {
       // Save the old state in HA, start over without draft and undo
-      const result = await saveScene(entityId, base);
+      const result = await saveScene({ entityId, entities: base });
       drafts.dropScene(entityId);
       drafts.forgetUndo();
       show(result);

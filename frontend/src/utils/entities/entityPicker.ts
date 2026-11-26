@@ -31,18 +31,22 @@ export function fold(text: string): string {
     .replace(/ß/g, "ss");
 }
 
-function criterionValues(entity: EntityOption, key: CriterionKey): string[] {
+function criterionValues({ entity, key }: { entity: EntityOption; key: CriterionKey }): string[] {
   if (key === "area") return [entity.areaName ?? NO_AREA];
   if (key === "label") return entity.labels;
   return [entity.domain];
 }
 
-/** Every word must appear in name, device, area, labels, kind or entity ID; order does not matter. */
-export function matchesQuery(
-  entity: EntityOption,
-  query: string,
-  kindLabel: (domain: string) => string,
-): boolean {
+export type MatchesQueryOptions = {
+  entity: EntityOption;
+  query: string;
+  kindLabel: (domain: string) => string;
+};
+
+/**
+ * Every word must appear in name, device, area, labels, kind or entity ID; order does not matter.
+ */
+export function matchesQuery({ entity, query, kindLabel }: MatchesQueryOptions): boolean {
   const words = fold(query).split(/\s+/).filter(Boolean);
   const haystack = fold(
     [
@@ -59,19 +63,29 @@ export function matchesQuery(
   return words.every((word) => haystack.includes(word));
 }
 
-export function matchesCriteria(entity: EntityOption, criteria: PickerCriteria): boolean {
+export type MatchesCriteriaOptions = {
+  entity: EntityOption;
+  criteria: PickerCriteria;
+};
+
+export function matchesCriteria({ entity, criteria }: MatchesCriteriaOptions): boolean {
   return CRITERIA_KEYS.every((key) => {
     const wanted = criteria[key];
-    return wanted === null || criterionValues(entity, key).includes(wanted);
+    return wanted === null || criterionValues({ entity, key }).includes(wanted);
   });
 }
 
+export type CriterionOptionsOptions = {
+  entities: EntityOption[];
+  key: CriterionKey;
+};
+
 /** The values a criterion offers, with how many entities each has, sorted by name. */
-export function criterionOptions(entities: EntityOption[], key: CriterionKey): CriterionOption[] {
+export function criterionOptions({ entities, key }: CriterionOptionsOptions): CriterionOption[] {
   const counts = new Map<string, number>();
 
   for (const entity of entities) {
-    for (const value of criterionValues(entity, key))
+    for (const value of criterionValues({ entity, key }))
       counts.set(value, (counts.get(value) ?? 0) + 1);
   }
 
@@ -82,13 +96,20 @@ export function criterionOptions(entities: EntityOption[], key: CriterionKey): C
     );
 }
 
+export type SuggestEntitiesOptions = {
+  entities: EntityOption[];
+  usedIds: ReadonlySet<string>;
+  areaId: string | null;
+  limit?: number;
+};
+
 /** What the flow already uses first, then what sits in the automation's own area. */
-export function suggestEntities(
-  entities: EntityOption[],
-  usedIds: ReadonlySet<string>,
-  areaId: string | null,
+export function suggestEntities({
+  entities,
+  usedIds,
+  areaId,
   limit = 5,
-): EntityOption[] {
+}: SuggestEntitiesOptions): EntityOption[] {
   const used = entities.filter((entity) => usedIds.has(entity.entityId));
   const inArea = areaId
     ? entities.filter((entity) => entity.areaId === areaId && !usedIds.has(entity.entityId))
@@ -133,17 +154,19 @@ export function countByDevice(entities: EntityOption[]): Map<string, number> {
   return counts;
 }
 
+export type RowLabelOptions = {
+  entity: EntityOption;
+  where: "card" | "list";
+  deviceEntityCounts: ReadonlyMap<string, number>;
+};
+
 /**
  * The label of a row:
  * - inside a device card only the function ("Battery");
  * - a device with one entity by the device name ("Terrace light");
  * - elsewhere "Device: Function", or the plain name when it does not start with the device name.
  */
-export function rowLabel(
-  entity: EntityOption,
-  where: "card" | "list",
-  deviceEntityCounts: ReadonlyMap<string, number>,
-): string {
+export function rowLabel({ entity, where, deviceEntityCounts }: RowLabelOptions): string {
   if (where === "card") return entity.shortName;
   if (!entity.deviceId || !entity.deviceName) return entity.name;
   if ((deviceEntityCounts.get(entity.deviceId) ?? 0) <= 1) return entity.deviceName;

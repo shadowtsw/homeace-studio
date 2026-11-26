@@ -14,5 +14,5 @@ export type EntryAreaLink = {
 export type EntryAreas = { entityId: string; areas: EntryAreaLink[] };
 
 export function fetchEntryAreas(): Promise<EntryAreas[]> {
-  return apiFetch<EntryAreas[]>("/entry-areas");
+  return apiFetch<EntryAreas[]>({ path: "/entry-areas" });
 }

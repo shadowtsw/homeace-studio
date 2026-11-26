@@ -47,7 +47,9 @@ const HUE_TOLERANCE = 12;
 const SATURATION_TOLERANCE = 15;
 
 const COLOR_MODES_WITH_COLOR = ["hs", "xy", "rgb", "rgbw", "rgbww"];
-/** Every attribute of a light that holds its colour; a new colour or white tone replaces them all. */
+/**
+ * Every attribute of a light that holds its colour; a new colour or white tone replaces them all.
+ */
 const LIGHT_COLOR_KEYS = [
   "color_mode",
   "color_temp_kelvin",
@@ -125,7 +127,7 @@ export const domainOf = (entityId: string): string => entityId.split(".")[0] ?? 
 const numberOrNull = (value: unknown): number | null =>
   typeof value === "number" && Number.isFinite(value) ? value : null;
 
-const clamp = (value: number, min: number, max: number): number =>
+const clamp = ({ value, min, max }: { value: number; min: number; max: number }): number =>
   Math.min(max, Math.max(min, value));
 
 /** What a light can do, from its current attributes. */
@@ -145,8 +147,13 @@ export function lightCaps(attributes: Record<string, unknown> | undefined): Ligh
   };
 }
 
+export type ReadControlsOptions = {
+  domain: string;
+  value: SceneValue;
+};
+
 /** Reads the controls of a device from what the scene sets. */
-export function readControls(domain: string, value: SceneValue): SceneControls {
+export function readControls({ domain, value }: ReadControlsOptions): SceneControls {
   const state = typeof value.state === "string" ? value.state : "";
   const controls: SceneControls = {
     on: null,
@@ -181,28 +188,34 @@ export function readControls(domain: string, value: SceneValue): SceneControls {
     brightness:
       brightness === null
         ? PERCENT
-        : clamp(Math.round((brightness / MAX_BRIGHTNESS) * PERCENT), 1, PERCENT),
+        : clamp({
+            value: Math.round((brightness / MAX_BRIGHTNESS) * PERCENT),
+            min: 1,
+            max: PERCENT,
+          }),
     kelvin: usesColor ? null : numberOrNull(value.color_temp_kelvin),
     hs: usesColor && hs ? [hs[0] ?? 0, hs[1] ?? 0] : null,
   };
 }
 
+export type WriteControlsOptions = {
+  domain: string;
+  value: SceneValue;
+  change: Partial<SceneControls>;
+};
+
 /**
  * Writes changed controls into a device's scene value. Everything else stays; a new white tone or
  * colour replaces all old colour attributes, or the light might take the wrong one.
  */
-export function writeControls(
-  domain: string,
-  value: SceneValue,
-  change: Partial<SceneControls>,
-): SceneValue {
+export function writeControls({ domain, value, change }: WriteControlsOptions): SceneValue {
   const next: SceneValue = { ...value };
 
   if (change.on !== undefined && change.on !== null) next.state = change.on ? "on" : "off";
 
   if (domain === "light") {
     if (change.brightness !== undefined && change.brightness !== null) {
-      const percent = clamp(change.brightness, 1, PERCENT);
+      const percent = clamp({ value: change.brightness, min: 1, max: PERCENT });
       next.brightness = Math.round((percent / PERCENT) * MAX_BRIGHTNESS);
     }
     if (change.kelvin) {
@@ -218,7 +231,7 @@ export function writeControls(
   }
 
   if (domain === "cover" && change.position !== undefined && change.position !== null) {
-    const position = clamp(Math.round(change.position), 0, PERCENT);
+    const position = clamp({ value: Math.round(change.position), min: 0, max: PERCENT });
     next.current_position = position;
     next.state = position > 0 ? "open" : "closed";
   }
@@ -233,22 +246,34 @@ export function writeControls(
   return next;
 }
 
+export type WhitePresetOfOptions = {
+  kelvin: number | null;
+  caps: LightCaps;
+};
+
 /** The white tone preset a value is (nearly) at, within the light's range. */
-export function whitePresetOf(kelvin: number | null, caps: LightCaps): WhitePreset | null {
+export function whitePresetOf({ kelvin, caps }: WhitePresetOfOptions): WhitePreset | null {
   if (kelvin === null) return null;
 
   return (
     (Object.keys(WHITE_PRESETS) as WhitePreset[]).find(
       (preset) =>
-        Math.abs(clamp(WHITE_PRESETS[preset], caps.minKelvin, caps.maxKelvin) - kelvin) <=
-        KELVIN_TOLERANCE,
+        Math.abs(
+          clamp({ value: WHITE_PRESETS[preset], min: caps.minKelvin, max: caps.maxKelvin }) -
+            kelvin,
+        ) <= KELVIN_TOLERANCE,
     ) ?? null
   );
 }
 
+export type PresetKelvinOptions = {
+  preset: WhitePreset;
+  caps: LightCaps;
+};
+
 /** The kelvin a white preset means for this light (its range may be narrower). */
-export function presetKelvin(preset: WhitePreset, caps: LightCaps): number {
-  return clamp(WHITE_PRESETS[preset], caps.minKelvin, caps.maxKelvin);
+export function presetKelvin({ preset, caps }: PresetKelvinOptions): number {
+  return clamp({ value: WHITE_PRESETS[preset], min: caps.minKelvin, max: caps.maxKelvin });
 }
 
 /** The colour swatch a value is (nearly) at. */
@@ -266,11 +291,16 @@ export function colorPresetOf(hs: [number, number] | null): ColorPreset | null {
   );
 }
 
+export type ToneOfOptions = {
+  controls: SceneControls;
+  caps: LightCaps;
+};
+
 /**
  * The colour the brightness slider runs up to: the light's colour or white tone. null when the
  * light only dims; the slider then takes the app's accent colour.
  */
-export function toneOf(controls: SceneControls, caps: LightCaps): string | null {
+export function toneOf({ controls, caps }: ToneOfOptions): string | null {
   if (controls.hs && caps.color)
     return `hsl(${Math.round(controls.hs[0])} ${Math.round(controls.hs[1])}% 55%)`;
   if (caps.white) return kelvinToCss(controls.kelvin ?? WHITE_PRESETS.neutral);
@@ -280,7 +310,7 @@ export function toneOf(controls: SceneControls, caps: LightCaps): string | null 
 
 /** An approximate CSS colour of a white tone (Tanner Helland's curve fit). */
 export function kelvinToCss(kelvin: number): string {
-  const temperature = clamp(kelvin, 1000, 40000) / 100;
+  const temperature = clamp({ value: kelvin, min: 1000, max: 40000 }) / 100;
   const red = temperature <= 66 ? 255 : 329.698727446 * (temperature - 60) ** -0.1332047592;
   const green =
     temperature <= 66
@@ -292,16 +322,21 @@ export function kelvinToCss(kelvin: number): string {
       : temperature <= 19
         ? 0
         : 138.5177312231 * Math.log(temperature - 10) - 305.0447927307;
-  const channel = (value: number): number => Math.round(clamp(value, 0, 255));
+  const channel = (value: number): number => Math.round(clamp({ value, min: 0, max: 255 }));
 
   return `rgb(${channel(red)} ${channel(green)} ${channel(blue)})`;
 }
+
+export type ExtrasOfOptions = {
+  domain: string;
+  value: SceneValue;
+};
 
 /**
  * Attributes the scene sets that the editor has no control for (an effect, a fan speed …): they
  * stay as they are and are named under "Außerdem gespeichert".
  */
-export function extrasOf(domain: string, value: SceneValue): [string, unknown][] {
+export function extrasOf({ domain, value }: ExtrasOfOptions): [string, unknown][] {
   const handled = HANDLED[domain] ?? ["state"];
 
   return Object.entries(value).filter(
@@ -325,20 +360,28 @@ const CLIMATE_FEATURE = { targetTemperature: 1, targetTemperatureRange: 2 } as c
 /** The mode in which a thermostat with a range works with a low and a high limit. */
 const RANGE_MODE = "heat_cool";
 
-const hasFeature = (features: number, bit: number): boolean => Math.floor(features / bit) % 2 === 1;
+const hasFeature = ({ features, bit }: { features: number; bit: number }): boolean =>
+  Math.floor(features / bit) % 2 === 1;
+
+export type HasSingleTargetTemperatureOptions = {
+  attributes: Record<string, unknown> | undefined;
+  hvacMode: string | null;
+};
 
 /**
  * Whether a thermostat takes one target temperature in the chosen mode: it must support one, and a
  * device with a low/high range uses the range in "heat_cool". Without `supported_features` one
  * temperature is assumed, as before.
  */
-export function hasSingleTargetTemperature(
-  attributes: Record<string, unknown> | undefined,
-  hvacMode: string | null,
-): boolean {
+export function hasSingleTargetTemperature({
+  attributes,
+  hvacMode,
+}: HasSingleTargetTemperatureOptions): boolean {
   const features = attributes?.supported_features;
   if (typeof features !== "number") return true;
-  if (!hasFeature(features, CLIMATE_FEATURE.targetTemperature)) return false;
+  if (!hasFeature({ features, bit: CLIMATE_FEATURE.targetTemperature })) return false;
 
-  return !(hasFeature(features, CLIMATE_FEATURE.targetTemperatureRange) && hvacMode === RANGE_MODE);
+  return !(
+    hasFeature({ features, bit: CLIMATE_FEATURE.targetTemperatureRange }) && hvacMode === RANGE_MODE
+  );
 }

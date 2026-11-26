@@ -16,11 +16,16 @@ export type EntityListFilter = {
 /** A group of the list: entries of a folder, then the plain entities sorted into it. */
 export type ListGroup = EntryGroup & { entities: EntityOption[] };
 
+export type IsEntityInCategoryOptions = {
+  entity: EntityOption;
+  category: string;
+};
+
 /**
  * Whether a plain entity belongs to a tree selection: its folder (and everything below), "Ohne
  * Kategorie", or HA's area. Favorites and the check-up are entries only.
  */
-export function isEntityInCategory(entity: EntityOption, category: string): boolean {
+export function isEntityInCategory({ entity, category }: IsEntityInCategoryOptions): boolean {
   const area = areaOfFilter(category);
 
   if (area !== undefined) return entity.areaId === area;
@@ -28,11 +33,18 @@ export function isEntityInCategory(entity: EntityOption, category: string): bool
   if (category === CATEGORY_FILTER.uncategorized) return entity.categoryPath === null;
   if (category === CATEGORY_FILTER.favorites || category === CATEGORY_FILTER.checkup) return false;
 
-  return entity.categoryPath !== null && isSameOrBelow(entity.categoryPath, category);
+  return (
+    entity.categoryPath !== null && isSameOrBelow({ path: entity.categoryPath, ancestor: category })
+  );
 }
 
+export type MatchesEntitySearchOptions = {
+  entity: EntityOption;
+  search: string;
+};
+
 /** Search on name, entity ID, device and area (case-insensitive); blank matches everything. */
-export function matchesEntitySearch(entity: EntityOption, search: string): boolean {
+export function matchesEntitySearch({ entity, search }: MatchesEntitySearchOptions): boolean {
   const query = search.trim().toLowerCase();
 
   if (!query) return true;
@@ -42,27 +54,34 @@ export function matchesEntitySearch(entity: EntityOption, search: string): boole
   return fields.some((field) => field.toLowerCase().includes(query));
 }
 
+export type FilterListEntitiesOptions = {
+  entities: readonly EntityOption[];
+  filter: EntityListFilter;
+};
+
 /** The plain entities a list shows for this selection and search. */
-export function filterListEntities(
-  entities: readonly EntityOption[],
-  filter: EntityListFilter,
-): EntityOption[] {
+export function filterListEntities({
+  entities,
+  filter,
+}: FilterListEntitiesOptions): EntityOption[] {
   return entities.filter(
     (entity) =>
       !filter.entryIds.has(entity.entityId) &&
-      isEntityInCategory(entity, filter.category) &&
-      matchesEntitySearch(entity, filter.search),
+      isEntityInCategory({ entity, category: filter.category }) &&
+      matchesEntitySearch({ entity, search: filter.search }),
   );
 }
+
+export type GroupListItemsOptions = {
+  entries: readonly Entry[];
+  entities: readonly EntityOption[];
+};
 
 /**
  * Groups entries and plain entities by folder, in one order: a folder shows its automations,
  * helpers … and then its entities. Entities without a folder join the "Ohne Kategorie" group.
  */
-export function groupListItems(
-  entries: readonly Entry[],
-  entities: readonly EntityOption[],
-): ListGroup[] {
+export function groupListItems({ entries, entities }: GroupListItemsOptions): ListGroup[] {
   const groups = new Map<string | null, ListGroup>();
   const groupOf = (path: string | null): ListGroup => {
     const existing = groups.get(path);

@@ -53,7 +53,7 @@ export function useFlowEntityDrop(options: FlowEntityDropOptions) {
   const targetOf = (key: string | null): DropTarget | undefined =>
     targets.value.find((target) => target.key === key);
 
-  const labelText = (label: ChoiceLabel): string => choiceText(t, label);
+  const labelText = (label: ChoiceLabel): string => choiceText({ t, label });
 
   /** The sign of a section: what a drop does there, or why it cannot. Null while nothing drags. */
   function signFor(section: BlockSection): DropSign | null {
@@ -124,15 +124,23 @@ export function useFlowEntityDrop(options: FlowEntityDropOptions) {
     const anchor = addButtonOf(hit.element);
     const branches = branchesOf({ targets: targets.value, root: hit.target.root });
     if (!hit.target.branch && branches.length > 0) {
-      askWhere(entity, [hit.target, ...branches], anchor);
+      askWhere({ entity, choices: [hit.target, ...branches], anchor });
       return;
     }
 
-    offerChoices(entity, hit.target, anchor);
+    offerChoices({ entity, target: hit.target, anchor });
   }
 
   /** "Wohin genau?": the section's end or one of its branches, each with where it sits. */
-  function askWhere(entity: EntityOption, choices: DropTarget[], anchor: HTMLElement): void {
+  function askWhere({
+    entity,
+    choices,
+    anchor,
+  }: {
+    entity: EntityOption;
+    choices: DropTarget[];
+    anchor: HTMLElement;
+  }): void {
     const options = choices.map((target, index) => ({
       value: String(index),
       label: target.branch
@@ -145,18 +153,28 @@ export function useFlowEntityDrop(options: FlowEntityDropOptions) {
 
     openMenu(t("flow.drop.where", { name: entity.shortName }), options, anchor, (value) => {
       const target = choices[Number(value)];
-      if (target) offerChoices(entity, target, anchor);
+      if (target) offerChoices({ entity, target, anchor });
     });
   }
 
-  /** One choice goes in at once; several get a menu ("Bewegung erkannt" / "Keine Bewegung mehr"). */
-  function offerChoices(entity: EntityOption, target: DropTarget, anchor: HTMLElement): void {
+  /**
+   * One choice goes in at once; several get a menu ("Bewegung erkannt" / "Keine Bewegung mehr").
+   */
+  function offerChoices({
+    entity,
+    target,
+    anchor,
+  }: {
+    entity: EntityOption;
+    target: DropTarget;
+    anchor: HTMLElement;
+  }): void {
     const fit = entityFit({ entity, section: target.section, catalog: catalog.value });
     if ("reason" in fit) return;
 
     const [only] = fit.choices;
     if (fit.choices.length === 1 && only) {
-      insert(target, only);
+      insert({ target, choice: only });
       return;
     }
 
@@ -169,12 +187,12 @@ export function useFlowEntityDrop(options: FlowEntityDropOptions) {
 
     openMenu(title, choiceOptions, anchor, (value) => {
       const choice = fit.choices[Number(value)];
-      if (choice) insert(target, choice);
+      if (choice) insert({ target, choice });
     });
   }
 
   /** The new block goes to the end of the list; it flashes so the eye finds it. */
-  function insert(target: DropTarget, choice: EntityChoice): void {
+  function insert({ target, choice }: { target: DropTarget; choice: EntityChoice }): void {
     const id = nextBlockId(target);
     emitChange({ type: "insert", listPath: target.listPath, item: choice.item });
 
@@ -188,11 +206,13 @@ export function useFlowEntityDrop(options: FlowEntityDropOptions) {
   return { hoverKey, signFor, onDragOver, onDragLeave, onDrop, offerChoices, targets };
 }
 
+export type ChoiceTextOptions = {
+  t: (key: string, params: Record<string, string>) => string;
+  label: ChoiceLabel;
+};
+
 /** The text of a choice: HA's own name for an action, else ours (`flow.drop.choice`). */
-export function choiceText(
-  t: (key: string, params: Record<string, string>) => string,
-  label: ChoiceLabel,
-): string {
+export function choiceText({ t, label }: ChoiceTextOptions): string {
   return "text" in label ? label.text : t(`flow.drop.choice.${label.key}`, label.params ?? {});
 }
 

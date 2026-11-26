@@ -15,17 +15,23 @@ type DropTarget = {
   onDrop: (event: DragEvent) => void;
 };
 
+export type UseEntryDropTargetOptions = {
+  /** Called with the entity ID when an entry is dropped here. */
+  onEntryDropped: (entityId: string) => void;
+  /**
+   * Called for a plain entity (light, sensor …); without it, they are not accepted (areas, for
+   * example, do not take them).
+   */
+  onPlainEntityDropped?: (entityId: string) => void;
+};
+
 /**
  * Makes an element accept dragged list entries, and plain entities when it can take them.
- *
- * @param onEntryDropped - Called with the entity ID when an entry is dropped here.
- * @param onPlainEntityDropped - Called for a plain entity (light, sensor …); without it, they are
- *   not accepted (areas, for example, do not take them).
  */
-export function useEntryDropTarget(
-  onEntryDropped: (entityId: string) => void,
-  onPlainEntityDropped?: (entityId: string) => void,
-): DropTarget {
+export function useEntryDropTarget({
+  onEntryDropped,
+  onPlainEntityDropped,
+}: UseEntryDropTargetOptions): DropTarget {
   const isDropOver = ref(false);
 
   function onDragOver(event: DragEvent): void {

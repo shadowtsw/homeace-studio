@@ -140,7 +140,8 @@ function entryOf(entityId: string): Entry | null {
 /** "Front door sensor: Battery" when HA knows the device, else the name, else the ID. */
 function labelOf(entityId: string, name: string | null): string {
   const option = optionOf(entityId);
-  if (option) return rowLabel(option, "list", deviceCounts.value);
+  if (option)
+    return rowLabel({ entity: option, where: "list", deviceEntityCounts: deviceCounts.value });
   return name ?? entityId;
 }
 

@@ -28,14 +28,14 @@ export const useLayoutStore = defineStore("layout", () => {
     defaultValue: NAV_MODE.folders,
   });
 
-  function setPaneWidth(pane: Pane, width: number): void {
+  function setPaneWidth({ pane, width }: { pane: Pane; width: number }): void {
     const limits = PANE_WIDTH_LIMITS[pane];
     const clampedWidth = clampNumber(width, limits.min, limits.max);
     paneWidths.value = { ...paneWidths.value, [pane]: clampedWidth };
   }
 
   function resetPaneWidth(pane: Pane): void {
-    setPaneWidth(pane, DEFAULT_PANE_WIDTHS[pane]);
+    setPaneWidth({ pane, width: DEFAULT_PANE_WIDTHS[pane] });
   }
 
   function resetPaneWidths(): void {

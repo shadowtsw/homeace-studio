@@ -69,8 +69,8 @@ describe("tracePathOf", () => {
 
 describe("runStatesFor", () => {
   it("follows a finished run through the branch that was taken", () => {
-    const states = runStatesFor(
-      run([
+    const states = runStatesFor({
+      run: run([
         step("trigger/0"),
         step("condition/0", { result: true }),
         step("condition/1", { result: true }),
@@ -81,8 +81,8 @@ describe("runStatesFor", () => {
         step("action/1/else/0", { delay: 900, done: true }),
         step("action/3", { params: {} }),
       ]),
-      FLOW,
-    );
+      flow: FLOW,
+    });
     const status = (id: string) => states.get(id)?.status;
 
     expect([status("triggers.0"), status("triggers.1")]).toEqual(["fired", "notFired"]);
@@ -99,43 +99,43 @@ describe("runStatesFor", () => {
   });
 
   it("marks where a run stopped: a failed condition, an error, a running or interrupted step", () => {
-    const failed = runStatesFor(
-      run([step("trigger/0"), step("condition/0", { result: false })], {
+    const failed = runStatesFor({
+      run: run([step("trigger/0"), step("condition/0", { result: false })], {
         result: "conditionsFailed",
       }),
-      FLOW,
-    );
+      flow: FLOW,
+    });
     expect(failed.get("conditions.0")?.status).toBe("failed");
     expect(failed.get("conditions.1")?.status).toBe("notReached");
     expect(failed.get("actions.0")?.status).toBe("notReached");
 
-    const broken = runStatesFor(
-      run([step("trigger/0"), step("action/0", null, "Entity switch.x is unavailable")], {
+    const broken = runStatesFor({
+      run: run([step("trigger/0"), step("action/0", null, "Entity switch.x is unavailable")], {
         result: "error",
       }),
-      FLOW,
-    );
+      flow: FLOW,
+    });
     expect(broken.get("actions.0")).toMatchObject({
       status: "error",
       error: "Entity switch.x is unavailable",
     });
 
-    const running = runStatesFor(
-      run([step("trigger/0"), step("action/0")], { result: "running" }),
-      FLOW,
-    );
+    const running = runStatesFor({
+      run: run([step("trigger/0"), step("action/0")], { result: "running" }),
+      flow: FLOW,
+    });
     expect(running.get("actions.0")?.status).toBe("running");
 
-    const cancelled = runStatesFor(
-      run([step("trigger/0"), step("action/0")], { result: "cancelled" }),
-      FLOW,
-    );
+    const cancelled = runStatesFor({
+      run: run([step("trigger/0"), step("action/0")], { result: "cancelled" }),
+      flow: FLOW,
+    });
     expect(cancelled.get("actions.0")?.status).toBe("interrupted");
   });
 
   it("reads numeric conditions as a comparison", () => {
-    const states = runStatesFor(
-      run([
+    const states = runStatesFor({
+      run: run([
         step("action/1", { choice: "then" }),
         step("action/1/if/condition/0", { result: true }),
         step("action/1/if/condition/0/entity_id/0", {
@@ -144,8 +144,8 @@ describe("runStatesFor", () => {
           wanted_state_below: 20,
         }),
       ]),
-      FLOW,
-    );
+      flow: FLOW,
+    });
 
     expect(states.get("actions.1.if.0")).toMatchObject({ value: "14", wanted: "< 20" });
     expect(states.get("actions.1.else.0")?.status).toBe("notTaken");

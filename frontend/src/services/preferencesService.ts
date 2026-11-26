@@ -14,14 +14,23 @@ export type PreferencesAnswer = {
 };
 
 export function fetchPreferences(): Promise<PreferencesAnswer> {
-  return apiFetch<PreferencesAnswer>("/preferences");
+  return apiFetch<PreferencesAnswer>({ path: "/preferences" });
 }
 
 /** First visit: this browser's values become the user's, unless another device came first. */
 export function importPreferences(values: UserPreferences): Promise<UserPreferences> {
-  return apiPost<UserPreferences>("/preferences/import", { values });
+  return apiPost<UserPreferences>({ path: "/preferences/import", body: { values } });
 }
 
-export function savePreference(name: string, value: unknown): Promise<UserPreferences> {
-  return apiSend<UserPreferences>("PUT", `/preferences/${encodeURIComponent(name)}`, { value });
+export type SavePreferenceOptions = {
+  name: string;
+  value: unknown;
+};
+
+export function savePreference({ name, value }: SavePreferenceOptions): Promise<UserPreferences> {
+  return apiSend<UserPreferences>({
+    method: "PUT",
+    path: `/preferences/${encodeURIComponent(name)}`,
+    body: { value },
+  });
 }

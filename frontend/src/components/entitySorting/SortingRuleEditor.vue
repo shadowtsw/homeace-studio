@@ -149,7 +149,7 @@ const target = ref(props.rule ? texts.target(props.rule.target) : "");
 
 const draft = computed<SortingRule>(() => ({
   conditions: conditions.value.filter((condition) => (condition.value ?? "").trim()),
-  target: fromDisplayTarget(target.value, words.value),
+  target: fromDisplayTarget({ text: target.value, words: words.value }),
 }));
 const isComplete = computed(() => draft.value.conditions.length > 0 && draft.value.target !== "");
 
@@ -167,13 +167,21 @@ const preview = computed(() => {
   const home = sorting.home;
   if (!isComplete.value || !home) return t("entitySorting.rules.previewEmpty");
 
-  const stats = ruleStats(draft.value, null, sorting.rules, scope.value, home);
+  const stats = ruleStats({
+    rule: draft.value,
+    ruleIndex: null,
+    rules: sorting.rules,
+    entities: scope.value,
+    home,
+  });
   const examples = scope.value
     .filter(
-      (entity) => ruleMatches(draft.value, entity, home) && ruleTarget(draft.value, entity, home),
+      (entity) =>
+        ruleMatches({ rule: draft.value, entity, home }) &&
+        ruleTarget({ rule: draft.value, entity, home }),
     )
     .slice(0, MAX_EXAMPLES)
-    .map((entity) => `„${entity.name}“ → ${ruleTarget(draft.value, entity, home) ?? ""}`);
+    .map((entity) => `„${entity.name}“ → ${ruleTarget({ rule: draft.value, entity, home }) ?? ""}`);
 
   return (
     t("entitySorting.rules.preview", { count: stats.matches }, stats.matches) +
@@ -190,7 +198,11 @@ const preview = computed(() => {
 
 /** Entries that match too, or sorted entities: why a rule may catch fewer than expected. */
 function sideHits(home: NonNullable<typeof sorting.home>): string {
-  const hits = ruleSideHits(draft.value, home, sorting.options.isResortingSorted);
+  const hits = ruleSideHits({
+    rule: draft.value,
+    home,
+    isResortingSorted: sorting.options.isResortingSorted,
+  });
   const parts = [
     ...(hits.entries ? [t("entitySorting.rules.entriesMatch", { count: hits.entries })] : []),
     ...(hits.sorted ? [t("entitySorting.rules.sortedMatch", { count: hits.sorted })] : []),

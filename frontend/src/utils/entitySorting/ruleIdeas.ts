@@ -19,7 +19,7 @@ export function ruleIdeas(input: {
   rules: SortingRule[];
 }): SortingRule[] {
   const { home, computation, rules } = input;
-  const has = (type: string, value: string): boolean =>
+  const has = ({ type, value }: { type: string; value: string }): boolean =>
     rules.some((rule) =>
       rule.conditions.some((item) => item.type === type && item.value === value),
     );
@@ -37,20 +37,26 @@ export function ruleIdeas(input: {
       integrationCounts.set(integration, (integrationCounts.get(integration) ?? 0) + 1);
   });
 
-  const byCount = (counts: Map<string, number>, minimum: number): string[] =>
+  const byCount = ({
+    counts,
+    minimum,
+  }: {
+    counts: Map<string, number>;
+    minimum: number;
+  }): string[] =>
     [...counts.entries()]
       .filter(([, count]) => count >= minimum)
       .sort((first, second) => second[1] - first[1])
       .map(([value]) => value);
 
-  const labelIdeas = byCount(labelCounts, MIN_LABEL_ENTITIES)
-    .filter((label) => !has("label", label))
+  const labelIdeas = byCount({ counts: labelCounts, minimum: MIN_LABEL_ENTITIES })
+    .filter((label) => !has({ type: "label", value: label }))
     .map((label): SortingRule => ({
       conditions: [{ type: "label", value: label }],
       target: `${label}/${RULE_PLACEHOLDER.area}`,
     }));
-  const integrationIdeas = byCount(integrationCounts, MIN_INTEGRATION_BUNDLES)
-    .filter((integration) => !has("integration", integration))
+  const integrationIdeas = byCount({ counts: integrationCounts, minimum: MIN_INTEGRATION_BUNDLES })
+    .filter((integration) => !has({ type: "integration", value: integration }))
     .map((integration): SortingRule => ({
       conditions: [{ type: "integration", value: integration }],
       target: home.context.integrations[integration] ?? integration,

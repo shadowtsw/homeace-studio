@@ -94,7 +94,7 @@
       @update:model-value="emit('act', entry, toggleAction(entry))"
     />
     <button
-      v-else-if="supportsAction(entry, ENTRY_ACTION.run)"
+      v-else-if="supportsAction({ entry, action: ENTRY_ACTION.run })"
       class="entry-list-row__run"
       type="button"
       :aria-label="t(`detail.run.${entry.domain}`)"
@@ -182,7 +182,7 @@ function startDrag(event: DragEvent): void {
   // Onto a folder it moves, into a flow it becomes a new block (a copy); the drag has to allow
   // both, or the browser silently refuses one of them.
   event.dataTransfer.effectAllowed = "copyMove";
-  setDraggedEntity(event.dataTransfer, props.entry.entityId);
+  setDraggedEntity({ transfer: event.dataTransfer, entityId: props.entry.entityId });
 
   // Flows read it here (browsers hide the drag data until the drop); only this row, never the
   // ticked ones, which only move together onto a folder

@@ -25,7 +25,7 @@ export const useStudioStore = defineStore("studio", () => {
   /** An entry being renamed in place: in its list row or in the detail title. */
   const renaming = ref<{ entityId: string; place: "list" | "title" } | null>(null);
 
-  function startRename(entityId: string, place: "list" | "title"): void {
+  function startRename({ entityId, place }: { entityId: string; place: "list" | "title" }): void {
     renaming.value = { entityId, place };
   }
 
@@ -40,7 +40,7 @@ export const useStudioStore = defineStore("studio", () => {
 
   /** Strg/⌘+Klick or the filter's menu: add or remove it. */
   function toggleListScope(scope: ListScope): void {
-    storedScopes.value = toggleScope(scopes.value, scope);
+    storedScopes.value = toggleScope({ scopes: scopes.value, scope });
   }
 
   function selectCategory(path: string): void {
@@ -56,7 +56,13 @@ export const useStudioStore = defineStore("studio", () => {
    *
    * @returns Whether ticked entities were cleared for it.
    */
-  function setChecked(entityIds: readonly string[], isChecked: boolean): boolean {
+  function setChecked({
+    entityIds,
+    isChecked,
+  }: {
+    entityIds: readonly string[];
+    isChecked: boolean;
+  }): boolean {
     checkedIds.value = withChecked({ ids: checkedIds.value, changed: entityIds, isChecked });
 
     const clearsOther = isChecked && checkedEntityIds.value.size > 0;
@@ -69,7 +75,13 @@ export const useStudioStore = defineStore("studio", () => {
    *
    * @returns Whether ticked entries were cleared for it.
    */
-  function setEntityChecked(entityIds: readonly string[], isChecked: boolean): boolean {
+  function setEntityChecked({
+    entityIds,
+    isChecked,
+  }: {
+    entityIds: readonly string[];
+    isChecked: boolean;
+  }): boolean {
     checkedEntityIds.value = withChecked({
       ids: checkedEntityIds.value,
       changed: entityIds,

@@ -58,7 +58,7 @@
         :is-busy="labelActions.isBusy.value"
         @toggle="toggleLabel"
         @create="createLabel"
-        @update="(labelId, fields) => void labelActions.update(labelId, fields)"
+        @update="(labelId, fields) => void labelActions.update({ labelId, fields })"
         @delete="deleteLabel"
         @close="isPickerOpen = false"
       />
@@ -147,7 +147,7 @@ watch(
       !previous ||
       next.entityId !== previous.entityId ||
       isSaving ||
-      !isFormEdited(formValues(), base.value)
+      !isFormEdited({ form: formValues(), base: base.value })
     ) {
       reset();
     }
@@ -204,7 +204,7 @@ watch(areaId, (next, previous) => {
   areasStore.startCreate((area) => (areaId.value = area.areaId));
 });
 
-const isDirty = computed(() => isFormEdited(formValues(), base.value));
+const isDirty = computed(() => isFormEdited({ form: formValues(), base: base.value }));
 
 function toggleLabel(labelId: string): void {
   labelIds.value = labelIds.value.includes(labelId)

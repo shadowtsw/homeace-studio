@@ -39,26 +39,29 @@ const automation = entity({ entityId: "automation.licht", name: "Licht bei Beweg
 
 describe("plain entities in the list", () => {
   it("belong to their folder and everything above it, loose ones to 'Ohne Kategorie'", () => {
-    expect(isEntityInCategory(lamp, "Haus")).toBe(true);
-    expect(isEntityInCategory(lamp, "Haus/Terrasse")).toBe(true);
-    expect(isEntityInCategory(lamp, "Hausflur")).toBe(false);
-    expect(isEntityInCategory(loose, "__uncategorized")).toBe(true);
-    expect(isEntityInCategory(lamp, "__uncategorized")).toBe(false);
+    expect(isEntityInCategory({ entity: lamp, category: "Haus" })).toBe(true);
+    expect(isEntityInCategory({ entity: lamp, category: "Haus/Terrasse" })).toBe(true);
+    expect(isEntityInCategory({ entity: lamp, category: "Hausflur" })).toBe(false);
+    expect(isEntityInCategory({ entity: loose, category: "__uncategorized" })).toBe(true);
+    expect(isEntityInCategory({ entity: lamp, category: "__uncategorized" })).toBe(false);
   });
 
   it("belong to HA's area, never to favorites or the check-up", () => {
-    expect(isEntityInCategory(lamp, "__area:terrace")).toBe(true);
-    expect(isEntityInCategory(loose, "__area:")).toBe(true);
-    expect(isEntityInCategory(lamp, "__favorites")).toBe(false);
-    expect(isEntityInCategory(lamp, "__checkup")).toBe(false);
+    expect(isEntityInCategory({ entity: lamp, category: "__area:terrace" })).toBe(true);
+    expect(isEntityInCategory({ entity: loose, category: "__area:" })).toBe(true);
+    expect(isEntityInCategory({ entity: lamp, category: "__favorites" })).toBe(false);
+    expect(isEntityInCategory({ entity: lamp, category: "__checkup" })).toBe(false);
   });
 
   it("are searched by name, entity ID, device and area, and leave out entries", () => {
     const filter = (search: string) =>
-      filterListEntities([lamp, loose, automation], {
-        category: "__all",
-        search,
-        entryIds: new Set(["automation.licht"]),
+      filterListEntities({
+        entities: [lamp, loose, automation],
+        filter: {
+          category: "__all",
+          search,
+          entryIds: new Set(["automation.licht"]),
+        },
       }).map((item) => item.entityId);
 
     expect(filter("")).toEqual(["light.terrasse", "sensor.wind"]);
@@ -69,7 +72,7 @@ describe("plain entities in the list", () => {
 
   it("join the folder groups after the entries; loose ones go with 'Ohne Kategorie'", () => {
     const entry = { entityId: "automation.a", categoryPath: "Haus/Terrasse" } as Entry;
-    const groups = groupListItems([entry], [loose, lamp]);
+    const groups = groupListItems({ entries: [entry], entities: [loose, lamp] });
 
     expect(groups.map((group) => group.path)).toEqual(["Haus/Terrasse", null]);
     expect(groups[0]).toMatchObject({ entries: [entry], entities: [lamp] });

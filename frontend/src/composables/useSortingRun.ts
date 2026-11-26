@@ -85,7 +85,7 @@ export function useSortingRun(): SortingRun {
 
     for (const batch of batches(moves)) {
       try {
-        results.push(...(await applySortingMoves(runId, batch)));
+        results.push(...(await applySortingMoves({ runId, moves: batch })));
       } catch {
         // The whole batch failed (connection, HA away); the rest still gets its chance.
         results.push(
@@ -127,7 +127,7 @@ export function useSortingRun(): SortingRun {
 
     try {
       for (const batch of batches(run.moves.map((move) => move.entityId))) {
-        const results = await undoSortingMoves(run.runId, batch);
+        const results = await undoSortingMoves({ runId: run.runId, entityIds: batch });
         undone += results.filter((item) => item.status === "moved").length;
       }
     } finally {

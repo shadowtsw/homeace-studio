@@ -27,12 +27,17 @@ export function slugifyName(name: string): string {
     .replace(/^_+|_+$/g, "");
 }
 
+export type SuggestEntityIdOptions = {
+  entityId: string;
+  name: string;
+};
+
 /**
  * The entity ID that would match the name, when the current one does not.
  *
  * @returns null when the ID already fits or the name gives no usable ID.
  */
-export function suggestEntityId(entityId: string, name: string): string | null {
+export function suggestEntityId({ entityId, name }: SuggestEntityIdOptions): string | null {
   const slug = slugifyName(name);
   if (!slug || slug === objectIdOf(entityId)) return null;
 

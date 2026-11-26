@@ -35,13 +35,13 @@ export const CHECKUP_KINDS: readonly CheckupKind[] = [
 ];
 
 export function fetchCheckup(): Promise<CheckupOverview> {
-  return apiFetch<CheckupOverview>("/checkup");
+  return apiFetch<CheckupOverview>({ path: "/checkup" });
 }
 
 export async function ignoreFinding(key: string): Promise<void> {
-  await apiPost<null>("/checkup/ignore", { key });
+  await apiPost<null>({ path: "/checkup/ignore", body: { key } });
 }
 
 export async function restoreFindings(): Promise<void> {
-  await apiFetch<null>("/checkup/ignore", { method: "DELETE" });
+  await apiFetch<null>({ path: "/checkup/ignore", options: { method: "DELETE" } });
 }

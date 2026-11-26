@@ -17,8 +17,10 @@ describe("preferenceSync", () => {
       { name: "storedTraces", value: 20, isStored: true },
     ];
 
-    expect(valuesToHandOver(kept)).toEqual({ technicalDetails: true, storedTraces: 20 });
-    expect(valuesToHandOver(kept, new Set(["storedTraces"]))).toEqual({ technicalDetails: true });
+    expect(valuesToHandOver({ kept })).toEqual({ technicalDetails: true, storedTraces: 20 });
+    expect(valuesToHandOver({ kept, exceptNames: new Set(["storedTraces"]) })).toEqual({
+      technicalDetails: true,
+    });
   });
 
   it("compares plain values", () => {

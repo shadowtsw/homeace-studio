@@ -67,14 +67,14 @@
             <span
               class="mdi"
               :class="
-                isNewFolder(group.to, allPaths, plan, selected)
+                isNewFolder({ path: group.to, allPaths, plan, selected })
                   ? 'mdi-folder-plus-outline'
                   : 'mdi-folder-outline'
               "
             />
             <span class="plan__group-path">{{ group.to }}</span>
             <span
-              v-if="isNewFolder(group.to, allPaths, plan, selected)"
+              v-if="isNewFolder({ path: group.to, allPaths, plan, selected })"
               class="plan__tag plan__tag--new"
             >
               {{ t("ai.newFolder") }}
@@ -137,7 +137,9 @@
             <small>
               {{ op.type === "renameFolder" ? t("ai.previewRename") : t("ai.previewMove") }}
               <template
-                v-if="op.type === 'moveEntry' && isNewFolder(op.to, allPaths, plan, selected)"
+                v-if="
+                  op.type === 'moveEntry' && isNewFolder({ path: op.to, allPaths, plan, selected })
+                "
               >
                 {{ t("ai.previewNewFolder") }}
               </template>
@@ -270,7 +272,10 @@ function toggleGroup(group: MoveGroup): void {
 }
 
 function showError(error: unknown): void {
-  toasts.show(messages.textFor(error, t("errors.actionFailed")), "error");
+  toasts.show({
+    text: messages.textFor({ error, fallback: t("errors.actionFailed") }),
+    tone: "error",
+  });
 }
 
 async function submit(): Promise<void> {
@@ -282,17 +287,19 @@ async function submit(): Promise<void> {
   isBusy.value = true;
 
   try {
-    const result = await ai.apply(
-      props.plan.id,
-      chosen.value.map((op) => op.id),
-    );
-    toasts.show(t("toast.aiApplied", { count: result.appliedCount }, result.appliedCount));
+    const result = await ai.apply({
+      planId: props.plan.id,
+      operationIds: chosen.value.map((op) => op.id),
+    });
+    toasts.show({
+      text: t("toast.aiApplied", { count: result.appliedCount }, result.appliedCount),
+    });
 
     if (result.failed.length) {
-      toasts.show(
-        t("toast.aiFailed", { count: result.failed.length }, result.failed.length),
-        "error",
-      );
+      toasts.show({
+        text: t("toast.aiFailed", { count: result.failed.length }, result.failed.length),
+        tone: "error",
+      });
     }
 
     ai.closeReview();
@@ -309,7 +316,7 @@ async function reject(): Promise<void> {
 
   try {
     await ai.reject(props.plan.id);
-    toasts.show(t("toast.aiRejected"));
+    toasts.show({ text: t("toast.aiRejected") });
     ai.closeReview();
   } catch (error) {
     showError(error);

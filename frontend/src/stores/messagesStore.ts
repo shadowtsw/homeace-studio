@@ -23,15 +23,13 @@ export const useMessagesStore = defineStore("messages", () => {
 
   /**
    * Text for an error, with placeholders like {path} filled in.
-   *
-   * @param fallback - Shown for unknown IDs and for errors without an ID (e.g. no network).
    */
-  function textFor(error: unknown, fallback: string): string {
+  function textFor({ error, fallback }: { error: unknown; fallback: string }): string {
     if (!(error instanceof ApiError)) return fallback;
 
     const template = catalog.value[error.messageId];
 
-    return template ? fillPlaceholders(template, error.data?.params ?? {}) : fallback;
+    return template ? fillPlaceholders({ template, params: error.data?.params ?? {} }) : fallback;
   }
 
   return { catalog, load, textFor };

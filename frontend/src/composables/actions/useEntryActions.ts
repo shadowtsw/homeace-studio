@@ -15,28 +15,28 @@ type EntryActions = {
   isBusy: Ref<boolean>;
   /** The helper waiting for "really delete?"; null when no confirmation is open. */
   deletingEntry: Ref<Entry | null>;
-  save: (entityId: string, changes: EntryChanges) => Promise<boolean>;
+  save: (options: { entityId: string; changes: EntryChanges }) => Promise<boolean>;
   /** Renames in HA with "Rückgängig" in the toast. */
-  rename: (entry: Entry, name: string) => Promise<void>;
+  rename: (options: { entry: Entry; name: string }) => Promise<void>;
   /** Copies an automation or script, opens the copy and lets the user name it right away. */
-  duplicate: (entry: Entry, place?: "list" | "title") => Promise<void>;
-  act: (entry: Entry, action: EntryAction) => Promise<void>;
+  duplicate: (options: { entry: Entry; place?: "list" | "title" }) => Promise<void>;
+  act: (options: { entry: Entry; action: EntryAction }) => Promise<void>;
   toggleFavorite: (entry: Entry) => Promise<void>;
-  saveNote: (entry: Entry, note: string) => Promise<void>;
+  saveNote: (options: { entry: Entry; note: string }) => Promise<void>;
   askDelete: (entry: Entry) => void;
   /** The entry in the "deaktivieren?" dialog; null when it is closed. */
   disablingEntry: Ref<Entry | null>;
   /** The entry in "Entity-ID ändern", with a suggested ID; null when it is closed. */
   renamingId: Ref<{ entry: Entry; preset: string | null } | null>;
-  startRenameId: (entry: Entry, preset: string | null) => void;
+  startRenameId: (options: { entry: Entry; preset: string | null }) => void;
   cancelRenameId: () => void;
-  confirmRenameId: (newEntityId: string, withReferences: boolean) => Promise<void>;
+  confirmRenameId: (options: { newEntityId: string; withReferences: boolean }) => Promise<void>;
   askDisable: (entry: Entry) => void;
   cancelDisable: () => void;
   confirmDisable: () => Promise<void>;
   cancelDelete: () => void;
   confirmDelete: () => Promise<void>;
-  setFolderColor: (path: string, color: string | null) => Promise<void>;
+  setFolderColor: (options: { path: string; color: string | null }) => Promise<void>;
 };
 
 /**
@@ -57,41 +57,63 @@ export function useEntryActions(): EntryActions {
   const studio = useStudioStore();
 
   /** The entry gets its new ID; the open entry and every list follow it. */
-  async function confirmRenameId(newEntityId: string, withReferences: boolean): Promise<void> {
+  async function confirmRenameId({
+    newEntityId,
+    withReferences,
+  }: {
+    newEntityId: string;
+    withReferences: boolean;
+  }): Promise<void> {
     const current = renamingId.value;
     if (!current) return;
 
-    await run(async () => {
-      const result = await renameEntity(current.entry.entityId, newEntityId, withReferences);
-      await entriesStore.load();
-      if (studio.selectedEntityId === current.entry.entityId) studio.selectEntry(result.entityId);
+    await run({
+      action: async () => {
+        const result = await renameEntity({
+          entityId: current.entry.entityId,
+          newEntityId,
+          withReferences,
+        });
+        await entriesStore.load();
+        if (studio.selectedEntityId === current.entry.entityId) studio.selectEntry(result.entityId);
 
-      const places = result.updated.reduce((sum, item) => sum + item.count, 0);
-      toasts.show(
-        places > 0
-          ? t("renameId.doneWith", { id: result.entityId, count: places }, places)
-          : t("renameId.done", { id: result.entityId }),
-      );
-      if (result.skipped.length > 0) {
-        toasts.show(
-          t("renameId.skipped", { count: result.skipped.length }, result.skipped.length),
-          "error",
-        );
-      }
-      renamingId.value = null;
+        const places = result.updated.reduce((sum, item) => sum + item.count, 0);
+        toasts.show({
+          text:
+            places > 0
+              ? t("renameId.doneWith", { id: result.entityId, count: places }, places)
+              : t("renameId.done", { id: result.entityId }),
+        });
+        if (result.skipped.length > 0) {
+          toasts.show({
+            text: t("renameId.skipped", { count: result.skipped.length }, result.skipped.length),
+            tone: "error",
+          });
+        }
+        renamingId.value = null;
+      },
     });
   }
 
   /** Runs one request; errors become an error toast. @returns Whether it worked. */
-  async function run(action: () => Promise<void>, successText?: string): Promise<boolean> {
+  async function run({
+    action,
+    successText,
+  }: {
+    action: () => Promise<void>;
+    successText?: string;
+  }): Promise<boolean> {
     isBusy.value = true;
 
     try {
       await action();
-      if (successText) toasts.show(successText);
+      if (successText) toasts.show({ text: successText });
       return true;
     } catch (error) {
-      toasts.show(messages.textFor(error, t("errors.actionFailed")), "error");
+      toasts.show({
+        text: messages.textFor({ error, fallback: t("errors.actionFailed") }),
+        tone: "error",
+      });
       return false;
     } finally {
       isBusy.value = false;
@@ -103,10 +125,11 @@ export function useEntryActions(): EntryActions {
 
     if (!entry) return;
 
-    const isDone = await run(
-      () => entriesStore.updateEntry(entry.entityId, { isDisabled: true }),
-      t("toast.disabled", { name: entry.name }),
-    );
+    const isDone = await run({
+      action: () =>
+        entriesStore.updateEntry({ entityId: entry.entityId, changes: { isDisabled: true } }),
+      successText: t("toast.disabled", { name: entry.name }),
+    });
 
     if (isDone) disablingEntry.value = null;
   }
@@ -116,10 +139,10 @@ export function useEntryActions(): EntryActions {
 
     if (!entry) return;
 
-    const isDeleted = await run(
-      () => entriesStore.deleteEntry(entry),
-      t("toast.deleted", { name: entry.name }),
-    );
+    const isDeleted = await run({
+      action: () => entriesStore.deleteEntry(entry),
+      successText: t("toast.deleted", { name: entry.name }),
+    });
 
     if (isDeleted) deletingEntry.value = null;
   }
@@ -127,57 +150,78 @@ export function useEntryActions(): EntryActions {
   return {
     isBusy,
     deletingEntry,
-    save: (entityId, changes) =>
-      run(() => entriesStore.updateEntry(entityId, changes), t("toast.saved")),
-    duplicate: async (entry, place = "title") => {
-      await run(async () => {
-        const entityId = await duplicateEntry(
-          entry.entityId,
-          t("detail.copyName", { name: entry.name }),
-        );
-        await entriesStore.load();
-        studio.selectEntry(entityId);
-        // The name opens where the user started: in the list when the copy's row is shown there.
-        await nextTick();
-        const row = document.querySelector(`[data-entity-id="${CSS.escape(entityId)}"]`);
-        studio.startRename(entityId, place === "list" && row ? "list" : "title");
-        // An automation copy starts switched off; a helper copy starts with a fresh value.
-        if (entry.kind === "automation") toasts.show(t("toast.duplicatedOff"));
-        else if (entry.kind === "helper") toasts.show(t("toast.duplicatedHelper"));
-        else toasts.show(t("toast.duplicated"));
+    save: ({ entityId, changes }) =>
+      run({
+        action: () => entriesStore.updateEntry({ entityId, changes }),
+        successText: t("toast.saved"),
+      }),
+    duplicate: async ({ entry, place = "title" }) => {
+      await run({
+        action: async () => {
+          const entityId = await duplicateEntry({
+            entityId: entry.entityId,
+            name: t("detail.copyName", { name: entry.name }),
+          });
+          await entriesStore.load();
+          studio.selectEntry(entityId);
+          // The name opens where the user started: in the list when the copy's row is shown there.
+          await nextTick();
+          const row = document.querySelector(`[data-entity-id="${CSS.escape(entityId)}"]`);
+          studio.startRename({ entityId, place: place === "list" && row ? "list" : "title" });
+          // An automation copy starts switched off; a helper copy starts with a fresh value.
+          if (entry.kind === "automation") toasts.show({ text: t("toast.duplicatedOff") });
+          else if (entry.kind === "helper") toasts.show({ text: t("toast.duplicatedHelper") });
+          else toasts.show({ text: t("toast.duplicated") });
+        },
       });
     },
-    rename: async (entry, name) => {
+    rename: async ({ entry, name }) => {
       const previous = entry.name;
-      const isDone = await run(() => entriesStore.updateEntry(entry.entityId, { name }));
+      const isDone = await run({
+        action: () => entriesStore.updateEntry({ entityId: entry.entityId, changes: { name } }),
+      });
       if (!isDone) return;
 
-      toasts.show(t("toast.renamedEntry", { name }), "success", () => {
-        void run(
-          () => entriesStore.updateEntry(entry.entityId, { name: previous }),
-          t("toast.undone"),
-        );
+      toasts.show({
+        text: t("toast.renamedEntry", { name }),
+        tone: "success",
+        undo: () => {
+          void run({
+            action: () =>
+              entriesStore.updateEntry({ entityId: entry.entityId, changes: { name: previous } }),
+            successText: t("toast.undone"),
+          });
+        },
       });
     },
-    act: async (entry, action) => {
-      await run(
-        () => entriesStore.runAction(entry.entityId, action),
-        t(`toast.action.${action}`, { name: entry.name }),
-      );
+    act: async ({ entry, action }) => {
+      await run({
+        action: () => entriesStore.runAction({ entityId: entry.entityId, action }),
+        successText: t(`toast.action.${action}`, { name: entry.name }),
+      });
     },
     toggleFavorite: async (entry) => {
-      await run(() => entriesStore.updateExtras(entry.entityId, { isFavorite: !entry.isFavorite }));
+      await run({
+        action: () =>
+          entriesStore.updateExtras({
+            entityId: entry.entityId,
+            extras: { isFavorite: !entry.isFavorite },
+          }),
+      });
     },
-    saveNote: async (entry, note) => {
+    saveNote: async ({ entry, note }) => {
       // Saving on blur without a change would only cause a request and a toast.
       if (note.trim() === (entry.note ?? "")) return;
 
-      await run(() => entriesStore.updateExtras(entry.entityId, { note }), t("toast.noteSaved"));
+      await run({
+        action: () => entriesStore.updateExtras({ entityId: entry.entityId, extras: { note } }),
+        successText: t("toast.noteSaved"),
+      });
     },
     askDelete: (entry) => (deletingEntry.value = entry),
     disablingEntry,
     renamingId,
-    startRenameId: (entry, preset) => (renamingId.value = { entry, preset }),
+    startRenameId: ({ entry, preset }) => (renamingId.value = { entry, preset }),
     cancelRenameId: () => (renamingId.value = null),
     confirmRenameId,
     askDisable: (entry) => (disablingEntry.value = entry),
@@ -185,8 +229,8 @@ export function useEntryActions(): EntryActions {
     confirmDisable,
     cancelDelete: () => (deletingEntry.value = null),
     confirmDelete,
-    setFolderColor: async (path, color) => {
-      await run(() => foldersStore.setColor(path, color));
+    setFolderColor: async ({ path, color }) => {
+      await run({ action: () => foldersStore.setColor({ path, color }) });
     },
   };
 }

@@ -31,15 +31,21 @@ describe("lightCaps", () => {
 describe("readControls", () => {
   it("reads a light: brightness in percent, white tone or colour", () => {
     expect(
-      readControls("light", {
-        state: "on",
-        brightness: 64,
-        color_mode: "color_temp",
-        color_temp_kelvin: 2700,
+      readControls({
+        domain: "light",
+        value: {
+          state: "on",
+          brightness: 64,
+          color_mode: "color_temp",
+          color_temp_kelvin: 2700,
+        },
       }),
     ).toMatchObject({ on: true, brightness: 25, kelvin: 2700, hs: null });
     expect(
-      readControls("light", { state: "on", color_mode: "hs", hs_color: [215, 85] }),
+      readControls({
+        domain: "light",
+        value: { state: "on", color_mode: "hs", hs_color: [215, 85] },
+      }),
     ).toMatchObject({
       brightness: 100,
       hs: [215, 85],
@@ -48,14 +54,18 @@ describe("readControls", () => {
   });
 
   it("reads covers, thermostats and plain on/off devices", () => {
-    expect(readControls("cover", { state: "open", current_position: 40 }).position).toBe(40);
-    expect(readControls("cover", { state: "closed" }).position).toBe(0);
-    expect(readControls("climate", { state: "heat", temperature: 21.5 })).toMatchObject({
+    expect(
+      readControls({ domain: "cover", value: { state: "open", current_position: 40 } }).position,
+    ).toBe(40);
+    expect(readControls({ domain: "cover", value: { state: "closed" } }).position).toBe(0);
+    expect(
+      readControls({ domain: "climate", value: { state: "heat", temperature: 21.5 } }),
+    ).toMatchObject({
       hvacMode: "heat",
       temperature: 21.5,
     });
-    expect(readControls("switch", { state: "off" }).on).toBe(false);
-    expect(readControls("sensor", { state: "12" }).on).toBeNull();
+    expect(readControls({ domain: "switch", value: { state: "off" } }).on).toBe(false);
+    expect(readControls({ domain: "sensor", value: { state: "12" } }).on).toBeNull();
   });
 });
 
@@ -74,14 +84,18 @@ describe("writeControls", () => {
   };
 
   it("sets brightness from percent and keeps everything else", () => {
-    expect(writeControls("light", photographed, { brightness: 25 })).toEqual({
+    expect(
+      writeControls({ domain: "light", value: photographed, change: { brightness: 25 } }),
+    ).toEqual({
       ...photographed,
       brightness: 64,
     });
   });
 
   it("replaces all old colour values with the new colour, so the light cannot take a wrong one", () => {
-    expect(writeControls("light", photographed, { hs: [0, 85] })).toEqual({
+    expect(
+      writeControls({ domain: "light", value: photographed, change: { hs: [0, 85] } }),
+    ).toEqual({
       state: "on",
       brightness: 255,
       effect: "candle",
@@ -92,25 +106,35 @@ describe("writeControls", () => {
   });
 
   it("replaces the colour with a white tone the same way", () => {
-    const next = writeControls(
-      "light",
-      { state: "on", color_mode: "hs", hs_color: [0, 85] },
-      { kelvin: 2700 },
-    );
+    const next = writeControls({
+      domain: "light",
+      value: { state: "on", color_mode: "hs", hs_color: [0, 85] },
+      change: { kelvin: 2700 },
+    });
 
     expect(next).toEqual({ state: "on", color_mode: "color_temp", color_temp_kelvin: 2700 });
   });
 
   it("switches devices, moves covers and sets thermostats", () => {
-    expect(writeControls("light", photographed, { on: false }).state).toBe("off");
     expect(
-      writeControls("cover", { state: "open", current_position: 100 }, { position: 0 }),
+      writeControls({ domain: "light", value: photographed, change: { on: false } }).state,
+    ).toBe("off");
+    expect(
+      writeControls({
+        domain: "cover",
+        value: { state: "open", current_position: 100 },
+        change: { position: 0 },
+      }),
     ).toEqual({
       state: "closed",
       current_position: 0,
     });
     expect(
-      writeControls("climate", { state: "heat", temperature: 22 }, { temperature: 19.5 }),
+      writeControls({
+        domain: "climate",
+        value: { state: "heat", temperature: 22 },
+        change: { temperature: 19.5 },
+      }),
     ).toEqual({
       state: "heat",
       temperature: 19.5,
@@ -124,18 +148,22 @@ describe("writeControls", () => {
       color_mode: "color_temp",
       color_temp_kelvin: 2700,
     };
-    const controls = readControls("light", value);
+    const controls = readControls({ domain: "light", value });
 
-    expect(writeControls("light", value, { on: controls.on, kelvin: controls.kelvin })).toEqual(
-      value,
-    );
+    expect(
+      writeControls({
+        domain: "light",
+        value,
+        change: { on: controls.on, kelvin: controls.kelvin },
+      }),
+    ).toEqual(value);
   });
 });
 
 describe("presets", () => {
   it("finds the white tone and colour a value is at", () => {
-    expect(whitePresetOf(2700, COLOR)).toBe("warm");
-    expect(whitePresetOf(3300, COLOR)).toBeNull();
+    expect(whitePresetOf({ kelvin: 2700, caps: COLOR })).toBe("warm");
+    expect(whitePresetOf({ kelvin: 3300, caps: COLOR })).toBeNull();
     expect(colorPresetOf([214, 80])).toBe("blue");
     expect(colorPresetOf([355, 85])).toBe("red");
     expect(colorPresetOf([90, 20])).toBeNull();
@@ -147,20 +175,37 @@ describe("presets", () => {
       min_color_temp_kelvin: 3000,
     });
 
-    expect(presetKelvin("warm", narrow)).toBe(3000);
-    expect(whitePresetOf(3000, narrow)).toBe("warm");
+    expect(presetKelvin({ preset: "warm", caps: narrow })).toBe(3000);
+    expect(whitePresetOf({ kelvin: 3000, caps: narrow })).toBe("warm");
   });
 });
 
 describe("toneOf", () => {
   it("runs the slider up to the colour, the white tone, or the default", () => {
     expect(
-      toneOf(readControls("light", { state: "on", color_mode: "hs", hs_color: [0, 85] }), COLOR),
+      toneOf({
+        controls: readControls({
+          domain: "light",
+          value: { state: "on", color_mode: "hs", hs_color: [0, 85] },
+        }),
+        caps: COLOR,
+      }),
     ).toBe("hsl(0 85% 55%)");
-    expect(toneOf(readControls("light", { state: "on", color_temp_kelvin: 2700 }), COLOR)).toBe(
-      kelvinToCss(2700),
-    );
-    expect(toneOf(readControls("light", { state: "on" }), DIM_ONLY)).toBeNull();
+    expect(
+      toneOf({
+        controls: readControls({
+          domain: "light",
+          value: { state: "on", color_temp_kelvin: 2700 },
+        }),
+        caps: COLOR,
+      }),
+    ).toBe(kelvinToCss(2700));
+    expect(
+      toneOf({
+        controls: readControls({ domain: "light", value: { state: "on" } }),
+        caps: DIM_ONLY,
+      }),
+    ).toBeNull();
   });
 
   it("makes warm white warmer than cold white", () => {
@@ -173,36 +218,53 @@ describe("toneOf", () => {
 describe("extrasOf", () => {
   it("names what the editor cannot show, not what only describes the device", () => {
     expect(
-      extrasOf("light", {
-        state: "on",
-        brightness: 100,
-        effect: "candle",
-        friendly_name: "Lamp",
-        supported_color_modes: ["hs"],
-        min_mireds: 153,
+      extrasOf({
+        domain: "light",
+        value: {
+          state: "on",
+          brightness: 100,
+          effect: "candle",
+          friendly_name: "Lamp",
+          supported_color_modes: ["hs"],
+          min_mireds: 153,
+        },
       }),
     ).toEqual([["effect", "candle"]]);
     expect(
-      extrasOf("fan", { state: "on", percentage: 60, oscillating: true, percentage_step: 1 }),
+      extrasOf({
+        domain: "fan",
+        value: { state: "on", percentage: 60, oscillating: true, percentage_step: 1 },
+      }),
     ).toEqual([
       ["percentage", 60],
       ["oscillating", true],
     ]);
     expect(
-      extrasOf("media_player", { state: "on", media_title: "News", volume_level: 0.3 }),
+      extrasOf({
+        domain: "media_player",
+        value: { state: "on", media_title: "News", volume_level: 0.3 },
+      }),
     ).toEqual([["volume_level", 0.3]]);
   });
 });
 
 describe("hasSingleTargetTemperature", () => {
   it("offers one temperature to a plain thermostat and to one without features", () => {
-    expect(hasSingleTargetTemperature({ supported_features: 1 }, "heat")).toBe(true);
-    expect(hasSingleTargetTemperature({}, "heat")).toBe(true);
+    expect(
+      hasSingleTargetTemperature({ attributes: { supported_features: 1 }, hvacMode: "heat" }),
+    ).toBe(true);
+    expect(hasSingleTargetTemperature({ attributes: {}, hvacMode: "heat" })).toBe(true);
   });
 
   it("leaves it out where the thermostat works with a low and a high limit", () => {
-    expect(hasSingleTargetTemperature({ supported_features: 3 }, "heat_cool")).toBe(false);
-    expect(hasSingleTargetTemperature({ supported_features: 3 }, "heat")).toBe(true);
-    expect(hasSingleTargetTemperature({ supported_features: 2 }, "heat")).toBe(false);
+    expect(
+      hasSingleTargetTemperature({ attributes: { supported_features: 3 }, hvacMode: "heat_cool" }),
+    ).toBe(false);
+    expect(
+      hasSingleTargetTemperature({ attributes: { supported_features: 3 }, hvacMode: "heat" }),
+    ).toBe(true);
+    expect(
+      hasSingleTargetTemperature({ attributes: { supported_features: 2 }, hvacMode: "heat" }),
+    ).toBe(false);
   });
 });

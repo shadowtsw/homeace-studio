@@ -26,11 +26,16 @@ export type TidyInput = {
   picks: Readonly<Record<string, string>>;
 };
 
+export type FolderForAreaOptions = {
+  areaName: string;
+  folderPaths: readonly string[];
+};
+
 /**
  * The folder an area goes to: an existing one named like the area (also deeper, e.g. "Haus/Terrasse"
  * for "Terrasse"; the shortest wins), else a new top-level folder with the area's name.
  */
-export function folderForArea(areaName: string, folderPaths: readonly string[]): string {
+export function folderForArea({ areaName, folderPaths }: FolderForAreaOptions): string {
   const name = areaName.toLocaleLowerCase();
   const matches = folderPaths.filter((path) => {
     const lower = path.toLocaleLowerCase();
@@ -68,7 +73,7 @@ export function planAreaTidy(input: TidyInput): TidyMove[] {
     const area = picked ?? areas[0];
     if (!area) continue;
 
-    const to = folderForArea(area.name, input.folderPaths);
+    const to = folderForArea({ areaName: area.name, folderPaths: input.folderPaths });
     if (to === entry.categoryPath) continue;
 
     moves.push({ entry, areas, area, to, isNewFolder: !existing.has(to.toLocaleLowerCase()) });

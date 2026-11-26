@@ -7,11 +7,15 @@ import type { SortingHome } from "./home";
 /** The rule that decides for an entity, and whether another one wanted something else. */
 export type RuleHit = { ruleNumber: number; target: string; isConflict: boolean };
 
-function conditionMatches(
-  condition: SortingCondition,
-  entity: SortingEntity,
-  home: SortingHome,
-): boolean {
+function conditionMatches({
+  condition,
+  entity,
+  home,
+}: {
+  condition: SortingCondition;
+  entity: SortingEntity;
+  home: SortingHome;
+}): boolean {
   const device = entity.deviceId ? home.devices.get(entity.deviceId) : undefined;
   const area = entity.areaId ? home.areas.get(entity.areaId) : undefined;
 
@@ -35,22 +39,30 @@ function conditionMatches(
   }
 }
 
-export function ruleMatches(rule: SortingRule, entity: SortingEntity, home: SortingHome): boolean {
+export type RuleMatchesOptions = {
+  rule: SortingRule;
+  entity: SortingEntity;
+  home: SortingHome;
+};
+
+export function ruleMatches({ rule, entity, home }: RuleMatchesOptions): boolean {
   return (
     rule.conditions.length > 0 &&
-    rule.conditions.every((condition) => conditionMatches(condition, entity, home))
+    rule.conditions.every((condition) => conditionMatches({ condition, entity, home }))
   );
 }
+
+export type RuleTargetOptions = {
+  rule: SortingRule;
+  entity: SortingEntity;
+  home: SortingHome;
+};
 
 /**
  * The rule's folder for this entity, with `{area}` and `{floor}` filled in; null when a placeholder
  * has nothing to fill (no area), so the rule leaves the entity alone.
  */
-export function ruleTarget(
-  rule: SortingRule,
-  entity: SortingEntity,
-  home: SortingHome,
-): string | null {
+export function ruleTarget({ rule, entity, home }: RuleTargetOptions): string | null {
   const area = entity.areaId ? home.areas.get(entity.areaId) : undefined;
   const floorName = area?.floorId ? home.floorNames.get(area.floorId) : undefined;
   const needsArea = rule.target.includes(RULE_PLACEHOLDER.area);
@@ -67,21 +79,23 @@ export function ruleTarget(
   return cleanFolderPath(filled) || null;
 }
 
+export type RuleForOptions = {
+  entity: SortingEntity;
+  rules: SortingRule[];
+  home: SortingHome;
+};
+
 /**
  * Which rule decides: the more specific one (more conditions), else the one higher up.
  * Rules are the user's will, so they beat every other hint.
  */
-export function ruleFor(
-  entity: SortingEntity,
-  rules: SortingRule[],
-  home: SortingHome,
-): RuleHit | null {
+export function ruleFor({ entity, rules, home }: RuleForOptions): RuleHit | null {
   const hits = rules
     .map((rule, index) => ({ rule, index }))
-    .filter(({ rule }) => ruleMatches(rule, entity, home))
+    .filter(({ rule }) => ruleMatches({ rule, entity, home }))
     .map(({ rule, index }) => ({
       index,
-      target: ruleTarget(rule, entity, home),
+      target: ruleTarget({ rule, entity, home }),
       conditions: rule.conditions.length,
     }))
     .filter(
@@ -102,19 +116,21 @@ export function ruleFor(
 /** What a rule matches beyond the offered entities: entries, and entities sorted already. */
 export type RuleSideHits = { entries: number; sorted: number };
 
+export type RuleSideHitsOptions = {
+  rule: SortingRule;
+  home: SortingHome;
+  isResortingSorted: boolean;
+};
+
 /**
  * Why a rule may catch fewer than expected: it matches automations, scripts, scenes or helpers (the
  * tool does not sort them yet), or entities that have a folder (only with "umsortieren").
  */
-export function ruleSideHits(
-  rule: SortingRule,
-  home: SortingHome,
-  isResortingSorted: boolean,
-): RuleSideHits {
+export function ruleSideHits({ rule, home, isResortingSorted }: RuleSideHitsOptions): RuleSideHits {
   const entries = home.context.entries.filter((entry) =>
-    ruleMatches(
+    ruleMatches({
       rule,
-      {
+      entity: {
         entityId: entry.entityId,
         name: entry.name,
         domain: entry.entityId.split(".")[0] ?? "",
@@ -130,12 +146,13 @@ export function ruleSideHits(
         isInRegistry: true,
       },
       home,
-    ),
+    }),
   ).length;
   const sorted = isResortingSorted
     ? 0
     : home.context.entities.filter(
-        (entity) => entity.isInRegistry && entity.categoryPath && ruleMatches(rule, entity, home),
+        (entity) =>
+          entity.isInRegistry && entity.categoryPath && ruleMatches({ rule, entity, home }),
       ).length;
 
   return { entries, sorted };
@@ -149,25 +166,27 @@ export type RuleStats = {
   lost: number;
 };
 
+export type RuleStatsOptions = {
+  rule: SortingRule;
+  ruleIndex: number | null;
+  rules: SortingRule[];
+  entities: SortingEntity[];
+  home: SortingHome;
+};
+
 /** For the rule list: what a rule catches among `entities` ("passt auf 23"). */
-export function ruleStats(
-  rule: SortingRule,
-  ruleIndex: number | null,
-  rules: SortingRule[],
-  entities: SortingEntity[],
-  home: SortingHome,
-): RuleStats {
+export function ruleStats({ rule, ruleIndex, rules, entities, home }: RuleStatsOptions): RuleStats {
   const stats: RuleStats = { matches: 0, withoutArea: 0, lost: 0 };
 
   for (const entity of entities) {
-    if (!ruleMatches(rule, entity, home)) continue;
-    if (!ruleTarget(rule, entity, home)) {
+    if (!ruleMatches({ rule, entity, home })) continue;
+    if (!ruleTarget({ rule, entity, home })) {
       stats.withoutArea++;
       continue;
     }
 
     stats.matches++;
-    if (ruleIndex !== null && ruleFor(entity, rules, home)?.ruleNumber !== ruleIndex + 1)
+    if (ruleIndex !== null && ruleFor({ entity, rules, home })?.ruleNumber !== ruleIndex + 1)
       stats.lost++;
   }
 

@@ -48,7 +48,7 @@ export function useRunTexts(): RunTexts {
   function noteOf(state: BlockRunState): string {
     if (state.status === "done" && state.delaySeconds !== null) {
       return t("history.status.waited", {
-        duration: runDuration(state.delaySeconds, settings.locale),
+        duration: runDuration({ seconds: state.delaySeconds, locale: settings.locale }),
       });
     }
     if (state.status === "done" && state.choice !== null) {
@@ -58,8 +58,8 @@ export function useRunTexts(): RunTexts {
       return t(state.choice === "then" ? "history.status.branchThen" : "history.status.branchElse");
     }
     if ((state.status === "passed" || state.status === "failed") && state.value !== null) {
-      const value = stateText(state.value, null);
-      const wanted = state.wanted === null ? null : stateText(state.wanted, null);
+      const value = stateText({ state: state.value, unit: null });
+      const wanted = state.wanted === null ? null : stateText({ state: state.wanted, unit: null });
 
       if (state.status === "passed" && (wanted === null || wanted === value)) {
         return t("history.status.passedWas", { value });

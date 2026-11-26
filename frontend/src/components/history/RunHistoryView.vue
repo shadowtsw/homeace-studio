@@ -31,7 +31,7 @@
             </span>
             <span class="history__run-text">
               <b
-                >{{ clockTime(run.startedAt, settings.locale) }} ·
+                >{{ clockTime({ iso: run.startedAt, locale: settings.locale }) }} ·
                 {{ t(`history.result.${run.result}`) }}</b
               >
               <small>{{ runLine(run) }}</small>
@@ -191,10 +191,13 @@ async function keepMore(): Promise<void> {
   isKeeping.value = true;
 
   try {
-    await traces.keepMore(props.entry.entityId, MORE_RUNS);
-    toasts.show(t("history.kept", { count: MORE_RUNS }));
+    await traces.keepMore({ entityId: props.entry.entityId, count: MORE_RUNS });
+    toasts.show({ text: t("history.kept", { count: MORE_RUNS }) });
   } catch (error) {
-    toasts.show(messages.textFor(error, t("errors.actionFailed")), "error");
+    toasts.show({
+      text: messages.textFor({ error, fallback: t("errors.actionFailed") }),
+      tone: "error",
+    });
   } finally {
     isKeeping.value = false;
   }
@@ -229,7 +232,7 @@ const groups = computed(() => {
   const texts = { today: t("history.today"), yesterday: t("history.yesterday") };
 
   for (const run of history.value?.runs ?? []) {
-    const day = dayLabel(run.startedAt, now, settings.locale, texts);
+    const day = dayLabel({ iso: run.startedAt, now, locale: settings.locale, texts });
     const last = result[result.length - 1];
     if (last?.day === day) last.runs.push(run);
     else result.push({ day, runs: [run] });
@@ -245,7 +248,9 @@ const keepText = computed(() =>
 );
 
 const states = computed(() =>
-  selected.value && props.flow ? runStatesFor(selected.value, props.flow) : new Map(),
+  selected.value && props.flow
+    ? runStatesFor({ run: selected.value, flow: props.flow })
+    : new Map(),
 );
 
 const sections = computed(() => {
@@ -273,7 +278,7 @@ function startText(run: Run): string {
   if (start.entityId && start.to !== null) {
     return t("history.start.entity", {
       name: nameOf(start.entityId),
-      state: stateText(start.to, null),
+      state: stateText({ state: start.to, unit: null }),
     });
   }
 
@@ -292,22 +297,29 @@ function durationText(run: Run): string {
   const seconds = runSeconds(run);
   return seconds === null
     ? t("history.runningSince")
-    : t("history.took", { duration: runDuration(seconds, settings.locale) });
+    : t("history.took", { duration: runDuration({ seconds, locale: settings.locale }) });
 }
 
 function runLine(run: Run): string {
   const seconds = runSeconds(run);
   const duration =
-    seconds === null ? t("history.runningShort") : runDuration(seconds, settings.locale);
+    seconds === null
+      ? t("history.runningShort")
+      : runDuration({ seconds, locale: settings.locale });
   return `${duration} · ${startText(run)}`;
 }
 
 function whenText(run: Run): string {
-  const day = dayLabel(run.startedAt, new Date(), settings.locale, {
-    today: t("history.today"),
-    yesterday: t("history.yesterday"),
+  const day = dayLabel({
+    iso: run.startedAt,
+    now: new Date(),
+    locale: settings.locale,
+    texts: {
+      today: t("history.today"),
+      yesterday: t("history.yesterday"),
+    },
   });
-  return `${day}, ${clockTime(run.startedAt, settings.locale)}`;
+  return `${day}, ${clockTime({ iso: run.startedAt, locale: settings.locale })}`;
 }
 </script>
 

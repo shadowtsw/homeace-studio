@@ -1,14 +1,17 @@
+export type RangeBetweenOptions = {
+  order: readonly string[];
+  anchor: string | null;
+  target: string;
+};
+
 /**
  * The IDs from `anchor` to `target` in list order, both included, for shift-click.
  * Falls back to just `target` when the anchor is not in the list (anymore).
  *
- * @example rangeBetween(["a", "b", "c", "d"], "d", "b") // ["b", "c", "d"]
+ * @example
+ * rangeBetween({ order: ["a", "b", "c", "d"], anchor: "d", target: "b" }) // ["b", "c", "d"]
  */
-export function rangeBetween(
-  order: readonly string[],
-  anchor: string | null,
-  target: string,
-): string[] {
+export function rangeBetween({ order, anchor, target }: RangeBetweenOptions): string[] {
   const from = anchor === null ? -1 : order.indexOf(anchor);
   const to = order.indexOf(target);
 

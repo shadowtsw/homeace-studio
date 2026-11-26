@@ -15,17 +15,23 @@ export function bundleKeyOf(entity: SortingEntity): string {
   return entity.deviceId ?? `${ENTITY_BUNDLE_PREFIX}${entity.entityId}`;
 }
 
+export type IsOfferedOptions = {
+  entity: SortingEntity;
+  state: SortingState;
+  home: SortingHome;
+};
+
 /**
  * Whether the tool offers the entity at all. Not offered: YAML ones (cannot get a folder), kept out
  * on purpose, disabled or hidden ones unless asked for, and sorted ones unless a rule re-sorts them.
  */
-export function isOffered(entity: SortingEntity, state: SortingState, home: SortingHome): boolean {
+export function isOffered({ entity, state, home }: IsOfferedOptions): boolean {
   if (!entity.isInRegistry || state.ignored.has(bundleKeyOf(entity))) return false;
 
   if (entity.categoryPath) {
     if (!state.options.isResortingSorted) return false;
 
-    const hit = ruleFor(entity, state.rules, home);
+    const hit = ruleFor({ entity, rules: state.rules, home });
     return !!hit && hit.target !== entity.categoryPath;
   }
 
@@ -53,12 +59,17 @@ function isSystemEntity(entity: SortingEntity): boolean {
   return SYSTEM_DOMAINS.has(entity.domain) || SYSTEM_INTEGRATIONS.has(entity.integration ?? "");
 }
 
+export type BuildBundlesOptions = {
+  home: SortingHome;
+  state: SortingState;
+};
+
 /** The offered entities, one bundle per device: 1500 entities become a few hundred decisions. */
-export function buildBundles(home: SortingHome, state: SortingState): Map<string, SortingBundle> {
+export function buildBundles({ home, state }: BuildBundlesOptions): Map<string, SortingBundle> {
   const grouped = new Map<string, SortingEntity[]>();
 
   for (const entity of home.context.entities) {
-    if (!isOffered(entity, state, home)) continue;
+    if (!isOffered({ entity, state, home })) continue;
 
     const key = bundleKeyOf(entity);
     grouped.set(key, [...(grouped.get(key) ?? []), entity]);

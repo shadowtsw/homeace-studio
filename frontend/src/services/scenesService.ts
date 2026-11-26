@@ -23,32 +23,41 @@ export type SceneView = {
 const scenePath = (entityId: string): string => `/scenes/${encodeURIComponent(entityId)}`;
 
 export function fetchScene(entityId: string): Promise<SceneView> {
-  return apiFetch<SceneView>(scenePath(entityId));
+  return apiFetch<SceneView>({ path: scenePath(entityId) });
 }
 
 /** A device as it would join a scene, with its current state as the starting values. */
 export function fetchSceneDevice(deviceId: string): Promise<SceneDevice> {
-  return apiFetch<SceneDevice>(`/scenes/device/${encodeURIComponent(deviceId)}`);
+  return apiFetch<SceneDevice>({ path: `/scenes/device/${encodeURIComponent(deviceId)}` });
 }
 
-export function saveScene(
-  entityId: string,
-  entities: Record<string, SceneValue>,
-): Promise<SceneView> {
-  return apiSend<SceneView>("PUT", scenePath(entityId), { entities });
+export type SaveSceneOptions = {
+  entityId: string;
+  entities: Record<string, SceneValue>;
+};
+
+export function saveScene({ entityId, entities }: SaveSceneOptions): Promise<SceneView> {
+  return apiSend<SceneView>({ method: "PUT", path: scenePath(entityId), body: { entities } });
 }
+
+export type PreviewSceneOptions = {
+  entityId: string;
+  entities: Record<string, SceneValue>;
+};
 
 /** Shows the values on the devices now; the backend keeps their previous states. */
-export async function previewScene(
-  entityId: string,
-  entities: Record<string, SceneValue>,
-): Promise<void> {
-  await apiPost<null>(`${scenePath(entityId)}/preview`, { entities });
+export async function previewScene({ entityId, entities }: PreviewSceneOptions): Promise<void> {
+  await apiPost<null>({ path: `${scenePath(entityId)}/preview`, body: { entities } });
 }
 
+export type RestoreSceneOptions = {
+  entityId: string;
+  entityIds?: string[];
+};
+
 /** Brings the given devices (or all previewed ones) back to how they were. */
-export async function restoreScene(entityId: string, entityIds?: string[]): Promise<void> {
-  await apiPost<null>(`${scenePath(entityId)}/restore`, { entityIds });
+export async function restoreScene({ entityId, entityIds }: RestoreSceneOptions): Promise<void> {
+  await apiPost<null>({ path: `${scenePath(entityId)}/restore`, body: { entityIds } });
 }
 
 /** Restore while the page goes away: sendBeacon still arrives when a fetch would be cancelled. */

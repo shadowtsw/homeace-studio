@@ -31,7 +31,7 @@ export function usePreference<T>({
     mergeDefaults: isMergingDefaults,
     writeDefaults: isWritingDefaults,
   });
-  usePreferencesStore().track(preference, value as Ref<unknown>);
+  usePreferencesStore().track({ preference, value: value as Ref<unknown> });
 
   return value;
 }

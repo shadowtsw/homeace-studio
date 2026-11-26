@@ -17,19 +17,24 @@ export type LabelUsage = {
 const labelPath = (labelId: string): string => `/labels/${encodeURIComponent(labelId)}`;
 
 export function createLabel(fields: LabelFields & { name: string }): Promise<Label> {
-  return apiPost<Label>("/labels", fields);
+  return apiPost<Label>({ path: "/labels", body: fields });
 }
 
+export type UpdateLabelOptions = {
+  labelId: string;
+  fields: LabelFields;
+};
+
 /** Missing fields stay; null clears colour or icon. Renaming keeps the label's id. */
-export function updateLabel(labelId: string, fields: LabelFields): Promise<Label> {
-  return apiSend<Label>("PATCH", labelPath(labelId), fields);
+export function updateLabel({ labelId, fields }: UpdateLabelOptions): Promise<Label> {
+  return apiSend<Label>({ method: "PATCH", path: labelPath(labelId), body: fields });
 }
 
 /** HA takes the label away from everything that carries it. */
 export async function deleteLabel(labelId: string): Promise<void> {
-  await apiFetch<null>(labelPath(labelId), { method: "DELETE" });
+  await apiFetch<null>({ path: labelPath(labelId), options: { method: "DELETE" } });
 }
 
 export function fetchLabelUsage(labelId: string): Promise<LabelUsage> {
-  return apiFetch<LabelUsage>(`${labelPath(labelId)}/usage`);
+  return apiFetch<LabelUsage>({ path: `${labelPath(labelId)}/usage` });
 }

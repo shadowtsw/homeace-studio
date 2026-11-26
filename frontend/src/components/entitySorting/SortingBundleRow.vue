@@ -12,7 +12,7 @@
       :checked="isTicked"
       :disabled="!target"
       :aria-label="t('entitySorting.suggestions.tickBundle', { name: bundle.name })"
-      @change="sorting.tick(bundle.key, ($event.target as HTMLInputElement).checked)"
+      @change="sorting.tick({ key: bundle.key, isOn: ($event.target as HTMLInputElement).checked })"
     />
     <div class="bundle-row__main">
       <div class="bundle-row__line">
@@ -47,7 +47,7 @@
             :key="path"
             class="bundle-row__chip"
             type="button"
-            @click="sorting.pick(bundle.key, path)"
+            @click="sorting.pick({ key: bundle.key, target: path })"
           >
             {{ path }}
           </button>
@@ -222,10 +222,13 @@ const suggestion = computed(
 );
 const choice = computed(() => sorting.choices.get(props.bundle.key));
 const target = computed(() =>
-  targetOf(props.bundle, {
-    state: sorting.state(),
-    previous: sorting.computation,
-    layout: sorting.layout,
+  targetOf({
+    bundle: props.bundle,
+    input: {
+      state: sorting.state(),
+      previous: sorting.computation,
+      layout: sorting.layout,
+    },
   }),
 );
 const isTicked = computed(() => !!choice.value?.isOn && !!target.value);
@@ -237,7 +240,7 @@ const isTargetShown = computed(
     props.group.type === "system" ||
     props.group.type === "rest" ||
     !!choice.value?.target ||
-    hasNewTarget(suggestion.value, props.group),
+    hasNewTarget({ suggestion: suggestion.value, group: props.group }),
 );
 const canReject = computed(
   () =>
@@ -274,14 +277,17 @@ const why = computed(() => {
 
 function ownTargetOf(entity: SortingEntity): string | null {
   return sorting.home
-    ? (entityTarget(entity, props.bundle, { home: sorting.home, state: sorting.state() })?.target ??
-        null)
+    ? (entityTarget({
+        entity,
+        bundle: props.bundle,
+        input: { home: sorting.home, state: sorting.state() },
+      })?.target ?? null)
     : null;
 }
 
 function pickFolder(path: string): void {
   isTreeOpen.value = false;
-  sorting.pick(props.bundle.key, path);
+  sorting.pick({ key: props.bundle.key, target: path });
 }
 
 async function startNaming(): Promise<void> {
@@ -295,7 +301,7 @@ function takeNewName(): void {
   const path = cleanFolderPath(newName.value);
   if (!path) return;
 
-  sorting.pick(props.bundle.key, path);
+  sorting.pick({ key: props.bundle.key, target: path });
   isNaming.value = false;
   newName.value = "";
 }
@@ -304,20 +310,22 @@ async function reject(): Promise<void> {
   const path = target.value;
   if (!path) return;
 
-  await sorting.reject(props.bundle.key, path);
-  toasts.show(t("entitySorting.suggestions.rejectedToast", { path, name: props.bundle.name }));
+  await sorting.reject({ key: props.bundle.key, path });
+  toasts.show({
+    text: t("entitySorting.suggestions.rejectedToast", { path, name: props.bundle.name }),
+  });
 }
 
 async function ignore(): Promise<void> {
   const key = props.bundle.key;
-  await sorting.setIgnored(key, true);
-  toasts.show(
-    t("entitySorting.suggestions.ignoredToast", { name: props.bundle.name }),
-    "success",
-    () => {
-      void sorting.setIgnored(key, false);
+  await sorting.setIgnored({ key, isIgnored: true });
+  toasts.show({
+    text: t("entitySorting.suggestions.ignoredToast", { name: props.bundle.name }),
+    tone: "success",
+    undo: () => {
+      void sorting.setIgnored({ key, isIgnored: false });
     },
-  );
+  });
 }
 
 /** ↑↓ move between rows, Space ticks, Enter opens the entities. */
@@ -331,7 +339,7 @@ function onKey(event: KeyboardEvent): void {
   if (event.key === "ArrowDown" || event.key === "ArrowUp") {
     rows[index + (event.key === "ArrowDown" ? 1 : -1)]?.focus();
   } else if (event.key === " ") {
-    if (target.value) sorting.tick(props.bundle.key, !isTicked.value);
+    if (target.value) sorting.tick({ key: props.bundle.key, isOn: !isTicked.value });
   } else if (event.key === "Enter") {
     emit("toggle");
   } else {

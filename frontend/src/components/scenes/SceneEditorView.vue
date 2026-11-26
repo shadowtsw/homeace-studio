@@ -174,7 +174,10 @@ function deviceOf(id: string): SceneDevice {
 }
 
 function fail(error: unknown): void {
-  toasts.show(messages.textFor(error, t("errors.actionFailed")), "error");
+  toasts.show({
+    text: messages.textFor({ error, fallback: t("errors.actionFailed") }),
+    tone: "error",
+  });
 }
 
 // reactive(): the template reads isPreviewing and isAutoSave without .value.
@@ -198,7 +201,7 @@ const autoSave = reactive(
     show,
     onUndone: () => {
       preview.showAgain();
-      toasts.show(t("scene.toast.undoneAll", { name: props.entry.name }));
+      toasts.show({ text: t("scene.toast.undoneAll", { name: props.entry.name }) });
     },
     fail,
   }),
@@ -286,7 +289,7 @@ function takeCurrent(id: string): void {
   if (!current) return;
 
   change(id, { state: current.state, ...current.attributes });
-  toasts.show(t("scene.toast.taken", { name: deviceOf(id).name }));
+  toasts.show({ text: t("scene.toast.taken", { name: deviceOf(id).name }) });
 }
 
 async function remove(id: string): Promise<void> {
@@ -306,7 +309,7 @@ async function add(id: string): Promise<void> {
     devices.set(id, device);
     order.value = [...order.value, id];
     change(id, device.values ?? { state: "on" });
-    toasts.show(t("scene.toast.added", { name: device.name }));
+    toasts.show({ text: t("scene.toast.added", { name: device.name }) });
   } catch (error) {
     fail(error);
   }
@@ -350,9 +353,9 @@ async function save(): Promise<void> {
   isSaving.value = true;
 
   try {
-    const result = await saveScene(entityId, sent);
+    const result = await saveScene({ entityId, entities: sent });
     applySaved({ result, sent });
-    toasts.show(t("scene.toast.saved", { name: props.entry.name }));
+    toasts.show({ text: t("scene.toast.saved", { name: props.entry.name }) });
     autoSave.reset();
   } catch (error) {
     fail(error);

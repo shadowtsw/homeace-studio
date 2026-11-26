@@ -20,6 +20,11 @@ function numberOf(value: unknown): number | null {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
+export type HelperSettingsProblemOptions = {
+  type: HelperType;
+  settings: HelperSettings;
+};
+
 /**
  * The first problem in a helper's settings, checked while typing. Mirrors what the backend checks
  * before saving (backend/src/helpers/helper-payload.ts), never more: a stricter check here could
@@ -27,10 +32,10 @@ function numberOf(value: unknown): number | null {
  *
  * @returns null when the settings can be saved.
  */
-export function helperSettingsProblem(
-  type: HelperType,
-  settings: HelperSettings,
-): HelperSettingsProblem | null {
+export function helperSettingsProblem({
+  type,
+  settings,
+}: HelperSettingsProblemOptions): HelperSettingsProblem | null {
   switch (type) {
     case "input_number": {
       const min = numberOf(settings.min);

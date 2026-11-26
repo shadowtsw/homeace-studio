@@ -3,13 +3,17 @@ export const STORAGE_PREFIX = "homeace.";
 
 let hadEarlierVisitAtStart = false;
 
+export type HasOwnKeysOptions = {
+  /** The storage keys. */
+  keys: readonly string[];
+  /** A key that does not count, e.g. the one about to be checked. */
+  ignoredKey: string;
+};
+
 /**
  * Whether a browser's storage already has keys of HomeAce Studio, apart from `ignoredKey`.
- *
- * @param keys - The storage keys.
- * @param ignoredKey - A key that does not count, e.g. the one about to be checked.
  */
-export function hasOwnKeys(keys: readonly string[], ignoredKey: string): boolean {
+export function hasOwnKeys({ keys, ignoredKey }: HasOwnKeysOptions): boolean {
   return keys.some((key) => key.startsWith(STORAGE_PREFIX) && key !== ignoredKey);
 }
 
@@ -22,10 +26,10 @@ export function hasOwnKeys(keys: readonly string[], ignoredKey: string): boolean
 export function captureEarlierVisit(ignoredKey: string): void {
   try {
     const keys = Array.from({ length: localStorage.length }, (_, index) => localStorage.key(index));
-    hadEarlierVisitAtStart = hasOwnKeys(
-      keys.filter((key): key is string => key !== null),
+    hadEarlierVisitAtStart = hasOwnKeys({
+      keys: keys.filter((key): key is string => key !== null),
       ignoredKey,
-    );
+    });
   } catch {
     // Storage blocked (private mode, sandbox): treat it as a first visit.
     hadEarlierVisitAtStart = false;
