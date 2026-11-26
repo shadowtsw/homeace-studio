@@ -6,7 +6,7 @@
   each in its folder after the automations and helpers there. Drag one onto a folder to sort it in, or
   onto "Ohne Kategorie" to take it out. Or tick several and pick "Verschieben nach …", or drag one of them. The folders
   are stored in Home Assistant and its backups, without crowding HA's own label and category lists.
-- Drag entities into flows: drop a motion sensor on "Wenn" and pick "Bewegung erkannt", a lamp on
+- Drag devices into flows: drop a motion sensor on "Wenn" and pick "Bewegung erkannt", a lamp on
   "Dann" and pick HA's "Einschalten". Fitting sections light up, the others say why not (a sensor
   cannot be switched). Branches of a Wenn/Sonst block are targets of their own; dropped next to them,
   HomeAce Studio asks where exactly. A measured value starts with its current value as the limit.
@@ -46,7 +46,6 @@
 - "Durchläufe merken" (tab "Bearbeiten"): how many runs Home Assistant keeps for new automations and
   scripts (5, 10, 20 or 50). More runs help when you look for an error.
 - The Home Assistant name of a folder only shows with "Technische Details" switched on.
-
 - What's new: after an update, a gift next to the gear shows the highlights of the new version in
   plain words. "Zeigen" leads to the feature, "OK" puts the gift away; "Über HomeAce" in the
   settings keeps "Was ist neu" for later. Skipped updates show too; a fresh install starts without it.
