@@ -1389,6 +1389,14 @@ const en: MessageSchema = {
       turnOff: 'Switched off "{name}"',
     },
   },
+  folderPicker: {
+    open: "From the tree …",
+    title: "Choose folder",
+    search: "Search folders",
+    expand: "Expand",
+    collapse: "Collapse",
+    none: "No folder matches.",
+  },
   entitySorting: {
     title: "Sort entities into folders",
     beta: "Beta",

@@ -1434,6 +1434,14 @@ const fr: MessageSchema = {
       turnOff: "« {name} » éteint",
     },
   },
+  folderPicker: {
+    open: "Depuis l'arborescence …",
+    title: "Choisir un dossier",
+    search: "Chercher un dossier",
+    expand: "Déplier",
+    collapse: "Replier",
+    none: "Aucun dossier ne correspond.",
+  },
   entitySorting: {
     title: "Classer les entités",
     beta: "Bêta",

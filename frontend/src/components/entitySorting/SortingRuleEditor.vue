@@ -59,12 +59,13 @@
 
     <div class="rule-editor__row">
       <span class="rule-editor__label">{{ t("entitySorting.rules.folder") }}</span>
-      <input
-        ref="targetInput"
+      <FolderPathField
+        ref="targetField"
         v-model="target"
-        class="field-input"
+        :folders="folderPaths"
+        :label="t('entitySorting.rules.folder')"
         :placeholder="t('entitySorting.rules.targetPlaceholder', { example: areaToken })"
-        :aria-label="t('entitySorting.rules.folder')"
+        appends-separator
       />
       <button
         class="btn btn--sm rule-editor__placeholder"
@@ -99,6 +100,7 @@
 import { computed, ref, useTemplateRef } from "vue";
 import { useI18n } from "vue-i18n";
 
+import FolderPathField from "@/components/common/FolderPathField.vue";
 import { useSortingTexts } from "@/composables/useSortingTexts";
 import { useEntitySortingStore } from "@/stores/entitySortingStore";
 import type { SortingCondition, SortingConditionType, SortingRule } from "@/types/entitySorting";
@@ -134,7 +136,9 @@ const words = computed(() => texts.placeholderWords());
 /** "{Bereich}", "{Etage}": the placeholders as the user types them. */
 const areaToken = computed(() => `{${words.value.area}}`);
 const floorToken = computed(() => `{${words.value.floor}}`);
-const targetInput = useTemplateRef("targetInput");
+const targetField = useTemplateRef("targetField");
+/** Existing folders, for the tree and the suggestions while typing. */
+const folderPaths = computed(() => [...(sorting.computation?.folders ?? [])].sort());
 
 const conditions = ref<SortingCondition[]>(
   props.rule
@@ -144,7 +148,7 @@ const conditions = ref<SortingCondition[]>(
 const target = ref(props.rule ? texts.target(props.rule.target) : "");
 
 const draft = computed<SortingRule>(() => ({
-  conditions: conditions.value.filter((condition) => condition.value.trim()),
+  conditions: conditions.value.filter((condition) => (condition.value ?? "").trim()),
   target: fromDisplayTarget(target.value, words.value),
 }));
 const isComplete = computed(() => draft.value.conditions.length > 0 && draft.value.target !== "");
@@ -224,7 +228,7 @@ function setType(index: number, type: SortingConditionType): void {
 }
 
 function insert(word: string): void {
-  const input = targetInput.value;
+  const input = targetField.value?.input;
   const position = input?.selectionStart ?? target.value.length;
   target.value = `${target.value.slice(0, position)}{${word}}${target.value.slice(position)}`;
   input?.focus();

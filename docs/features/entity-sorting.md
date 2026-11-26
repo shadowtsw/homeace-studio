@@ -36,6 +36,7 @@ page stays complete.
 | Reasons, confidences, origins and rule conditions as text; placeholders `{Bereich}` ↔ `{area}` | `composables/useSortingTexts.ts`, `utils/entitySorting/placeholders.ts` |
 | Window and steps: overview (funnel), rules (editor, ideas), proposals (groups, rows, phone sheet), apply, result | `components/entitySorting/` |
 | Entry in the tools tab with beta label and count | `components/settings/SettingsToolsTab.vue`, `components/common/BetaBadge.vue` |
+| Folder path to type or pick from the tree (rule target, "Eigener Pfad"); reusable | `components/common/FolderPathField.vue` |
 | Numbers of step 1, rule ideas | `utils/entitySorting/overview.ts`, `ruleIdeas.ts` |
 
 ## Backend rules

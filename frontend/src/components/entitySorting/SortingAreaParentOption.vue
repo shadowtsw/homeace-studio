@@ -6,12 +6,12 @@
       <small>{{ t("entitySorting.overview.areaParentHint") }}</small>
       <div class="area-parent__controls">
         <template v-if="isTyping">
-          <input
-            ref="pathInput"
+          <FolderPathField
+            ref="pathField"
             v-model="typed"
-            class="field-input"
+            :folders="folderPaths"
+            :label="t('entitySorting.overview.areaParentInput')"
             :placeholder="t('entitySorting.overview.areaParentPlaceholder')"
-            :aria-label="t('entitySorting.overview.areaParentInput')"
             @keydown.enter.prevent="takeTyped"
             @keydown.escape.stop="isTyping = false"
           />
@@ -46,6 +46,7 @@
 import { computed, nextTick, ref, useTemplateRef } from "vue";
 import { useI18n } from "vue-i18n";
 
+import FolderPathField from "@/components/common/FolderPathField.vue";
 import { useEntitySortingStore } from "@/stores/entitySortingStore";
 import { areaParents } from "@/utils/entitySorting/home";
 
@@ -59,7 +60,8 @@ const { t } = useI18n();
 const sorting = useEntitySortingStore();
 const isTyping = ref(false);
 const typed = ref("");
-const pathInput = useTemplateRef("pathInput");
+const pathField = useTemplateRef("pathField");
+const folderPaths = computed(() => [...(sorting.computation?.folders ?? [])].sort());
 
 const detected = computed(() =>
   sorting.home && sorting.computation ? areaParents(sorting.home, sorting.computation.folders) : [],
@@ -96,7 +98,7 @@ async function choose(value: string): Promise<void> {
     typed.value = current.value;
     isTyping.value = true;
     await nextTick();
-    pathInput.value?.focus();
+    pathField.value?.input?.focus();
     return;
   }
 

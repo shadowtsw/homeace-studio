@@ -1416,6 +1416,14 @@ const es: MessageSchema = {
       turnOff: "“{name}” apagado",
     },
   },
+  folderPicker: {
+    open: "Desde el árbol …",
+    title: "Elegir carpeta",
+    search: "Buscar carpetas",
+    expand: "Desplegar",
+    collapse: "Plegar",
+    none: "Ninguna carpeta coincide.",
+  },
   entitySorting: {
     title: "Ordenar entidades en carpetas",
     beta: "Beta",

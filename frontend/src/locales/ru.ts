@@ -1428,6 +1428,14 @@ const ru: MessageSchema = {
       turnOff: "Выключено: «{name}»",
     },
   },
+  folderPicker: {
+    open: "Из дерева …",
+    title: "Выбрать папку",
+    search: "Найти папку",
+    expand: "Развернуть",
+    collapse: "Свернуть",
+    none: "Подходящих папок нет.",
+  },
   entitySorting: {
     title: "Разложить объекты по папкам",
     beta: "Бета",

@@ -1409,6 +1409,14 @@ export default {
       turnOff: "„{name}“ ausgeschaltet",
     },
   },
+  folderPicker: {
+    open: "Aus dem Baum …",
+    title: "Ordner wählen",
+    search: "Ordner suchen",
+    expand: "Aufklappen",
+    collapse: "Zuklappen",
+    none: "Kein Ordner passt.",
+  },
   entitySorting: {
     title: "Entitäten einsortieren",
     beta: "Beta",
