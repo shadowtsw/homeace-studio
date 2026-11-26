@@ -26,6 +26,8 @@ const DEBUG_PORT = 9334;
 const MOVE_FRAME_MS = 40; // 25 frames per second while the pointer moves
 const GIF_WIDTH = 960;
 const GIF_FPS = 15;
+/** The clips play this much faster than filmed; at the real pace people fell asleep (owner). */
+const PLAYBACK_SPEED = 1.3;
 const GIF_COLORS = 128;
 
 const appUrl = argument("--url", "http://localhost:3100/");
@@ -243,11 +245,12 @@ function encode(frames, { name, crop }) {
     frames.forEach((frame, index) => {
       const file = `f${String(index).padStart(5, "0")}.jpg`;
       writeFileSync(join(work, file), Buffer.from(frame.data, "base64"));
-      lines.push(`file '${file}'`, `duration ${Math.max(frame.seconds, 0.001).toFixed(3)}`);
+      const seconds = frame.seconds / PLAYBACK_SPEED;
+      lines.push(`file '${file}'`, `duration ${Math.max(seconds, 0.001).toFixed(3)}`);
     });
     lines.push(lines.at(-2)); // ffmpeg's concat format ignores the last duration otherwise
     writeFileSync(join(work, "frames.txt"), lines.join("\n"));
-    const seconds = frames.reduce((sum, frame) => sum + frame.seconds, 0);
+    const seconds = frames.reduce((sum, frame) => sum + frame.seconds, 0) / PLAYBACK_SPEED;
     console.log(`  ${name}: ${frames.length} frames, ${seconds.toFixed(1)} s`);
 
     const input = ["-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", "frames.txt"];
