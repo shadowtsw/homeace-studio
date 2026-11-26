@@ -196,8 +196,16 @@ const fr: MessageSchema = {
     confirm: "Supprimer définitivement",
   },
   flow: {
+    scriptStart: {
+      title: "Démarrer le script sans attendre",
+      hint: "Exécute le script sans attendre sa fin : l'action suivante démarre aussitôt. Pour attendre, ajoutez le script avec « Exécuter ».",
+    },
     drop: {
       choice: {
+        runScript: "Exécuter",
+        runScriptSub: "Attend la fin du script, puis continue",
+        startScript: "Démarrer sans attendre",
+        startScriptSub: "Le script tourne en parallèle, l'automatisation continue aussitôt",
         fires: "Se déclenche",
         motionOn: "Mouvement détecté",
         motionOff: "Plus de mouvement",

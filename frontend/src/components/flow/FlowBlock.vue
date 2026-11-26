@@ -13,7 +13,16 @@
     <div class="flow-block__head">
       <span class="flow-block__icon"><span class="mdi" :class="block.icon" /></span>
       <div class="flow-block__sentence">
-        <span class="flow-block__title">{{ block.title }}</span>
+        <span class="flow-block__title">{{
+          isScriptStart ? t("flow.scriptStart.title") : block.title
+        }}</span>
+        <span
+          v-if="isScriptStart"
+          class="mdi mdi-information-outline flow-block__info"
+          role="img"
+          :title="t('flow.scriptStart.hint')"
+          :aria-label="t('flow.scriptStart.hint')"
+        />
         <component
           :is="isChipEditable(chip) ? 'button' : 'span'"
           v-for="(chip, index) in block.chips"
@@ -109,6 +118,7 @@ import { useI18n } from "vue-i18n";
 import { RUN_STATUS_ICON, runStatusTone, useRunTexts } from "@/composables/useRunTexts";
 import type { BlockChip, DisplayBlock, DisplayBranch } from "@/types/editor";
 import { dropKey } from "@/utils/flow/dropTargets";
+import { isScriptStartBlock } from "@/utils/flow/scriptStart";
 
 import AddBlockButton from "./AddBlockButton.vue";
 import { FLOW_EDITING, FLOW_RUN_STATES } from "./flowEditing";
@@ -133,6 +143,8 @@ const props = defineProps<{
 const { t } = useI18n();
 
 const rawText = computed(() => JSON.stringify(props.block.raw, null, JSON_INDENT));
+/** HA names script.turn_on "Einschalten", but it runs the script, only without waiting for it. */
+const isScriptStart = computed(() => isScriptStartBlock(props.block.raw));
 
 /** Provided by FlowView; missing only when a block is rendered on its own. */
 const editing = inject(FLOW_EDITING, null);
@@ -310,6 +322,11 @@ function openMenu(event: MouseEvent): void {
 
 .flow-block__title {
   font-weight: 600;
+}
+
+.flow-block__info {
+  color: var(--text-muted);
+  cursor: help;
 }
 
 .flow-block__chip {

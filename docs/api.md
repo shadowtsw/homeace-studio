@@ -125,6 +125,9 @@ in the list, sorted by name:
    "labels": [], "categoryPath": "Haus/Flur", "isInRegistry": true }]
 ```
 
+- `scriptKey` (scripts only): the key in scripts.yaml (registry `unique_id`). `action: script.<key>`
+  runs the script and waits for it; the key stays when the entity ID is renamed.
+
 - `shortName` is the name within its device ("Battery"), or the full name when it does not start with
   the device name.
 - `areaId` / `areaName` are the entity's own area, otherwise its device's area (for a child device:

@@ -34,6 +34,11 @@ export type EntityOption = {
   categoryPath: string | null;
   /** Only entities with a registry entry can be put into a folder (YAML without unique_id cannot). */
   isInRegistry: boolean;
+  /**
+   * Scripts only: the key in scripts.yaml. `action: script.<key>` runs the script and waits for it;
+   * the key stays when the entity ID is renamed.
+   */
+  scriptKey?: string;
 };
 
 export type EntitySources = {
@@ -47,6 +52,7 @@ export type EntitySources = {
 };
 
 const DOMAIN_SEPARATOR = ".";
+const SCRIPT_PLATFORM = "script";
 
 const stringList = (value: unknown): string[] | null =>
   Array.isArray(value) && value.every((item) => typeof item === "string") ? value : null;
@@ -98,6 +104,7 @@ export function toEntityOptions(sources: EntitySources): EntityOption[] {
       labels: (entry?.labels ?? []).map((id) => labelNames.get(id) ?? id),
       categoryPath: categoryId ? (folderNames.get(categoryId) ?? null) : null,
       isInRegistry: entry !== undefined,
+      ...(entry?.platform === SCRIPT_PLATFORM ? { scriptKey: entry.unique_id } : {}),
     };
   });
 

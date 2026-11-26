@@ -186,8 +186,16 @@ const en: MessageSchema = {
     confirm: "Delete for good",
   },
   flow: {
+    scriptStart: {
+      title: "Start script without waiting",
+      hint: "Runs the script but does not wait for it to finish: the next action starts at once. To wait, add the script with “Run”.",
+    },
     drop: {
       choice: {
+        runScript: "Run",
+        runScriptSub: "Waits until the script is done, then goes on",
+        startScript: "Start without waiting",
+        startScriptSub: "The script runs alongside, the automation goes on at once",
         fires: "Fires",
         motionOn: "Motion detected",
         motionOff: "Motion cleared",

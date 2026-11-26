@@ -12,7 +12,9 @@
   HomeAce Studio asks where exactly. A measured value starts with its current value as the limit.
   Dropped on a scene, a device joins with its current state. On a phone, tap the entity instead.
   Helpers, scripts, scenes and automations from the list can be dragged in the same way ("Gästemodus
-  ist aus", "Szene aktivieren"); an automation or script never into itself.
+  ist aus", "Szene aktivieren"); an automation or script never into itself. A script either runs and
+  the automation waits for it ("Ausführen"), or starts while the automation goes on ("Starten, ohne zu
+  warten", HA's "Einschalten", which now has a short explanation in the flow).
 - Filters can be combined: Strg+Klick (⌘+Klick on a Mac), right-click or a long press on a filter
   adds it, a plain click shows only that one. The choice is kept, and the filter bar wraps instead of
   scrolling.

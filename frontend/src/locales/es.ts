@@ -194,8 +194,16 @@ const es: MessageSchema = {
     confirm: "Eliminar definitivamente",
   },
   flow: {
+    scriptStart: {
+      title: "Iniciar script sin esperar",
+      hint: "Ejecuta el script, pero no espera a que termine: la siguiente acción empieza enseguida. Para esperar, añade el script con “Ejecutar”.",
+    },
     drop: {
       choice: {
+        runScript: "Ejecutar",
+        runScriptSub: "Espera a que el script termine y luego continúa",
+        startScript: "Iniciar sin esperar",
+        startScriptSub: "El script se ejecuta en paralelo, la automatización sigue enseguida",
         fires: "Se activa",
         motionOn: "Movimiento detectado",
         motionOff: "Sin movimiento",

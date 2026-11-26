@@ -160,6 +160,7 @@ export function useFlowEntityDrop(options: FlowEntityDropOptions) {
     const choiceOptions = fit.choices.map((choice, index) => ({
       value: String(index),
       label: labelText(choice.label),
+      ...(choice.sub ? { sub: labelText(choice.sub), isSubPlain: true } : {}),
     }));
     const title = target.branch ? `${entity.shortName} · ${target.branch.label}` : entity.shortName;
 

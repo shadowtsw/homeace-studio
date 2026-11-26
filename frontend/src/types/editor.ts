@@ -55,6 +55,8 @@ export type EntityOption = {
   categoryPath: string | null;
   /** Without a registry entry (YAML without unique_id) it cannot have a folder. */
   isInRegistry: boolean;
+  /** Scripts only: the key in scripts.yaml, which `action: script.<key>` calls (and waits for). */
+  scriptKey?: string;
 };
 
 export type BlockSection = "trigger" | "condition" | "action";

@@ -143,8 +143,10 @@ onMounted(() => searchInput.value?.focus({ preventScroll: true }));
   font: 11px var(--font-mono);
 }
 
+/* Plain subtitles are short sentences (what a choice does); they wrap instead of being cut. */
 .choice-list__main small.choice-list__sub--plain {
   font: 12px var(--font-body);
+  white-space: normal;
 }
 
 .choice-list__empty {

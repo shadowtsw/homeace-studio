@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import type { EditorCatalog, EntityOption } from "@/types/editor";
 
 import { entityFit, sceneMisfit } from "../flow/entityBlocks";
+import { isScriptStartBlock } from "../flow/scriptStart";
 
 function entity(entityId: string, overrides: Partial<EntityOption> = {}): EntityOption {
   return {
@@ -157,5 +158,34 @@ describe("entity blocks", () => {
     expect(sceneMisfit(entity("binary_sensor.flur"))).toBe("sceneSensor");
     expect(sceneMisfit(entity("sensor.wind"))).toBe("sceneMeasure");
     expect(sceneMisfit(entity("weather.home"))).toBe("sceneOther");
+  });
+  it("offers a script on 'Dann' as run and wait, or start without waiting", () => {
+    const withStart = {
+      ...catalog,
+      actions: { ...catalog.actions, "script.turn_on": { name: "Einschalten", fields: {} } },
+    } as unknown as EditorCatalog;
+    const script = entity("script.gute_nacht_neu", { scriptKey: "gute_nacht" });
+    const fit = entityFit(script, "action", withStart);
+
+    expect(labels(fit)).toEqual([{ key: "runScript" }, { key: "startScript" }]);
+    // Run: a direct call by the key in scripts.yaml, which waits
+    expect("choices" in fit && fit.choices[0]?.item).toEqual({ action: "script.gute_nacht" });
+    // Start: HA's script.turn_on with the script as target
+    expect("choices" in fit && fit.choices[1]?.item).toMatchObject({
+      action: "script.turn_on",
+      target: { entity_id: "script.gute_nacht_neu" },
+    });
+    // Without a known key (a script just created), its object ID is the key
+    const fresh = entityFit(entity("script.neu"), "action", catalog);
+    expect("choices" in fresh && fresh.choices.map((choice) => choice.item)).toEqual([
+      { action: "script.neu" },
+    ]);
+  });
+
+  it("recognizes a block that starts a script without waiting, also in the old style", () => {
+    expect(isScriptStartBlock({ action: "script.turn_on" })).toBe(true);
+    expect(isScriptStartBlock({ service: "script.turn_on" })).toBe(true);
+    expect(isScriptStartBlock({ action: "script.gute_nacht" })).toBe(false);
+    expect(isScriptStartBlock(null)).toBe(false);
   });
 });

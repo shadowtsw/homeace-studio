@@ -9,7 +9,7 @@ type Raw = Record<string, unknown>;
 export type ChoiceLabel = { key: string; params?: Record<string, string> } | { text: string };
 
 /** One thing a dropped entity can become in a section, with the new block's config. */
-export type EntityChoice = { label: ChoiceLabel; item: Raw };
+export type EntityChoice = { label: ChoiceLabel; item: Raw; sub?: ChoiceLabel };
 
 /** What an entity can become in a section, or why it does not fit (key below `flow.drop.why`). */
 export type EntityFit = { choices: EntityChoice[] } | { reason: string };
@@ -51,7 +51,6 @@ const ACTIONS_BY_DOMAIN: Record<string, string[]> = {
   lock: ["lock.lock", "lock.unlock"],
   vacuum: ["vacuum.start", "vacuum.return_to_base"],
   scene: ["scene.turn_on"],
-  script: ["script.turn_on"],
   automation: ["automation.trigger", "automation.turn_on", "automation.turn_off"],
   button: ["button.press"],
   input_button: ["input_button.press"],
@@ -182,7 +181,37 @@ function conditionChoices(entity: EntityOption): EntityChoice[] {
   }));
 }
 
+/** The action that starts a script without waiting for it (HA calls it "Einschalten"). */
+export const SCRIPT_START_ACTION = "script.turn_on";
+
+/**
+ * A script: run it and wait (a direct call, as HA's own editor adds a script), or start it and go
+ * on at once. The direct call needs no catalog entry, so a script created a moment ago works too.
+ */
+function scriptChoices(entity: EntityOption, catalog: EditorCatalog | null): EntityFit {
+  const key = entity.scriptKey ?? entity.entityId.slice(entity.entityId.indexOf(".") + 1);
+  const run: EntityChoice = {
+    label: { key: "runScript" },
+    sub: { key: "runScriptSub" },
+    item: { action: `script.${key}` },
+  };
+  const isStartDescribed = !catalog || SCRIPT_START_ACTION in catalog.actions;
+  if (!isStartDescribed) return { choices: [run] };
+
+  const name = catalog?.actions[SCRIPT_START_ACTION]?.name ?? SCRIPT_START_ACTION;
+  const startTemplate = { key: SCRIPT_START_ACTION, label: name, icon: "", isClassic: false };
+  const start: EntityChoice = {
+    label: { key: "startScript" },
+    sub: { key: "startScriptSub" },
+    item: { ...newBlock("action", startTemplate, catalog), target: { entity_id: entity.entityId } },
+  };
+
+  return { choices: [run, start] };
+}
+
 function actionChoices(entity: EntityOption, catalog: EditorCatalog | null): EntityFit {
+  if (entity.domain === "script") return scriptChoices(entity, catalog);
+
   // Sensors only report
   const keys = ACTIONS_BY_DOMAIN[entity.domain] ?? [];
   if (keys.length === 0) {

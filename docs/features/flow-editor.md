@@ -144,7 +144,13 @@ have nothing to check (`noCondition`).
   motion sensor from a door contact; passing states like "opening" are left out); a measured value
   offers "Steigt über / Fällt unter …" with its current value as the limit, so the block is valid at
   once. Actions only those HA describes (catalog), named by HA, with HA's defaults and `target.entity_id`.
-  Sensors say why they cannot be told anything. One choice goes in at once.
+  Sensors say why they cannot be told anything. One choice goes in at once. A script offers
+  "Ausführen" (a direct call `action: script.<scriptKey>`, which waits, as HA's own editor adds a
+  script; needs no catalog entry, so a script created a moment ago works too) and "Starten, ohne zu
+  warten" (`script.turn_on`). Choices may carry an explanation (`sub`), shown wrapped in the menu.
+- **`script.turn_on` in the flow:** HA calls it "Einschalten", which reads like "activate". `FlowBlock`
+  shows it as "Skript starten, ohne zu warten" with an ⓘ that explains it does run the script, only
+  without waiting (`isScriptStartBlock` in `utils/flow/scriptStart.ts`, also for the old `service:`).
 - **The new block** goes to the end of its list (`insert`) and flashes (`data-block-id`, `nextBlockId`).
 - **Click / tap:** the list's entity menu (`useEntityMenu`) offers the same targets and choices without
   dragging, plus "In einen Ordner verschieben …".

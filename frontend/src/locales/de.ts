@@ -189,8 +189,16 @@ export default {
     confirm: "Endgültig löschen",
   },
   flow: {
+    scriptStart: {
+      title: "Skript starten, ohne zu warten",
+      hint: "Führt das Skript aus, wartet aber nicht auf sein Ende: Die nächste Aktion startet sofort. Zum Warten das Skript als „Ausführen“ einfügen.",
+    },
     drop: {
       choice: {
+        runScript: "Ausführen",
+        runScriptSub: "Wartet, bis das Skript fertig ist, dann geht es weiter",
+        startScript: "Starten, ohne zu warten",
+        startScriptSub: "Das Skript läuft nebenher, die Automation macht sofort weiter",
         fires: "Wird ausgelöst",
         motionOn: "Bewegung erkannt",
         motionOff: "Keine Bewegung mehr",
