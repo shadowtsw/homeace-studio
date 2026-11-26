@@ -92,6 +92,10 @@ export const CATALOG_DE: Catalog = {
 
   CHECKUP_IGNORED: "Wird nicht mehr gemeldet.",
   CHECKUP_RESTORED: "Ausgeblendete Funde sind wieder da.",
+  ENTITY_SORTING_SAVED: "Gespeichert.",
+  ENTITY_SORTING_MOVED: "Einsortiert.",
+  ENTITY_SORTING_UNDONE: "Rückgängig gemacht.",
+  ENTITY_SORTING_RUN_NOT_FOUND: "Dieser Durchlauf lässt sich nicht mehr rückgängig machen.",
   PREFERENCES_NO_USER:
     "Einstellungen pro Benutzer gibt es nur, wenn HomeAce Studio über Home Assistant geöffnet wird.",
   PREFERENCE_INVALID: "Die Einstellung „{name}“ hat keinen gültigen Wert.",

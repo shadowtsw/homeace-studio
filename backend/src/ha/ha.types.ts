@@ -21,6 +21,10 @@ export type HaEntityRegistryEntry = {
   device_id?: string | null;
   disabled_by: string | null;
   hidden_by: string | null;
+  /** "diagnostic" (battery, signal …) or "config" (restart button, offset …); null for regular ones. */
+  entity_category?: "config" | "diagnostic" | null;
+  /** True when the name is "device name + original_name", like most integrations do it today. */
+  has_entity_name?: boolean;
   /**
    * When HA registered the entity, in seconds since 1970. Missing before HA 2024.7; entities older
    * than that carry the time of HA's update or 0.
@@ -48,6 +52,8 @@ export type HaDevice = {
   parent_device_id?: string | null;
   /** Label ids; HA sends them, older demo data may leave them out. */
   labels?: string[];
+  manufacturer?: string | null;
+  model?: string | null;
 };
 
 export type HaState = {
@@ -82,6 +88,8 @@ export type HaArea = {
   area_id: string;
   name: string;
   icon: string | null;
+  /** The floor it is on; null when none is set (older demo data leaves it out). */
+  floor_id?: string | null;
   /** Label ids; HA sends them, older demo data may leave them out. */
   labels?: string[];
 };
@@ -113,6 +121,12 @@ export type HaCategory = {
   category_id: string;
   name: string;
   icon: string | null;
+};
+
+/** One integration from `manifest/list`: its domain ("hue") and its name ("Philips Hue"). */
+export type HaManifest = {
+  domain: string;
+  name: string;
 };
 
 export type HaConfigEntry = {

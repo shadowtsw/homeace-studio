@@ -94,6 +94,10 @@ export const CATALOG_FR: Catalog = {
 
   CHECKUP_IGNORED: "Ne sera plus signalé.",
   CHECKUP_RESTORED: "Les constats masqués sont de retour.",
+  ENTITY_SORTING_SAVED: "Enregistré.",
+  ENTITY_SORTING_MOVED: "Classé.",
+  ENTITY_SORTING_UNDONE: "Annulé.",
+  ENTITY_SORTING_RUN_NOT_FOUND: "Cette opération ne peut plus être annulée.",
   PREFERENCES_NO_USER:
     "Les paramètres par utilisateur n'existent que si HomeAce Studio est ouvert via Home Assistant.",
   PREFERENCE_INVALID: "Le paramètre « {name} » n'a pas de valeur valide.",

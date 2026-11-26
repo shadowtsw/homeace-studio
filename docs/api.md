@@ -401,6 +401,32 @@ dropped on every live change.
 `POST /ignore` `{ key }` hides a finding (overlay `checkupIgnored`, `CHECKUP_IGNORED`), `DELETE /ignore`
 shows all again (`CHECKUP_RESTORED`).
 
+## Entitäten einsortieren: /api/entity-sorting
+
+The tool computes its proposals in the browser; the backend serves the data and moves in batches
+([features/entity-sorting.md](features/entity-sorting.md)).
+
+- `GET` → `{ entities, devices, areas, floors, integrations, flows, folders, memory }`. `entities` are all
+  plain entities: registry entries (disabled ones too) and state-only ones (`isInRegistry: false`), without
+  automations, scripts, scenes and helpers. Each has `deviceId`, `areaId` (own or the device's),
+  `deviceClass`, `entityCategory` (`diagnostic`/`config`/null), `integration` (domain), label names,
+  `categoryPath`, `isDisabled`, `isHidden`. `devices` carry `manufacturer` and `model`, `areas` their
+  `floorId`. `integrations` maps a domain to its name (empty when HA does not hand them out). `flows` are
+  the entries that use entities: `{ entityId, name, kind, categoryPath, uses: [{ entityId, roles }] }`.
+  `memory` is the overlay `entitySorting`: `rules`, `rejected` (`[{ bundleKey, paths }]`), `ignored`
+  (bundle keys) and `lastRun` (`{ runId, at, moves: [{ entityId, from, to }] }`).
+- `PUT /memory` `{ rules, rejected, ignored }` replaces them (`ENTITY_SORTING_SAVED`); `lastRun` stays.
+  A rule is `{ conditions: [{ type, value }], target }` with `type` one of `label`, `area`, `floor`,
+  `manufacturer`, `integration`, `domain`, `deviceClass`, `nameContains` (label, area, floor: ids); the
+  target may hold `{area}` and `{floor}`.
+- `POST /moves` `{ runId, moves: [{ entityId, categoryPath }] }` (at most 100) moves one batch and
+  answers per entity `[{ entityId, status, from }]` with `status` `moved`, `unchanged`, `notInRegistry`
+  or `failed` (`ENTITY_SORTING_MOVED`). A new `runId` starts a new last run; batches with the same one
+  add to it.
+- `POST /undo` `{ runId, entityIds }` (at most 100) moves them back to `from`; an entity whose folder
+  changed since the run is left alone (`changed`). Done ones leave the run, an empty run is gone
+  (`ENTITY_SORTING_UNDONE`). A `runId` that is not the last run: 404 `ENTITY_SORTING_RUN_NOT_FOUND`.
+
 ## Dependencies: GET /api/dependencies/:entityId
 
 What an entry uses and who uses it. Works for every entity ID (automation, script, scene, helper, or any

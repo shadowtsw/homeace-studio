@@ -41,7 +41,7 @@ rules and pitfalls, and recipes.
 - Columns (Navigation · List · Detail): [docs/ui/layout.md](docs/ui/layout.md),
   [navigation.md](docs/ui/navigation.md), [list.md](docs/ui/list.md), [detail.md](docs/ui/detail.md)
 - Features in [docs/features/](docs/features/): flow-editor, scenes, helpers, folders, areas, checkup,
-  dependencies, run-history, entry-actions, live-updates, ai-mcp, i18n
+  dependencies, run-history, entry-actions, live-updates, ai-mcp, entity-sorting, i18n
 
 ## Commands
 

@@ -5,6 +5,7 @@ import { EDITOR_REPOSITORY } from "../editor/editor.constants";
 import { EditorService } from "../editor/editor.service";
 import type { EditorRepository } from "../editor/repositories/editor.repository";
 import { EntriesService } from "../entries/entries.service";
+import { renameSortingEntity } from "../entity-sorting/sorting-memory";
 import { HaConnectionService } from "../ha/ha-connection.service";
 import { HA_COMMAND } from "../ha/ha.constants";
 import { MESSAGE_ID } from "../messages/message-ids";
@@ -175,5 +176,6 @@ function carryOver(overlay: Overlay, from: string, to: string): Overlay {
     favorites: overlay.favorites.map((id) => (id === from ? to : id)),
     notes,
     checkupIgnored: overlay.checkupIgnored.map((key) => replaceEntityId(key, from, to) as string),
+    entitySorting: renameSortingEntity(overlay.entitySorting, from, to),
   };
 }

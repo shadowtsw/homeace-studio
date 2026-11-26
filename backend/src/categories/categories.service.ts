@@ -11,6 +11,10 @@ import {
   CATEGORY_SCOPES,
   type CategoryScope,
 } from "./categories.constants";
+import { ENTITY_MOVE_STATUS, type EntityMoveResult } from "../entity-sorting/entity-sorting.model";
+import { moveSortingPaths } from "../entity-sorting/sorting-memory";
+import { HaCommandError } from "../ha/ha-command.error";
+import { HA_ERROR_CODE } from "../ha/ha.constants";
 import { isSameOrBelow, replacePathPrefix } from "./category-path";
 import { requireCategoryPath } from "./require-category-path";
 import type { CategoryRepository } from "./repositories/category.repository";
@@ -22,6 +26,13 @@ export type CategoryAssignment = {
   currentCategoryId: string | null;
   /** Full path of the target folder; null removes the category. */
   targetPath: string | null;
+};
+
+/** One entity of a batch move; `expectedPath` makes it a no-op when the entity is elsewhere now. */
+export type EntityMove = {
+  entityId: string;
+  targetPath: string | null;
+  expectedPath?: string | null;
 };
 
 type PlannedRename = { scope: CategoryScope; categoryId: string; newName: string };
@@ -77,6 +88,71 @@ export class CategoriesService {
   }
 
   /**
+   * Moves many plain entities at once (the tool "Entitäten einsortieren"). Reads the registry and the
+   * category list once instead of per entity, and cleans up emptied folders once at the end. One
+   * failing entity does not stop the others.
+   */
+  async moveEntities(moves: EntityMove[]): Promise<EntityMoveResult[]> {
+    const scope = CATEGORY_SCOPE.entities;
+    const [assignments, known] = await Promise.all([
+      this.categories.listAssignments(scope),
+      this.categories.list(scope),
+    ]);
+    const currentOf = new Map<string, string>();
+    assignments.forEach((entityIds, categoryId) =>
+      entityIds.forEach((entityId) => currentOf.set(entityId, categoryId)),
+    );
+    const idByName = new Map(known.map((category) => [category.name, category.categoryId]));
+    const nameById = new Map(known.map((category) => [category.categoryId, category.name]));
+    const emptied = new Set<string>();
+    const results: EntityMoveResult[] = [];
+
+    for (const move of moves) {
+      const fromId = currentOf.get(move.entityId) ?? null;
+      const from = fromId ? (nameById.get(fromId) ?? null) : null;
+      const result = (status: EntityMoveResult["status"]): number =>
+        results.push({ entityId: move.entityId, status, from });
+
+      if (move.expectedPath !== undefined && move.expectedPath !== from) {
+        result(ENTITY_MOVE_STATUS.changed);
+        continue;
+      }
+
+      try {
+        const targetPath = move.targetPath === null ? null : requireCategoryPath(move.targetPath);
+        let targetId: string | null = null;
+
+        if (targetPath !== null) {
+          targetId = idByName.get(targetPath) ?? (await this.createOwned(scope, targetPath));
+          idByName.set(targetPath, targetId);
+          nameById.set(targetId, targetPath);
+        }
+
+        if (targetId === fromId) {
+          result(ENTITY_MOVE_STATUS.unchanged);
+          continue;
+        }
+
+        await this.categories.assign(move.entityId, scope, targetId);
+
+        if (targetId) currentOf.set(move.entityId, targetId);
+        else currentOf.delete(move.entityId);
+        if (fromId) emptied.add(fromId);
+        result(ENTITY_MOVE_STATUS.moved);
+      } catch (error) {
+        const isMissing = error instanceof HaCommandError && error.code === HA_ERROR_CODE.notFound;
+
+        this.logger.warn(`Could not move ${move.entityId}: ${String(error)}`);
+        result(isMissing ? ENTITY_MOVE_STATUS.notInRegistry : ENTITY_MOVE_STATUS.failed);
+      }
+    }
+
+    for (const categoryId of emptied) await this.cleanUp(scope, categoryId);
+
+    return results;
+  }
+
+  /**
    * Renames a folder: every category named `from` or below it, in every scope.
    *
    * @returns How many HA categories were renamed.
@@ -113,6 +189,7 @@ export class CategoriesService {
         Object.entries(overlay.folderColors).map(([path, color]) => [movePath(path), color]),
       ),
       folderOrder: moveFolderOrder(overlay.folderOrder, movePath),
+      entitySorting: moveSortingPaths(overlay.entitySorting, movePath),
     }));
 
     this.logger.log(`Renamed "${source}" to "${target}" (${renames.length} categories)`);
@@ -152,6 +229,11 @@ export class CategoriesService {
 
     if (match) return match.categoryId;
 
+    return this.createOwned(scope, path);
+  }
+
+  /** Creates the category and remembers that HomeAce Studio owns it (so it may delete it later). */
+  private async createOwned(scope: CategoryScope, path: string): Promise<string> {
     const created = await this.categories.create(scope, path);
     await this.overlay.update((overlay) => ({
       ...overlay,

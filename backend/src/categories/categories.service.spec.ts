@@ -1,5 +1,6 @@
 import { BadRequestException, ConflictException, Logger } from "@nestjs/common";
 
+import { HaCommandError } from "../ha/ha-command.error";
 import { EMPTY_OVERLAY, type Overlay } from "../overlay/overlay.model";
 import type { OverlayRepository } from "../overlay/repositories/overlay.repository";
 import type { CategoryScope } from "./categories.constants";
@@ -49,6 +50,8 @@ class FakeCategories implements CategoryRepository {
   };
 
   assign = (entityId: string, scope: CategoryScope, categoryId: string | null) => {
+    if (this.unregistered.has(entityId))
+      return Promise.reject(new HaCommandError("not_found", "Entity not found"));
     this.assignments.set(`${scope}:${entityId}`, categoryId);
     return Promise.resolve();
   };
@@ -220,6 +223,40 @@ describe("CategoriesService", () => {
         BadRequestException,
       );
       expect(categories.names("homeace_entities")).toEqual([]);
+    });
+  });
+
+  describe("moveEntities", () => {
+    it("moves many entities, creates each folder once and cleans up the emptied one", async () => {
+      await service.moveEntity("sensor.old", "Alt");
+
+      const results = await service.moveEntities([
+        { entityId: "light.a", targetPath: "Haus/Küche" },
+        { entityId: "light.b", targetPath: "Haus/Küche" },
+        { entityId: "sensor.old", targetPath: "Haus/Küche" },
+      ]);
+
+      expect(results.map((result) => result.status)).toEqual(["moved", "moved", "moved"]);
+      expect(results[2]?.from).toBe("Alt");
+      expect(categories.names("homeace_entities")).toEqual(["Haus/Küche"]);
+      expect(overlay.data.ownedCategoryIds).toHaveLength(1);
+    });
+
+    it("reports per entity: unchanged, changed since, and not in the registry", async () => {
+      await service.moveEntity("light.a", "Haus");
+      categories.unregistered.add("sensor.yaml");
+
+      const results = await service.moveEntities([
+        { entityId: "light.a", targetPath: "Haus" },
+        { entityId: "light.b", targetPath: null, expectedPath: "Haus" },
+        { entityId: "sensor.yaml", targetPath: "Haus" },
+      ]);
+
+      expect(results.map((result) => result.status)).toEqual([
+        "unchanged",
+        "changed",
+        "notInRegistry",
+      ]);
     });
   });
 

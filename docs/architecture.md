@@ -46,6 +46,7 @@ backend/src/
   lookups/          GET /api/areas, /api/labels, /api/entities (picker rows)
   live/             HA events → SSE GET /api/events                                  features/live-updates.md
   ai/               MCP server, access, AI folder plans                              features/ai-mcp.md
+  entity-sorting/   the tool "Entitäten einsortieren": context, memory, batch moves  features/entity-sorting.md
   demo/             FakeHa, demo home, demo traces, memory overlay                   setup.md
 ```
 
@@ -70,7 +71,8 @@ config, and `HaConnectionService` gets the resolved endpoint injected. Unit test
 `OVERLAY_FILE` (add-on: `/config/overlay.json`, locally `../data/overlay.json`). Writes go to a temp file
 and are renamed into place. `update()` calls run one after another, so two moves at once cannot lose an
 id. Fields (`overlay/overlay.model.ts`): `ownedCategoryIds`, `folders`, `favorites`, `notes`,
-`folderColors`, `folderOrder`, `cleanupIgnored`, `checkupIgnored`, `mcp`, `aiPlans`. A new field:
+`folderColors`, `folderOrder`, `cleanupIgnored`, `checkupIgnored`, `mcp`, `aiPlans`, `entitySorting`,
+`userPreferences`. A new field:
 [recipes.md](recipes.md#new-overlay-field-own-data-ha-does-not-know).
 
 ## Frontend
@@ -128,6 +130,7 @@ Risk per area, quick checks and the check per HA release: [ha-compatibility.md](
 | Scene config | REST `/api/config/scene/config/<id>`; preview with service `scene.apply` |
 | Helpers (input_*, counter, timer) | WS `<domain>/list · create · update · delete` |
 | Config-entry helpers (template, group, …) | WS `config_entries/get` (listed only) |
+| Integration names for the tool "Entitäten einsortieren" ("hue" → "Philips Hue") | WS `manifest/list` (optional: without it the domains are used) |
 | Block catalog of the visual editor | WS `trigger_platforms/subscribe`, `condition_platforms/subscribe`, `get_services`, `frontend/get_translations` |
 | Run, on / off, `scene.apply` | WS `call_service` |
 | Run history | WS `trace/list`, `trace/get` |
@@ -156,6 +159,7 @@ Risk per area, quick checks and the check per HA release: [ha-compatibility.md](
 | run, rename, entity ID, duplicate, delete, favorites, notes | [features/entry-actions.md](features/entry-actions.md) |
 | live updates | [features/live-updates.md](features/live-updates.md) |
 | AI / MCP | [features/ai-mcp.md](features/ai-mcp.md) |
+| the tool "Entitäten einsortieren" | [features/entity-sorting.md](features/entity-sorting.md) |
 | texts, languages, error messages | [features/i18n.md](features/i18n.md) |
 | new endpoint, HA command, overlay field, component | [recipes.md](recipes.md) |
 | a new HA release, what it can break, HA interfaces at risk | [ha-compatibility.md](ha-compatibility.md) |

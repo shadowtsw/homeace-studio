@@ -1,4 +1,8 @@
 import type { AiPlan, McpAccess } from "../ai/ai-plan.model";
+import {
+  EMPTY_SORTING_MEMORY,
+  type EntitySortingMemory,
+} from "../entity-sorting/entity-sorting.model";
 
 export const OVERLAY_VERSION = 1;
 
@@ -36,6 +40,8 @@ export type Overlay = {
   mcp: McpAccess;
   /** Folder plans from an AI, open ones and recently decided ones. */
   aiPlans: AiPlan[];
+  /** The tool "Entitäten einsortieren": rules, turned-down proposals, kept-out bundles, last run. */
+  entitySorting: EntitySortingMemory;
   /**
    * Settings that follow a HA user to every device, by HA user ID: preference name → value (e.g.
    * "locale" → "de"). A user without an entry has not opened HomeAce Studio through HA yet.
@@ -55,5 +61,6 @@ export const EMPTY_OVERLAY: Overlay = {
   checkupIgnored: [],
   mcp: { isEnabled: false, token: null },
   aiPlans: [],
+  entitySorting: EMPTY_SORTING_MEMORY,
   userPreferences: {},
 };

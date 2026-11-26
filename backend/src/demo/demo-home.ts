@@ -1,6 +1,13 @@
 import type { HaPlatformDescription, HaServices, HaTranslations } from "../editor/catalog.mapper";
-import type { HaArea, HaConfigEntry, HaFloor, HaLabel } from "../ha/ha.types";
+import type { HaArea, HaConfigEntry, HaFloor, HaLabel, HaManifest } from "../ha/ha.types";
 import type { Overlay } from "../overlay/overlay.model";
+import {
+  SORTING_AREA_FLOORS,
+  SORTING_AREAS,
+  SORTING_ENTITIES,
+  SORTING_FLOORS,
+  SORTING_INTEGRATIONS,
+} from "./demo-sorting-home";
 import { createDemoTraces, type DemoTrace } from "./demo-traces";
 
 /** One entity of the demo home, in a compact form the fake HA turns into registry entries and states. */
@@ -26,6 +33,14 @@ export type DemoEntity = {
   /** Set for config-entry helpers such as template sensors. */
   configEntryId?: string;
   isDisabled?: boolean;
+  isHidden?: boolean;
+  /** "diagnostic" (battery, signal) or "config" (restart button); like integrations mark them. */
+  entityCategory?: "config" | "diagnostic";
+  /** Set on the device, like HA's device registry has them. */
+  manufacturer?: string;
+  model?: string;
+  /** Only a state, no registry entry: YAML without unique_id. */
+  isStateOnly?: boolean;
   attributes?: Record<string, unknown>;
   /** When the state last changed; defaults to now. */
   lastChanged?: string;
@@ -39,6 +54,8 @@ export type DemoHome = {
   labels: HaLabel[];
   entities: DemoEntity[];
   helperConfigEntries: HaConfigEntry[];
+  /** Integration names (`manifest/list`). */
+  integrations: HaManifest[];
   services: HaServices;
   /** Per language, per translation category ("services"), HA's flat translation keys. */
   translations: Record<string, Record<string, HaTranslations>>;
@@ -966,10 +983,13 @@ export function createDemoHome(now = Date.now()): DemoHome {
       { area_id: "hallway", name: "Hallway", icon: null },
       { area_id: "bathroom", name: "Bathroom", icon: null },
       { area_id: "garage", name: "Garage", icon: null },
-    ],
+    ]
+      .map((area): HaArea => ({ ...area, floor_id: SORTING_AREA_FLOORS[area.area_id] ?? null }))
+      .concat(SORTING_AREAS),
     floors: [
       { floor_id: "upstairs", name: "Upstairs", icon: null, level: 1 },
       { floor_id: "ground_floor", name: "Ground floor", icon: null, level: 0 },
+      ...SORTING_FLOORS,
     ],
     labels: [
       { label_id: "lights", name: "Lights", icon: null, color: "amber" },
@@ -987,10 +1007,12 @@ export function createDemoHome(now = Date.now()): DemoHome {
       ...HELPERS,
       ...LEGACY,
       ...BROKEN,
+      ...SORTING_ENTITIES,
     ]),
     helperConfigEntries: [
       { entry_id: "demo_template_solar_surplus", domain: "template", title: "Solar surplus" },
     ],
+    integrations: structuredClone(SORTING_INTEGRATIONS),
     services: structuredClone(SERVICES),
     translations: Object.fromEntries(
       Object.entries(SERVICE_TEXTS).map(([language, texts]) => [

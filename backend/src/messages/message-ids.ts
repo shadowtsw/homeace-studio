@@ -103,6 +103,12 @@ export const MESSAGE_ID = {
   checkupIgnored: "CHECKUP_IGNORED",
   checkupRestored: "CHECKUP_RESTORED",
 
+  // Entitäten einsortieren
+  entitySortingSaved: "ENTITY_SORTING_SAVED",
+  entitySortingMoved: "ENTITY_SORTING_MOVED",
+  entitySortingUndone: "ENTITY_SORTING_UNDONE",
+  entitySortingRunNotFound: "ENTITY_SORTING_RUN_NOT_FOUND",
+
   // Settings per HA user
   preferencesNoUser: "PREFERENCES_NO_USER",
   preferenceInvalid: "PREFERENCE_INVALID",

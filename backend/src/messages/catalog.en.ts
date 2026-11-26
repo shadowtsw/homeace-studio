@@ -92,6 +92,10 @@ export const CATALOG_EN: Catalog = {
 
   CHECKUP_IGNORED: "Will not be reported again.",
   CHECKUP_RESTORED: "Hidden findings are back.",
+  ENTITY_SORTING_SAVED: "Saved.",
+  ENTITY_SORTING_MOVED: "Sorted in.",
+  ENTITY_SORTING_UNDONE: "Undone.",
+  ENTITY_SORTING_RUN_NOT_FOUND: "This run can no longer be undone.",
   PREFERENCES_NO_USER:
     "Settings per user only exist when HomeAce Studio is opened through Home Assistant.",
   PREFERENCE_INVALID: "The setting “{name}” has no valid value.",

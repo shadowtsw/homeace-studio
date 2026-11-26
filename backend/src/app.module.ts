@@ -17,6 +17,7 @@ import { ApiExceptionFilter } from "./common/api/api-exception.filter";
 import { ResponseEnvelopeInterceptor } from "./common/api/response-envelope.interceptor";
 import { EditorModule } from "./editor/editor.module";
 import { EntriesModule } from "./entries/entries.module";
+import { EntitySortingModule } from "./entity-sorting/entity-sorting.module";
 import { HaModule } from "./ha/ha.module";
 import { HelpersModule } from "./helpers/helpers.module";
 import { LiveModule } from "./live/live.module";
@@ -45,6 +46,7 @@ import { PreferencesModule } from "./preferences/preferences.module";
     RenameModule,
     DuplicateModule,
     PreferencesModule,
+    EntitySortingModule,
   ],
   providers: [
     // Every answer uses the { message, error, data } envelope (docs/api.md).

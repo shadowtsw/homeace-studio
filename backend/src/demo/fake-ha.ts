@@ -186,6 +186,8 @@ export class FakeHa {
         return this.deleteArea(payload);
       case HA_COMMAND.configEntriesGet:
         return structuredClone(this.home.helperConfigEntries);
+      case HA_COMMAND.manifestList:
+        return structuredClone(this.home.integrations);
       case HA_COMMAND.callService:
         return this.callService(payload);
       case HA_COMMAND.getServices:
@@ -299,27 +301,29 @@ export class FakeHa {
     const areaId = entity.areaId ?? null;
     const parent = entity.parentDevice ? this.ensureDevice(entity.parentDevice, areaId) : null;
     const device = entity.device
-      ? this.ensureDevice(entity.device, parent ? null : areaId, parent?.id)
+      ? this.ensureDevice(entity.device, parent ? null : areaId, parent?.id, entity)
       : null;
 
-    this.registry.set(entity.entityId, {
-      entity_id: entity.entityId,
-      unique_id: entity.uniqueId ?? entity.entityId,
-      name: null,
-      original_name: entity.name,
-      icon: entity.icon ?? null,
-      platform: entity.platform,
-      config_entry_id: configEntryId,
-      categories,
-      labels: entity.labels ?? [],
-      area_id: device ? null : (entity.areaId ?? null),
-      device_id: device?.id ?? null,
-      disabled_by: entity.isDisabled ? "user" : null,
-      hidden_by: null,
-      created_at: this.isSeeded ? Date.now() / 1000 : 0,
-      // Like newer HA versions: null stands for the entity's own name.
-      aliases: [null],
-    });
+    if (!entity.isStateOnly)
+      this.registry.set(entity.entityId, {
+        entity_id: entity.entityId,
+        unique_id: entity.uniqueId ?? entity.entityId,
+        name: null,
+        original_name: entity.name,
+        icon: entity.icon ?? null,
+        platform: entity.platform,
+        config_entry_id: configEntryId,
+        categories,
+        labels: entity.labels ?? [],
+        area_id: device ? null : (entity.areaId ?? null),
+        device_id: device?.id ?? null,
+        disabled_by: entity.isDisabled ? "user" : null,
+        hidden_by: entity.isHidden ? "user" : null,
+        entity_category: entity.entityCategory ?? null,
+        created_at: this.isSeeded ? Date.now() / 1000 : 0,
+        // Like newer HA versions: null stands for the entity's own name.
+        aliases: [null],
+      });
     this.states.set(entity.entityId, {
       entity_id: entity.entityId,
       state: entity.state,
@@ -343,7 +347,12 @@ export class FakeHa {
   }
 
   /** A child device (`parentId`) has no area of its own; HA then shows the parent's. */
-  private ensureDevice(name: string, areaId: string | null, parentId?: string): HaDevice {
+  private ensureDevice(
+    name: string,
+    areaId: string | null,
+    parentId?: string,
+    info?: Pick<DemoEntity, "manufacturer" | "model">,
+  ): HaDevice {
     const existing = [...this.devices.values()].find(
       (device) => device.name === name && (device.parent_device_id ?? undefined) === parentId,
     );
@@ -355,6 +364,8 @@ export class FakeHa {
       name,
       name_by_user: null,
       area_id: areaId,
+      manufacturer: info?.manufacturer ?? null,
+      model: info?.model ?? null,
       ...(parentId ? { parent_device_id: parentId } : {}),
     };
     this.devices.set(device.id, device);

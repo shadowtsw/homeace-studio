@@ -94,6 +94,10 @@ export const CATALOG_ES: Catalog = {
 
   CHECKUP_IGNORED: "No se volverá a informar.",
   CHECKUP_RESTORED: "Los hallazgos ocultos han vuelto.",
+  ENTITY_SORTING_SAVED: "Guardado.",
+  ENTITY_SORTING_MOVED: "Clasificado.",
+  ENTITY_SORTING_UNDONE: "Deshecho.",
+  ENTITY_SORTING_RUN_NOT_FOUND: "Esta pasada ya no se puede deshacer.",
   PREFERENCES_NO_USER:
     "Los ajustes por usuario solo existen si HomeAce Studio se abre desde Home Assistant.",
   PREFERENCE_INVALID: "El ajuste “{name}” no tiene un valor válido.",

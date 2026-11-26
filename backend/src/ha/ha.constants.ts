@@ -51,6 +51,8 @@ export const HA_COMMAND = {
   /** Dashboard resources; icon packs like custom-brand-icons are among them. */
   lovelaceResources: "lovelace/resources",
   configEntriesGet: "config_entries/get",
+  /** Every loaded integration with its name ("hue" → "Philips Hue"). */
+  manifestList: "manifest/list",
   callService: "call_service",
   subscribeEvents: "subscribe_events",
   unsubscribeEvents: "unsubscribe_events",
