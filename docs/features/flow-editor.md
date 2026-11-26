@@ -13,7 +13,7 @@ saves the whole config back to HA. No YAML in the UI.
 | Tab view: mode bar, three sections, the one popover for every editor and menu | `components/flow/FlowView.vue`; the popover and its menus in `composables/flow/useFlowPopover.ts`, the sections with their drop signs in `composables/flow/useFlowSections.ts` |
 | One block (recursive): icon, title, chips, "+ Option", ⋮ menu, branches, run state | `components/flow/FlowBlock.vue` |
 | Popover / bottom sheet (≤ 560 px) for a value or a menu | `components/flow/ChipEditorPopover.vue` (+ `ChoiceList.vue`); the value and what "Übernehmen" sends in `composables/flow/useChipEditorValue.ts`, the placement next to the chip in `composables/panels/useAnchoredPlacement.ts` |
-| Entity editor | `components/flow/EntityPicker.vue`, `EntityPickerRow.vue`, pure parts in `utils/entities/entityPicker.ts` |
+| Entity editor | `components/flow/EntityPicker.vue`, `EntityPickerRow.vue`, `EntityPickerCriteria.vue` (area, label, kind chips); its state in `composables/flow/useEntityPicker.ts`, pure parts in `utils/entities/entityPicker.ts` |
 | Add button of a list | `components/flow/AddBlockButton.vue` |
 | New automation / script (name + folder) | `components/flow/NewFlowDialog.vue` |
 | What FlowView provides to nested blocks | `components/flow/flowEditing.ts` (`FLOW_EDITING`, `FLOW_RUN_STATES`) |
