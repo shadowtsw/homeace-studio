@@ -69,6 +69,7 @@
           :value="draft[id] ?? {}"
           :is-trying="preview.trying.has(id)"
           :is-technical-details-visible="isTechnicalDetailsVisible"
+          :temperature-unit="view?.temperatureUnit"
           @change="(value) => change(id, value)"
           @try="preview.tryDevice(id)"
           @take-current="takeCurrent(id)"

@@ -30,6 +30,7 @@ export const HA_MESSAGE = {
 
 export const HA_COMMAND = {
   getStates: "get_states",
+  getConfig: "get_config",
   entityRegistryList: "config/entity_registry/list",
   entityRegistryUpdate: "config/entity_registry/update",
   categoryRegistryList: "config/category_registry/list",

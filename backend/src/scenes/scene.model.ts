@@ -18,4 +18,6 @@ export type SceneView = {
   /** In scenes.yaml with an id, so HomeAce Studio can change it. */
   isEditable: boolean;
   devices: SceneDevice[];
+  /** The unit HA shows temperatures in ("°C" or "°F"), for thermostats. */
+  temperatureUnit: string;
 };

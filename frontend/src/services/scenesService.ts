@@ -12,7 +12,13 @@ export type SceneDevice = {
   current: { state: string; attributes: Record<string, unknown> } | null;
 };
 
-export type SceneView = { entityId: string; isEditable: boolean; devices: SceneDevice[] };
+export type SceneView = {
+  entityId: string;
+  isEditable: boolean;
+  devices: SceneDevice[];
+  /** The unit HA shows temperatures in ("°C" or "°F"). */
+  temperatureUnit: string;
+};
 
 const scenePath = (entityId: string): string => `/scenes/${encodeURIComponent(entityId)}`;
 

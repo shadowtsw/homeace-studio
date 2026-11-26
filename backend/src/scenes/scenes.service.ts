@@ -8,6 +8,8 @@ import type { SceneDevice, SceneValue, SceneView } from "./scene.model";
 import type { SceneRepository } from "./repositories/scene.repository";
 
 const DOMAIN_SEPARATOR = ".";
+/** Shown when HA's temperature unit cannot be read; HA's own default. */
+const FALLBACK_TEMPERATURE_UNIT = "°C";
 /** HA's metadata for a device added to a scene on its own, not with its whole device. */
 const ENTITY_ONLY = { entity_only: true };
 
@@ -28,9 +30,10 @@ export class ScenesService {
 
   /** The scene's devices with what the scene sets and what they do right now. */
   async get(entityId: string): Promise<SceneView> {
-    const [config, states] = await Promise.all([
+    const [config, states, temperatureUnit] = await Promise.all([
       this.findConfig(entityId),
       this.scenes.loadStates(),
+      this.temperatureUnit(),
     ]);
     const stateOf = new Map(states.map((state) => [state.entity_id, state]));
 
@@ -40,13 +43,31 @@ export class ScenesService {
         entityId,
         isEditable: true,
         devices: Object.entries(entities).map(([id, values]) => device(id, values, stateOf)),
+        temperatureUnit,
       };
     }
 
     // Not in scenes.yaml (e.g. from a package): shown with its members, read-only.
     const members = stateOf.get(entityId)?.attributes.entity_id;
     const ids = Array.isArray(members) ? members.filter((id) => typeof id === "string") : [];
-    return { entityId, isEditable: false, devices: ids.map((id) => device(id, null, stateOf)) };
+    return {
+      entityId,
+      isEditable: false,
+      devices: ids.map((id) => device(id, null, stateOf)),
+      temperatureUnit,
+    };
+  }
+
+  /** HA's temperature unit; read with every scene, so a change in HA's settings shows at once. */
+  private async temperatureUnit(): Promise<string> {
+    try {
+      return await this.scenes.loadTemperatureUnit();
+    } catch (error) {
+      this.logger.warn(
+        `Temperature unit not read, showing ${FALLBACK_TEMPERATURE_UNIT}: ${String(error)}`,
+      );
+      return FALLBACK_TEMPERATURE_UNIT;
+    }
   }
 
   /** One device as it would join a scene: its current state as the starting values. */

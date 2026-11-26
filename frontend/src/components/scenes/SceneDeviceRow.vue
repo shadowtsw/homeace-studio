@@ -143,7 +143,7 @@
           </button>
         </div>
       </div>
-      <label v-if="controls.hvacMode !== 'off'" class="scene-row__line">
+      <label v-if="controls.hvacMode !== 'off' && hasSingleTarget" class="scene-row__line">
         <span class="scene-row__label">{{ t("scene.temperature") }}</span>
         <input
           type="range"
@@ -153,7 +153,7 @@
           :value="controls.temperature ?? climate.min"
           @input="change({ temperature: Number(($event.target as HTMLInputElement).value) })"
         />
-        <span class="scene-row__value">{{ controls.temperature ?? "–" }} °C</span>
+        <span class="scene-row__value">{{ controls.temperature ?? "–" }} {{ unit }}</span>
       </label>
     </template>
 
@@ -188,6 +188,7 @@ import {
   colorPresetOf,
   extrasOf,
   hasOnOff,
+  hasSingleTargetTemperature,
   kelvinToCss,
   lightCaps,
   presetKelvin,
@@ -206,7 +207,13 @@ const props = defineProps<{
   value: SceneValue;
   isTrying: boolean;
   isTechnicalDetailsVisible: boolean;
+  /** The unit HA shows temperatures in ("°C" or "°F"). */
+  temperatureUnit?: string;
 }>();
+
+/** Shown until HA's unit is known; HA's own default. */
+const FALLBACK_TEMPERATURE_UNIT = "°C";
+const unit = computed(() => props.temperatureUnit ?? FALLBACK_TEMPERATURE_UNIT);
 
 const emit = defineEmits<{
   change: [value: SceneValue];
@@ -229,6 +236,10 @@ const domain = computed(() => props.device.domain);
 const icon = computed(() => DOMAIN_ICON[domain.value] ?? "mdi-devices");
 const attributes = computed(() => props.device.current?.attributes ?? {});
 const controls = computed(() => readControls(domain.value, props.value));
+// A device working with a low and a high limit gets no single temperature (it would refuse it)
+const hasSingleTarget = computed(() =>
+  hasSingleTargetTemperature(attributes.value, controls.value.hvacMode),
+);
 const caps = computed(() => lightCaps(attributes.value));
 const tone = computed(() => toneOf(controls.value, caps.value));
 const extras = computed(() => extrasOf(domain.value, props.value));

@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   colorPresetOf,
   extrasOf,
+  hasSingleTargetTemperature,
   kelvinToCss,
   lightCaps,
   presetKelvin,
@@ -190,5 +191,18 @@ describe("extrasOf", () => {
     expect(
       extrasOf("media_player", { state: "on", media_title: "News", volume_level: 0.3 }),
     ).toEqual([["volume_level", 0.3]]);
+  });
+});
+
+describe("hasSingleTargetTemperature", () => {
+  it("offers one temperature to a plain thermostat and to one without features", () => {
+    expect(hasSingleTargetTemperature({ supported_features: 1 }, "heat")).toBe(true);
+    expect(hasSingleTargetTemperature({}, "heat")).toBe(true);
+  });
+
+  it("leaves it out where the thermostat works with a low and a high limit", () => {
+    expect(hasSingleTargetTemperature({ supported_features: 3 }, "heat_cool")).toBe(false);
+    expect(hasSingleTargetTemperature({ supported_features: 3 }, "heat")).toBe(true);
+    expect(hasSingleTargetTemperature({ supported_features: 2 }, "heat")).toBe(false);
   });
 });

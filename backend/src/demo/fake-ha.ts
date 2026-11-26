@@ -128,6 +128,8 @@ export class FakeHa {
   private nextId = 1;
   /** The demo home's own entities count as old, like a home in use; later ones are new. */
   private isSeeded = false;
+  /** The unit HA shows temperatures in (its general settings); tests switch it to °F. */
+  temperatureUnit = "°C";
 
   constructor(private readonly home: DemoHome) {
     this.areas = home.areas;
@@ -198,6 +200,8 @@ export class FakeHa {
         return { config: this.flowConfigOf("automation", String(payload.entity_id)) };
       case HA_COMMAND.scriptConfig:
         return { config: this.flowConfigOf("script", String(payload.entity_id)) };
+      case HA_COMMAND.getConfig:
+        return { unit_system: { temperature: this.temperatureUnit } };
       case HA_COMMAND.unsubscribeEvents:
         return null;
       default:

@@ -55,6 +55,11 @@ Alles rückgängig → PUT :id { the state before the first automatic save }
   übernehmen" takes everything the device has right now.
 - Devices offered for adding: `light`, `switch`, `cover`, `climate`, `fan`, `media_player`
   (`SCENE_DOMAINS`). Others may already be in a scene and stay as they are.
+- Thermostats: the temperature shows in HA's own unit (`temperatureUnit` of the scene, from
+  `get_config`; HA converts climate values into it, so °F homes see °F). The single temperature
+  slider only shows where the device takes one (`hasSingleTargetTemperature`: feature bit
+  `TARGET_TEMPERATURE`, and not "heat_cool" on a device with a low/high range). A stored
+  `target_temp_low`/`target_temp_high` stays and is named under "Außerdem gespeichert".
 - **Dropping an entity from the list** onto the device list adds it like "+ Gerät hinzufügen" (current
   state, nothing switches). One already in the scene flashes instead; sensors and measured values say
   why they cannot. Same kinds as above.

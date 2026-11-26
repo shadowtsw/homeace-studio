@@ -13,6 +13,7 @@ function setup(overrides: Partial<SceneRepository> = {}) {
     loadConfig: jest.fn(),
     saveConfig,
     loadStates: jest.fn(),
+    loadTemperatureUnit: jest.fn().mockResolvedValue("°C"),
     apply: jest.fn(),
     ...overrides,
   };

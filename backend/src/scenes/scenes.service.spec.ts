@@ -107,6 +107,15 @@ describe("ScenesService", () => {
     });
   });
 
+  it("tells the unit Home Assistant shows temperatures in", async () => {
+    const { service, fake } = setup();
+
+    expect((await service.get("scene.cozy_evening")).temperatureUnit).toBe("°C");
+
+    fake.temperatureUnit = "°F";
+    expect((await service.get("scene.cozy_evening")).temperatureUnit).toBe("°F");
+  });
+
   it("previews on the devices and brings them back afterwards", async () => {
     const { service, stateOf } = setup();
 
@@ -153,6 +162,7 @@ describe("ScenesService", () => {
       entityId: "scene.unknown",
       isEditable: false,
       devices: [],
+      temperatureUnit: "°C",
     });
     await expect(service.save("scene.unknown", {})).rejects.toBeInstanceOf(BadRequestException);
   });

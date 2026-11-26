@@ -543,7 +543,9 @@ devices to "photograph" them.
   `FLOW_CREATED`; `400 FLOW_INVALID` when HA rejects it. Activating it switches nothing until devices
   are added.
 - `GET /api/scenes/:entityId` → `{ entityId, isEditable, devices: [{ entityId, name, domain, values,
-  current }] }`. `values` is what the scene sets (HA's state plus attributes; a plain `"off"` in
+  current }], temperatureUnit }`. `temperatureUnit` is the unit HA shows temperatures in (WS
+  `get_config` → `unit_system.temperature`, `"°C"` or `"°F"`; `"°C"` when it cannot be read), read
+  with every scene. `values` is what the scene sets (HA's state plus attributes; a plain `"off"` in
   scenes.yaml comes as `{ state: "off" }`), `current` what the device does now (`{ state, attributes }`,
   e.g. a light's `supported_color_modes`). Scenes outside scenes.yaml: `isEditable: false`, devices from
   the scene's `entity_id` attribute, `values: null`.

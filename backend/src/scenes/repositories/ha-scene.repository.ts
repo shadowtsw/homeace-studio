@@ -10,6 +10,11 @@ import type { SceneRepository } from "./scene.repository";
 
 const SCENE_DOMAIN = "scene";
 const APPLY_SERVICE = "apply";
+/** HA's own default when its config names no temperature unit. */
+const DEFAULT_TEMPERATURE_UNIT = "°C";
+
+/** The part of HA's `get_config` answer used here. */
+type HaCoreConfig = { unit_system?: { temperature?: string } };
 
 @Injectable()
 export class HaSceneRepository implements SceneRepository {
@@ -51,6 +56,12 @@ export class HaSceneRepository implements SceneRepository {
 
   loadStates(): Promise<HaState[]> {
     return this.ha.call<HaState[]>(HA_COMMAND.getStates);
+  }
+
+  async loadTemperatureUnit(): Promise<string> {
+    const config = await this.ha.call<HaCoreConfig>(HA_COMMAND.getConfig);
+
+    return config.unit_system?.temperature || DEFAULT_TEMPERATURE_UNIT;
   }
 
   async apply(entities: Record<string, SceneValue>): Promise<void> {

@@ -16,6 +16,9 @@ export interface SceneRepository {
 
   loadStates(): Promise<HaState[]>;
 
+  /** The unit HA shows temperatures in ("°C" or "°F"), from its general settings. */
+  loadTemperatureUnit(): Promise<string>;
+
   /** Sets devices to the given states right now (`scene.apply`), without saving a scene. */
   apply(entities: Record<string, SceneValue>): Promise<void>;
 }
