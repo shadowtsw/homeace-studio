@@ -186,6 +186,24 @@ describe("rules", () => {
   });
 });
 
+describe("technical folder", () => {
+  it("still works with a slash too many", () => {
+    const state = sampleState({
+      options: {
+        ...sampleState().options,
+        isTechnicalSeparate: true,
+        technicalFolder: "Technik/ ",
+      },
+    });
+    const opened = open(state);
+
+    expect(collectMoves(opened)).toContainEqual({
+      entityId: "sensor.bewegung_kueche_akku",
+      categoryPath: "Technik",
+    });
+  });
+});
+
 describe("layout", () => {
   it("groups the rest by name, integration (no hubs) and device class, and pre-ticks only sure ones", () => {
     const { layout, state } = open();

@@ -6,6 +6,7 @@ import {
   lastLevel,
   renameLastLevel,
   replacePathPrefix,
+  cleanFolderPath,
 } from "../categoryPath";
 
 describe("category path helpers", () => {
@@ -30,5 +31,13 @@ describe("category path helpers", () => {
     expect(folderColor("Haus/Garten/Pool", colors)).toBe("#76a43a");
     expect(folderColor("Haus", colors)).toBe("#c9862f");
     expect(folderColor("Hausflur", colors)).toBeNull();
+  });
+});
+
+describe("cleanFolderPath", () => {
+  it("drops a slash too many and the spaces around levels", () => {
+    expect(cleanFolderPath("Küche/")).toBe("Küche");
+    expect(cleanFolderPath(" /Haus // Küche / ")).toBe("Haus/Küche");
+    expect(cleanFolderPath(" / ")).toBe("");
   });
 });

@@ -51,3 +51,17 @@ export function folderColor(path: string, colors: Readonly<Record<string, string
 export function lastLevel(path: string): string {
   return path.split(CATEGORY_SEPARATOR).pop() ?? path;
 }
+
+/**
+ * A folder path as the user meant it: levels trimmed, empty ones dropped, so a slip like "Küche/",
+ * "/Küche" or "Haus//Licht" still names a real folder. Empty when nothing is left.
+ *
+ * @example cleanFolderPath(" Haus / Küche/ ") // "Haus/Küche"
+ */
+export function cleanFolderPath(path: string): string {
+  return path
+    .split(CATEGORY_SEPARATOR)
+    .map((level) => level.trim())
+    .filter(Boolean)
+    .join(CATEGORY_SEPARATOR);
+}

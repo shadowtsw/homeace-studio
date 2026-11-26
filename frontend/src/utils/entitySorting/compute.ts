@@ -1,4 +1,5 @@
 import type { SortingEntity } from "@/types/entitySorting";
+import { cleanFolderPath } from "@/utils/categoryPath";
 
 import { buildBundles } from "./bundles";
 import { areaParents, existingFolders, type SortingHome } from "./home";
@@ -93,7 +94,7 @@ export function entityTarget(
     entity.entityCategory &&
     !(rule && entity === bundle.main)
   ) {
-    const folder = state.options.technicalFolder.trim();
+    const folder = cleanFolderPath(state.options.technicalFolder);
     return folder ? { target: folder, ruleNumber: null } : null;
   }
 

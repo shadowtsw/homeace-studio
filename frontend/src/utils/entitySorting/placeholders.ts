@@ -1,3 +1,5 @@
+import { cleanFolderPath } from "@/utils/categoryPath";
+
 import { RULE_PLACEHOLDER } from "./constants";
 
 /** The placeholder words the UI shows, e.g. { area: "Bereich", floor: "Etage" }. */
@@ -21,11 +23,9 @@ export function fromDisplayTarget(text: string, words: PlaceholderWords): string
   const pattern = (word: string): RegExp =>
     new RegExp(`\\{\\s*${word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*\\}`, "gi");
 
-  return text
-    .replace(pattern(words.area), RULE_PLACEHOLDER.area)
-    .replace(pattern(words.floor), RULE_PLACEHOLDER.floor)
-    .split("/")
-    .map((level) => level.trim())
-    .filter(Boolean)
-    .join("/");
+  return cleanFolderPath(
+    text
+      .replace(pattern(words.area), RULE_PLACEHOLDER.area)
+      .replace(pattern(words.floor), RULE_PLACEHOLDER.floor),
+  );
 }

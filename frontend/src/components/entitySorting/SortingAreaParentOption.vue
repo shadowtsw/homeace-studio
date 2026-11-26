@@ -48,6 +48,7 @@ import { useI18n } from "vue-i18n";
 
 import FolderPathField from "@/components/common/FolderPathField.vue";
 import { useEntitySortingStore } from "@/stores/entitySortingStore";
+import { cleanFolderPath } from "@/utils/categoryPath";
 import { areaParents } from "@/utils/entitySorting/home";
 
 /**
@@ -106,11 +107,7 @@ async function choose(value: string): Promise<void> {
 }
 
 async function takeTyped(): Promise<void> {
-  const path = typed.value
-    .split("/")
-    .map((level) => level.trim())
-    .filter(Boolean)
-    .join("/");
+  const path = cleanFolderPath(typed.value);
 
   isTyping.value = false;
   await sorting.setAreaParent(path);

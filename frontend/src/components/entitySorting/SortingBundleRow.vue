@@ -160,6 +160,7 @@ import { useEntitySortingStore } from "@/stores/entitySortingStore";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { useToastStore } from "@/stores/toastStore";
 import type { SortingEntity } from "@/types/entitySorting";
+import { cleanFolderPath } from "@/utils/categoryPath";
 import { entityTarget, targetOf } from "@/utils/entitySorting/compute";
 import type { SortingBundle, SortingGroup } from "@/utils/entitySorting/model";
 import { hasNewTarget } from "@/utils/entitySorting/targets";
@@ -275,11 +276,7 @@ async function onPick(event: Event): Promise<void> {
 }
 
 function takeNewName(): void {
-  const path = newName.value
-    .split("/")
-    .map((level) => level.trim())
-    .filter(Boolean)
-    .join("/");
+  const path = cleanFolderPath(newName.value);
   if (!path) return;
 
   sorting.pick(props.bundle.key, path);

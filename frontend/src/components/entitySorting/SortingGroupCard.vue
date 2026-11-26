@@ -75,6 +75,7 @@ import { useI18n } from "vue-i18n";
 
 import { useSortingTexts } from "@/composables/useSortingTexts";
 import { useEntitySortingStore } from "@/stores/entitySortingStore";
+import { cleanFolderPath } from "@/utils/categoryPath";
 import { targetOf } from "@/utils/entitySorting/compute";
 import type { SortingBundle, SortingGroup } from "@/utils/entitySorting/model";
 import { groupTarget } from "@/utils/entitySorting/targets";
@@ -157,11 +158,7 @@ function tickAll(): void {
 }
 
 function rename(event: Event): void {
-  const name = (event.target as HTMLInputElement).value
-    .split("/")
-    .map((level) => level.trim())
-    .filter(Boolean)
-    .join("/");
+  const name = cleanFolderPath((event.target as HTMLInputElement).value);
 
   if (name) sorting.renameGroup(props.group.key, name);
 }

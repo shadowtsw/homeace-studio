@@ -1,4 +1,5 @@
 import type { SortingCondition, SortingEntity, SortingRule } from "@/types/entitySorting";
+import { cleanFolderPath } from "@/utils/categoryPath";
 
 import { RULE_PLACEHOLDER } from "./constants";
 import type { SortingHome } from "./home";
@@ -63,13 +64,7 @@ export function ruleTarget(
     .split(RULE_PLACEHOLDER.floor)
     .join(floorName ?? "");
 
-  return (
-    filled
-      .split("/")
-      .map((level) => level.trim())
-      .filter(Boolean)
-      .join("/") || null
-  );
+  return cleanFolderPath(filled) || null;
 }
 
 /**
