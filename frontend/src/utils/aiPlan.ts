@@ -115,3 +115,23 @@ export async function copyText(text: string): Promise<boolean> {
     field.remove();
   }
 }
+
+/** The text key that says why an operation cannot run as planned: done already, gone, or a conflict. */
+export function operationStateKey(op: AiOperation): string {
+  if (op.state === "done") return "ai.doneAlready";
+  if (op.state === "gone") return op.type === "renameFolder" ? "ai.goneFolder" : "ai.goneEntry";
+
+  return op.type === "renameFolder" ? "ai.conflictRename" : "ai.conflictMove";
+}
+
+export type IsGroupOnOptions = {
+  group: MoveGroup;
+  selected: ReadonlySet<string>;
+};
+
+/** Whether every usable operation of a group is ticked; false when none is usable. */
+export function isGroupOn({ group, selected }: IsGroupOnOptions): boolean {
+  const usable = group.operations.filter((op) => op.state === "ok");
+
+  return usable.length > 0 && usable.every((op) => selected.has(op.id));
+}

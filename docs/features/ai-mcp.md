@@ -14,8 +14,8 @@ It never changes anything itself: the user reviews every plan in the UI and appl
 | `GET/PUT /api/mcp`, `POST /api/mcp/token`, `GET /api/ai-plans`, `POST /api/ai-plans/:id/apply · /reject` | `backend/src/ai/ai.controller.ts` |
 | Limits (open plans, kept plans, operations, lengths) | `backend/src/ai/ai.constants.ts` |
 | Settings, as the tab "KI-Zugang" of the settings window (switch, URL, token, client config; what an AI may do, open plans) | `frontend/src/components/ai/McpSettingsPanel.vue`; switching, new token and copying with toasts in `composables/actions/useMcpActions.ts`, `McpAccessRules.vue`, `components/settings/SettingsAiTab.vue` |
-| Hint above the folders, review dialog (preview, tick operations) | `frontend/src/components/ai/AiPlanHint.vue`, `AiPlanDialog.vue` |
-| Store and pure helpers | `frontend/src/stores/aiStore.ts`, `services/aiService.ts`, `utils/aiPlan.ts` |
+| Hint above the folders, review dialog (preview, tick operations) | `frontend/src/components/ai/AiPlanHint.vue`, `AiPlanDialog.vue` with the parts `AiPlanMoveGroups.vue` (moves by target folder) and `AiPlanPreview.vue`; the three share `aiPlanDialog.css`. Ticking in `composables/useAiPlanSelection.ts`, apply/reject with toasts in `composables/actions/useAiPlanActions.ts` |
+| Store and pure helpers | `frontend/src/stores/aiStore.ts`, `services/aiService.ts`, `utils/aiPlan.ts` (groups, new folders, why an operation cannot run) |
 
 ## Plans
 

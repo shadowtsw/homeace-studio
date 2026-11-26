@@ -5,11 +5,13 @@ import type { AiPlan, McpOverview } from "@/services/aiService";
 import {
   MCP_CLIENT,
   initialSelection,
+  isGroupOn,
   isNewFolder,
   maskToken,
   mcpSnippet,
   mcpUrl,
   moveGroups,
+  operationStateKey,
 } from "../aiPlan";
 
 const PLAN: AiPlan = {
@@ -86,5 +88,24 @@ describe("AI plan review", () => {
       mcpServers: { homeace: { type: "http", url: "u", headers: { Authorization: "Bearer T" } } },
     });
     expect(maskToken(OVERVIEW.token ?? "")).toMatch(/^hac_ab•+CDEF$/);
+  });
+});
+
+describe("plan review", () => {
+  it("says why an operation cannot run, by state and type", () => {
+    const [rename, , gone, done] = PLAN.operations;
+
+    expect(done && operationStateKey(done)).toBe("ai.doneAlready");
+    expect(gone && operationStateKey(gone)).toBe("ai.goneEntry");
+    expect(rename && operationStateKey({ ...rename, state: "gone" })).toBe("ai.goneFolder");
+    expect(rename && operationStateKey({ ...rename, state: "conflict" })).toBe("ai.conflictRename");
+    expect(gone && operationStateKey({ ...gone, state: "conflict" })).toBe("ai.conflictMove");
+  });
+
+  it("counts a group as ticked when every usable operation is", () => {
+    const [bath] = moveGroups(PLAN).filter((group) => group.to === "House/Bath");
+
+    expect(bath && isGroupOn({ group: bath, selected: new Set(["op2"]) })).toBe(true);
+    expect(bath && isGroupOn({ group: bath, selected: new Set() })).toBe(false);
   });
 });
