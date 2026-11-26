@@ -7,6 +7,7 @@ import {
   suggestionChanges,
   type SortingInput,
 } from "../entitySorting/compute";
+import { areaParents } from "../entitySorting/home";
 import { layoutSorting, pretick } from "../entitySorting/layout";
 import type { SortingState } from "../entitySorting/model";
 import { sortingOverview } from "../entitySorting/overview";
@@ -246,5 +247,40 @@ describe("rule ideas and overview", () => {
     expect(overview.hidden).toBe(1);
     expect(overview.bundles).toBe(opened.computation.bundles.size);
     expect(overview.devices + overview.system + overview.single).toBe(overview.bundles);
+  });
+});
+
+describe("area folders", () => {
+  it("ignore folders with scenes only when learning where area folders go", () => {
+    const opened = open();
+
+    expect(areaParents(opened.home, opened.computation.folders)[0]).toEqual({
+      parent: "Haus",
+      count: 2,
+    });
+    expect(opened.computation.suggestions.get("dKidsLight")?.target).toBe("Haus/Kinderzimmer");
+  });
+
+  it("are never sure while they do not exist", () => {
+    const { computation } = open();
+
+    expect(computation.suggestions.get("dKidsLight")).toMatchObject({
+      isNew: true,
+      confidence: "likely",
+    });
+  });
+
+  it("go where the user says, the top level too", () => {
+    const { computation } = open(sampleState({ areaParent: "" }));
+
+    expect(computation.suggestions.get("dKidsLight")?.target).toBe("Kinderzimmer");
+    expect(computation.suggestions.get("dKitchenLight")?.target).toBe("Haus/Küche");
+  });
+
+  it("count the top level when rooms lie there", () => {
+    const home = sampleHome();
+    const folders = new Set(["Küche", "Bad", "Haus/Kinderzimmer"]);
+
+    expect(areaParents(home, folders)[0]).toEqual({ parent: "", count: 2 });
   });
 });

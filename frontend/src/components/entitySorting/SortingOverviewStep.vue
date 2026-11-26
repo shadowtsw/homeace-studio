@@ -132,6 +132,8 @@
         </div>
       </div>
 
+      <SortingAreaParentOption />
+
       <h3>{{ t("entitySorting.overview.keptTitle") }}</h3>
       <div class="overview__kept">
         <span>{{ t("entitySorting.overview.rejected", { count: rejectedCount }) }}</span>
@@ -186,6 +188,7 @@ import { ISSUES_URL } from "@/constants/settings";
 import { useEntitySortingStore } from "@/stores/entitySortingStore";
 import { sortingOverview } from "@/utils/entitySorting/overview";
 
+import SortingAreaParentOption from "./SortingAreaParentOption.vue";
 import SortingFunnelRow from "./SortingFunnelRow.vue";
 
 /** Step 1: how the pile shrinks, the options of this run and what the tool keeps. */

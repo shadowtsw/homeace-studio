@@ -75,15 +75,20 @@ changed shows the new folder and is marked.
    one. A target with `{area}` or `{floor}` leaves entities without one alone. A rule on another entity of
    the bundle moves only that entity ("Firmware → Technik/Updates").
 4. **Votes** otherwise, per folder:
-   - area: `AREA_WEIGHT` for the area's folder (an existing one by name, `Küche` = `kueche`, else one
-     after the pattern of the existing area folders, e.g. "Haus/…");
+   - area: `AREA_WEIGHT` for the area's folder: `<areaParent>/<area>` if it exists, else an existing one
+     by name (`Küche` = `kueche`, the shallowest, never a scenes-only folder), else a new one under
+     `areaParent`. `areaParent` is the user's choice in step 1 (kept in the memory), else the parent
+     most area-named folders lie in today, the top level (`""`) included (`areaParents`). Folders
+     with scenes only (`folderKinds`) do not count: many homes sort scenes by room
+     ("Z2MQTT/Szenen/Küche"), which says nothing about devices (found in the owner's HA, test6);
    - flows: `ROLE_WEIGHT` per use, divided by √(entities the flow uses), so "Alles aus" counts little. An
      entity used in ≥ `EVERYWHERE_TOP_FOLDERS` top folders without a majority does not vote;
    - learned words: shared with sorted or ticked bundles, full strength at `LEARN_FULL_AT` examples,
      corrections count `CORRECTION_WEIGHT`, a word in more than `LEARN_MAX_FOLDERS` folders says nothing,
      a bundle never learns from itself. There is no stored model.
    - turned-down folders (and below) get no votes.
-5. **Decision:** the deepest folder holding `COMMON_PARENT_SHARE` of the votes, never a bare main folder
+5. **Decision:** a folder that does not exist yet is "wahrscheinlich" at most, never "sicher". Then
+   the deepest folder holding `COMMON_PARENT_SHARE` of the votes, never a bare main folder
    when votes went below it. "sicher" / "wahrscheinlich" / "unklar" from the lead over the best folder
    elsewhere (`SURE_*`, `LIKELY_*`).
 6. **Layout:** sure and likely ones go to their folder's group (or to "Neue Ordner" when it does not

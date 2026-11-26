@@ -8,6 +8,7 @@ const MEMORY: EntitySortingMemory = {
   ],
   rejected: [{ bundleKey: "entity:sensor.x", paths: ["Haus/Küche", "Klima"] }],
   ignored: ["entity:sensor.x", "dev1"],
+  areaParent: "Haus",
   lastRun: {
     runId: "r",
     at: "2026-11-26T10:00:00Z",
@@ -24,6 +25,7 @@ describe("moveSortingPaths", () => {
 
     expect(moved.rules.map((rule) => rule.target)).toEqual(["Heim/{area}", "Hausflur"]);
     expect(moved.rejected[0]?.paths).toEqual(["Heim/Küche", "Klima"]);
+    expect(moved.areaParent).toBe("Heim");
     expect(moved.lastRun?.moves[0]).toEqual({ entityId: "sensor.x", from: null, to: "Heim/Küche" });
   });
 });

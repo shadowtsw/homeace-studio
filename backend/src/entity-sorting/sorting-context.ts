@@ -13,6 +13,7 @@ import type {
 import { CATEGORY_SCOPE } from "../categories/categories.constants";
 import type {
   EntitySortingMemory,
+  FolderContent,
   SortingContext,
   SortingDevice,
   SortingEntity,
@@ -138,6 +139,7 @@ export function buildSortingContext(sources: SortingSources): SortingContext {
     integrations: sources.integrations,
     flows: flowsOf(sources.entries, sources.dependencies),
     folders: foldersOf(sources, fromRegistry),
+    folderKinds: folderKindsOf(sources, fromRegistry),
     memory: sources.memory,
   };
 }
@@ -161,6 +163,24 @@ function flowsOf(entries: Entry[], dependencies: DependencyIndex): SortingFlow[]
   }
 
   return flows;
+}
+
+function folderKindsOf(
+  sources: SortingSources,
+  entities: SortingEntity[],
+): Record<string, FolderContent[]> {
+  const kinds = new Map<string, Set<FolderContent>>();
+  const add = (path: string | null, kind: FolderContent): void => {
+    if (path) kinds.set(path, (kinds.get(path) ?? new Set()).add(kind));
+  };
+
+  sources.entries.forEach((entry) => add(entry.categoryPath, entry.kind));
+  entities.forEach((entity) => add(entity.categoryPath, "entity"));
+  sources.emptyFolders.forEach((path) => {
+    if (!kinds.has(path)) add(path, "empty");
+  });
+
+  return Object.fromEntries([...kinds].map(([path, set]) => [path, [...set].sort()]));
 }
 
 function foldersOf(sources: SortingSources, entities: SortingEntity[]): string[] {

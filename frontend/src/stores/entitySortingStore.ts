@@ -50,6 +50,8 @@ export const useEntitySortingStore = defineStore("entitySorting", () => {
   const choices = ref(new Map<string, BundleChoice>());
   const excluded = ref(new Set<string>());
   const groupNames = ref(new Map<string, string>());
+  /** Where new area folders go; null lets the tool pick from the existing folders. */
+  const areaParent = ref<string | null>(null);
 
   const computation = shallowRef<SortingComputation | null>(null);
   const layout = shallowRef<SortingLayout | null>(null);
@@ -96,6 +98,7 @@ export const useEntitySortingStore = defineStore("entitySorting", () => {
       choices: choices.value,
       excluded: excluded.value,
       groupNames: groupNames.value,
+      areaParent: areaParent.value,
     };
   }
 
@@ -166,6 +169,7 @@ export const useEntitySortingStore = defineStore("entitySorting", () => {
         context.memory.rejected.map((item) => [item.bundleKey, new Set(item.paths)]),
       );
       ignored.value = new Set(context.memory.ignored);
+      areaParent.value = context.memory.areaParent ?? null;
       lastRun.value = context.memory.lastRun;
       computation.value = null;
       layout.value = null;
@@ -213,6 +217,7 @@ export const useEntitySortingStore = defineStore("entitySorting", () => {
       rules: rules.value,
       rejected: [...rejected.value].map(([bundleKey, paths]) => ({ bundleKey, paths: [...paths] })),
       ignored: [...ignored.value],
+      areaParent: areaParent.value,
     });
   }
 
@@ -273,6 +278,13 @@ export const useEntitySortingStore = defineStore("entitySorting", () => {
     await saveMemory();
   }
 
+  /** Where new area folders go; kept for all users like the rules. */
+  async function setAreaParent(parent: string | null): Promise<void> {
+    areaParent.value = parent;
+    settingsChanged();
+    await saveMemory();
+  }
+
   async function resetRejected(): Promise<void> {
     rejected.value = new Map();
     settingsChanged();
@@ -325,6 +337,8 @@ export const useEntitySortingStore = defineStore("entitySorting", () => {
     choices,
     excluded,
     groupNames,
+    areaParent,
+    setAreaParent,
     computation,
     layout,
     changes,

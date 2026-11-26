@@ -413,9 +413,10 @@ The tool computes its proposals in the browser; the backend serves the data and 
   `categoryPath`, `isDisabled`, `isHidden`. `devices` carry `manufacturer` and `model`, `areas` their
   `floorId`. `integrations` maps a domain to its name (empty when HA does not hand them out). `flows` are
   the entries that use entities: `{ entityId, name, kind, categoryPath, uses: [{ entityId, roles }] }`.
+  `folderKinds` says per folder what lies in it (entry kinds, `entity`, or `empty`).
   `memory` is the overlay `entitySorting`: `rules`, `rejected` (`[{ bundleKey, paths }]`), `ignored`
-  (bundle keys) and `lastRun` (`{ runId, at, moves: [{ entityId, from, to }] }`).
-- `PUT /memory` `{ rules, rejected, ignored }` replaces them (`ENTITY_SORTING_SAVED`); `lastRun` stays.
+  (bundle keys), `areaParent` (where new area folders go: `""` top level, a path, or null) and `lastRun` (`{ runId, at, moves: [{ entityId, from, to }] }`).
+- `PUT /memory` `{ rules, rejected, ignored, areaParent }` replaces them (`ENTITY_SORTING_SAVED`); `lastRun` stays.
   A rule is `{ conditions: [{ type, value }], target }` with `type` one of `label`, `area`, `floor`,
   `manufacturer`, `integration`, `domain`, `deviceClass`, `nameContains` (area, floor: ids; label: its name); the
   target may hold `{area}` and `{floor}`.

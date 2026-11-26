@@ -7,6 +7,7 @@ import {
   IsNotEmpty,
   IsString,
   MaxLength,
+  ValidateIf,
   ValidateNested,
 } from "class-validator";
 
@@ -77,4 +78,10 @@ export class SortingMemoryDto {
   @IsString({ each: true })
   @MaxLength(KEY_MAX_LENGTH, { each: true })
   ignored!: string[];
+
+  /** "" for the top level, a folder path, or null to let the tool pick. */
+  @ValidateIf((dto: SortingMemoryDto) => dto.areaParent !== null)
+  @IsString()
+  @MaxLength(CATEGORY_PATH_MAX_LENGTH)
+  areaParent!: string | null;
 }

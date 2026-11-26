@@ -1461,6 +1461,15 @@ export default {
       includeHidden: "Deaktivierte und versteckte einbeziehen",
       includeHiddenHint:
         "1 Entität. Standard: ausgeblendet. | {count} Entitäten. Standard: ausgeblendet.",
+      areaParent: "Neue Bereichsordner anlegen unter",
+      areaParentHint:
+        "Für Bereiche, die noch keinen eigenen Ordner haben. Vorausgewählt ist, wie deine Ordner heute liegen. Gilt für alle Benutzer.",
+      areaParentTop: "ganz oben",
+      areaParentFound: "{path} (wie {count} Bereichsordner)",
+      areaParentCustom: "Eigener Pfad …",
+      areaParentExample: "z. B. {path}",
+      areaParentInput: "Oberordner für neue Bereichsordner",
+      areaParentPlaceholder: "z. B. Haus (leer = ganz oben)",
       keptTitle: "Gemerkt",
       rejected: "Abgelehnte Vorschläge: {count}",
       ignoredCount: "Bewusst ohne Ordner: {count}",

@@ -74,6 +74,9 @@ describe("EntitySortingService", () => {
     expect(cooking?.categoryPath).toBe("House/Kitchen/Cooking");
     expect(cooking?.uses).toContainEqual({ entityId: "switch.coffee_machine", roles: ["action"] });
     expect(context.folders).toEqual(expect.arrayContaining(["House/Kitchen/Lights", "Climate"]));
+    expect(context.folderKinds["House/Terrace"]).toEqual(
+      expect.arrayContaining(["automation", "entity"]),
+    );
   });
 
   it("applies a run in batches and undoes all of it", async () => {
@@ -138,11 +141,13 @@ describe("EntitySortingService", () => {
       rules: [{ conditions: [{ type: "label", value: "lights" }], target: "Lights/{area}" }],
       rejected: [{ bundleKey: "entity:sensor.open_windows", paths: ["Security"] }],
       ignored: ["entity:sun.sun"],
+      areaParent: "",
     });
 
     const { memory } = await service.context();
     expect(memory.rules).toHaveLength(1);
     expect(memory.ignored).toEqual(["entity:sun.sun"]);
+    expect(memory.areaParent).toBe("");
     expect(memory.lastRun?.runId).toBe("run-1");
   });
 });

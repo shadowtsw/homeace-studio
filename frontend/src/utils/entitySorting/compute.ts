@@ -1,7 +1,7 @@
 import type { SortingEntity } from "@/types/entitySorting";
 
 import { buildBundles } from "./bundles";
-import { areaFolderPattern, existingFolders, type SortingHome } from "./home";
+import { areaParents, existingFolders, type SortingHome } from "./home";
 import { buildLearnIndex } from "./learning";
 import type {
   PlannedMove,
@@ -47,7 +47,7 @@ export function computeSorting(input: SortingInput): SortingComputation {
   const { home, state, names } = input;
   const bundles = buildBundles(home, state);
   const folders = existingFolders(home.context.folders);
-  const areaPattern = areaFolderPattern(home, folders);
+  const areaParent = state.areaParent ?? areaParents(home, folders)[0]?.parent ?? "";
   const ticked = new Map<
     string,
     { folder: string; isCorrection: boolean; bundle: SortingBundle }
@@ -65,14 +65,14 @@ export function computeSorting(input: SortingInput): SortingComputation {
     state,
     names,
     folders,
-    areaPattern,
+    areaParent,
     learn: buildLearnIndex(home, ticked),
   };
   const suggestions = new Map(
     [...bundles.values()].map((bundle) => [bundle.key, suggest(bundle, context)]),
   );
 
-  return { bundles, suggestions, folders, areaPattern };
+  return { bundles, suggestions, folders, areaParent };
 }
 
 /**

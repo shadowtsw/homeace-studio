@@ -89,7 +89,10 @@ export function layoutSorting(input: {
     {
       keyOf: (bundle) => {
         const area = bundle.areaId ? home.areas.get(bundle.areaId) : undefined;
-        return area ? areaFolder(area, computation.folders, computation.areaPattern).path : null;
+        return area
+          ? areaFolder({ area, folders: computation.folders, parent: computation.areaParent, home })
+              .path
+          : null;
       },
       groupFor: (path) => ({
         key: computation.folders.has(path) ? `folder:${path}` : `new:${path}`,

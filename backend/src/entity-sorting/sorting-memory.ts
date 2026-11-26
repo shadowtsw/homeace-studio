@@ -17,6 +17,7 @@ export function moveSortingPaths(
   return {
     ...memory,
     rules: memory.rules.map((rule) => ({ ...rule, target: movePath(rule.target) })),
+    areaParent: memory.areaParent ? movePath(memory.areaParent) : memory.areaParent,
     rejected: memory.rejected.map((rejection) => ({
       ...rejection,
       paths: rejection.paths.map(movePath),

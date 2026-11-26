@@ -40,6 +40,11 @@ export type EntitySortingMemory = {
   rejected: SortingRejection[];
   /** Bundle keys the user keeps without a folder on purpose. */
   ignored: string[];
+  /**
+   * Where new area folders go: "" for the top level, a path like "Haus", or null to let the tool
+   * pick from the existing folders.
+   */
+  areaParent: string | null;
   lastRun: SortingRun | null;
 };
 
@@ -47,6 +52,7 @@ export const EMPTY_SORTING_MEMORY: EntitySortingMemory = {
   rules: [],
   rejected: [],
   ignored: [],
+  areaParent: null,
   lastRun: null,
 };
 
@@ -108,8 +114,15 @@ export type SortingContext = {
   flows: SortingFlow[];
   /** Every folder path that exists: from entries, entities and empty folders. */
   folders: string[];
+  /**
+   * What lies in each folder: entry kinds, "entity", or "empty" for a folder without anything.
+   * The tool ignores folders with scenes only when it learns where area folders go.
+   */
+  folderKinds: Record<string, FolderContent[]>;
   memory: EntitySortingMemory;
 };
+
+export type FolderContent = EntryKind | "entity" | "empty";
 
 export const ENTITY_MOVE_STATUS = {
   moved: "moved",

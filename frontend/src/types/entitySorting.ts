@@ -27,6 +27,8 @@ export type EntitySortingMemory = {
   rules: SortingRule[];
   rejected: SortingRejection[];
   ignored: string[];
+  /** Where new area folders go: "" top level, a path, or null to let the tool pick. */
+  areaParent: string | null;
   lastRun: SortingRun | null;
 };
 
@@ -77,6 +79,8 @@ export type SortingContext = {
   integrations: Record<string, string>;
   flows: SortingFlow[];
   folders: string[];
+  /** Entry kinds, "entity" or "empty" per folder; scenes-only folders say nothing about devices. */
+  folderKinds: Record<string, string[]>;
   memory: EntitySortingMemory;
 };
 

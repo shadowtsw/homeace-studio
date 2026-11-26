@@ -16,7 +16,7 @@ export type SuggestContext = {
   state: SortingState;
   names: SortingNames;
   folders: Set<string>;
-  areaPattern: string;
+  areaParent: string;
   learn: LearnIndex;
 };
 
@@ -78,8 +78,8 @@ export function suggest(bundle: SortingBundle, context: SuggestContext): Suggest
   const area = bundle.areaId ? home.areas.get(bundle.areaId) : undefined;
 
   if (area) {
-    const folder = areaFolder(area, folders, context.areaPattern);
-    const pattern = folder.exists ? null : context.areaPattern || null;
+    const folder = areaFolder({ area, folders, parent: context.areaParent, home });
+    const pattern = folder.exists ? null : context.areaParent || null;
     votes.add(folder.path, AREA_WEIGHT, { kind: "area", areaName: area.name, pattern }, "area");
   }
 
@@ -104,10 +104,15 @@ export function suggest(bundle: SortingBundle, context: SuggestContext): Suggest
     };
   }
 
+  // A folder that does not exist yet guesses the user's structure: likely at most, never sure.
+  const isTargetNew = isNew(decision.target);
+  const confidence = isTargetNew && decision.confidence === "sure" ? "likely" : decision.confidence;
+
   return {
     ...decision,
+    confidence,
     reasons: isUsedEverywhere ? [...decision.reasons, { kind: "everywhere" }] : decision.reasons,
-    isNew: isNew(decision.target),
+    isNew: isTargetNew,
     isUsedEverywhere,
     ruleNumber: null,
   };

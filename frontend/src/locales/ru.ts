@@ -1483,6 +1483,15 @@ const ru: MessageSchema = {
       includeHidden: "Учитывать отключённые и скрытые",
       includeHiddenHint:
         "{count} объект. По умолчанию скрыт. | {count} объекта. По умолчанию скрыты. | {count} объектов. По умолчанию скрыты.",
+      areaParent: "Создавать новые папки помещений в",
+      areaParentHint:
+        "Для помещений, у которых ещё нет своей папки. Заранее выбрано так, как папки лежат сейчас. Действует для всех пользователей.",
+      areaParentTop: "на верхнем уровне",
+      areaParentFound: "{path} (как папок помещений: {count})",
+      areaParentCustom: "Свой путь …",
+      areaParentExample: "напр. {path}",
+      areaParentInput: "Родительская папка для новых папок помещений",
+      areaParentPlaceholder: "напр. Дом (пусто = верхний уровень)",
       keptTitle: "Запомнено",
       rejected: "Отклонённые предложения: {count}",
       ignoredCount: "Намеренно без папки: {count}",

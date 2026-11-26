@@ -57,7 +57,8 @@ export class EntitySortingService {
       integrations,
       dependencies: this.dependencies.indexOf(snapshot),
       emptyFolders: overlay.folders,
-      memory: overlay.entitySorting ?? EMPTY_SORTING_MEMORY,
+      // Older overlays lack fields added later.
+      memory: { ...EMPTY_SORTING_MEMORY, ...overlay.entitySorting },
     });
   }
 

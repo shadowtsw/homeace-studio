@@ -229,8 +229,24 @@ export function sampleContext(): SortingContext {
       "Klima",
       "Sicherheit",
       "Energie",
+      // Scenes sorted by room, like many homes do it: no model for where devices go.
+      "Z2MQTT/Szenen/Küche",
+      "Z2MQTT/Szenen/Bad",
+      "Z2MQTT/Szenen/Kinderzimmer",
     ],
-    memory: { rules: [], rejected: [], ignored: [], lastRun: null },
+    folderKinds: {
+      "Haus/Küche/Licht": ["automation"],
+      "Haus/Küche/Kochen": ["automation"],
+      "Haus/Bad": ["automation"],
+      "System/Zentral": ["script"],
+      Klima: ["automation"],
+      Sicherheit: ["automation"],
+      Energie: ["automation"],
+      "Z2MQTT/Szenen/Küche": ["scene"],
+      "Z2MQTT/Szenen/Bad": ["scene"],
+      "Z2MQTT/Szenen/Kinderzimmer": ["scene"],
+    },
+    memory: { rules: [], rejected: [], ignored: [], areaParent: null, lastRun: null },
   };
 }
 
@@ -248,6 +264,7 @@ export function sampleState(overrides: Partial<SortingState> = {}): SortingState
     choices: new Map(),
     excluded: new Set(),
     groupNames: new Map(),
+    areaParent: null,
     ...overrides,
   };
 }

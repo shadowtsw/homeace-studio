@@ -69,41 +69,59 @@ export function existingFolders(paths: Iterable<string>): Set<string> {
   return folders;
 }
 
+/** A folder only scenes live in ("Z2MQTT/Szenen/Küche"): no model for where devices go. */
+export function isSceneOnly(path: string, home: SortingHome): boolean {
+  const kinds = home.context.folderKinds[path];
+
+  return !!kinds && kinds.length > 0 && kinds.every((kind) => kind === "scene");
+}
+
+/** A place where area folders live, and how many there are: "" is the top level. */
+export type AreaParent = { parent: string; count: number };
+
 /**
- * The parent most folders named like an area sit in, e.g. "Haus" for "Haus/Küche" and "Haus/Bad";
- * empty when there is no such pattern. New area folders follow it.
+ * Where folders named like an area sit today, most first: "Haus" for "Haus/Küche" and "Haus/Bad",
+ * "" when they lie at the top. Folders with scenes only do not count.
  */
-export function areaFolderPattern(home: SortingHome, folders: Set<string>): string {
+export function areaParents(home: SortingHome, folders: Set<string>): AreaParent[] {
   const areaKeys = new Set([...home.areas.values()].map((area) => wordKey(area.name)));
-  const parents = new Map<string, number>();
+  const counts = new Map<string, number>();
 
   for (const path of folders) {
-    const levels = path.split("/");
-    if (levels.length < 2 || !areaKeys.has(wordKey(lastLevel(path)))) continue;
+    if (!areaKeys.has(wordKey(lastLevel(path))) || isSceneOnly(path, home)) continue;
 
-    const parent = levels.slice(0, -1).join("/");
-    parents.set(parent, (parents.get(parent) ?? 0) + 1);
+    const parent = path.split("/").slice(0, -1).join("/");
+    counts.set(parent, (counts.get(parent) ?? 0) + 1);
   }
 
-  let best = "";
-  let bestCount = 0;
-  parents.forEach((count, parent) => {
-    if (count > bestCount) [best, bestCount] = [parent, count];
-  });
-
-  return best;
+  return [...counts.entries()]
+    .map(([parent, count]) => ({ parent, count }))
+    .sort(
+      (first, second) => second.count - first.count || first.parent.localeCompare(second.parent),
+    );
 }
 
 export type AreaFolder = { path: string; exists: boolean };
 
-/** The folder of an area: an existing one with its name (the shallowest), else one after the pattern. */
-export function areaFolder(area: SortingArea, folders: Set<string>, pattern: string): AreaFolder {
+/**
+ * The folder of an area: the one under `parent` if it exists, else an existing one with its name
+ * (the shallowest, not a scenes-only one), else a new one under `parent` ("" = top level).
+ */
+export function areaFolder(input: {
+  area: SortingArea;
+  folders: Set<string>;
+  parent: string;
+  home: SortingHome;
+}): AreaFolder {
+  const { area, folders, parent, home } = input;
+  const preferred = parent ? `${parent}/${area.name}` : area.name;
   const key = wordKey(area.name);
+
+  if (folders.has(preferred)) return { path: preferred, exists: true };
+
   const existing = [...folders]
-    .filter((path) => wordKey(lastLevel(path)) === key)
+    .filter((path) => wordKey(lastLevel(path)) === key && !isSceneOnly(path, home))
     .sort((first, second) => first.split("/").length - second.split("/").length)[0];
 
-  if (existing) return { path: existing, exists: true };
-
-  return { path: pattern ? `${pattern}/${area.name}` : area.name, exists: false };
+  return existing ? { path: existing, exists: true } : { path: preferred, exists: false };
 }

@@ -76,6 +76,8 @@ export type SortingState = {
   excluded: Set<string>;
   /** Names the user gave new folders, by group key. */
   groupNames: Map<string, string>;
+  /** Where new area folders go ("" = top level); null lets the tool pick from the folders. */
+  areaParent: string | null;
 };
 
 /** Texts the engine needs in the UI language: names of new system and device-class folders. */
@@ -120,7 +122,8 @@ export type SortingComputation = {
   bundles: Map<string, SortingBundle>;
   suggestions: Map<string, Suggestion>;
   folders: Set<string>;
-  areaPattern: string;
+  /** Where new area folders go in this computation: the user's choice, else the most common. */
+  areaParent: string;
 };
 
 export type SuggestionChange = "surer" | "lessSure" | "newTarget";
