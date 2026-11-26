@@ -17,7 +17,7 @@ saves the whole config back to HA. No YAML in the UI.
 | Add button of a list | `components/flow/AddBlockButton.vue` |
 | New automation / script (name + folder) | `components/flow/NewFlowDialog.vue` |
 | What FlowView provides to nested blocks | `components/flow/flowEditing.ts` (`FLOW_EDITING`, `FLOW_RUN_STATES`) |
-| Config → display blocks | `utils/flow/toDisplayFlow.ts` |
+| Config → display blocks | `utils/flow/toDisplayFlow/`: `index.ts` (entry), `triggers.ts` (triggers, conditions), `actions.ts` (actions, loops, waits), `blocks.ts` (generic, classic, unknown), `targetChips.ts`, `fieldChips.ts`, `context.ts` |
 | Which editor a value gets | `utils/flow/valueEditors.ts` (`editorForSelector`, `classicFieldEditor`) |
 | Typed input → HA value | `utils/flow/editValue.ts` |
 | Chip texts (durations, entity names, values) | `utils/flow/formatValue.ts` |
@@ -116,8 +116,8 @@ list (`onApplyArea`). Suggestions: entities the flow already uses, then the entr
 ## Recipes
 
 - **New hand-made block kind:** add it to `CLASSIC_KINDS` (order = menu order) and a template in
-  `blockTypes.ts`. Rendering goes in `toDisplayFlow.ts` (structural: `structuralBlock` /
-  `loopOrWaitBlock`, classic: `CLASSIC_*_FIELDS`, `REQUIRED_FIELDS`), the icon in `CLASSIC_ICON`, the
+  `blockTypes.ts`. Rendering goes in `utils/flow/toDisplayFlow/` (structural: `structuralBlock` /
+  `loopOrWaitBlock` in `actions.ts`, classic: `CLASSIC_*_FIELDS` in `triggers.ts`, `REQUIRED_FIELDS` in `blocks.ts`), the icon in `CLASSIC_ICON`, the
   title in `flow.titles.<kind>` (or `<kind>_<section>`) in all five locales, plus a test in
   `utils/flow/__tests__/flowDisplay.spec.ts` / `flowBlocks.spec.ts`. The demo home should contain an example (`backend/src/demo/demo-home.ts`).
 - **New value editor type:** extend `ValueEditor` in `types/editor.ts`, map it in `valueEditors.ts`,
@@ -151,7 +151,7 @@ have nothing to check (`noCondition`).
   state trigger with `not_from` and `not_to` set to `unavailable`/`unknown` (`anyRealChange`):
   without them it fires when the device drops out and comes back (a button "presses itself" when its
   device restarts), and with them HA also ignores changes of attributes alone. Both show as chips
-  ("nicht von", "nicht zu"; `CLASSIC_TRIGGER_FIELDS` in `toDisplayFlow.ts`, `LABEL_KEYS` in
+  ("nicht von", "nicht zu"; `CLASSIC_TRIGGER_FIELDS` in `toDisplayFlow/triggers.ts`, `LABEL_KEYS` in
   `useFlowTexts.ts`). Actions only those HA describes (catalog), named by HA, with HA's defaults and `target.entity_id`.
   Sensors say why they cannot be told anything. One choice goes in at once. A script offers
   "Ausführen" (a direct call `action: script.<scriptKey>`, which waits, as HA's own editor adds a

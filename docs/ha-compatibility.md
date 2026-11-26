@@ -23,7 +23,7 @@ page adds the risk, the code and a quick check per area. The routine is in
 | --- | --- |
 | One place talks to HA; every command name is in `HA_COMMAND` / `HA_REST_PATH` | `backend/src/ha/ha.constants.ts` |
 | Unknown blocks are shown and saved unchanged with their raw config | [features/flow-editor.md](features/flow-editor.md#round-trip) |
-| New syntax (`triggers` / `conditions` / `actions`) is read with a fallback to the old one | `frontend/src/utils/flow/toDisplayFlow.ts` |
+| New syntax (`triggers` / `conditions` / `actions`) is read with a fallback to the old one | `frontend/src/utils/flow/toDisplayFlow/index.ts` |
 | Edits change only the touched path; key order and untouched objects stay | `setAtPath`, flow editor |
 | HA validates on save; a rejection comes back as `FLOW_INVALID` instead of breaking a file | `backend/src/editor/flow-errors.ts` |
 | Saving a helper sends the whole stored helper, so unknown fields survive | [features/helpers.md](features/helpers.md) |
@@ -46,7 +46,7 @@ Those three need the own HA.
 | --- | --- | --- | --- | --- | --- |
 | 🔴 | Block catalog | WS `trigger_platforms/subscribe`, `condition_platforms/subscribe`, `get_services` | `editor/repositories/ha-editor.repository.ts`, `editor/catalog.mapper.ts` | picker empty or missing groups, generic blocks without title or fields | New automation: add a trigger, a condition and an action; groups, names and fields are there |
 | 🔴 | Texts from HA | WS `frontend/get_translations` | `editor/catalog.mapper.ts` | raw keys or English names in a German UI | Same check with the UI in German |
-| 🔴 | Flow format | keys and block shapes in automations and scripts | `frontend/src/utils/flow/toDisplayFlow.ts`, `backend/src/labels/label-usage.ts` | known blocks shown as unknown, wrong chips; deleting a label no longer names the flows that target it | Open a few existing flows (new-style triggers too): no unexpected unknown blocks; save one unchanged and compare in HA's YAML editor; "Löschen …" on a label used as a flow target names that flow |
+| 🔴 | Flow format | keys and block shapes in automations and scripts | `frontend/src/utils/flow/toDisplayFlow/`, `backend/src/labels/label-usage.ts` | known blocks shown as unknown, wrong chips; deleting a label no longer names the flows that target it | Open a few existing flows (new-style triggers too): no unexpected unknown blocks; save one unchanged and compare in HA's YAML editor; "Löschen …" on a label used as a flow target names that flow |
 | 🔴 | Flow files | REST `config/automation/config/`, `config/script/config/`; WS `automation/config`, `script/config` | `editor/repositories/ha-editor.repository.ts` | read, save, create or delete fails | Create, save and delete a test automation and a test script |
 | 🔴 | Scene file | REST `config/scene/config/`; service `scene.apply` | `scenes/repositories/ha-scene.repository.ts` | scene create, save or preview fails | Create a test scene with "Neu", edit it, preview, save |
 | 🟠 | Entitäten einsortieren | WS `config/entity_registry/list` fields `entity_category`, `has_entity_name`, `platform`; device `manufacturer`, `model`; area `floor_id`; WS `manifest/list` | `entity-sorting/sorting-context.ts`, `entity-sorting/repositories/ha-sorting-sources.repository.ts` | technical entities not recognized, disabled ones without a name, integration groups named by domain | Open the tool: battery and signal entities show "technisch", the FRITZ!Box group says "AVM FRITZ!Box Tools", disabled entities have names |
@@ -71,12 +71,12 @@ New HA command: add a row here and its quick check to `scripts/ha-check/`
 
 | HA version | Change | Our answer |
 | --- | --- | --- |
-| 2024.10 | `trigger:` / `condition:` / `action:` lists renamed to the plural, `platform:` in triggers became `trigger:` | Read both, write what the config has (`toDisplayFlow.ts`) |
+| 2024.10 | `trigger:` / `condition:` / `action:` lists renamed to the plural, `platform:` in triggers became `trigger:` | Read both, write what the config has (`toDisplayFlow/index.ts`) |
 | unknown, seen 11/2026 | `<type>/update` replaces the stored helper instead of merging | Send the whole stored helper (decisions.md 2026-11-24) |
 | unknown, seen 11/2026 | Entity aliases can hold `null` for the entity's own name | Never shown, kept on save (api.md) |
 | 2026.11.2 | Supervisor: "Check for updates" does not always notice a new version of a local app | `ha store reload` ([setup.md](setup.md)) |
 | 2026.9, used from 2026.12 | Child devices: `config/device_registry/list` also returns parts of one product (outlets, channels) with `parent_device_id`; a child without `area_id` takes the parent's area. 2026.12 splits multi-outlet devices of Matter, ZHA, HomeKit and UniFi into children named like "Top" or "Channel 2" | `createDeviceContext` (`ha/device-context.ts`): a child without an area takes the parent's, like HA's `getDeviceAreaId`; its name gets the parent's in front. Used by the area view and the entity picker; the demo has a power strip with two outlets (0.14.0) |
-| unknown, blog 2026-10-21 | Targets can have an `exclude` block with the same keys as the target | `targetChips` (`toDisplayFlow.ts`) shows floors and labels by name and the exclusion as a read-only chip "ohne …"; a floor or label alone counts as a target. Saving keeps everything. Shown from 0.14.0; editing them comes later |
+| unknown, blog 2026-10-21 | Targets can have an `exclude` block with the same keys as the target | `targetChips` (`toDisplayFlow/targetChips.ts`) shows floors and labels by name and the exclusion as a read-only chip "ohne …"; a floor or label alone counts as a target. Saving keeps everything. Shown from 0.14.0; editing them comes later |
 | 2026.12 | Ingress requests also carry `X-Forwarded-Prefix`; `X-Ingress-Path` is deprecated (removal 2027.12) | Not affected: we read neither header, everything uses relative paths |
 | 2026.12 | WS `supervisor/api` needs an admin | Not affected: we only call the Supervisor's REST `/addons/self/info` with `SUPERVISOR_TOKEN` |
 | Supervisor 2026.12 (new installs), 2027.05 (all) | Apps lose `NET_RAW`, `MKNOD`, `AUDIT_WRITE`, `SETFCAP` | Not affected: no raw sockets, device nodes or `setcap` |
