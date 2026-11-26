@@ -31,7 +31,7 @@ badge with uses + users.
 Top to bottom:
 
 1. `CategoryMoveField`: folder with suggestions from every scope.
-2. `EntryEditForm`: name, icon, area (with "+ Neuer Bereich …"), labels. It sends only the fields
+2. `EntryEditForm` (form state in `composables/useEntryForm.ts`): name, icon, area (with "+ Neuer Bereich …"), labels. It sends only the fields
    the user changed since the form was filled (`EntryChanges`, `utils/entries/entryForm.ts`) →
    `PATCH /api/entries/:id`; ticked and unticked labels are applied to the labels the entry has now.
    Comparing with the entry as it is now instead would undo, on saving, a change made elsewhere while
@@ -79,7 +79,7 @@ Every store drops answers that arrive for an entry that is no longer open.
   `unsavedIds` for the dot in the list and the `beforeunload` prompt. A new editor tab needs the same,
   or its edits are lost silently. A scene preview is restored on leaving.
 - Form components take over a new `entry` object from live updates only while the user is not editing
-  (`EntryEditForm` compares with the values it was filled from, its `base`), and save only what the
+  (`useEntryForm` compares with the values the form was filled from, its `base`), and save only what the
   user changed against that base. New forms should follow the same pattern.
 - A new tab needs: a key in `TAB`, the `tabs` list per kind, a `detail.tabs.<key>` text in every locale,
   and a body `v-else-if`.

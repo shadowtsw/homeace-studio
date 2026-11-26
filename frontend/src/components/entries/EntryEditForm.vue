@@ -77,21 +77,16 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, useTemplateRef, watch } from "vue";
+import { computed, ref, toRef, useTemplateRef, watch } from "vue";
 import { useI18n } from "vue-i18n";
 
 import IconField from "@/components/iconpicker/IconField.vue";
 import LabelChip from "@/components/labels/LabelChip.vue";
 import LabelPicker from "@/components/labels/LabelPicker.vue";
 import { useLabelActions } from "@/composables/actions/useLabelActions";
+import { useEntryForm } from "@/composables/useEntryForm";
 import { useAreasStore } from "@/stores/areasStore";
 import type { Area, Entry, EntryChanges, Label } from "@/types/entry";
-import {
-  entryFormChanges,
-  entryFormValuesOf,
-  isFormEdited,
-  type EntryFormValues,
-} from "@/utils/entries/entryForm";
 
 const props = defineProps<{
   entry: Entry;
@@ -108,53 +103,10 @@ const emit = defineEmits<{
 
 const { t } = useI18n();
 
-const name = ref("");
-const icon = ref("");
-const areaId = ref<string | null>(null);
-const labelIds = ref<string[]>([]);
-
-/**
- * What the form was filled from. "Changed" always means changed against this, never against HA
- * now, so saving cannot undo something that changed elsewhere while the form was open.
- */
-const base = ref<EntryFormValues>(entryFormValuesOf(props.entry));
-
-const formValues = (): EntryFormValues => ({
-  name: name.value,
-  icon: icon.value,
-  areaId: areaId.value,
-  labelIds: labelIds.value,
+const { name, icon, areaId, labelIds, isDirty, reset, save } = useEntryForm({
+  entry: toRef(props, "entry"),
+  onSave: (changes) => emit("save", changes),
 });
-
-/** Fills the form from the entry; runs when another entry opens or after saving. */
-function reset(): void {
-  base.value = entryFormValuesOf(props.entry);
-  name.value = base.value.name;
-  icon.value = base.value.icon;
-  areaId.value = base.value.areaId;
-  labelIds.value = [...base.value.labelIds];
-}
-
-/** Set by save(): the next entry from HA is the saved one, so the form takes it over. */
-let isSaving = false;
-
-// Live updates and changes from elsewhere (renaming in the list) bring a new entry object. The form
-// takes it over unless the user is editing it.
-watch(
-  () => props.entry,
-  (next, previous) => {
-    if (
-      !previous ||
-      next.entityId !== previous.entityId ||
-      isSaving ||
-      !isFormEdited({ form: formValues(), base: base.value })
-    ) {
-      reset();
-    }
-    isSaving = false;
-  },
-  { immediate: true },
-);
 
 // ---- labels: given ones as chips, the picker for the rest ----------------------------------
 
@@ -178,8 +130,9 @@ const pickedLabels = computed(() =>
 /** A new label is made in HA right away and ticked here; "Speichern" gives it to the entry. */
 async function createLabel(name: string): Promise<void> {
   const label = await labelActions.create(name);
-  if (label && !labelIds.value.includes(label.labelId))
+  if (label && !labelIds.value.includes(label.labelId)) {
     labelIds.value = [...labelIds.value, label.labelId];
+  }
 }
 
 function deleteLabel(label: Label): void {
@@ -193,40 +146,23 @@ watch(
   () => (isPickerOpen.value = false),
 );
 
-/** Value of the "+ Neuer Bereich …" option; never saved. */
-const NEW_AREA = "__new_area__";
-const areasStore = useAreasStore();
-
-// Picking "+ Neuer Bereich …" opens the area dialog and selects the new area afterwards.
-watch(areaId, (next, previous) => {
-  if (next !== NEW_AREA) return;
-  areaId.value = previous;
-  areasStore.startCreate((area) => (areaId.value = area.areaId));
-});
-
-const isDirty = computed(() => isFormEdited({ form: formValues(), base: base.value }));
-
 function toggleLabel(labelId: string): void {
   labelIds.value = labelIds.value.includes(labelId)
     ? labelIds.value.filter((id) => id !== labelId)
     : [...labelIds.value, labelId];
 }
 
-/**
- * Sends only what the user changed since the form was filled, so a save never undoes a change made
- * elsewhere meanwhile; ticked and unticked labels are applied to the labels the entry has now.
- */
-function save(): void {
-  isSaving = true;
-  emit(
-    "save",
-    entryFormChanges({
-      form: formValues(),
-      base: base.value,
-      currentLabelIds: props.entry.labels.map((label) => label.labelId),
-    }),
-  );
-}
+// ---- area: "+ Neuer Bereich …" opens the area dialog and selects the new area afterwards ---
+
+/** Value of the "+ Neuer Bereich …" option; never saved. */
+const NEW_AREA = "__new_area__";
+const areasStore = useAreasStore();
+
+watch(areaId, (next, previous) => {
+  if (next !== NEW_AREA) return;
+  areaId.value = previous;
+  areasStore.startCreate((area) => (areaId.value = area.areaId));
+});
 </script>
 
 <style scoped>
