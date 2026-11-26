@@ -10,7 +10,7 @@ import type {
   SuggestionChange,
 } from "@/utils/entitySorting/model";
 import { toDisplayTarget, type PlaceholderWords } from "@/utils/entitySorting/placeholders";
-import type { RulePreview } from "@/utils/entitySorting/rules";
+import type { RulePreview, RuleSideHits, RuleStats } from "@/utils/entitySorting/rules";
 
 type SortingTexts = {
   reason: (reason: SortingReason) => string;
@@ -25,6 +25,8 @@ type SortingTexts = {
   target: (target: string) => string;
   /** What a rule being written would do, as one sentence (`rulePreview`). */
   rulePreview: (preview: RulePreview) => string;
+  /** The line under a rule in the list: "passt auf 23 · 2 entscheidet eine andere Regel · …". */
+  ruleLine: (options: { stats: RuleStats; sideHits: RuleSideHits }) => string;
 };
 
 /** The engine returns reasons as data; this writes them in the UI language. */
@@ -129,16 +131,30 @@ export function useSortingTexts(): SortingTexts {
       ? t("entitySorting.rules.previewExamples", { examples: examples.join(", ") })
       : "";
 
-    // Why it may catch fewer than expected: entries match too, or entities that have a folder
-    const sideParts = [
-      ...(preview.entries
-        ? [t("entitySorting.rules.entriesMatch", { count: preview.entries })]
-        : []),
-      ...(preview.sorted ? [t("entitySorting.rules.sortedMatch", { count: preview.sorted })] : []),
-    ];
+    // Why it may catch fewer than expected
+    const sideParts = sideHitTexts(preview);
     const sideText = sideParts.length ? ` ${sideParts.join(". ")}.` : "";
 
     return matchesText + withoutAreaText + examplesText + "." + sideText;
+  }
+
+  /** Why a rule may catch fewer than expected: entries match too, or entities that have a folder. */
+  function sideHitTexts({ entries, sorted }: RuleSideHits): string[] {
+    return [
+      ...(entries ? [t("entitySorting.rules.entriesMatch", { count: entries })] : []),
+      ...(sorted ? [t("entitySorting.rules.sortedMatch", { count: sorted })] : []),
+    ];
+  }
+
+  function ruleLine({ stats, sideHits }: { stats: RuleStats; sideHits: RuleSideHits }): string {
+    const parts = [t("entitySorting.rules.matches", { count: stats.matches }, stats.matches)];
+    if (stats.lost) parts.push(t("entitySorting.rules.lost", { count: stats.lost }));
+    if (stats.withoutArea) {
+      parts.push(t("entitySorting.rules.withoutArea", { count: stats.withoutArea }));
+    }
+    parts.push(...sideHitTexts(sideHits));
+
+    return parts.join(" · ");
   }
 
   return {
@@ -152,5 +168,6 @@ export function useSortingTexts(): SortingTexts {
     placeholderWords,
     target: (target) => toDisplayTarget({ target, words: placeholderWords() }),
     rulePreview,
+    ruleLine,
   };
 }

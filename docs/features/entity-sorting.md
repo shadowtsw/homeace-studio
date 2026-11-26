@@ -35,6 +35,7 @@ page stays complete.
 | Apply and undo in batches of 50, result, hints for automations without folder | `composables/useSortingRun.ts` |
 | Reasons, confidences, origins, rule conditions and the rule preview as text; placeholders `{Bereich}` ↔ `{area}` | `composables/texts/useSortingTexts.ts`, `utils/entitySorting/placeholders.ts` |
 | Window and steps: overview (funnel), rules (editor, ideas), proposals (groups, rows, phone sheet), apply, result | `components/entitySorting/` |
+| Adding, replacing, moving and deleting own rules (with "Rückgängig") | `composables/actions/useSortingRuleActions.ts` |
 | Entry in the tools tab with beta label and count | `components/settings/SettingsToolsTab.vue`, `components/common/BetaBadge.vue` |
 | Folder path to type (own suggestion list, ↑↓ Enter) or pick from the tree; the tree panel alone for "Anderer Ordner …" in step 3 | `components/common/FolderPathField.vue`, `FolderTreePanel.vue` |
 | Numbers of step 1, rule ideas, the values a condition can pick from | `utils/entitySorting/overview.ts`, `ruleIdeas.ts` |

@@ -6,7 +6,7 @@
       <SortingRuleEditor
         v-if="editing === index"
         :rule="rule"
-        @save="(next) => replace(index, next)"
+        @save="(next) => replace({ index, rule: next })"
         @cancel="editing = null"
       />
       <div v-else class="rules__rule">
@@ -22,7 +22,7 @@
           <span class="rules__target"
             ><span class="mdi mdi-folder-outline" />{{ texts.target(rule.target) }}</span
           >
-          <span class="rules__meta">{{ statsText(rule, index) }}</span>
+          <span class="rules__meta">{{ statsText({ rule, index }) }}</span>
         </div>
         <div class="rules__actions">
           <button
@@ -31,7 +31,7 @@
             :disabled="index === 0"
             :aria-label="t('entitySorting.rules.up')"
             :title="t('entitySorting.rules.up')"
-            @click="swap(index, index - 1)"
+            @click="swap({ first: index, second: index - 1 })"
           >
             <span class="mdi mdi-arrow-up" />
           </button>
@@ -41,7 +41,7 @@
             :disabled="index === sorting.rules.length - 1"
             :aria-label="t('entitySorting.rules.down')"
             :title="t('entitySorting.rules.down')"
-            @click="swap(index, index + 1)"
+            @click="swap({ first: index, second: index + 1 })"
           >
             <span class="mdi mdi-arrow-down" />
           </button>
@@ -127,12 +127,12 @@ import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
 
 import SwitchToggle from "@/components/common/SwitchToggle.vue";
+import { useSortingRuleActions } from "@/composables/actions/useSortingRuleActions";
 import { useSortingTexts } from "@/composables/texts/useSortingTexts";
 import { useEntitySortingStore } from "@/stores/entitySortingStore";
-import { useToastStore } from "@/stores/toastStore";
 import type { SortingRule } from "@/types/entitySorting";
 import { ruleIdeas } from "@/utils/entitySorting/ruleIdeas";
-import { ruleFor, ruleSideHits, ruleStats } from "@/utils/entitySorting/rules";
+import { ruleCoverage, ruleScope, ruleSideHits, ruleStats } from "@/utils/entitySorting/rules";
 
 import SortingRuleEditor from "./SortingRuleEditor.vue";
 
@@ -141,37 +141,24 @@ const NEW = -1;
 
 const { t } = useI18n();
 const sorting = useEntitySortingStore();
-const toasts = useToastStore();
 const texts = useSortingTexts();
 /** Index of the rule being edited, NEW for a new one, null for none. */
 const editing = ref<number | null>(null);
+const { add, replace, swap, remove } = useSortingRuleActions({ editing });
 
 const scope = computed(() =>
-  (sorting.home?.context.entities ?? []).filter(
-    (entity) =>
-      entity.isInRegistry &&
-      (sorting.options.isResortingSorted || !entity.categoryPath) &&
-      (sorting.options.includeHidden || !(entity.isDisabled || entity.isHidden)),
-  ),
+  ruleScope({
+    entities: sorting.home?.context.entities ?? [],
+    isResortingSorted: sorting.options.isResortingSorted,
+    includeHidden: sorting.options.includeHidden,
+  }),
 );
 
-const coverage = computed(() => {
-  let covered = 0;
-  let conflicts = 0;
-  const home = sorting.home;
-
-  if (home) {
-    for (const entity of scope.value) {
-      const hit = ruleFor({ entity, rules: sorting.rules, home });
-      if (!hit) continue;
-
-      covered++;
-      if (hit.isConflict) conflicts++;
-    }
-  }
-
-  return { covered, conflicts };
-});
+const coverage = computed(() =>
+  sorting.home
+    ? ruleCoverage({ entities: scope.value, rules: sorting.rules, home: sorting.home })
+    : { covered: 0, conflicts: 0 },
+);
 
 const ideas = computed(() =>
   sorting.home && sorting.computation
@@ -193,71 +180,25 @@ function ideaCount(idea: SortingRule): string {
   return t("entitySorting.entities", { count: matches }, matches);
 }
 
-/** Why a rule may catch less than expected: entries match, or entities are sorted already. */
-function sideHitTexts(rule: SortingRule): string[] {
-  if (!sorting.home) return [];
-
-  const hits = ruleSideHits({
-    rule,
-    home: sorting.home,
-    isResortingSorted: sorting.options.isResortingSorted,
-  });
-  return [
-    ...(hits.entries ? [t("entitySorting.rules.entriesMatch", { count: hits.entries })] : []),
-    ...(hits.sorted ? [t("entitySorting.rules.sortedMatch", { count: hits.sorted })] : []),
-  ];
-}
-
-function statsText(rule: SortingRule, index: number): string {
-  if (!sorting.home) return "";
+/** What the rule catches, what another rule decides, and why it may catch less than expected. */
+function statsText({ rule, index }: { rule: SortingRule; index: number }): string {
+  const home = sorting.home;
+  if (!home) return "";
 
   const stats = ruleStats({
     rule,
     ruleIndex: index,
     rules: sorting.rules,
     entities: scope.value,
-    home: sorting.home,
+    home,
   });
-  const parts = [t("entitySorting.rules.matches", { count: stats.matches }, stats.matches)];
-  if (stats.lost) parts.push(t("entitySorting.rules.lost", { count: stats.lost }));
-  if (stats.withoutArea)
-    parts.push(t("entitySorting.rules.withoutArea", { count: stats.withoutArea }));
-  parts.push(...sideHitTexts(rule));
-
-  return parts.join(" · ");
-}
-
-async function add(rule: SortingRule): Promise<void> {
-  editing.value = null;
-  await sorting.setRules([...sorting.rules, rule]);
-  toasts.show({ text: t("entitySorting.rules.added", { number: sorting.rules.length }) });
-}
-
-async function replace(index: number, rule: SortingRule): Promise<void> {
-  editing.value = null;
-  await sorting.setRules(
-    sorting.rules.map((current, position) => (position === index ? rule : current)),
-  );
-}
-
-async function swap(first: number, second: number): Promise<void> {
-  const next = [...sorting.rules];
-  [next[first], next[second]] = [next[second] as SortingRule, next[first] as SortingRule];
-  await sorting.setRules(next);
-}
-
-async function remove(index: number): Promise<void> {
-  const removed = sorting.rules[index] as SortingRule;
-  await sorting.setRules(sorting.rules.filter((_, position) => position !== index));
-  toasts.show({
-    text: t("entitySorting.rules.deleted", { number: index + 1 }),
-    tone: "success",
-    undo: () => {
-      const next = [...sorting.rules];
-      next.splice(index, 0, removed);
-      void sorting.setRules(next);
-    },
+  const sideHits = ruleSideHits({
+    rule,
+    home,
+    isResortingSorted: sorting.options.isResortingSorted,
   });
+
+  return texts.ruleLine({ stats, sideHits });
 }
 </script>
 

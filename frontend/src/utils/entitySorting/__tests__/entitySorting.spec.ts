@@ -8,7 +8,7 @@ import type { SortingState } from "../model";
 import { sortingOverview } from "../overview";
 import { fromDisplayTarget, toDisplayTarget } from "../placeholders";
 import { conditionValues, ruleIdeas } from "../ruleIdeas";
-import { ruleFor, rulePreview, ruleScope, ruleSideHits, ruleStats } from "../rules";
+import { ruleCoverage, ruleFor, rulePreview, ruleScope, ruleSideHits, ruleStats } from "../rules";
 import { meaningfulWords, wordKey } from "../words";
 import { NAMES, sampleHome, sampleState } from "./entitySortingFixture";
 
@@ -265,6 +265,27 @@ describe("rule editor", () => {
     });
     expect(preview.examples).toHaveLength(1);
     expect(preview.examples[0]?.target).toBe("Licht/Küche");
+  });
+
+  it("counts what the rules cover, and where two rules disagree", () => {
+    const home = sampleHome();
+    const rules = [
+      { conditions: [{ type: "label" as const, value: "Licht" }], target: "Licht/{area}" },
+      {
+        conditions: [
+          { type: "label" as const, value: "Licht" },
+          { type: "area" as const, value: "kinderzimmer" },
+        ],
+        target: "Kinder",
+      },
+    ];
+    const entities = ruleScope({
+      entities: home.context.entities,
+      isResortingSorted: false,
+      includeHidden: false,
+    });
+
+    expect(ruleCoverage({ entities, rules, home })).toEqual({ covered: 2, conflicts: 1 });
   });
 
   it("offers the values the home has: sorted, once each, none for name parts", () => {

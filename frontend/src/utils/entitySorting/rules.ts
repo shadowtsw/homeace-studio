@@ -257,3 +257,29 @@ export function rulePreview({
 
   return { ...stats, ...sideHits, examples };
 }
+
+export type RuleCoverageOptions = {
+  /** The entities the rules may touch (`ruleScope`). */
+  entities: SortingEntity[];
+  rules: SortingRule[];
+  home: SortingHome;
+};
+
+/** How many entities some rule decides, and for how many of them two rules disagree. */
+export function ruleCoverage({ entities, rules, home }: RuleCoverageOptions): {
+  covered: number;
+  conflicts: number;
+} {
+  let covered = 0;
+  let conflicts = 0;
+
+  for (const entity of entities) {
+    const hit = ruleFor({ entity, rules, home });
+    if (!hit) continue;
+
+    covered++;
+    if (hit.isConflict) conflicts++;
+  }
+
+  return { covered, conflicts };
+}
