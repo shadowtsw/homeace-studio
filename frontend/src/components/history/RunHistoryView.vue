@@ -24,17 +24,17 @@
             type="button"
             class="history__run"
             :class="{ 'history__run--active': run.runId === selected?.runId }"
-            @click="selectedRunId = run.runId"
+            @click="select(run.runId)"
           >
-            <span class="history__dot" :class="`history__dot--${RESULT_TONE[run.result]}`">
-              <span class="mdi" :class="RESULT_ICON[run.result]" />
+            <span class="history__dot" :class="`history__dot--${RUN_RESULT_TONE[run.result]}`">
+              <span class="mdi" :class="RUN_RESULT_ICON[run.result]" />
             </span>
             <span class="history__run-text">
               <b
                 >{{ clockTime({ iso: run.startedAt, locale: settings.locale }) }} ·
                 {{ t(`history.result.${run.result}`) }}</b
               >
-              <small>{{ runLine(run) }}</small>
+              <small>{{ lineText({ run, flow }) }}</small>
             </span>
           </button>
         </template>
@@ -50,7 +50,7 @@
               :title="t('history.keepMoreHint')"
               @click="keepMore"
             >
-              {{ t("history.keepMore", { count: MORE_RUNS }) }}
+              {{ t("history.keepMore", { count: KEEP_MORE_RUNS }) }}
             </button>
           </span>
         </div>
@@ -59,16 +59,16 @@
       <div v-if="selected" class="history__detail">
         <div class="history__head">
           <div class="history__result">
-            <span class="history__dot" :class="`history__dot--${RESULT_TONE[selected.result]}`">
-              <span class="mdi" :class="RESULT_ICON[selected.result]" />
+            <span class="history__dot" :class="`history__dot--${RUN_RESULT_TONE[selected.result]}`">
+              <span class="mdi" :class="RUN_RESULT_ICON[selected.result]" />
             </span>
             {{ t(`history.result.${selected.result}`) }}
           </div>
           <div class="history__meta">
             <b>{{ whenText(selected) }}</b> · {{ durationText(selected) }}
           </div>
-          <div class="history__meta">{{ startText(selected) }}</div>
-          <p v-if="RESULT_HINT[selected.result]" class="history__hint">
+          <div class="history__meta">{{ startText({ run: selected, flow }) }}</div>
+          <p v-if="RUN_RESULT_HINT[selected.result]" class="history__hint">
             {{ t(`history.hint.${selected.result}`) }}
           </p>
           <p v-if="selected.error" class="history__error">{{ errorText(selected.error) }}</p>
@@ -109,21 +109,21 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+import { toRef } from "vue";
 import { useI18n } from "vue-i18n";
 
 import { useRunTexts } from "@/composables/texts/useRunTexts";
-import { useStateText } from "@/composables/texts/useStateText";
-import type { Run, RunResult } from "@/services/tracesService";
-import { useLookupsStore } from "@/stores/lookupsStore";
-import { useMessagesStore } from "@/stores/messagesStore";
+import { useRunHistory } from "@/composables/useRunHistory";
+import {
+  KEEP_MORE_RUNS,
+  RUN_RESULT_HINT,
+  RUN_RESULT_ICON,
+  RUN_RESULT_TONE,
+} from "@/constants/traces";
 import { useSettingsStore } from "@/stores/settingsStore";
-import { useToastStore } from "@/stores/toastStore";
-import { useTracesStore } from "@/stores/tracesStore";
 import type { DisplayFlow } from "@/types/editor";
 import type { Entry } from "@/types/entry";
-import { runSeconds, runStatesFor } from "@/utils/runs/runStates";
-import { clockTime, dayLabel, runDuration } from "@/utils/runs/runTime";
+import { clockTime } from "@/utils/runs/runTime";
 
 import RunStepRow from "./RunStepRow.vue";
 
@@ -143,184 +143,27 @@ const emit = defineEmits<{
   showOnFlow: [runId: string];
 }>();
 
-const RESULT_ICON: Record<RunResult, string> = {
-  finished: "mdi-check",
-  conditionsFailed: "mdi-cancel",
-  error: "mdi-alert-circle-outline",
-  running: "mdi-timer-sand",
-  cancelled: "mdi-restart",
-  ignored: "mdi-minus-circle-outline",
-  stopped: "mdi-stop-circle-outline",
-  unknown: "mdi-help-circle-outline",
-};
-
-const RESULT_TONE: Record<RunResult, string> = {
-  finished: "ok",
-  conditionsFailed: "warn",
-  error: "err",
-  running: "run",
-  cancelled: "none",
-  ignored: "none",
-  stopped: "none",
-  unknown: "none",
-};
-
-/** Results that need a sentence of explanation. */
-const RESULT_HINT: Partial<Record<RunResult, true>> = { cancelled: true, ignored: true };
-
 const { t } = useI18n();
-const traces = useTracesStore();
-const lookups = useLookupsStore();
 const settings = useSettingsStore();
-const stateText = useStateText();
-const { errorText } = useRunTexts();
-const toasts = useToastStore();
-const messages = useMessagesStore();
-
-/** "Die letzten 20 merken". */
-const MORE_RUNS = 20;
-const isKeeping = ref(false);
-const canKeepMore = computed(
-  () =>
-    props.isEditable &&
-    !props.hasUnsavedChanges &&
-    (history.value?.storedTraces ?? MORE_RUNS) < MORE_RUNS,
-);
-
-async function keepMore(): Promise<void> {
-  isKeeping.value = true;
-
-  try {
-    await traces.keepMore({ entityId: props.entry.entityId, count: MORE_RUNS });
-    toasts.show({ text: t("history.kept", { count: MORE_RUNS }) });
-  } catch (error) {
-    toasts.show({
-      text: messages.textFor({ error, fallback: t("errors.actionFailed") }),
-      tone: "error",
-    });
-  } finally {
-    isKeeping.value = false;
-  }
-}
-
-void lookups.loadEntities();
-
-const selectedRunId = ref<string | null>(null);
-
-watch(
-  () => props.entry.entityId,
-  (entityId) => {
-    selectedRunId.value = null;
-    void traces.load(entityId);
-  },
-  { immediate: true },
-);
-
-const history = computed(() =>
-  traces.current?.entityId === props.entry.entityId ? traces.current : null,
-);
-const selected = computed(
-  () =>
-    history.value?.runs.find((run) => run.runId === selectedRunId.value) ??
-    history.value?.runs[0] ??
-    null,
-);
-
-const groups = computed(() => {
-  const now = new Date();
-  const result: { day: string; runs: Run[] }[] = [];
-  const texts = { today: t("history.today"), yesterday: t("history.yesterday") };
-
-  for (const run of history.value?.runs ?? []) {
-    const day = dayLabel({ iso: run.startedAt, now, locale: settings.locale, texts });
-    const last = result[result.length - 1];
-    if (last?.day === day) last.runs.push(run);
-    else result.push({ day, runs: [run] });
-  }
-
-  return result;
+const { errorText, startText, durationText, lineText, whenText } = useRunTexts();
+const {
+  traces,
+  history,
+  selected,
+  select,
+  groups,
+  keepText,
+  states,
+  sections,
+  isKeeping,
+  canKeepMore,
+  keepMore,
+} = useRunHistory({
+  entry: toRef(props, "entry"),
+  flow: toRef(props, "flow"),
+  isEditable: toRef(props, "isEditable"),
+  hasUnsavedChanges: toRef(props, "hasUnsavedChanges"),
 });
-
-const keepText = computed(() =>
-  t(`history.keep.${props.entry.kind === "script" ? "script" : "automation"}`, {
-    count: history.value?.storedTraces ?? 5,
-  }),
-);
-
-const states = computed(() =>
-  selected.value && props.flow
-    ? runStatesFor({ run: selected.value, flow: props.flow })
-    : new Map(),
-);
-
-const sections = computed(() => {
-  const flow = props.flow;
-  if (!flow) return [];
-  if (props.entry.kind === "script") return [{ key: "sequence", blocks: flow.actions }];
-
-  return [
-    { key: "triggers", blocks: flow.triggers },
-    { key: "conditions", blocks: flow.conditions },
-    { key: "actions", blocks: flow.actions },
-  ];
-});
-
-function nameOf(entityId: string): string {
-  return lookups.entityNames[entityId] ?? entityId;
-}
-
-/** "Bewegungsmelder Terrasse: „Erkannt“", "Von Hand gestartet", or the trigger block. */
-function startText(run: Run): string {
-  const start = run.start;
-
-  if (start.by === "user") return t("history.start.user");
-  if (start.by === "flow") return t("history.start.flow");
-  if (start.entityId && start.to !== null) {
-    return t("history.start.entity", {
-      name: nameOf(start.entityId),
-      state: stateText({ state: start.to, unit: null }),
-    });
-  }
-
-  const trigger =
-    start.triggerIndex !== null ? props.flow?.triggers[start.triggerIndex] : undefined;
-  if (trigger) {
-    return t("history.start.trigger", {
-      text: [trigger.title, ...trigger.chips.map((chip) => chip.text)].join(" "),
-    });
-  }
-
-  return t("history.start.unknown");
-}
-
-function durationText(run: Run): string {
-  const seconds = runSeconds(run);
-  return seconds === null
-    ? t("history.runningSince")
-    : t("history.took", { duration: runDuration({ seconds, locale: settings.locale }) });
-}
-
-function runLine(run: Run): string {
-  const seconds = runSeconds(run);
-  const duration =
-    seconds === null
-      ? t("history.runningShort")
-      : runDuration({ seconds, locale: settings.locale });
-  return `${duration} · ${startText(run)}`;
-}
-
-function whenText(run: Run): string {
-  const day = dayLabel({
-    iso: run.startedAt,
-    now: new Date(),
-    locale: settings.locale,
-    texts: {
-      today: t("history.today"),
-      yesterday: t("history.yesterday"),
-    },
-  });
-  return `${day}, ${clockTime({ iso: run.startedAt, locale: settings.locale })}`;
-}
 </script>
 
 <style scoped>

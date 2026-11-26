@@ -1,10 +1,12 @@
 import { useI18n } from "vue-i18n";
 
 import { useStateText } from "@/composables/texts/useStateText";
+import type { Run } from "@/services/tracesService";
 import { useLookupsStore } from "@/stores/lookupsStore";
 import { useSettingsStore } from "@/stores/settingsStore";
-import type { BlockRunState, BlockRunStatus } from "@/utils/runs/runStates";
-import { runDuration } from "@/utils/runs/runTime";
+import type { DisplayFlow } from "@/types/editor";
+import { runSeconds, type BlockRunState, type BlockRunStatus } from "@/utils/runs/runStates";
+import { clockTime, dayLabel, runDuration } from "@/utils/runs/runTime";
 
 export const RUN_STATUS_ICON: Record<BlockRunStatus, string> = {
   fired: "mdi-check",
@@ -31,14 +33,27 @@ export function runStatusTone(status: BlockRunStatus): string {
 
 const UNAVAILABLE_ERROR = /^Entity (\S+) is unavailable/;
 
+/** A run, and the flow it belongs to (for the names of its triggers); null while it loads. */
+type RunOfFlow = { run: Run; flow: DisplayFlow | null };
+
 type RunTexts = {
   /** "Erfüllt: war „aus“", "15 min 00 s gewartet", "„Sonst“ genommen", … */
   noteOf: (state: BlockRunState) => string;
   /** HA's English error in plain words where we know it; the rest as HA wrote it. */
   errorText: (error: string) => string;
+  /** "Bewegungsmelder Terrasse: „Erkannt“", "Von Hand gestartet", or the trigger block. */
+  startText: (options: RunOfFlow) => string;
+  /** How long the run took, or that it still runs. */
+  durationText: (run: Run) => string;
+  /** The second line of a run in the list: its duration and how it started. */
+  lineText: (options: RunOfFlow) => string;
+  /** The day of a run ("Heute", "Gestern" or the date), as of `now`. */
+  dayText: (options: { iso: string; now: Date }) => string;
+  /** "Heute, 14:32": when the run started. */
+  whenText: (run: Run) => string;
 };
 
-/** Texts for what a block did in a run, shared by the run history and the flow. */
+/** Texts for runs and for what a block did in one, shared by the run history and the flow. */
 export function useRunTexts(): RunTexts {
   const { t } = useI18n();
   const settings = useSettingsStore();
@@ -78,5 +93,54 @@ export function useRunTexts(): RunTexts {
     return t("history.errors.other", { error });
   }
 
-  return { noteOf, errorText };
+  function startText({ run, flow }: RunOfFlow): string {
+    const start = run.start;
+
+    if (start.by === "user") return t("history.start.user");
+    if (start.by === "flow") return t("history.start.flow");
+    if (start.entityId && start.to !== null) {
+      return t("history.start.entity", {
+        name: lookups.entityNames[start.entityId] ?? start.entityId,
+        state: stateText({ state: start.to, unit: null }),
+      });
+    }
+
+    const trigger = start.triggerIndex !== null ? flow?.triggers[start.triggerIndex] : undefined;
+    if (trigger) {
+      return t("history.start.trigger", {
+        text: [trigger.title, ...trigger.chips.map((chip) => chip.text)].join(" "),
+      });
+    }
+
+    return t("history.start.unknown");
+  }
+
+  function durationText(run: Run): string {
+    const seconds = runSeconds(run);
+    return seconds === null
+      ? t("history.runningSince")
+      : t("history.took", { duration: runDuration({ seconds, locale: settings.locale }) });
+  }
+
+  function lineText({ run, flow }: RunOfFlow): string {
+    const seconds = runSeconds(run);
+    const duration =
+      seconds === null
+        ? t("history.runningShort")
+        : runDuration({ seconds, locale: settings.locale });
+    return `${duration} · ${startText({ run, flow })}`;
+  }
+
+  function dayText({ iso, now }: { iso: string; now: Date }): string {
+    const texts = { today: t("history.today"), yesterday: t("history.yesterday") };
+
+    return dayLabel({ iso, now, locale: settings.locale, texts });
+  }
+
+  function whenText(run: Run): string {
+    const day = dayText({ iso: run.startedAt, now: new Date() });
+    return `${day}, ${clockTime({ iso: run.startedAt, locale: settings.locale })}`;
+  }
+
+  return { noteOf, errorText, startText, durationText, lineText, dayText, whenText };
 }

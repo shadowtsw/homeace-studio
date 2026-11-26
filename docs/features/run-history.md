@@ -9,16 +9,16 @@ by block, and "Im Ablauf zeigen" puts it on the flow.
 | --- | --- |
 | `GET /api/traces/:entityId`, `PUT /api/traces/:entityId/stored` (keep more runs) | `backend/src/traces/traces.controller.ts`, `traces.service.ts` |
 | HA trace → `Run` (result word, what started it, steps in time order) | `backend/src/traces/trace-mapper.ts` (pure) |
-| Tab: runs by day, selected run step by step, "Die letzten 20 merken" | `frontend/src/components/history/RunHistoryView.vue`, `RunStepRow.vue` |
+| Tab: runs by day, selected run step by step, "Die letzten 20 merken" | `frontend/src/components/history/RunHistoryView.vue`, `RunStepRow.vue`; loading, selection, day groups and "merken" in `frontend/src/composables/useRunHistory.ts`, result icons and colors in `constants/traces.ts` |
 | Bar above the flow while a run is shown on it | `frontend/src/components/history/RunOverlayBar.vue` |
 | Run → state per display block (`fired`, `passed`, `failed`, `notReached`, …) | `frontend/src/utils/runs/runStates.ts` (`tracePathOf`, `runStatesFor`) |
 | Durations and times | `frontend/src/utils/runs/runTime.ts` |
 | Store: runs of the open entry, `shownRunId` | `frontend/src/stores/tracesStore.ts`, `services/tracesService.ts` |
-| Texts per run state | `frontend/src/composables/texts/useRunTexts.ts` |
+| Texts per run state, and per run (start, duration, list line, day, when) | `frontend/src/composables/texts/useRunTexts.ts` |
 
 ## Flow
 
-1. `RunHistoryView` loads on mount and on entity change (`tracesStore.load`). The store drops answers for
+1. `RunHistoryView` (through `useRunHistory`) loads on mount and on entity change (`tracesStore.load`). The store drops answers for
    an entry that is no longer open. After live changes, `refresh()` reloads quietly, because a running
    run may be done now.
 2. The backend reads `trace/list` (summaries), then `trace/get` for the runs it shows. If HA dropped a run
