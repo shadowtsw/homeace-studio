@@ -66,6 +66,7 @@
     <div
       class="entry-list__body"
       :class="{ 'entry-list__body--docked': checkedIds.size > 0 || checkedEntityIds.size > 0 }"
+      :style="dockRoomStyle"
     >
       <p v-if="entries.length === 0 && entities.length === 0" class="entry-list__empty">
         {{ isRealCategory && !isSearching ? t("list.emptyFolder") : t("list.empty") }}
@@ -141,7 +142,11 @@
       </p>
     </div>
     <!-- Floats over the list, so ticking never pushes the rows away from the pointer -->
-    <div v-if="checkedIds.size > 0 || checkedEntityIds.size > 0" class="entry-list__dock">
+    <div
+      v-if="checkedIds.size > 0 || checkedEntityIds.size > 0"
+      ref="dock"
+      class="entry-list__dock"
+    >
       <div
         v-if="checkedIds.size > 0"
         ref="bulkBar"
@@ -194,7 +199,7 @@
 </template>
 
 <script setup lang="ts">
-import { onClickOutside, useEventListener } from "@vueuse/core";
+import { onClickOutside, useElementSize, useEventListener } from "@vueuse/core";
 import { computed, ref, useTemplateRef, watch, nextTick } from "vue";
 import { useI18n } from "vue-i18n";
 
@@ -283,6 +288,17 @@ const BREADCRUMB_SEPARATOR = " › ";
 const isNewMenuOpen = ref(false);
 const newMenu = useTemplateRef("newMenu");
 const bulkBar = useTemplateRef<HTMLElement>("bulkBar");
+
+/** Gap between the floating bar and the list's bottom edge (its `bottom`), plus a little air. */
+const DOCK_ROOM_EXTRA_PX = 18;
+const dock = useTemplateRef<HTMLElement>("dock");
+// The bar wraps to more lines in some languages and in a narrow list, so its room is measured.
+const { height: dockHeight } = useElementSize(dock, undefined, { box: "border-box" });
+const dockRoomStyle = computed(() =>
+  dockHeight.value > 0
+    ? { "--dock-room": `${Math.ceil(dockHeight.value) + DOCK_ROOM_EXTRA_PX}px` }
+    : {},
+);
 
 onClickOutside(newMenu, () => (isNewMenuOpen.value = false));
 
@@ -687,9 +703,12 @@ function groupLabel(path: string | null): string {
   padding: 6px 10px 30px;
 }
 
-/* Room at the end, so the floating bar never hides the last rows */
+/* Room at the end, so the floating bar never hides the last rows. The scroll padding keeps a row
+   that arrow keys or Tab scroll to above the bar, not under it. --dock-room is the bar's measured
+   height (dockRoomStyle); the fallback covers the bar on three lines until it is measured. */
 .entry-list__body--docked {
-  padding-bottom: 130px;
+  padding-bottom: var(--dock-room, 140px);
+  scroll-padding-bottom: var(--dock-room, 140px);
 }
 
 .entry-list__group {

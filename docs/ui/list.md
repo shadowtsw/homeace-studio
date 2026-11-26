@@ -78,7 +78,10 @@ the list:
   toast that says so, so the bar always fits what is ticked.
 - **Selection bars float** at the bottom of the list column (`.entry-list__dock`), over the rows, and
   the list gets room at its end. Before, the bar above the filters pushed the list down on the first
-  tick, so the next box moved away under the pointer.
+  tick, so the next box moved away under the pointer. The same room is the list's
+  `scroll-padding-bottom`, so a row that arrow keys or Tab scroll to stays above the bar. The room
+  is the bar's measured height (`--dock-room`), because the bar wraps to more lines in some languages
+  and in a narrow list (measured 26.11.: 86 px in English, 122 px in the other four languages).
   Dragging a ticked entity onto a folder takes all ticked ones along (`dropEntity` in StudioView),
   like ticked entries.
 - **Label chips:** with "Labels in der Liste zeigen" on (per user, off by default), each row shows its
