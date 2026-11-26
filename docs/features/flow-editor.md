@@ -10,7 +10,7 @@ saves the whole config back to HA. No YAML in the UI.
 
 | What | File |
 | --- | --- |
-| Tab view: mode bar, three sections, the one popover for every editor and menu | `components/flow/FlowView.vue` |
+| Tab view: mode bar, three sections, the one popover for every editor and menu | `components/flow/FlowView.vue`; the popover and its menus in `composables/useFlowPopover.ts`, the sections with their drop signs in `composables/useFlowSections.ts` |
 | One block (recursive): icon, title, chips, "+ Option", ⋮ menu, branches, run state | `components/flow/FlowBlock.vue` |
 | Popover / bottom sheet (≤ 560 px) for a value or a menu | `components/flow/ChipEditorPopover.vue` (+ `ChoiceList.vue`) |
 | Entity editor | `components/flow/EntityPicker.vue`, `EntityPickerRow.vue`, pure parts in `utils/entities/entityPicker.ts` |
@@ -55,7 +55,7 @@ GET /api/editor/flows/:id
   → editable only if REST /api/config/<kind>/config/<key> has it and it has no `use_blueprint`
   → { config, entityNames, isEditable }
 editorStore.flow ─┐
-drafts[entityId] ─┴→ editedFlow → toDisplayFlow(flow, catalog, texts) → markGoneChips → FlowView
+drafts[entityId] ─┴→ editedFlow → toDisplayFlow({ flow, catalog, texts }) → markGoneChips → FlowView
 chip / menu → FlowChange → editorStore.applyChange → applyFlowChange(draft) (HA untouched)
 "In HA speichern" → PUT /api/editor/flows/:id { config } → REST POST (HA validates and reloads)
 ```
@@ -122,7 +122,7 @@ list (`onApplyArea`). Suggestions: entities the flow already uses, then the entr
   `utils/flow/__tests__/flowDisplay.spec.ts` / `flowBlocks.spec.ts`. The demo home should contain an example (`backend/src/demo/demo-home.ts`).
 - **New value editor type:** extend `ValueEditor` in `types/editor.ts`, map it in `valueEditors.ts`,
   render it in `ChipEditorPopover.vue`, and convert input in `editValue.ts`.
-- **Block menu action:** `BLOCK_ACTION` + `blockChange` in `FlowView.vue`, a new `FlowChange` type in
+- **Block menu action:** `BLOCK_ACTION` + `blockChange` in `composables/useFlowPopover.ts`, a new `FlowChange` type in
   `types/editor.ts`, and its handling in `applyFlowChange`.
 
 ## Dropping entities from the list
