@@ -20,7 +20,10 @@
       :aria-label="t('whatsNew.open')"
     >
       <header class="whats-new__head">
-        <h2>{{ t("whatsNew.title", { version: newest.version }) }}</h2>
+        <div class="whats-new__title-row">
+          <h2>{{ t("whatsNew.title", { version: newest.version }) }}</h2>
+          <PopoverClose @close="whatsNew.close()" />
+        </div>
         <p>
           {{
             older.length > 0
@@ -71,6 +74,7 @@ import { onClickOutside, onKeyStroke } from "@vueuse/core";
 import { computed, nextTick, useTemplateRef } from "vue";
 import { useI18n } from "vue-i18n";
 
+import PopoverClose from "@/components/common/PopoverClose.vue";
 import { SETTINGS_TAB } from "@/constants/settings";
 import { RELEASES_URL, type WhatsNewTarget } from "@/constants/whatsNew";
 import type { AppLocale } from "@/i18n";
@@ -160,6 +164,12 @@ onKeyStroke("Escape", () => whatsNew.close());
 
 .whats-new__head {
   padding: 16px 18px 6px;
+}
+
+.whats-new__title-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
 }
 
 .whats-new__head h2 {

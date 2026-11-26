@@ -118,3 +118,8 @@ Choosing a tree node always sets `isNavOpen = false`, and opening an entry alway
 - Technical details (entity IDs, domains, API keys, the category name HA stores for a folder) are
   hidden unless `settings.isTechnicalDetailsVisible` is on. Pass the flag down; don't read the store in
   leaf components.
+- Every popup closes in at least two ways by mouse or finger, plus Escape. Clicking outside alone is
+  no real way when little free space is around it. Panels with a title line (entity menu `QuickMenu`,
+  `ChipEditorPopover`, scene `SceneDevicePicker`, `WhatsNewMenu`) get the X `PopoverClose` at its right;
+  pickers that change something get "Fertig" or "Abbrechen" instead (labels, icons). Small dropdowns
+  ("Neu", "DE ▾", the filter menu) close again with their own button.

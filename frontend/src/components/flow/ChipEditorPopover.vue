@@ -13,7 +13,10 @@
       :aria-label="edit.title"
       @keydown.esc.stop="emit('close')"
     >
-      <div class="chip-editor__title">{{ edit.title }}</div>
+      <div class="chip-editor__head">
+        <div class="chip-editor__title">{{ edit.title }}</div>
+        <PopoverClose @close="emit('close')" />
+      </div>
 
       <EntityPicker
         v-if="editor.type === 'entity'"
@@ -114,6 +117,7 @@ import { onClickOutside, useEventListener, useMediaQuery, useResizeObserver } fr
 import { computed, nextTick, onMounted, reactive, ref, toRef } from "vue";
 import { useI18n } from "vue-i18n";
 
+import PopoverClose from "@/components/common/PopoverClose.vue";
 import { useLookupsStore } from "@/stores/lookupsStore";
 import type { ChipEdit, ConfigPath } from "@/types/editor";
 import {
@@ -408,6 +412,12 @@ onMounted(async () => {
   font-weight: 700;
   letter-spacing: 0.07em;
   text-transform: uppercase;
+}
+
+.chip-editor__head {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
 }
 
 .chip-editor__title {

@@ -4,6 +4,10 @@
       <span class="mdi mdi-plus" /> {{ t("scene.add") }}
     </button>
     <div v-if="isOpen" ref="panel" class="scene-device-picker__panel" :style="panelStyle">
+      <div class="scene-device-picker__head">
+        <span class="scene-device-picker__title">{{ t("scene.add") }}</span>
+        <PopoverClose @close="isOpen = false" />
+      </div>
       <!-- Suggestions come from the scene's area; devices already in it keep their tick. -->
       <EntityPicker
         :entities="lookups.entities"
@@ -24,6 +28,7 @@ import { onClickOutside, useEventListener } from "@vueuse/core";
 import { ref, useTemplateRef } from "vue";
 import { useI18n } from "vue-i18n";
 
+import PopoverClose from "@/components/common/PopoverClose.vue";
 import EntityPicker from "@/components/flow/EntityPicker.vue";
 import { useLookupsStore } from "@/stores/lookupsStore";
 
@@ -124,5 +129,20 @@ useEventListener(window, "resize", () => (isOpen.value = false));
   border: 1px solid var(--line-strong);
   background: var(--surface);
   box-shadow: var(--shadow);
+}
+
+.scene-device-picker__head {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 2px 2px 6px;
+}
+
+.scene-device-picker__title {
+  color: var(--faint);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
 }
 </style>

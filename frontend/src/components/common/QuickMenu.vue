@@ -1,6 +1,9 @@
 <template>
   <div ref="root" class="quick-menu" role="menu" :style="style" :aria-label="title">
-    <div class="quick-menu__title">{{ title }}</div>
+    <div class="quick-menu__head">
+      <div class="quick-menu__title">{{ title }}</div>
+      <PopoverClose @close="emit('close')" />
+    </div>
     <template v-for="item in items" :key="item.id">
       <div v-if="item.isNote" class="quick-menu__note">
         <span v-if="item.icon" class="mdi" :class="item.icon" />
@@ -28,6 +31,7 @@
 import { onClickOutside, onKeyStroke, useEventListener } from "@vueuse/core";
 import { onMounted, ref, useTemplateRef } from "vue";
 
+import PopoverClose from "@/components/common/PopoverClose.vue";
 import { usePlainEntityDrag } from "@/composables/usePlainEntityDrag";
 
 /** One line of the menu; a note explains why something is not offered. */
@@ -100,6 +104,12 @@ useEventListener(
   border-radius: 12px;
   background: var(--surface);
   box-shadow: var(--shadow);
+}
+
+.quick-menu__head {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
 }
 
 .quick-menu__title {
