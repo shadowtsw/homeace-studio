@@ -39,3 +39,10 @@ by block, and "Im Ablauf zeigen" puts it on the flow.
   call writes `trace.stored_traces` (`keepRunsAsSet` in `useCreateActions`). With HA's default (5)
   nothing is written, so the config stays as HA would create it.
 - The demo has invented traces: `backend/src/demo/demo-traces.ts`.
+- **Who started a run** (`start.by`, `startedBy` in `trace-mapper.ts`): a step `trigger/N` → `trigger`.
+  A run by hand ("Ausführen", `automation.trigger`) has the step `trigger` **without a number** and a
+  `parent_id` (the context of the service call), so that step is checked before the context →
+  `user` ("Von Hand gestartet"). HA calls it "manually triggered" too, also when an action called
+  `automation.trigger`; we cannot tell these apart. Otherwise `parent_id` → `flow` (a script started by
+  an automation or script), `user_id` → `user`, else `unknown`. Seen on HA 2026.12.0b1; HA has worked
+  like this for a long time.

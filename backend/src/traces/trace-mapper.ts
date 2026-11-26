@@ -33,6 +33,11 @@ const EXECUTION_RESULT: Record<string, RunResult> = {
 };
 
 const TRIGGER_PATH = /^trigger\/(\d+)$/;
+/**
+ * The step of a run started with "Ausführen" (`automation.trigger`): HA records it without a trigger
+ * number. HA calls such a run "manually triggered", also when an action called `automation.trigger`.
+ */
+const MANUAL_TRIGGER_PATH = "trigger";
 
 const record = (value: unknown): Record<string, unknown> | null =>
   value && typeof value === "object" && !Array.isArray(value)
@@ -60,16 +65,25 @@ function startOf(trace: HaTrace, steps: HaTraceStep[]): RunStart {
     };
   }
 
-  const by = trace.context?.parent_id ? "flow" : trace.context?.user_id ? "user" : "unknown";
-
   return {
     triggerIndex: null,
     entityId: null,
     from: null,
     to: null,
     description: trace.trigger ?? null,
-    by,
+    by: startedBy(trace, steps),
   };
+}
+
+/**
+ * Who started a run that no trigger of its own started. An automation run by hand still carries a
+ * `parent_id` (the context of the service call), so its manual trigger step is checked first.
+ */
+function startedBy(trace: HaTrace, steps: HaTraceStep[]): RunStart["by"] {
+  if (steps.some((step) => step.path === MANUAL_TRIGGER_PATH)) return "user";
+  if (trace.context?.parent_id) return "flow";
+
+  return trace.context?.user_id ? "user" : "unknown";
 }
 
 /** HA's trace in our shape: a result word, what started it, and the steps in time order. */
