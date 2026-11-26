@@ -2,15 +2,12 @@ import { defineStore } from "pinia";
 import { computed, ref, shallowRef } from "vue";
 
 import { i18n } from "@/i18n";
-import { loadSortingContext, saveSortingMemory } from "@/services/entitySortingService";
-import type { EntitySortingMemory, SortingRule } from "@/types/entitySorting";
+import { loadSortingContext } from "@/services/entitySortingService";
 import { collectMoves, computeSorting, suggestionChanges } from "@/utils/entitySorting/compute";
 import { buildSortingHome, type SortingHome } from "@/utils/entitySorting/home";
 import { layoutSorting, pretick } from "@/utils/entitySorting/layout";
 import type {
   BundleChoice,
-  Confidence,
-  SortingBundle,
   SortingComputation,
   SortingLayout,
   SortingNames,
@@ -19,15 +16,12 @@ import type {
   SuggestionChange,
 } from "@/utils/entitySorting/model";
 
+import { createSortingMemory } from "./memory";
+import { sortingNames } from "./names";
+import { createSortingVisibility } from "./visibility";
+
 export const SORTING_STEP = { overview: 1, rules: 2, suggestions: 3, apply: 4, result: 5 } as const;
 export type SortingStep = (typeof SORTING_STEP)[keyof typeof SORTING_STEP];
-
-const DEFAULT_FILTERS: Record<Confidence, boolean> = {
-  rule: true,
-  sure: true,
-  likely: false,
-  unclear: false,
-};
 
 const DEFAULT_OPTIONS: SortingOptions = {
   includeHidden: false,
@@ -38,71 +32,47 @@ const DEFAULT_OPTIONS: SortingOptions = {
 
 /**
  * The tool "Entitäten einsortieren" for one visit: the loaded home, the memory (rules, turned-down
- * folders, kept-out bundles, saved in the overlay), the user's ticks and the engine's results.
+ * folders, kept-out bundles, saved in the overlay; `memory.ts`), the user's ticks, the engine's
+ * results, and which rows show (`visibility.ts`).
  * The engine is pure (utils/entitySorting); this store only feeds it and keeps what it returned.
  */
 export const useEntitySortingStore = defineStore("entitySorting", () => {
   const t = i18n.global.t;
 
+  // The visit
   const isOpen = ref(false);
   const isLoading = ref(false);
   const loadError = ref<unknown>(null);
   const step = ref<SortingStep>(SORTING_STEP.overview);
   const home = shallowRef<SortingHome | null>(null);
-  const lastRun = ref<EntitySortingMemory["lastRun"]>(null);
 
-  const rules = ref<SortingRule[]>([]);
-  const rejected = ref(new Map<string, Set<string>>());
-  const ignored = ref(new Set<string>());
+  // What the tool keeps for everyone, and what the user does in this visit
+  const memory = createSortingMemory({ onChanged: settingsChanged });
   const options = ref<SortingOptions>({ ...DEFAULT_OPTIONS });
   const choices = ref(new Map<string, BundleChoice>());
   const excluded = ref(new Set<string>());
   const groupNames = ref(new Map<string, string>());
-  /** Where new area folders go; null lets the tool pick from the existing folders. */
-  const areaParent = ref<string | null>(null);
 
+  // What the engine returned
   const computation = shallowRef<SortingComputation | null>(null);
   const layout = shallowRef<SortingLayout | null>(null);
   /** Changes since the list was last ordered; rows stay where they are and show them. */
   const changes = shallowRef(new Map<string, SuggestionChange>());
-  /** On a phone a group opens as a sheet from below; its key while open. */
-  const sheetGroupKey = ref<string | null>(null);
-  /** What is pre-ticked shows by default; the rest is one click away (owner's wish, test9). */
-  const filters = ref<Record<Confidence, boolean>>({ ...DEFAULT_FILTERS });
-  const query = ref("");
   /** Changed in the last recompute only: these rows light up once. */
   const flashing = shallowRef(new Set<string>());
 
-  const names = computed<SortingNames>(() => ({
-    system: t("entitySorting.names.system"),
-    systemKinds: {
-      sun: t("entitySorting.names.sun"),
-      zone: t("entitySorting.names.zone"),
-      person: t("entitySorting.names.person"),
-      weather: t("entitySorting.names.weather"),
-      update: t("entitySorting.names.update"),
-      backup: t("entitySorting.names.backup"),
-    },
-    deviceClasses: {
-      smoke: t("entitySorting.names.smoke"),
-      battery: t("entitySorting.names.battery"),
-      moisture: t("entitySorting.names.moisture"),
-      window: t("entitySorting.names.window"),
-      door: t("entitySorting.names.door"),
-      motion: t("entitySorting.names.motion"),
-    },
-  }));
+  const names = computed<SortingNames>(() => sortingNames(t));
 
   function state(): SortingState {
     return {
-      rules: rules.value,
-      rejected: rejected.value,
-      ignored: ignored.value,
+      rules: memory.rules.value,
+      rejected: memory.rejected.value,
+      ignored: memory.ignored.value,
       options: options.value,
       choices: choices.value,
       excluded: excluded.value,
       groupNames: groupNames.value,
-      areaParent: areaParent.value,
+      areaParent: memory.areaParent.value,
     };
   }
 
@@ -168,13 +138,7 @@ export const useEntitySortingStore = defineStore("entitySorting", () => {
     try {
       const context = await loadSortingContext();
       home.value = buildSortingHome(context);
-      rules.value = context.memory.rules;
-      rejected.value = new Map(
-        context.memory.rejected.map((item) => [item.bundleKey, new Set(item.paths)]),
-      );
-      ignored.value = new Set(context.memory.ignored);
-      areaParent.value = context.memory.areaParent ?? null;
-      lastRun.value = context.memory.lastRun;
+      memory.takeLoaded(context.memory);
       computation.value = null;
       layout.value = null;
       reorder();
@@ -190,15 +154,14 @@ export const useEntitySortingStore = defineStore("entitySorting", () => {
     step.value = SORTING_STEP.overview;
     choices.value = new Map();
     excluded.value = new Set();
-    filters.value = { ...DEFAULT_FILTERS };
-    query.value = "";
+    visibility.resetView();
     groupNames.value = new Map();
     void load();
   }
 
   function close(): void {
     isOpen.value = false;
-    sheetGroupKey.value = null;
+    visibility.sheetGroupKey.value = null;
     home.value = null;
     computation.value = null;
     layout.value = null;
@@ -218,14 +181,7 @@ export const useEntitySortingStore = defineStore("entitySorting", () => {
     else reorder();
   }
 
-  async function saveMemory(): Promise<void> {
-    await saveSortingMemory({
-      rules: rules.value,
-      rejected: [...rejected.value].map(([bundleKey, paths]) => ({ bundleKey, paths: [...paths] })),
-      ignored: [...ignored.value],
-      areaParent: areaParent.value,
-    });
-  }
+  // ---- ticks and choices in this visit ------------------------------------------------------
 
   function setChoice({ key, choice }: { key: string; choice: BundleChoice }): void {
     choices.value = new Map(choices.value).set(key, choice);
@@ -250,27 +206,12 @@ export const useEntitySortingStore = defineStore("entitySorting", () => {
   }
 
   async function reject({ key, path }: { key: string; path: string }): Promise<void> {
-    const next = new Map(rejected.value);
+    const next = new Map(memory.rejected.value);
     next.set(key, new Set([...(next.get(key) ?? []), path]));
-    rejected.value = next;
+    memory.rejected.value = next;
     choices.value = new Map(choices.value).set(key, { isOn: false, isTouched: true });
     recompute();
-    await saveMemory();
-  }
-
-  async function setIgnored({
-    key,
-    isIgnored,
-  }: {
-    key: string;
-    isIgnored: boolean;
-  }): Promise<void> {
-    const next = new Set(ignored.value);
-    if (isIgnored) next.add(key);
-    else next.delete(key);
-    ignored.value = next;
-    settingsChanged();
-    await saveMemory();
+    await memory.saveMemory();
   }
 
   function toggleExcluded(entityId: string): void {
@@ -284,35 +225,12 @@ export const useEntitySortingStore = defineStore("entitySorting", () => {
     recompute();
   }
 
-  async function setRules(next: SortingRule[]): Promise<void> {
-    rules.value = next;
-    settingsChanged();
-    await saveMemory();
-  }
-
-  /** Where new area folders go; kept for all users like the rules. */
-  async function setAreaParent(parent: string | null): Promise<void> {
-    areaParent.value = parent;
-    settingsChanged();
-    await saveMemory();
-  }
-
-  async function resetRejected(): Promise<void> {
-    rejected.value = new Map();
-    settingsChanged();
-    await saveMemory();
-  }
-
-  async function resetIgnored(): Promise<void> {
-    ignored.value = new Set();
-    settingsChanged();
-    await saveMemory();
-  }
-
   function setOptions(next: Partial<SortingOptions>): void {
     options.value = { ...options.value, ...next };
     settingsChanged();
   }
+
+  // ---- what applying would do, and which rows show ------------------------------------------
 
   const moves = computed(() =>
     home.value && computation.value && layout.value
@@ -330,38 +248,7 @@ export const useEntitySortingStore = defineStore("entitySorting", () => {
         ([key, choice]) => choice.isOn && computation.value?.bundles.has(key),
       ).length,
   );
-
-  function confidenceOf(key: string): Confidence {
-    return computation.value?.suggestions.get(key)?.confidence ?? "unclear";
-  }
-
-  /** A row shows when it is ticked or matches the filters, and when it matches the search. */
-  function isVisible(bundle: SortingBundle): boolean {
-    if (!computation.value?.bundles.has(bundle.key)) return false;
-
-    // Ticked rows always show: what is applied is always in sight. Filters add the rest.
-    const choice = choices.value.get(bundle.key);
-    const isShownAnyway = !!choice?.target || !!choice?.isOn;
-    if (!isShownAnyway && !filters.value[confidenceOf(bundle.key)]) return false;
-
-    const needle = query.value.trim().toLowerCase();
-    return (
-      !needle ||
-      bundle.name.toLowerCase().includes(needle) ||
-      bundle.entities.some((entity) => entity.name.toLowerCase().includes(needle))
-    );
-  }
-
-  /** Entities that would be applied although their row is filtered out. */
-  const hiddenMoveCount = computed(() => {
-    const hidden = new Set(
-      [...(computation.value?.bundles.values() ?? [])]
-        .filter((bundle) => !isVisible(bundle))
-        .flatMap((bundle) => bundle.entities.map((entity) => entity.entityId)),
-    );
-
-    return moves.value.filter((move) => hidden.has(move.entityId)).length;
-  });
+  const visibility = createSortingVisibility({ computation, choices, moves });
 
   return {
     isOpen,
@@ -369,23 +256,23 @@ export const useEntitySortingStore = defineStore("entitySorting", () => {
     loadError,
     step,
     home,
-    lastRun,
-    rules,
-    rejected,
-    ignored,
+    lastRun: memory.lastRun,
+    rules: memory.rules,
+    rejected: memory.rejected,
+    ignored: memory.ignored,
     options,
     choices,
     excluded,
     groupNames,
-    areaParent,
-    setAreaParent,
+    areaParent: memory.areaParent,
+    setAreaParent: memory.setAreaParent,
     computation,
     layout,
     changes,
     flashing,
-    sheetGroupKey,
-    filters,
-    query,
+    sheetGroupKey: visibility.sheetGroupKey,
+    filters: visibility.filters,
+    query: visibility.query,
     names,
     moves,
     tickedCount,
@@ -399,15 +286,15 @@ export const useEntitySortingStore = defineStore("entitySorting", () => {
     tickMany,
     pick,
     reject,
-    setIgnored,
+    setIgnored: memory.setIgnored,
     toggleExcluded,
     renameGroup,
-    setRules,
-    resetRejected,
-    resetIgnored,
+    setRules: memory.setRules,
+    resetRejected: memory.resetRejected,
+    resetIgnored: memory.resetIgnored,
     setOptions,
-    confidenceOf,
-    isVisible,
-    hiddenMoveCount,
+    confidenceOf: visibility.confidenceOf,
+    isVisible: visibility.isVisible,
+    hiddenMoveCount: visibility.hiddenMoveCount,
   };
 });

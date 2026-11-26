@@ -31,7 +31,7 @@ page stays complete.
 | Target of a bundle, the sections of step 3, folders for "Anderer Ordner …"; computation, moves, changes | `utils/entitySorting/targets.ts`, `compute.ts` |
 | Types and API calls | `frontend/src/types/entitySorting.ts`, `services/entitySortingService.ts` |
 | Tests with a small home like the dummy's | `utils/entitySorting/__tests__/entitySorting.spec.ts`, `entitySortingFixture.ts` |
-| Session state: memory, options, ticks, engine results; recompute vs. reorder | `frontend/src/stores/entitySortingStore.ts` |
+| Session state: options, ticks, engine results; recompute vs. reorder | `frontend/src/stores/entitySortingStore/index.ts`; the memory kept in the overlay in `memory.ts`, filters, search and visible rows in `visibility.ts`, the engine's group names in `names.ts` |
 | Apply and undo in batches of 50, result, hints for automations without folder | `composables/useSortingRun.ts` |
 | Reasons, confidences, origins, rule conditions and the rule preview as text; placeholders `{Bereich}` ↔ `{area}` | `composables/texts/useSortingTexts.ts`, `utils/entitySorting/placeholders.ts` |
 | Window and steps: overview (funnel, options; in `overview/`), rules (editor, ideas), proposals (groups, rows, folder pick, entities, phone sheet; in `suggestions/`), apply, result | `components/entitySorting/` |
