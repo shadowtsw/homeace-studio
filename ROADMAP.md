@@ -4,15 +4,25 @@ What HomeAce Studio can do, what is being built and what comes after. Every feat
 click prototype, is built step by step and is tested on a real Home Assistant before it is released.
 Details of each release are in the [changelog](homeace-studio/CHANGELOG.md).
 
-Status: ✅ released · 🔨 in progress · 📋 planned · 🅿️ on hold
+Status: ✅ released · 🔨 in progress · 📋 planned · 💡 idea · 🅿️ on hold
 
 ## Planned next
 
+No dates, and plans can change along the way.
+
 | Status | Feature | What it means |
 | --- | --- | --- |
-| 📋 | Template, group and schedule helpers | Edit and duplicate them too (Home Assistant stores template and group helpers differently; schedule helpers need a week plan of their own) |
-| 📋 | Settings on phones | The settings window as a list of sections, each opening as its own page, like the settings of a phone |
-| 📋 | Visual blueprint editor | Build blueprints from scratch or from any automation, inputs panel, preview of the form users see, use a blueprint and turn it back into a normal automation |
+| 📋 | Battery overview | See which devices are running low |
+| 📋 | Version history | Look back at earlier versions of an automation |
+| 📋 | Themes | Choose how HomeAce Studio looks |
+| 📋 | Settings on phones | The settings window made for small screens |
+
+## Ideas for later
+
+| Status | Feature | What it means |
+| --- | --- | --- |
+| 💡 | Visual blueprint editor | Work with blueprints visually |
+| 💡 | Template, group and schedule helpers | Edit and duplicate them too |
 
 ## On hold
 
