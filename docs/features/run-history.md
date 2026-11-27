@@ -9,7 +9,7 @@ by block, and "Im Ablauf zeigen" puts it on the flow.
 | --- | --- |
 | `GET /api/traces/:entityId`, `PUT /api/traces/:entityId/stored` (keep more runs) | `backend/src/traces/traces.controller.ts`, `traces.service.ts` |
 | HA trace → `Run` (result word, what started it, steps in time order) | `backend/src/traces/trace-mapper.ts` (pure) |
-| Tab: runs by day, selected run step by step, "Die letzten 20 merken" | `frontend/src/components/history/RunHistoryView.vue`, `RunStepRow.vue`; loading, selection, day groups and "merken" in `frontend/src/composables/useRunHistory.ts`, result icons and colors in `constants/traces.ts` |
+| Tab: runs by day, selected run step by step, "Die letzten 20 merken" | `frontend/src/components/history/RunHistoryView.vue`, `RunHistoryItem.vue` (one run in the list), `RunResultDot.vue` (result icon), `RunStepRow.vue`; loading, selection, day groups and "merken" in `frontend/src/composables/useRunHistory.ts`, result icons and colors in `constants/traces.ts` |
 | Bar above the flow while a run is shown on it | `frontend/src/components/history/RunOverlayBar.vue` |
 | Run → state per display block (`fired`, `passed`, `failed`, `notReached`, …) | `frontend/src/utils/runs/runStates.ts` (`tracePathOf`, `runStatesFor`) |
 | Durations and times | `frontend/src/utils/runs/runTime.ts` |

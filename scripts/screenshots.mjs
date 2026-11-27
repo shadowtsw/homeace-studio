@@ -104,7 +104,7 @@ const SHOTS = [
       await click(page, ".entry-list-row__open", "Morning garden watering");
       await click(page, ".entry-detail-tabs__tab", "History");
       // Yesterday's run took the "then" branch: the dry-soil case.
-      await click(page, ".history__run", "30 min");
+      await click(page, ".run-history-item", "30 min");
     },
   },
   {

@@ -18,25 +18,14 @@
       <div class="history__runs">
         <template v-for="group in groups" :key="group.day">
           <div class="history__day">{{ group.day }}</div>
-          <button
+          <RunHistoryItem
             v-for="run in group.runs"
             :key="run.runId"
-            type="button"
-            class="history__run"
-            :class="{ 'history__run--active': run.runId === selected?.runId }"
-            @click="select(run.runId)"
-          >
-            <span class="history__dot" :class="`history__dot--${RUN_RESULT_TONE[run.result]}`">
-              <span class="mdi" :class="RUN_RESULT_ICON[run.result]" />
-            </span>
-            <span class="history__run-text">
-              <b
-                >{{ clockTime({ iso: run.startedAt, locale: settings.locale }) }} ·
-                {{ t(`history.result.${run.result}`) }}</b
-              >
-              <small>{{ lineText({ run, flow }) }}</small>
-            </span>
-          </button>
+            :run="run"
+            :flow="flow"
+            :is-active="run.runId === selected?.runId"
+            @select="select(run.runId)"
+          />
         </template>
         <div class="history__keep">
           <span class="mdi mdi-information-outline" />
@@ -59,9 +48,7 @@
       <div v-if="selected" class="history__detail">
         <div class="history__head">
           <div class="history__result">
-            <span class="history__dot" :class="`history__dot--${RUN_RESULT_TONE[selected.result]}`">
-              <span class="mdi" :class="RUN_RESULT_ICON[selected.result]" />
-            </span>
+            <RunResultDot :result="selected.result" />
             {{ t(`history.result.${selected.result}`) }}
           </div>
           <div class="history__meta">
@@ -114,17 +101,12 @@ import { useI18n } from "vue-i18n";
 
 import { useRunTexts } from "@/composables/texts/useRunTexts";
 import { useRunHistory } from "@/composables/useRunHistory";
-import {
-  KEEP_MORE_RUNS,
-  RUN_RESULT_HINT,
-  RUN_RESULT_ICON,
-  RUN_RESULT_TONE,
-} from "@/constants/traces";
-import { useSettingsStore } from "@/stores/settingsStore";
+import { KEEP_MORE_RUNS, RUN_RESULT_HINT } from "@/constants/traces";
 import type { DisplayFlow } from "@/types/editor";
 import type { Entry } from "@/types/entry";
-import { clockTime } from "@/utils/runs/runTime";
 
+import RunHistoryItem from "./RunHistoryItem.vue";
+import RunResultDot from "./RunResultDot.vue";
 import RunStepRow from "./RunStepRow.vue";
 
 /** The "Verlauf" tab: the runs HA kept, and what each block did in the selected one. */
@@ -144,8 +126,7 @@ const emit = defineEmits<{
 }>();
 
 const { t } = useI18n();
-const settings = useSettingsStore();
-const { errorText, startText, durationText, lineText, whenText } = useRunTexts();
+const { errorText, startText, durationText, whenText } = useRunTexts();
 const {
   traces,
   history,
@@ -204,81 +185,6 @@ const {
 
 .history__day:first-child {
   margin-top: 0;
-}
-
-.history__run {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: var(--surface);
-  color: var(--fg);
-  cursor: pointer;
-  font: inherit;
-  text-align: left;
-}
-
-.history__run:hover {
-  border-color: var(--line-strong);
-}
-
-.history__run--active {
-  border-color: var(--fg);
-  box-shadow: inset 0 0 0 1px var(--fg);
-}
-
-.history__run-text {
-  display: grid;
-  min-width: 0;
-}
-
-.history__run-text b {
-  font-size: 13px;
-}
-
-.history__run-text small {
-  overflow: hidden;
-  color: var(--muted);
-  font-size: 12px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.history__dot {
-  display: grid;
-  flex: none;
-  place-items: center;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  font-size: 14px;
-}
-
-.history__dot--ok {
-  background: var(--ok-soft);
-  color: var(--ok);
-}
-
-.history__dot--warn {
-  background: var(--warn-soft);
-  color: var(--warn);
-}
-
-.history__dot--err {
-  background: var(--err-soft);
-  color: var(--err);
-}
-
-.history__dot--run {
-  background: var(--accent-soft);
-  color: var(--accent);
-}
-
-.history__dot--none {
-  background: var(--sunken);
-  color: var(--muted);
 }
 
 .history__keep {
