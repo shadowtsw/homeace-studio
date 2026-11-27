@@ -101,6 +101,10 @@ Choosing a tree node always sets `isNavOpen = false`, and opening an entry alway
   CSS on the tokens, so it follows light/dark and the language; no screenshot to keep up to date). The
   sketch reuses the app's own words (`areas.viewFolders`, `detail.tabs.*`, `save.save`); change the
   sketch when the top bar, the detail tabs or the save footer move. The window opens on this topic.
+  Topics and text scroll on their own (both columns `overflow: auto` in the fixed-height window), so
+  the topics stay in place; a new topic starts at the top of its text. On narrow screens, where the
+  topics sit above the text, the tab scrolls as one. "Zahlen und blasse Ordner" (`filterCounts`)
+  draws three folder rows like the navigation (found, faded, folder only) as its legend.
 - **Über HomeAce** ends with the maker's signature "crafted with ♥ by shadowtsw" (link to the GitHub
   profile, `AUTHOR_URL`). The owner wanted a personal note; it is the same English words in every
   language, like a hand-written signature, so it has no locale keys.

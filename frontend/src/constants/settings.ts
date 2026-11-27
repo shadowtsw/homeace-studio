@@ -37,6 +37,7 @@ export const GOOD_TO_KNOW_TOPIC = {
   changedInHa: "changedInHa",
   whereStored: "whereStored",
   filters: "filters",
+  filterCounts: "filterCounts",
   labels: "labels",
   sortingEntities: "sortingEntities",
 } as const;
@@ -52,6 +53,7 @@ export const GOOD_TO_KNOW_TOPICS: readonly { topic: GoodToKnowTopic; icon: strin
   { topic: GOOD_TO_KNOW_TOPIC.changedInHa, icon: "mdi-sync-alert" },
   { topic: GOOD_TO_KNOW_TOPIC.whereStored, icon: "mdi-account-outline" },
   { topic: GOOD_TO_KNOW_TOPIC.filters, icon: "mdi-filter-outline" },
+  { topic: GOOD_TO_KNOW_TOPIC.filterCounts, icon: "mdi-folder-eye-outline" },
   { topic: GOOD_TO_KNOW_TOPIC.labels, icon: "mdi-label-outline" },
   { topic: GOOD_TO_KNOW_TOPIC.sortingEntities, icon: "mdi-auto-fix" },
 ];

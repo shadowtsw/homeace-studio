@@ -135,3 +135,11 @@ function sortByName(nodes: CategoryNode[]): void {
 export function flattenCategoryPaths(nodes: readonly CategoryNode[]): string[] {
   return nodes.flatMap((node) => [node.path, ...flattenCategoryPaths(node.children)]);
 }
+
+/**
+ * Whether a folder shows faded in the navigation: the chosen filter finds nothing in it. Faded
+ * folders still open and take dropped entries; the user's own empty folders fade the same way.
+ */
+export function isEmptyInFilter(node: CategoryNode): boolean {
+  return node.totalCount === 0;
+}

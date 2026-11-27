@@ -68,9 +68,16 @@
       :class="{ 'entry-list__body--docked': checkedIds.size > 0 || checkedEntityIds.size > 0 }"
       :style="dockRoomStyle"
     >
-      <p v-if="entries.length === 0 && entities.length === 0" class="entry-list__empty">
-        {{ isRealCategory && !isSearching ? t("list.emptyFolder") : t("list.empty") }}
-      </p>
+      <EntryListEmpty
+        v-if="entries.length === 0 && entities.length === 0"
+        :scopes="scopes"
+        :counts="scopeCounts"
+        :place="category === CATEGORY_FILTER.all ? null : title.name"
+        :search="search"
+        :is-real-category="isRealCategory"
+        @select-scope="(scope) => emit('selectScope', scope)"
+        @toggle-scope="(scope) => emit('toggleScope', scope)"
+      />
 
       <template v-for="group in groups" :key="group.path ?? ''">
         <button
@@ -223,6 +230,7 @@ import { rangeBetween } from "@/utils/selection";
 import EntityBulkBar from "./EntityBulkBar.vue";
 import EntityListRow from "./EntityListRow.vue";
 import EntryListRow from "./EntryListRow.vue";
+import EntryListEmpty from "./list/EntryListEmpty.vue";
 import ListScopeTabs from "./ListScopeTabs.vue";
 
 const search = defineModel<string>("search", { required: true });
@@ -754,12 +762,6 @@ function groupLabel(path: string | null): string {
   color: var(--faint);
   font-weight: 500;
   font-variant-numeric: tabular-nums;
-}
-
-.entry-list__empty {
-  padding: 40px 20px;
-  color: var(--muted);
-  text-align: center;
 }
 
 @media (max-width: 1180px) {

@@ -15,7 +15,7 @@
       </button>
     </nav>
 
-    <article class="good-to-know__text">
+    <article ref="text" class="good-to-know__text">
       <h3>{{ t(`settings.goodToKnow.${topic}.title`) }}</h3>
       <SettingsColumnsSketch v-if="topic === GOOD_TO_KNOW_TOPIC.columns" />
       <p>{{ t(`settings.goodToKnow.${topic}.text`, { key: modifierKey }) }}</p>
@@ -39,12 +39,32 @@
         <li><span class="mdi mdi-monitor" />{{ t("settings.scope.device") }}</li>
         <li><span class="mdi mdi-home-outline" />{{ t("settings.scope.addon") }}</li>
       </ul>
+
+      <ul
+        v-if="topic === GOOD_TO_KNOW_TOPIC.filterCounts"
+        class="good-to-know__folders"
+        :aria-label="t('settings.goodToKnow.filterCounts.legend')"
+      >
+        <li v-for="example in FOLDER_EXAMPLES" :key="example.key">
+          <span
+            class="good-to-know__folder"
+            :class="{ 'good-to-know__folder--faded': example.count === 0 }"
+          >
+            <span class="mdi" :class="example.icon" />
+            <span class="good-to-know__folder-name">
+              {{ t(`settings.goodToKnow.filterCounts.${example.key}.name`) }}
+            </span>
+            <span class="good-to-know__folder-count">{{ example.count }}</span>
+          </span>
+          <span>{{ t(example.text) }}</span>
+        </li>
+      </ul>
     </article>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, useTemplateRef, watch } from "vue";
 import { useI18n } from "vue-i18n";
 
 import SwitchToggle from "@/components/common/SwitchToggle.vue";
@@ -68,19 +88,50 @@ const settingsWindow = useSettingsWindowStore();
 const topic = computed(() => settingsWindow.goodToKnowTopic);
 /** Used by the topic about combining filters. */
 const modifierKey = useModifierKey();
+
+/** The folder looks the topic about numbers explains, drawn as the navigation draws them. */
+const FOLDER_EXAMPLES = [
+  {
+    key: "found",
+    icon: "mdi-folder",
+    count: 3,
+    text: "settings.goodToKnow.filterCounts.found.text",
+  },
+  {
+    key: "faded",
+    icon: "mdi-folder",
+    count: 0,
+    text: "settings.goodToKnow.filterCounts.faded.text",
+  },
+  { key: "folderOnly", icon: "mdi-folder-outline", count: 2, text: "nav.folderOnly" },
+] as const;
+
+// Topics and text scroll on their own; a new topic starts at the top of its text
+const text = useTemplateRef<HTMLElement>("text");
+watch(topic, () => text.value?.scrollTo({ top: 0 }));
 </script>
 
 <style scoped>
+/* Topics and text scroll on their own, so the topics stay in place. */
 .good-to-know {
   display: grid;
   grid-template-columns: 230px minmax(0, 1fr);
   gap: 22px;
-  align-items: start;
+  height: 100%;
+}
+
+.good-to-know__topics,
+.good-to-know__text {
+  min-height: 0;
+  overflow: auto;
 }
 
 .good-to-know__topics {
   display: grid;
+  align-content: start;
   gap: 2px;
+  /* Room for the focus ring inside the scroll area */
+  padding: 2px;
 }
 
 .good-to-know__topic {
@@ -151,9 +202,71 @@ const modifierKey = useModifierKey();
   color: var(--muted);
 }
 
+.good-to-know__folders {
+  display: grid;
+  gap: 8px;
+  max-width: 62ch;
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--sunken);
+  font-size: 13px;
+  list-style: none;
+}
+
+.good-to-know__folders li {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+}
+
+/* Drawn like a row of the navigation */
+.good-to-know__folder {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  border-radius: 7px;
+  background: var(--surface);
+}
+
+.good-to-know__folder .mdi {
+  color: var(--faint);
+  font-size: 17px;
+}
+
+.good-to-know__folder-name {
+  flex: 1;
+}
+
+.good-to-know__folder-count {
+  color: var(--faint);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.good-to-know__folder--faded .mdi,
+.good-to-know__folder--faded .good-to-know__folder-name,
+.good-to-know__folder--faded .good-to-know__folder-count {
+  opacity: 0.5;
+}
+
+/* Phone: topics above the text, one scroll as before */
 @media (max-width: 820px) {
   .good-to-know {
     grid-template-columns: minmax(0, 1fr);
+    height: auto;
+  }
+
+  .good-to-know__topics,
+  .good-to-know__text {
+    overflow: visible;
+  }
+
+  .good-to-know__folders li {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px;
   }
 }
 </style>

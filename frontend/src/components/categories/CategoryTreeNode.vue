@@ -126,7 +126,7 @@ import InlineNameInput from "@/components/common/InlineNameInput.vue";
 import { useEntryDropTarget } from "@/composables/useEntryDropTarget";
 import { draggedFolder, FOLDER_DRAG_TYPE } from "@/composables/useFolderDrag";
 import { folderColor } from "@/utils/categoryPath";
-import type { CategoryNode } from "@/utils/categoryTree";
+import { isEmptyInFilter, type CategoryNode } from "@/utils/categoryTree";
 import { parentOf } from "@/utils/folderOrder";
 
 const props = defineProps<{
@@ -223,10 +223,8 @@ const hasChildren = computed(() => props.node.children.length > 0);
 /** Own color, or the one inherited from the nearest colored parent folder. */
 const color = computed(() => folderColor(props.node.path, props.colors));
 const isExpanded = computed(() => props.expandedPaths.has(props.node.path));
-/** Nothing in the scope shown, but not one of the user's own empty folders. */
-const isEmptyHere = computed(
-  () => props.node.totalCount === 0 && (props.node.isCategory || !props.node.isSavedFolder),
-);
+/** Nothing in the chosen filter: faded, but it still opens and takes dropped entries. */
+const isEmptyHere = computed(() => isEmptyInFilter(props.node));
 
 /** Only a user's empty folder can be deleted; folders with entries vanish with their last entry. */
 const canDelete = computed(

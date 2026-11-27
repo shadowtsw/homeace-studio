@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { buildCategoryTree, flattenCategoryPaths } from "../categoryTree";
+import {
+  buildCategoryTree,
+  flattenCategoryPaths,
+  isEmptyInFilter,
+  type CategoryNode,
+} from "../categoryTree";
 
 describe("buildCategoryTree", () => {
   it("nests levels separated by / and counts entries per node and in total", () => {
@@ -68,3 +73,28 @@ describe("flattenCategoryPaths", () => {
     expect(haus.totalCount).toBe(1);
   });
 });
+
+describe("isEmptyInFilter", () => {
+  it("fades every folder the chosen filter finds nothing in, own empty folders too", () => {
+    // Scenes chosen: "Haus/Heizung" holds 3, "Haus/Lampen" only entries of other kinds,
+    // "Haus/Sensoren" is a folder made in HomeAce Studio without entries yet
+    const tree = buildCategoryTree(
+      ["Haus/Heizung", "Haus/Heizung", "Haus/Heizung"],
+      ["Haus/Sensoren"],
+      ["Haus/Lampen"],
+    );
+    const faded = flattenCategoryPaths(tree).filter((path) =>
+      isEmptyInFilter(findNode(tree, path)),
+    );
+
+    expect(faded).toEqual(["Haus/Lampen", "Haus/Sensoren"]);
+  });
+});
+
+function findNode(nodes: readonly CategoryNode[], path: string): CategoryNode {
+  for (const node of nodes) {
+    if (node.path === path) return node;
+    if (path.startsWith(`${node.path}/`)) return findNode(node.children, path);
+  }
+  throw new Error(`no folder ${path}`);
+}

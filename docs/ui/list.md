@@ -9,7 +9,8 @@ folder, with search, scope tabs, a "Neu" menu and bulk actions. A click opens th
 | What | File |
 | --- | --- |
 | Column: title with breadcrumb, "Neu" menu, search, bulk bar, groups | `components/entries/EntryList.vue` |
-| Filter bar (combinable: Strg/⌘+Klick, right-click menu, long press on touch) | `components/entries/ListScopeTabs.vue`, rules in `utils/listScopes.ts` |
+| Filter bar (combinable: Strg/⌘+Klick, right-click menu, long press on touch; accent border while not "Alle") | `components/entries/ListScopeTabs.vue`, rules in `utils/listScopes.ts`, `isListNarrowed` in `utils/entries/emptyList.ts` |
+| What an empty list says (what the filters hide, "Alle zeigen") | `components/entries/list/EntryListEmpty.vue`, `emptyListReason` in `utils/entries/emptyList.ts` |
 | One plain entity (light, sensor …): drag source, click offers its folder, checkbox | `components/entries/EntityListRow.vue` |
 | Selection bar of ticked entities, moving them | `components/entries/EntityBulkBar.vue`, `composables/useEntityBulkMove.ts` |
 | Which plain entities a view shows, groups of entries + entities | `utils/entityList.ts` (`filterListEntities`, `groupListItems`) |
@@ -35,6 +36,26 @@ folder, with search, scope tabs, a "Neu" menu and bulk actions. A click opens th
 
 The numbers on the filters come from the same filter without the scopes (`scopeCounts`, `entities` from
 `filterListEntities`). The tree counts ignore the search.
+
+While "Alle" is not among the chosen filters, the list hides entries: the active filters get a fine
+accent border (`list-scope-tabs--narrowed`, `isListNarrowed`), so an empty list is no surprise.
+
+## Empty list
+
+`EntryListEmpty` asks `emptyListReason` (from the scope counts) why nothing shows:
+
+- **filtered:** the chosen filters hide entries of other kinds (`all` minus the chosen kinds) or plain
+  entities (while "Entitäten" is not chosen). It names what is missing ("Keine Szenen in
+  „Arbeitszimmer“", while searching "Nichts gefunden für „…“") and what the filters hide ("Der Filter
+  „Szenen“ blendet 35 andere Einträge aus"), with "Alle zeigen" (`selectScope("all")`). Hidden entries come first, because
+  "Alle zeigen" brings back entries, not entities; only when no entry is hidden it names the entities,
+  with "Entitäten zeigen" (`toggleScope("entities")`). Until 0.14.1 such a folder said
+  "Noch leer", and users thought their entries were gone.
+- **emptyFolder:** a real folder with nothing in it under any filter: "Noch leer …" with how to fill it.
+- **nothing:** everything else (a search without hits anywhere, an empty special node): "Hier ist nichts."
+
+The kinds in the first sentence come from `list.filtered.kinds`, with their own forms per language
+(French "de scènes", Russian genitive plural), joined with `Intl.ListFormat` ("Szenen oder Skripte").
 
 ## Plain entities
 

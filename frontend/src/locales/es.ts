@@ -67,6 +67,18 @@ const es: MessageSchema = {
         text: "Un clic en un filtro sobre la lista muestra solo ese. Así un clic siempre te devuelve.",
         more: "Con {key} + clic o con clic derecho añades más, por ejemplo automatizaciones y entidades juntas. En el móvil, con una pulsación larga.",
       },
+      filterCounts: {
+        title: "Números y carpetas atenuadas",
+        text: "Con un filtro elegido, la navegación solo cuenta lo que muestra: con “Escenas”, “Todas las entradas”, cada carpeta y cada área cuentan solo escenas. Solo la revisión cuenta siempre todo.",
+        more: "Las carpetas y las áreas sin resultados se atenúan, y las áreas pasan al final. Los números de los filtros sobre la lista muestran, en cambio, lo que cada filtro mostraría en la carpeta abierta.",
+        legend: "Ejemplo: tres carpetas en la navegación",
+        found: { name: "Calefacción", text: "El filtro encuentra algo aquí." },
+        faded: {
+          name: "Lámparas",
+          text: "El filtro no encuentra nada aquí. Aun así puedes abrirla y soltar entradas en ella.",
+        },
+        folderOnly: { name: "Sensores" },
+      },
       labels: {
         title: "Las etiquetas valen en todo Home Assistant",
         text: "Una etiqueta que asignas aquí es una etiqueta de Home Assistant. La ves en todas partes allí, también en dispositivos y áreas.",
@@ -739,6 +751,26 @@ const es: MessageSchema = {
     favoritesSubtitle: "Marcadas solo en HomeAce Studio",
     directIn: "Directamente en {name}",
     empty: "Aquí no hay nada.",
+    /** An empty list whose filters hide what is here. */
+    filtered: {
+      noHits: "No se encontró nada para “{search}”.",
+      none: "No hay {kinds}.",
+      noneIn: "No hay {kinds} en “{place}”.",
+      hides: "El filtro “{names}” oculta {hidden}. | Los filtros “{names}” ocultan {hidden}.",
+      otherEntries: "otra entrada | otras {count} entradas",
+      entities: "una entidad | {count} entidades",
+      showAll: "Mostrar todo",
+      showEntities: "Mostrar entidades",
+      /** What the chosen filters look for, as used in `none` and `noneIn`. */
+      kinds: {
+        all: "entradas",
+        automation: "automatizaciones",
+        script: "scripts",
+        scene: "escenas",
+        helper: "ayudantes",
+        entities: "entidades",
+      },
+    },
     resize: "Cambiar el tamaño de la lista",
   },
   detail: {

@@ -39,6 +39,10 @@ compare against the prefix by hand. Changing the selection or the scope tab clea
   of all scopes)`, then `applyFolderOrder`. Counts follow the filters (plain entities count while
   "Entitäten" is chosen), but folders of other scopes stay, so the tree keeps its shape when you switch.
   Folders that only hold plain entities are part of the shape too.
+- A folder the chosen filter finds nothing in (count 0) is faded (`isEmptyInFilter`), the user's own
+  empty folders too; it still opens and takes drops. Until 0.14.1 own folders stayed bright, so
+  "Sensoren 0" bright next to "Heizung 0" faded looked like two different states. "Zahlen und blasse
+  Ordner" in "Gut zu wissen" explains counts and faded folders to users.
 - Node flags (`CategoryNode`): `isFolderOnly` (no entry directly here; HA has no such category),
   `isSavedFolder` (user's empty folder from the overlay), `isCategory` (HA has this category in some scope).
 - Only a saved, empty folder without children and without an HA category can be deleted (`canDelete`).
@@ -69,7 +73,7 @@ Two kinds of drags, told apart by their own MIME types:
 - `settings.navMode` (`folders` | `areas`) is kept in the browser. Switching to areas selects the first
   area. Switching back turns an area selection into "all" (`setNavMode`).
 - `useStudioData.areaNav` lists every HA area, also empty ones (they are drop targets). Areas with entries
-  in the scope come first, then the rest by name. An entry counts in each area it belongs to: its own area,
+  in the scope come first, then the rest by name; an area with 0 shows its name grey. An entry counts in each area it belongs to: its own area,
   or derived ones, see [../features/areas.md](../features/areas.md).
 - The tidy-up card ("Ordnung in einem Klick") shows while entries without a folder have an area
   (`looseAreaCount`). It opens `AreaTidyDialog`.
