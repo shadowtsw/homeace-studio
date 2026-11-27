@@ -7,7 +7,13 @@ const PERCENT = "%";
 /** One formatter per language and number of decimals; building one is slow. */
 const formats = new Map<string, Intl.NumberFormat>();
 
-function numberFormat(locale: string, decimals: number): Intl.NumberFormat {
+function numberFormat({
+  locale,
+  decimals,
+}: {
+  locale: string;
+  decimals: number;
+}): Intl.NumberFormat {
   const key = `${locale}|${decimals}`;
   let format = formats.get(key);
 
@@ -43,7 +49,7 @@ export function formatNumber({
 
   const decimals = text.split(".")[1]?.length ?? 0;
 
-  return numberFormat(locale, decimals).format(Number(text));
+  return numberFormat({ locale, decimals }).format(Number(text));
 }
 
 /**
