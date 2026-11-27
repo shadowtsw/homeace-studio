@@ -1,8 +1,10 @@
 import type { BlockChip, CatalogEntry, ConfigPath } from "@/types/editor";
+import { asList } from "@/utils/list";
+import { asRecord } from "@/utils/record";
 
 import { formatEntities } from "../formatValue";
 import { domainsOf } from "../valueEditors";
-import { asList, asRecord, type Context, type Raw } from "./context";
+import type { Context, Raw } from "./context";
 
 export type EntityChipOptions = {
   value: unknown;
@@ -159,7 +161,10 @@ function targetAreaPath(path: ConfigPath): ConfigPath | undefined {
   const [parentKey, lastKey] = path.slice(-2);
   const isTargetEntityPath = parentKey === "target" && lastKey === "entity_id";
 
-  return isTargetEntityPath ? [...path.slice(0, -1), "area_id"] : undefined;
+  if (!isTargetEntityPath) return undefined;
+
+  const targetPath = path.slice(0, -1);
+  return [...targetPath, "area_id"];
 }
 
 export type MissingTargetOptions = {

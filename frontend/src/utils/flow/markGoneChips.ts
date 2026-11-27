@@ -10,6 +10,13 @@ function chipEntityIds(chip: BlockChip): string[] {
   return values.filter((item): item is string => typeof item === "string");
 }
 
+function markChip({ chip, gone }: { chip: BlockChip; gone: ReadonlySet<string> }): BlockChip {
+  const isGone = chipEntityIds(chip).some((id) => gone.has(id));
+  if (!isGone) return chip;
+
+  return { ...chip, isGone: true };
+}
+
 function markBlock({
   block,
   gone,
@@ -19,9 +26,7 @@ function markBlock({
 }): DisplayBlock {
   return {
     ...block,
-    chips: block.chips.map((chip) =>
-      chipEntityIds(chip).some((id) => gone.has(id)) ? { ...chip, isGone: true } : chip,
-    ),
+    chips: block.chips.map((chip) => markChip({ chip, gone })),
     branches: block.branches.map((branch) => ({
       ...branch,
       blocks: branch.blocks.map((inner) => markBlock({ block: inner, gone })),

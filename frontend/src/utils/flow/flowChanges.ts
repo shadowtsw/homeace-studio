@@ -1,4 +1,5 @@
 import type { ConfigPath, FlowChange } from "@/types/editor";
+import { asList } from "@/utils/list";
 
 import { getAtPath, setAtPath } from "./configPath";
 
@@ -10,10 +11,9 @@ const TEMPLATE_CONDITION = "template";
 /** A list in the config; HA also allows a single item or nothing where a list is expected. */
 function listAt({ config, listPath }: { config: Config; listPath: ConfigPath }): unknown[] {
   const value = getAtPath({ root: config, path: listPath });
+  const items = asList(value);
 
-  if (value === undefined || value === null) return [];
-
-  return Array.isArray(value) ? [...value] : [value];
+  return [...items];
 }
 
 const withList = ({

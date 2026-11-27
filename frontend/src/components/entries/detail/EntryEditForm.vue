@@ -87,6 +87,7 @@ import { useLabelActions } from "@/composables/actions/useLabelActions";
 import { useEntryForm } from "@/composables/useEntryForm";
 import { useAreasStore } from "@/stores/areasStore";
 import type { Area, Entry, EntryChanges, Label } from "@/types/entry";
+import { toggleItem } from "@/utils/list";
 
 const props = defineProps<{
   entry: Entry;
@@ -147,9 +148,7 @@ watch(
 );
 
 function toggleLabel(labelId: string): void {
-  labelIds.value = labelIds.value.includes(labelId)
-    ? labelIds.value.filter((id) => id !== labelId)
-    : [...labelIds.value, labelId];
+  labelIds.value = toggleItem({ items: labelIds.value, item: labelId });
 }
 
 // ---- area: "+ Neuer Bereich …" opens the area dialog and selects the new area afterwards ---

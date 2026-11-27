@@ -1,12 +1,12 @@
 import type { BlockSection, DisplayBlock, DisplayBranch } from "@/types/editor";
+import { asList } from "@/utils/list";
+import { asRecord } from "@/utils/record";
 
 import { CLASSIC_ICON, iconForKey, iconForSection } from "../blockIcons";
 import { parsePath } from "../configPath";
 import { genericBlock, unknownBlock } from "./blocks";
 import {
   addTarget,
-  asList,
-  asRecord,
   asText,
   baseBlock,
   join,

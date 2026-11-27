@@ -47,16 +47,18 @@ const isLink = computed(() => props.entry !== null && !props.isPlain);
 const domain = computed(() => props.user.entityId.split(".")[0] ?? "");
 const icon = computed(() => DOMAIN_ICON[domain.value] ?? FALLBACK_DOMAIN_ICON);
 
+/** "Automation" for an entry; otherwise the domain's name ("Licht"), or the domain itself. */
+const kind = computed(() => {
+  if (props.entry) return t(`kind.${props.entry.kind}`);
+
+  const domainKey = `picker.kinds.${domain.value}`;
+  return te(domainKey) ? t(domainKey) : domain.value;
+});
 /** "Automation · reagiert darauf, steuert es". */
 const what = computed(() => {
   const verbs = props.user.roles.map((role) => t(`deps.verbs.${role}`)).join(", ");
-  const kind = props.entry
-    ? t(`kind.${props.entry.kind}`)
-    : te(`picker.kinds.${domain.value}`)
-      ? t(`picker.kinds.${domain.value}`)
-      : domain.value;
 
-  return props.isCompact ? verbs : `${kind} · ${verbs}`;
+  return props.isCompact ? verbs : `${kind.value} · ${verbs}`;
 });
 </script>
 

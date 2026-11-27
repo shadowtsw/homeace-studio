@@ -78,18 +78,27 @@ export function toneOf({ controls, caps }: ToneOfOptions): string | null {
 /** An approximate CSS colour of a white tone (Tanner Helland's curve fit). */
 export function kelvinToCss(kelvin: number): string {
   const temperature = clamp({ value: kelvin, min: 1000, max: 40000 }) / 100;
-  const red = temperature <= 66 ? 255 : 329.698727446 * (temperature - 60) ** -0.1332047592;
-  const green =
-    temperature <= 66
-      ? 99.4708025861 * Math.log(temperature) - 161.1195681661
-      : 288.1221695283 * (temperature - 60) ** -0.0755148492;
-  const blue =
-    temperature >= 66
-      ? 255
-      : temperature <= 19
-        ? 0
-        : 138.5177312231 * Math.log(temperature - 10) - 305.0447927307;
   const channel = (value: number): number => Math.round(clamp({ value, min: 0, max: 255 }));
+  const red = channel(redOf(temperature));
+  const green = channel(greenOf(temperature));
+  const blue = channel(blueOf(temperature));
 
-  return `rgb(${channel(red)} ${channel(green)} ${channel(blue)})`;
+  return `rgb(${red} ${green} ${blue})`;
+}
+
+// The three channels of the curve fit; `temperature` is kelvin / 100.
+function redOf(temperature: number): number {
+  if (temperature <= 66) return 255;
+  return 329.698727446 * (temperature - 60) ** -0.1332047592;
+}
+
+function greenOf(temperature: number): number {
+  if (temperature <= 66) return 99.4708025861 * Math.log(temperature) - 161.1195681661;
+  return 288.1221695283 * (temperature - 60) ** -0.0755148492;
+}
+
+function blueOf(temperature: number): number {
+  if (temperature >= 66) return 255;
+  if (temperature <= 19) return 0;
+  return 138.5177312231 * Math.log(temperature - 10) - 305.0447927307;
 }

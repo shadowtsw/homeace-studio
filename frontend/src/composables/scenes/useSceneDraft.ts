@@ -73,9 +73,10 @@ export function useSceneDraft({ sceneId }: { sceneId: () => string }) {
   function show(result: SceneView): void {
     // Devices from HA plus the ones added in a kept draft
     const kept = drafts.scenes[result.entityId];
+    const shownDevices = [...result.devices, ...(kept?.added ?? [])];
     view.value = result;
     devices.clear();
-    for (const device of [...result.devices, ...(kept?.added ?? [])]) {
+    for (const device of shownDevices) {
       devices.set(device.entityId, device);
     }
 

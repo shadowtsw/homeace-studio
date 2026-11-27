@@ -25,7 +25,9 @@ export function useCleanupChoices() {
       const previous = new Map(choices.value.map((choice) => [choice.key, choice]));
       choices.value = toChoices(proposals).map((choice) => {
         const old = previous.get(choice.key);
-        return old ? ({ ...choice, isOn: old.isOn, to: old.to } as CleanupChoice) : choice;
+        if (!old) return choice;
+
+        return { ...choice, isOn: old.isOn, to: old.to };
       });
     },
   );

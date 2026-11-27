@@ -55,7 +55,9 @@ export function buildCategoryTree({
     ensureNode({ path: folder, roots, nodesByPath }).isSavedFolder = true;
   }
 
-  for (const path of [...categoryPaths, ...allCategoryPaths]) {
+  const haCategoryPaths = [...categoryPaths, ...allCategoryPaths];
+
+  for (const path of haCategoryPaths) {
     if (!path) continue;
 
     const node = ensureNode({ path, roots, nodesByPath });

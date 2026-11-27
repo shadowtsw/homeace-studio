@@ -6,7 +6,7 @@ import {
 } from "./constants";
 import { areaFolder, type SortingHome } from "./home";
 import { learnedVotes, type LearnIndex } from "./learning";
-import type { SortingBundle, SortingNames, SortingState, Suggestion } from "./model";
+import type { SortingBundle, SortingNames, SortingReason, SortingState, Suggestion } from "./model";
 import { ruleFor } from "./rules";
 import { decide, FolderVotes } from "./votes";
 
@@ -112,11 +112,12 @@ export function suggest({ bundle, context }: SuggestOptions): Suggestion {
   }
 
   const decision = decide(votes);
+  const everywhereReasons: SortingReason[] = isUsedEverywhere ? [{ kind: "everywhere" }] : [];
 
   if (!decision) {
     return {
       ...NOTHING,
-      reasons: isUsedEverywhere ? [{ kind: "everywhere" }] : [],
+      reasons: everywhereReasons,
       isUsedEverywhere,
     };
   }
@@ -128,7 +129,7 @@ export function suggest({ bundle, context }: SuggestOptions): Suggestion {
   return {
     ...decision,
     confidence,
-    reasons: isUsedEverywhere ? [...decision.reasons, { kind: "everywhere" }] : decision.reasons,
+    reasons: [...decision.reasons, ...everywhereReasons],
     isNew: isTargetNew,
     isUsedEverywhere,
     ruleNumber: null,

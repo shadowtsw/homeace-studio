@@ -104,8 +104,9 @@ export function useLabelActions() {
     const changing = entries.filter((entry) => (isRemoving ? hasLabel(entry) : !hasLabel(entry)));
     try {
       for (const entry of changing) {
-        const ids = entry.labels.map((label) => label.labelId);
-        const labelIds = isRemoving ? ids.filter((id) => id !== labelId) : [...ids, labelId];
+        const otherIds = entry.labels.map((label) => label.labelId).filter((id) => id !== labelId);
+        const withLabel = [...otherIds, labelId];
+        const labelIds = isRemoving ? otherIds : withLabel;
         await entriesStore.updateEntry({ entityId: entry.entityId, changes: { labelIds } });
       }
 

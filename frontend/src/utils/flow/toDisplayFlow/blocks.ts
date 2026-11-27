@@ -5,11 +5,12 @@ import type {
   DisplayBlock,
   EditorCatalog,
 } from "@/types/editor";
+import { asRecord } from "@/utils/record";
 
 import { CLASSIC_ICON, iconForKey, iconForSection } from "../blockIcons";
 import { parsePath } from "../configPath";
 import { ADDABLE_CLASSIC_FIELDS } from "../valueEditors";
-import { asRecord, baseBlock, KEY_SEPARATOR, type Context, type Raw } from "./context";
+import { baseBlock, KEY_SEPARATOR, type Context, type Raw } from "./context";
 import {
   addableClassic,
   addableFields,

@@ -1,11 +1,11 @@
 import type { DisplayBlock } from "@/types/editor";
+import { asRecord } from "@/utils/record";
 
 import { CLASSIC_ICON } from "../blockIcons";
 import { parsePath } from "../configPath";
 import { classicBlock, genericBlock } from "./blocks";
 import {
   addTarget,
-  asRecord,
   asText,
   baseBlock,
   join,

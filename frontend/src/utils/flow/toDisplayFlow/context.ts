@@ -5,6 +5,7 @@ import type {
   DisplayBlock,
   EditorCatalog,
 } from "@/types/editor";
+import { asList } from "@/utils/list";
 
 import { parsePath } from "../configPath";
 import type { FormatTexts } from "../formatValue";
@@ -54,13 +55,6 @@ const PATH_SEPARATOR = ".";
 
 export const KEY_SEPARATOR = ".";
 
-export const asList = (value: unknown): unknown[] => {
-  if (value === undefined || value === null) return [];
-
-  return Array.isArray(value) ? value : [value];
-};
-export const asRecord = (value: unknown): Raw =>
-  value && typeof value === "object" && !Array.isArray(value) ? (value as Raw) : {};
 export const asText = (value: unknown): string | undefined =>
   typeof value === "string" ? value : undefined;
 /** For blocks whose single value needs no name, like the duration of "Warten". */

@@ -32,8 +32,9 @@ export const useEditorStore = defineStore("editor", () => {
   /** The open flow with its unsaved edits; what the flow view shows. */
   const editedFlow = computed((): Flow | null => {
     if (!flow.value) return null;
+    if (!openDraft.value) return flow.value;
 
-    return openDraft.value ? { ...flow.value, config: openDraft.value.config } : flow.value;
+    return { ...flow.value, config: openDraft.value.config };
   });
   const isDirty = computed(() => openDraft.value !== undefined);
   const hasRemoteChange = computed(() => {

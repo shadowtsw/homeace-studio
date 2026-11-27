@@ -106,14 +106,13 @@ export function useSortingTexts(): SortingTexts {
   /** "Bereich = Küche", "Name enthält „test“". */
   function condition({ item, home }: { item: SortingCondition; home: SortingHome | null }): string {
     const type = t(`entitySorting.rules.types.${item.type}`);
-    const value =
-      item.type === "area"
-        ? (home?.areas.get(item.value)?.name ?? item.value)
-        : item.type === "floor"
-          ? (home?.floorNames.get(item.value) ?? item.value)
-          : item.type === "integration"
-            ? (home?.context.integrations[item.value] ?? item.value)
-            : item.value;
+    // IDs get their names; the other types show their value as typed
+    const nameOf: Partial<Record<SortingConditionType, (id: string) => string | undefined>> = {
+      area: (id) => home?.areas.get(id)?.name,
+      floor: (id) => home?.floorNames.get(id),
+      integration: (id) => home?.context.integrations[id],
+    };
+    const value = nameOf[item.type]?.(item.value) ?? item.value;
 
     return item.type === "nameContains" ? `${type} „${value}“` : `${type} = ${value}`;
   }

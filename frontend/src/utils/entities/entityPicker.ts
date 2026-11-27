@@ -89,11 +89,14 @@ export function criterionOptions({ entities, key }: CriterionOptionsOptions): Cr
       counts.set(value, (counts.get(value) ?? 0) + 1);
   }
 
-  return [...counts]
-    .map(([value, count]) => ({ value, count }))
-    .sort((a, b) =>
-      a.value === NO_AREA ? 1 : b.value === NO_AREA ? -1 : a.value.localeCompare(b.value),
-    );
+  return [...counts].map(([value, count]) => ({ value, count })).sort(compareCriterionOptions);
+}
+
+/** "No area" goes last, the rest by name. */
+function compareCriterionOptions(a: CriterionOption, b: CriterionOption): number {
+  if (a.value === NO_AREA) return 1;
+  if (b.value === NO_AREA) return -1;
+  return a.value.localeCompare(b.value);
 }
 
 export type SuggestEntitiesOptions = {

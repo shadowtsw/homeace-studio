@@ -12,6 +12,7 @@ import {
 } from "@/utils/flow/editValue";
 import { joinDuration, splitDuration } from "@/utils/flow/formatValue";
 import { stateSuggestions } from "@/utils/flow/stateSuggestions";
+import { toggleItem } from "@/utils/list";
 
 /** Menus without a config path ("Aktion hinzufügen") from this length get the wide two-column form. */
 const LONG_MENU = 8;
@@ -129,9 +130,7 @@ export function useChipEditorValue({
       return;
     }
 
-    selected.value = selected.value.includes(value)
-      ? selected.value.filter((item) => item !== value)
-      : [...selected.value, value];
+    selected.value = toggleItem({ items: selected.value, item: value });
   }
 
   function pickArea(areaId: string): void {

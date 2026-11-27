@@ -49,21 +49,28 @@ export const useDraftsStore = defineStore("drafts", () => {
   function keepHelper({ entityId, saved, value }: KeepOptions<HelperSettings>): void {
     const rest = { ...helpers.value };
     delete rest[entityId];
-    const base = helpers.value[entityId]?.base ?? copy(saved);
-    const isBackToSaved = same(value, saved);
 
-    helpers.value = isBackToSaved ? rest : { ...rest, [entityId]: { base, value: copy(value) } };
+    if (same(value, saved)) {
+      helpers.value = rest;
+      return;
+    }
+
+    const base = helpers.value[entityId]?.base ?? copy(saved);
+    helpers.value = { ...rest, [entityId]: { base, value: copy(value) } };
   }
 
   /** Keeps a scene's edits with the devices added in the editor; like {@link keepHelper}. */
   function keepScene({ entityId, saved, value, added }: KeepSceneOptions): void {
     const rest = { ...scenes.value };
     delete rest[entityId];
-    const base = scenes.value[entityId]?.base ?? copy(saved);
-    const isBackToSaved = same(value, saved);
-    const draft = { base, value: copy(value), added: copy(added) };
 
-    scenes.value = isBackToSaved ? rest : { ...rest, [entityId]: draft };
+    if (same(value, saved)) {
+      scenes.value = rest;
+      return;
+    }
+
+    const base = scenes.value[entityId]?.base ?? copy(saved);
+    scenes.value = { ...rest, [entityId]: { base, value: copy(value), added: copy(added) } };
   }
 
   /** The scene is saved (or its edits are thrown away): nothing left to keep. */

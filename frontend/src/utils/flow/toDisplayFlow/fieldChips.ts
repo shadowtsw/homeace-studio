@@ -6,11 +6,12 @@ import type {
   ConfigPath,
   ValueEditor,
 } from "@/types/editor";
+import { asList } from "@/utils/list";
 
 import { parsePath } from "../configPath";
 import { formatDuration, formatValue } from "../formatValue";
 import { classicFieldEditor, editorForSelector, isRequiredClassicField } from "../valueEditors";
-import { asList, type Context, type Raw } from "./context";
+import type { Context, Raw } from "./context";
 
 /** Fields that hold a duration in classic blocks. */
 const DURATION_FIELDS = new Set(["for", "offset", "delay", "timeout"]);

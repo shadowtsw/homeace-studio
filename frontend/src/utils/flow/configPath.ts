@@ -1,12 +1,10 @@
 import type { ConfigPath } from "@/types/editor";
+import { asRecord, isRecord } from "@/utils/record";
 
 const PATH_SEPARATOR = ".";
 const INDEX_PATTERN = /^\d+$/;
 
 type Raw = Record<string, unknown>;
-
-const isRecord = (value: unknown): value is Raw =>
-  typeof value === "object" && value !== null && !Array.isArray(value);
 
 /**
  * Turns a block id like "actions.2.then.0" into a path; digits become list indexes.
@@ -42,12 +40,12 @@ export function setAtPath({ root, path, value }: SetAtPathOptions): unknown {
   if (typeof head === "number") {
     if (!Array.isArray(root)) return head === 0 ? setAtPath({ root, path: rest, value }) : root;
 
-    const copy = [...(root as unknown[])];
+    const copy: unknown[] = [...root];
     copy[head] = setAtPath({ root: copy[head], path: rest, value });
     return copy;
   }
 
-  const record = isRecord(root) ? root : {};
+  const record = asRecord(root);
   const next = setAtPath({ root: record[head as string], path: rest, value });
   const copy: Raw = { ...record };
 

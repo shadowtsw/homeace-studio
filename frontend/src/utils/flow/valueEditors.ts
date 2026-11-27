@@ -1,4 +1,6 @@
 import type { ChoiceOption, ValueEditor } from "@/types/editor";
+import { asList } from "@/utils/list";
+import { asRecord } from "@/utils/record";
 
 type Raw = Record<string, unknown>;
 
@@ -58,10 +60,6 @@ const TIME_PATTERN = /^\d{1,2}:\d{2}(:\d{2})?$/;
 const TEMPLATE_START = "{{";
 const TEMPLATE_BLOCK_START = "{%";
 
-const asRecord = (value: unknown): Raw =>
-  value && typeof value === "object" && !Array.isArray(value) ? (value as Raw) : {};
-const asList = (value: unknown): unknown[] =>
-  value === undefined || value === null ? [] : Array.isArray(value) ? value : [value];
 const asNumber = (value: unknown): number | undefined =>
   typeof value === "number" ? value : undefined;
 

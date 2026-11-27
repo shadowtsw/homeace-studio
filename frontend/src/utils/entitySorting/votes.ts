@@ -58,6 +58,19 @@ const MAX_ALTERNATIVES = 2;
 const depthOf = (path: string): number => path.split("/").length;
 const sumOf = (votes: Vote[]): number => votes.reduce((sum, vote) => sum + vote.weight, 0);
 
+/** Sure with a big lead and enough votes, likely with a smaller one, unclear otherwise. */
+function confidenceOf({
+  margin,
+  total,
+}: {
+  margin: number;
+  total: number;
+}): Decision["confidence"] {
+  if (margin >= SURE_MARGIN && total >= SURE_TOTAL) return "sure";
+  if (margin >= LIKELY_MARGIN && total >= LIKELY_TOTAL) return "likely";
+  return "unclear";
+}
+
 /**
  * Picks the folder: the deepest one holding COMMON_PARENT_SHARE of all votes, so votes for
  * "Haus/Küche/Licht" and "Haus/Küche/Kochen" end in "Haus/Küche". Never a bare main folder when
@@ -114,12 +127,7 @@ export function decide(votes: FolderVotes): Decision | null {
 
   const second = Math.max(0, ...competitors.values());
   const margin = (massOf(target) - second) / total;
-  const confidence =
-    margin >= SURE_MARGIN && total >= SURE_TOTAL
-      ? "sure"
-      : margin >= LIKELY_MARGIN && total >= LIKELY_TOTAL
-        ? "likely"
-        : "unclear";
+  const confidence = confidenceOf({ margin, total });
 
   const supporting = entries
     .filter(([folder]) => isSameOrBelow({ path: folder, ancestor: target }))
