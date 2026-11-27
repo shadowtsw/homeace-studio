@@ -133,7 +133,7 @@ export default {
       deleteText: "Das Theme ist danach weg. War es eingestellt, gilt wieder Standard.",
       deleted: "„{name}“ gelöscht.",
       ownHint: "Eigenes Theme",
-      readyMadeHint: "Fertiges Theme, zum Teilen als Datei oder Text",
+      readyMadeHint: "Fertiges Theme",
       exported: "„{file}“ wird gespeichert.",
       copied: "Theme als Text kopiert. Im Forum am besten als Codeblock einfügen.",
       byAuthor: "von {author}",

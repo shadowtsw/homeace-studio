@@ -138,7 +138,7 @@ const fr: MessageSchema = {
       deleteText: "Le thème disparaît ensuite. S’il était actif, Standard reprend.",
       deleted: "« {name} » supprimé.",
       ownHint: "Thème personnel",
-      readyMadeHint: "Thème prêt à l’emploi, à partager en fichier ou en texte",
+      readyMadeHint: "Thème prêt à l’emploi",
       exported: "« {file} » est en cours d’enregistrement.",
       copied: "Thème copié en texte. Dans un forum, collez-le de préférence comme bloc de code.",
       byAuthor: "par {author}",

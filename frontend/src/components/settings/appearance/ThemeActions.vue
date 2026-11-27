@@ -4,15 +4,17 @@
       <b>{{ themeName(themeStore.theme) }}</b>
       <small>{{ hint }}</small>
     </span>
-    <button class="btn btn--sm" type="button" @click="sharing.exportFile(themeStore.theme)">
-      <span class="mdi mdi-download-outline" />{{ t("settings.appearance.export") }}
-    </button>
-    <button class="btn btn--sm" type="button" @click="sharing.copyText(themeStore.theme)">
-      <span class="mdi mdi-content-copy" />{{ t("settings.appearance.copy") }}
-    </button>
-    <button v-if="isOwn" class="btn btn--sm" type="button" @click="isConfirmingDelete = true">
-      <span class="mdi mdi-delete-outline" />{{ t("settings.appearance.delete") }}
-    </button>
+    <template v-if="isOwn">
+      <button class="btn btn--sm" type="button" @click="sharing.exportFile(themeStore.theme)">
+        <span class="mdi mdi-download-outline" />{{ t("settings.appearance.export") }}
+      </button>
+      <button class="btn btn--sm" type="button" @click="sharing.copyText(themeStore.theme)">
+        <span class="mdi mdi-content-copy" />{{ t("settings.appearance.copy") }}
+      </button>
+      <button class="btn btn--sm" type="button" @click="isConfirmingDelete = true">
+        <span class="mdi mdi-delete-outline" />{{ t("settings.appearance.delete") }}
+      </button>
+    </template>
   </div>
 
   <ConfirmDialog
@@ -40,8 +42,9 @@ import { useToastStore } from "@/stores/toastStore";
 import { STANDARD_THEME_ID } from "@/utils/themes/builtInThemes";
 
 /**
- * What can be done with the chosen theme: share it as a file or as text, and delete it when it is
- * an own one. Ready-made themes are only shared (editing a copy comes with the editor).
+ * What can be done with the chosen theme. Own ones: share as a file or as text, delete. Ready-made
+ * ones are not shared (owner's decision 2026-11-27): everyone has them already, and a file holds
+ * only the seven colours, not Standard's exact values. A copy to change comes with the editor.
  */
 const { t } = useI18n();
 const themeStore = useThemeStore();

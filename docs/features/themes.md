@@ -75,8 +75,13 @@ the **check report**, and only "Übernehmen" keeps the theme and puts it on.
 
 "Exportieren" saves `<name>.homeace-theme.json`, "Kopieren" puts the same text on the clipboard (for a
 forum code block). Where the clipboard is closed (HA over plain http, some apps) the page "Theme als
-Text" shows it to copy by hand (`composables/useThemeSharing.ts`). Ready-made themes can be shared too;
-the file is the format of `core/themes/themeFormat.ts` (`themeFileText`).
+Text" shows it to copy by hand (`composables/useThemeSharing.ts`). The file is the format of
+`core/themes/themeFormat.ts` (`themeFileText`).
+
+**Only own themes are shared** (owner's decision 2026-11-27): everyone has the ready-made ones, and a
+file holds only the seven colours per version, so a shared "Standard" would come back derived, not with
+its exact values. For a ready-made theme the bar under the cards only says "Fertiges Theme"; a copy to
+change comes with the editor ("Als Kopie bearbeiten").
 
 ## Where what lives
 

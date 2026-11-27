@@ -132,7 +132,7 @@ const en: MessageSchema = {
       deleteText: "The theme is gone afterwards. If it was on, Standard takes over.",
       deleted: "“{name}” deleted.",
       ownHint: "Own theme",
-      readyMadeHint: "Ready-made theme, to share as a file or text",
+      readyMadeHint: "Ready-made theme",
       exported: "“{file}” is being saved.",
       copied: "Theme copied as text. In a forum, best paste it as a code block.",
       byAuthor: "by {author}",

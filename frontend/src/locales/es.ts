@@ -136,7 +136,7 @@ const es: MessageSchema = {
       deleteText: "El tema desaparece después. Si estaba activo, vuelve Estándar.",
       deleted: "“{name}” borrado.",
       ownHint: "Tema propio",
-      readyMadeHint: "Tema listo, para compartir como archivo o texto",
+      readyMadeHint: "Tema listo",
       exported: "Se está guardando “{file}”.",
       copied: "Tema copiado como texto. En un foro, mejor pégalo como bloque de código.",
       byAuthor: "de {author}",
