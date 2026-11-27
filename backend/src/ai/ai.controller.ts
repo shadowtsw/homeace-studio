@@ -3,7 +3,8 @@ import { ArrayMaxSize, IsArray, IsBoolean, IsString, MaxLength } from "class-val
 
 import { ResponseMessage } from "src/common/api/response-message.decorator";
 import { MESSAGE_ID } from "src/messages/message-ids";
-import { AiPlansService, type AiPlanView, type ApplyResult } from "./ai-plans.service";
+import type { AiPlanView } from "./ai-plan-rules";
+import { AiPlansService, type ApplyResult } from "./ai-plans.service";
 import { MAX_PLAN_OPERATIONS } from "./ai.constants";
 import { McpAccessService, type McpOverview } from "./mcp-access.service";
 

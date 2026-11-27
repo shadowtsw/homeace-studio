@@ -8,7 +8,8 @@ import type { EntriesService } from "../entries/entries.service";
 import { ENTRY_KIND, type Entry } from "../entries/entry.model";
 import type { OverlayRepository } from "../overlay/repositories/overlay.repository";
 import { AI_OPERATION_TYPE } from "./ai-plan.model";
-import { PlanInputError, type AiPlansService, collectFolders } from "./ai-plans.service";
+import { collectFolders, PlanInputError } from "./ai-plan-rules";
+import type { AiPlansService } from "./ai-plans.service";
 import {
   MAX_LISTED_ENTRIES,
   MAX_PLAN_OPERATIONS,
