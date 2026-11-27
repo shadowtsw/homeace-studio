@@ -110,9 +110,13 @@ const statusText = computed(() => {
 }
 
 .app-top-bar__name {
+  /* May shorten ("HomeAce St…") before anything else is pushed out of the bar. */
+  overflow: hidden;
+  min-width: 0;
   font: 700 19px/1 var(--font-display);
   letter-spacing: -0.01em;
   white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .app-top-bar__preview {
@@ -178,6 +182,18 @@ const statusText = computed(() => {
 @media (max-width: 820px) {
   .app-top-bar__tagline,
   .app-top-bar__status-text {
+    display: none;
+  }
+}
+
+/* Narrow phones: the logo stays, the name gives way, so nothing sticks out on the right (the bar
+   needs about 400 px with "Was ist neu", the language and the gear). */
+@media (max-width: 420px) {
+  .app-top-bar {
+    gap: 8px;
+  }
+
+  .app-top-bar__name {
     display: none;
   }
 }
