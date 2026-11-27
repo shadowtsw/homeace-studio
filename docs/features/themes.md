@@ -81,7 +81,8 @@ Text" shows it to copy by hand (`composables/useThemeSharing.ts`). The file is t
 **Only own themes are shared** (owner's decision 2026-11-27): everyone has the ready-made ones, and a
 file holds only the seven colours per version, so a shared "Standard" would come back derived, not with
 its exact values. For a ready-made theme the bar under the cards only says "Fertiges Theme"; a copy to
-change comes with the editor ("Als Kopie bearbeiten").
+change comes with the editor ("Als Kopie bearbeiten"). "Wie mein HA" is not shared either; its colours
+can become an own theme.
 
 ## Editor
 
@@ -114,6 +115,31 @@ the action bar (phone preview · Abbrechen · Speichern) fixed at the bottom.
   when something changed. Closing the settings window drops it. Fine-tuned values of an imported theme
   stay as they are (no UI yet).
 
+## "Wie mein HA"
+
+A ready-made card after Kontrast: HomeAce in the colours HA shows right now (`utils/themes/haTheme.ts`).
+
+- **Where from**: HA's page around the panel (same origin through ingress, `haWindow()` as for icon
+  packs). Four CSS variables of HA: `--primary-background-color` (background), `--card-background-color`
+  (then `--ha-card-background`, `--secondary-background-color`, else the background) for surfaces,
+  `--primary-text-color`, `--primary-color` (accent). The flow colours keep Standard's of that version.
+  The theme's name comes from `hass.themes.theme` on `<home-assistant>`; HA's own `default` has none.
+- **Foreign data, checked twice**: every value goes through the browser's colour parser (a canvas
+  `fillStyle`, never painted; what is no colour keeps a sentinel and counts as missing), comes back as
+  numbers and becomes `#rrggbb`; a see-through colour is mixed onto HA's background. Then the same
+  check as an import (`checkThemeValue`) and the floor. A raw value from HA never reaches a style.
+- **One version, the one HA shows**: dark when the background's luminance is below 0.18. So the
+  brightness switch is locked and says "Die Helligkeit folgt Home Assistant." (`followsHa`); when HA
+  changes, HomeAce follows on the next start or when "Aussehen" opens (`refreshHaTheme`). Nothing of it
+  is stored: only the choice `homeAssistant` is, like any theme id.
+- **Not available** outside the panel (own port, demo, a new tab) or when HA's colours cannot be read:
+  the card cannot be chosen ("nur in Home Assistant"), a stored choice shows Standard.
+- **Reads poorly**: text on HA's background or surfaces below 4.5 : 1 shows "Dein HA-Theme ist hier
+  schwer lesbar" under the bar with "Kontrast einstellen" (picks Kontrast). The floor still applies.
+- **"Als eigenes Theme übernehmen"** opens the editor with HA's colours as a new theme ("Mein
+  HA-Theme"), without "Ausgehend von": a light HA gets the derived dark version, a dark HA gives a
+  dark-only theme. From then on it is an own theme like any other and no longer follows HA.
+
 ## Where what lives
 
 | What | Where |
@@ -127,6 +153,7 @@ the action bar (phone preview · Abbrechen · Speichern) fixed at the bottom.
 | Standard's exact values, the ready-made themes, version of a theme | `frontend/src/utils/themes/builtInThemes.ts` |
 | Gate (Web Worker, size, time limit), what the floor will do | `frontend/src/utils/themes/themeGate.ts`, `themeCheck.worker.ts`, `floorReport.ts` |
 | Chosen theme, brightness, applying, escape hatch | `frontend/src/stores/themeStore.ts` |
+| "Wie mein HA": reading HA's colours, colour parser | `frontend/src/utils/themes/haTheme.ts` |
 | Own themes, import steps, copy page text, editor draft | `frontend/src/stores/ownThemesStore.ts`, `themeImportStore.ts`, `themeEditorStore.ts` |
 | Contrast warnings and suggestions of the editor | `frontend/src/utils/themes/contrastChecks.ts` |
 | Page "Aussehen", cards, actions, import, copy and editor pages, previews, report | `frontend/src/components/settings/SettingsAppearanceTab.vue`, `components/settings/appearance/` |
@@ -138,14 +165,10 @@ the action bar (phone preview · Abbrechen · Speichern) fixed at the bottom.
 - Components use only tokens; a new colour in a component needs a token, and every theme sets it
   (`THEME_TOKENS`, `deriveTokens`, `STANDARD_TOKENS`, `tokens.css`).
 - Values reach the page only through `style.setProperty` and only from checked data: colours are
-  `#rrggbb` (`isHexColor`), nothing like `url(…)`.
+  `#rrggbb` (`isHexColor`), nothing like `url(…)`. This holds for HA's colours too.
 - A theme card draws its theme with the card's own inline tokens; only the small preview uses them.
 - Field names avoid `then`: an object with a `then` field looks like a promise to `await` (oxlint
   `no-thenable`), hence `flowWhen` / `flowIf` / `flowThen`.
 
 - The gate is shared with the templates of 0.16: keep `checkTheme.ts` free of anything theme-only that
   a template check could not reuse (size, parse, allowlist, plain text, report codes).
-
-## Still to come in 0.15
-
-"Wie mein HA" with "Als eigenes Theme übernehmen" (package 5).

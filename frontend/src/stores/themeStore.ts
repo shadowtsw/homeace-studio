@@ -1,9 +1,10 @@
 import { useMediaQuery } from "@vueuse/core";
 import { defineStore } from "pinia";
-import { computed, ref, watch, watchEffect } from "vue";
+import { computed, ref, shallowRef, watch, watchEffect } from "vue";
 
 import { usePreference } from "@/composables/usePreference";
 import { PREFERENCES } from "@/constants/preferences";
+import { haWindow } from "@/services/iconPacksService";
 import { useOwnThemesStore } from "@/stores/ownThemesStore";
 import {
   BUILT_IN_THEMES,
@@ -14,6 +15,7 @@ import {
   themeTokens,
   type ThemeDefinition,
 } from "@/utils/themes/builtInThemes";
+import { browserColorParser, readHaTheme } from "@/utils/themes/haTheme";
 import {
   COLOR_MODE,
   THEME_TOKENS,
@@ -74,8 +76,23 @@ export const useThemeStore = defineStore("theme", () => {
   const prefersDark = useMediaQuery(PREFERS_DARK_QUERY);
   const ownThemes = useOwnThemesStore();
 
-  // The theme in use: an unknown or broken one (deleted, another device's newer one) is Standard
-  const allThemes = computed(() => [...BUILT_IN_THEMES, ...ownThemes.themes]);
+  /**
+   * "Wie mein HA": HA's colours, read at start and whenever "Aussehen" opens (a change of HA's
+   * theme counts from then); null outside the panel or when they cannot be read.
+   */
+  const haTheme = shallowRef<ThemeDefinition | null>(null);
+
+  function refreshHaTheme(): void {
+    if (typeof document === "undefined") return;
+
+    haTheme.value = readHaTheme({ page: haWindow(), parse: browserColorParser() });
+  }
+  refreshHaTheme();
+
+  // The theme in use: an unknown or broken one (deleted, another device's newer one) is Standard;
+  // so is "Wie mein HA" outside the panel, while the choice stays for the next visit through HA
+  const haThemes = computed(() => (haTheme.value ? [haTheme.value] : []));
+  const allThemes = computed(() => [...BUILT_IN_THEMES, ...haThemes.value, ...ownThemes.themes]);
   const theme = computed<ThemeDefinition>(
     () => allThemes.value.find((entry) => entry.id === storedThemeId.value) ?? STANDARD_THEME,
   );
@@ -124,6 +141,8 @@ export const useThemeStore = defineStore("theme", () => {
 
   return {
     theme,
+    haTheme,
+    refreshHaTheme,
     modeChoice,
     mode,
     isModeLocked,

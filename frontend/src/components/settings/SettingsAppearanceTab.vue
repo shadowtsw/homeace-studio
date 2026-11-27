@@ -41,6 +41,15 @@
         :is-active="theme.id === themeStore.theme.id"
         @select="themeStore.selectTheme(theme.id)"
       />
+      <!-- "Wie mein HA": only inside HA's panel, where HA's colours can be read -->
+      <ThemeCard
+        :tokens="haCard.tokens"
+        :name="themeName(haCard.theme)"
+        :note="haCard.note"
+        :is-active="themeStore.theme.id === HA_THEME_ID"
+        :is-disabled="!themeStore.haTheme"
+        @select="themeStore.selectTheme(HA_THEME_ID)"
+      />
     </div>
 
     <SettingsRow
@@ -117,7 +126,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, useTemplateRef } from "vue";
+import { computed, onMounted, useTemplateRef } from "vue";
 import { useI18n } from "vue-i18n";
 
 import { useThemeTexts } from "@/composables/texts/useThemeTexts";
@@ -128,11 +137,20 @@ import { useOwnThemesStore } from "@/stores/ownThemesStore";
 import { useThemeEditorStore } from "@/stores/themeEditorStore";
 import { useThemeImportStore } from "@/stores/themeImportStore";
 import { COLOR_MODE_CHOICES, useThemeStore } from "@/stores/themeStore";
-import { BUILT_IN_THEMES, STANDARD_THEME, STANDARD_TOKENS } from "@/utils/themes/builtInThemes";
+import {
+  BUILT_IN_THEMES,
+  STANDARD_THEME,
+  STANDARD_TOKENS,
+  type ThemeDefinition,
+} from "@/utils/themes/builtInThemes";
+import { HA_THEME_ID } from "@/utils/themes/haTheme";
 
 import ThemeActions from "./appearance/ThemeActions.vue";
 import ThemeCard from "./appearance/ThemeCard.vue";
 import SettingsRow from "./SettingsRow.vue";
+
+/** "Wie mein HA" outside the panel: only its name, the card is greyed. */
+const HA_PLACEHOLDER: ThemeDefinition = { ...STANDARD_THEME, id: HA_THEME_ID, followsHa: true };
 
 /** What the file picker offers; the gate checks the content anyway. */
 const FILE_TYPES = ".json,application/json";
@@ -150,12 +168,27 @@ const themeEditor = useThemeEditorStore();
 const { themeName, themeNote } = useThemeTexts();
 const fileInput = useTemplateRef<HTMLInputElement>("fileInput");
 
+// HA's theme may have changed since the last look
+onMounted(() => themeStore.refreshHaTheme());
+
 const brightnessHintKey = computed(() => {
+  if (themeStore.theme.followsHa) return "settings.appearance.followsHa";
   if (!themeStore.isModeLocked) return "settings.appearance.brightnessHint";
 
   return themeStore.mode === COLOR_MODE.dark
     ? "settings.appearance.onlyDark"
     : "settings.appearance.onlyLight";
+});
+
+/** The card of "Wie mein HA": HA's colours inside the panel, a greyed card outside it. */
+const haCard = computed(() => {
+  const haTheme = themeStore.haTheme;
+  if (!haTheme) {
+    const note = t("settings.appearance.haUnavailable");
+    return { theme: HA_PLACEHOLDER, tokens: STANDARD_TOKENS.light, note };
+  }
+
+  return { theme: haTheme, tokens: themeStore.previewTokens(haTheme), note: themeNote(haTheme) };
 });
 
 const ownThemesHint = computed(() => {

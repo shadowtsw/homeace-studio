@@ -1,12 +1,24 @@
 import { createPinia, setActivePinia } from "pinia";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { STANDARD_COLORS } from "@/core/themes/themeFormat";
 import { useThemeStore } from "@/stores/themeStore";
+import type { ThemeDefinition } from "@/utils/themes/builtInThemes";
+
+/** What HA's page shows; null is "not in the panel". */
+const haPage = vi.hoisted(() => ({ theme: null as ThemeDefinition | null }));
+vi.mock("@/utils/themes/haTheme", async (importOriginal) => {
+  const original = await importOriginal<typeof import("@/utils/themes/haTheme")>();
+  return { ...original, browserColorParser: () => () => null, readHaTheme: () => haPage.theme };
+});
 
 describe("themeStore", () => {
   beforeEach(() => setActivePinia(createPinia()));
 
-  afterEach(() => vi.unstubAllGlobals());
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    haPage.theme = null;
+  });
 
   it("starts with Standard, as the system says", () => {
     const themeStore = useThemeStore();
@@ -55,5 +67,32 @@ describe("themeStore", () => {
     const preview = themeStore.previewTokens(themeStore.theme);
 
     expect(preview["--bg"]).toBe("#0e1117");
+  });
+
+  it('"Wie mein HA" outside the panel is Standard', () => {
+    const themeStore = useThemeStore();
+    themeStore.selectTheme("homeAssistant");
+
+    expect(themeStore.haTheme).toBeNull();
+    expect(themeStore.theme.id).toBe("standard");
+  });
+
+  it('"Wie mein HA" shows the version HA shows, whatever the brightness switch says', () => {
+    haPage.theme = {
+      id: "homeAssistant",
+      light: null,
+      dark: STANDARD_COLORS.dark,
+      isStrong: false,
+      followsHa: true,
+      haThemeName: null,
+    };
+    vi.stubGlobal("document", { documentElement: { style: { setProperty: () => undefined } } });
+    const themeStore = useThemeStore();
+    themeStore.selectModeChoice("light");
+    themeStore.selectTheme("homeAssistant");
+
+    expect(themeStore.theme.id).toBe("homeAssistant");
+    expect(themeStore.mode).toBe("dark");
+    expect(themeStore.isModeLocked).toBe(true);
   });
 });

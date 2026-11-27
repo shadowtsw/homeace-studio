@@ -28,6 +28,10 @@ export type ThemeDefinition = {
   /** Own themes only: the name the user gave or the file brought, and its maker. */
   ownName?: string;
   author?: string | null;
+  /** "Wie mein HA": colours and brightness come from Home Assistant. */
+  followsHa?: boolean;
+  /** The name of the HA theme in use, when HA's page tells it. */
+  haThemeName?: string | null;
 };
 
 export const STANDARD_THEME_ID = "standard";

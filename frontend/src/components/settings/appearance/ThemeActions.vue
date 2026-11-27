@@ -18,10 +18,22 @@
         <span class="mdi mdi-delete-outline" />{{ t("settings.appearance.delete") }}
       </button>
     </template>
+    <button v-else-if="isHaTheme" class="btn btn--sm" type="button" @click="takeHaAsOwn">
+      <span class="mdi mdi-palette-outline" />{{ t("settings.appearance.takeHaAsOwn") }}
+    </button>
     <button v-else class="btn btn--sm" type="button" @click="editCopy">
       <span class="mdi mdi-content-duplicate" />{{ t("settings.appearance.editor.editCopy") }}
     </button>
   </div>
+
+  <!-- HA's own theme may read poorly here; a ready-made one that reads well is one click away -->
+  <p v-if="isHaWeak" class="theme-actions__weak">
+    <span class="mdi mdi-alert-outline" />
+    <span>{{ t("settings.appearance.haWeak") }}</span>
+    <button class="btn btn--sm" type="button" @click="themeStore.selectTheme(CONTRAST_THEME_ID)">
+      {{ t("settings.appearance.haWeakAction") }}
+    </button>
+  </p>
 
   <ConfirmDialog
     v-if="isConfirmingDelete"
@@ -47,10 +59,14 @@ import { useThemeEditorStore } from "@/stores/themeEditorStore";
 import { useThemeStore } from "@/stores/themeStore";
 import { useToastStore } from "@/stores/toastStore";
 import { STANDARD_THEME_ID } from "@/utils/themes/builtInThemes";
+import { CONTRAST_LEVEL, contrastChecks } from "@/utils/themes/contrastChecks";
+
+/** The ready-made theme a poorly readable HA theme is pointed to. */
+const CONTRAST_THEME_ID = "contrast";
 
 /**
  * What can be done with the chosen theme. Own ones: edit, share as a file or as text, delete.
- * Ready-made ones are only edited as a copy; they are not shared (owner's decision 2026-11-27):
+ * "Wie mein HA": take HA's colours as a new own theme. Ready-made ones are only edited as a copy; they are not shared (owner's decision 2026-11-27):
  * everyone has them already, and a file holds only the seven colours, not Standard's exact values.
  */
 const { t } = useI18n();
@@ -65,9 +81,22 @@ const { themeName } = useThemeTexts();
 const isConfirmingDelete = ref(false);
 const isDeleting = ref(false);
 const isOwn = computed(() => Boolean(themeStore.theme.ownName));
-const hintKey = computed(() =>
-  isOwn.value ? "settings.appearance.ownHint" : "settings.appearance.readyMadeHint",
-);
+const isHaTheme = computed(() => Boolean(themeStore.theme.followsHa));
+const hintKey = computed(() => {
+  if (isOwn.value) return "settings.appearance.ownHint";
+  if (isHaTheme.value) return "settings.appearance.haHint";
+
+  return "settings.appearance.readyMadeHint";
+});
+
+/** HA's theme reads poorly here: text below the good contrast on the page or on surfaces. */
+const isHaWeak = computed(() => {
+  const colors = themeStore.theme.light ?? themeStore.theme.dark;
+  if (!isHaTheme.value || !colors) return false;
+
+  const textChecks = contrastChecks(colors).filter((check) => check.foreground === "text");
+  return textChecks.some((check) => check.level !== CONTRAST_LEVEL.good);
+});
 const hint = computed(() => t(hintKey.value));
 
 function editOwn(): void {
@@ -77,6 +106,12 @@ function editOwn(): void {
 /** "Als Kopie bearbeiten": a ready-made theme is never changed itself. */
 function editCopy(): void {
   const name = t("settings.appearance.editor.copyName", { name: themeName(themeStore.theme) });
+  void themeEditor.open({ kind: "new", theme: themeStore.theme, name });
+}
+
+/** "Als eigenes Theme übernehmen": HA's colours as the start of a new own theme. */
+function takeHaAsOwn(): void {
+  const name = t("settings.appearance.haCopyName");
   void themeEditor.open({ kind: "new", theme: themeStore.theme, name });
 }
 
@@ -122,6 +157,26 @@ async function deleteTheme(): Promise<void> {
   font-size: 13px;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.theme-actions__weak {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0 0;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: var(--warn-soft);
+  font-size: 12.5px;
+}
+
+.theme-actions__weak .mdi {
+  color: var(--warn);
+}
+
+.theme-actions__weak span:not(.mdi) {
+  flex: 1 1 200px;
 }
 
 .theme-actions__text small {

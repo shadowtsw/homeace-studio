@@ -28,6 +28,12 @@ export function useThemeTexts(): ThemeTexts {
   }
 
   function themeNote(theme: ThemeDefinition): string {
+    // "Wie mein HA" names HA's theme; its brightness follows HA, so no "dark only"
+    if (theme.followsHa && theme.haThemeName) {
+      return t("settings.appearance.themes.homeAssistant.note", { name: theme.haThemeName });
+    }
+    if (theme.followsHa) return t("settings.appearance.themes.homeAssistant.noteUnnamed");
+
     const darkOnly = theme.light ? "" : ` · ${t("settings.appearance.darkOnly")}`;
     if (theme.ownName && theme.author) {
       return t("settings.appearance.byAuthor", { author: theme.author }) + darkOnly;

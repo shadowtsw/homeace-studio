@@ -3,7 +3,12 @@
   <component
     :is="isPicture ? 'div' : 'button'"
     class="theme-card"
-    :class="{ 'theme-card--on': isActive, 'theme-card--picture': isPicture }"
+    :class="{
+      'theme-card--on': isActive,
+      'theme-card--picture': isPicture,
+      'theme-card--off': isDisabled,
+    }"
+    :disabled="isPicture ? undefined : isDisabled"
     :type="isPicture ? undefined : 'button'"
     :role="isPicture ? undefined : 'radio'"
     :aria-checked="isPicture ? undefined : isActive"
@@ -39,6 +44,8 @@ defineProps<{
   isActive: boolean;
   /** Only the picture, not to be chosen (the preview of an import). */
   isPicture?: boolean;
+  /** Shown but not to be chosen here ("Wie mein HA" outside the panel). */
+  isDisabled?: boolean;
 }>();
 
 const emit = defineEmits<{ select: [] }>();
@@ -61,6 +68,15 @@ const emit = defineEmits<{ select: [] }>();
 
 .theme-card--picture {
   cursor: default;
+}
+
+.theme-card--off {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.theme-card--off:hover {
+  border-color: var(--line);
 }
 
 .theme-card:hover {

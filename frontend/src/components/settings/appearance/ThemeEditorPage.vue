@@ -10,9 +10,10 @@
           :placeholder="t('settings.appearance.editor.defaultName')"
           @input="editor.setName(($event.target as HTMLInputElement).value)"
         />
-        <!-- A new theme can still take another start; an own one is what it is -->
+        <!-- A new theme from a ready-made one can still take another start; an own one, or one
+             taken from HA, is what it is -->
         <select
-          v-if="!draft.ownId"
+          v-if="isStartChangeable"
           class="settings-select"
           :value="draft.startId"
           :aria-label="t('settings.appearance.editor.startLabel')"
@@ -133,6 +134,11 @@ const { themeName, reportText } = useThemeTexts();
 const isWide = useMediaQuery(PHONE_PREVIEW_SIDE_MEDIA_QUERY);
 
 const draft = computed(() => editor.draft);
+/** Only a new theme started from a ready-made one offers the other ready-made starts. */
+const isStartChangeable = computed(() => {
+  const startId = draft.value?.startId;
+  return BUILT_IN_THEMES.some((theme) => theme.id === startId);
+});
 const isConfirmingDiscard = ref(false);
 
 /** Narrower than the side preview needs: the phone takes the normal preview's place. */
