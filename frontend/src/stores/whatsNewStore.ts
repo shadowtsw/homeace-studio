@@ -43,6 +43,10 @@ export const useWhatsNewStore = defineStore("whatsNew", () => {
     }),
   );
   const hasUnseen = computed(() => unseen.value.length > 0);
+  /** Highlights not confirmed yet, over all skipped releases ("2 neu" in the settings). */
+  const unseenCount = computed(() =>
+    unseen.value.reduce((count, release) => count + release.items.length, 0),
+  );
   /** Whether the running version has highlights at all (not yet while developing a release). */
   const hasHighlights = currentRelease({ releases: WHATS_NEW, currentVersion: version }) !== null;
   /** What the popover lists, newest first; skipped releases follow the newest one. */
@@ -67,5 +71,15 @@ export const useWhatsNewStore = defineStore("whatsNew", () => {
     isOpen.value = false;
   }
 
-  return { version, isOpen, hasUnseen, hasHighlights, releases, open, close, confirm };
+  return {
+    version,
+    isOpen,
+    hasUnseen,
+    unseenCount,
+    hasHighlights,
+    releases,
+    open,
+    close,
+    confirm,
+  };
 });

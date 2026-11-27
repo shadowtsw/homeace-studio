@@ -1,6 +1,10 @@
-/** The tabs of the settings window, in the order they are shown. */
+/**
+ * The sections of the settings window, in the order they are shown: tabs on wide screens, the list
+ * of pages on phones (and wherever the tabs do not fit in one row).
+ */
 export const SETTINGS_TAB = {
   general: "general",
+  appearance: "appearance",
   editing: "editing",
   tools: "tools",
   ai: "ai",
@@ -12,12 +16,19 @@ export type SettingsTab = (typeof SETTINGS_TAB)[keyof typeof SETTINGS_TAB];
 
 export const SETTINGS_TABS: readonly { tab: SettingsTab; icon: string }[] = [
   { tab: SETTINGS_TAB.general, icon: "mdi-tune-variant" },
+  { tab: SETTINGS_TAB.appearance, icon: "mdi-palette-outline" },
   { tab: SETTINGS_TAB.editing, icon: "mdi-pencil-outline" },
   { tab: SETTINGS_TAB.tools, icon: "mdi-tools" },
   { tab: SETTINGS_TAB.ai, icon: "mdi-creation" },
   { tab: SETTINGS_TAB.goodToKnow, icon: "mdi-lightbulb-outline" },
   { tab: SETTINGS_TAB.about, icon: "mdi-information-outline" },
 ];
+
+/**
+ * Up to this width the window always shows the list of sections and one page at a time, like the
+ * detail layer on phones. Wider, it shows tabs when all of them fit in one row.
+ */
+export const SETTINGS_LIST_MEDIA_QUERY = "(max-width: 820px)";
 
 /** Where users report a bug or suggest an idea. */
 export const ISSUES_URL = "https://github.com/shadowtsw/homeace-studio/issues";

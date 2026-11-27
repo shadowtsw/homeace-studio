@@ -22,7 +22,7 @@ they help each other. Use exactly these words in every user text (app, README, D
 | How the columns look on this device (scope `device`): pane widths, nav mode, detail folded | `stores/layoutStore.ts` |
 | Every kept preference with its storage key and scope; read and written only through `usePreference` | `constants/preferences.ts`, `composables/usePreference.ts` (all in localStorage for now, `homeace.*`) |
 | Top bar (connection status, live dot, language menu, gear, What's new) | `components/layout/AppTopBar.vue`, `LanguageMenu.vue`, `WhatsNewMenu.vue` |
-| Settings window (tabs, one file per tab, scope symbol per setting) | `components/settings/SettingsWindow.vue`, `SettingsRow.vue`, `Settings*Tab.vue`, `stores/settingsWindowStore.ts`, `constants/settings.ts` |
+| Settings window (tabs or list → page, one file per section, scope symbol per setting, history steps) | `components/settings/SettingsWindow.vue`, `SettingsTabBar.vue`, `SettingsSectionList.vue`, `SettingsRow.vue`, `Settings*Tab.vue`, `SettingsTopicText.vue`, `stores/settingsWindowStore.ts`, `utils/settingsPlace.ts`, `constants/settings.ts` |
 | Splitters between the columns | `components/layout/PaneSplitter.vue`, limits in `constants/layout.ts` |
 | Every dialog and the toasts of the page (the entity menu and the label picker for ticked rows sit in StudioView) | `components/layout/StudioDialogs.vue` with its topic parts `components/areas/AreaDialogs.vue`, `components/entries/EntryDialogs.vue`, `components/layout/CreateDialogs.vue` (folder, helper, automation/script); `components/common/ToastHost.vue` |
 | Actions with toasts and error texts | `composables/actions/useCategoryActions/` (move, rename, order, sort by area), `useCreateActions.ts` (folders, helpers, flows), `useEntryActions.ts` (entry actions), `useAreaActions.ts` |
@@ -75,9 +75,31 @@ Choosing a tree node always sets `isNavOpen = false`, and opening an entry alway
 
 ## Settings window
 
-- The gear opens `SettingsWindow` (mounted in `StudioDialogs`). Tabs in `SETTINGS_TABS`
-  (`constants/settings.ts`): Allgemein, Bearbeiten, Werkzeuge, KI-Zugang, Gut zu wissen, Über HomeAce;
-  one component per tab. It opens on the tab used last (`PREFERENCES.settingsTab`, on this device).
+- The gear opens `SettingsWindow` (mounted in `StudioDialogs`) in a fixed size (880 × 660, full
+  screen on phones); the content scrolls. Sections in `SETTINGS_TABS` (`constants/settings.ts`):
+  Allgemein, Aussehen, Bearbeiten, Werkzeuge, KI-Zugang, Gut zu wissen, Über HomeAce; one component
+  per section (`Settings*Tab.vue`).
+- **Two layouts** (`settingsWindow.isListLayout`):
+  - **Tabs** (`SettingsTabBar`): words only, never scrolling sideways, never a second row. It opens
+    on the tab used last (`PREFERENCES.settingsTab`, on this device).
+  - **List → page** (`SettingsSectionList`): every section with its current values below the name
+    and a badge only where it matters (AI access on/off, "N neu" for highlights not confirmed yet).
+    A page has the head "‹ Einstellungen · name · ✕"; "Gut zu wissen" lists its topics, each a page
+    of its own ("‹ Gut zu wissen"). Always up to 820 px (`SETTINGS_LIST_MEDIA_QUERY`), and wider
+    whenever the tabs do not fit in one row: a hidden copy of the tab row in `SettingsTabBar`
+    measures that on resize, on a language change and once the fonts are loaded
+    (`reportTabsOverflow`). On a phone the window always starts with the list.
+- **History steps** (`utils/settingsPlace.ts`): where the window stands is the route query
+  (`?settings=<home|section>&topic=<topic>&step=<n>`), so the browser's back (a phone's gesture,
+  Android's back key) goes exactly one step: topic → page → list → closed, and never leaves the
+  HomeAce panel. The store only reads the place from the route and moves through `router.push`,
+  `replace` and `go`, one move at a time. The list layout stacks start → section → topic, one entry
+  each; a jump ("Mehr dazu", "Was ist neu → Zeigen") first goes back to where its chain branches off,
+  so "‹" always leads to the parent. The tab layout keeps one entry for the whole window (another tab
+  replaces it). "✕", Escape and a click outside go back `step` entries, so no entry of the window
+  stays behind. An address with the window open at start (a reload, a typed link) is closed at once:
+  how many entries belong to the window is unknown there. Never use `history.pushState` directly:
+  vue-router keeps its own state in every entry.
 - Every setting is a `SettingsRow` with the `preference` behind it. The row shows where it applies:
   person = follows the user to every device, screen = only on this device (`PREFERENCE_SCOPE`).
   Tools and links have no preference and no symbol. The AI access belongs to the whole add-on, so its
@@ -94,8 +116,9 @@ Choosing a tree node always sets `isNavOpen = false`, and opening an entry alway
   symbols.
 - Tools ("Kategorien aufräumen", "Ordnung in einem Klick") and "Was ist neu" open their own windows;
   the settings window closes for them.
-- **Gut zu wissen** (`SettingsGoodToKnowTab`): topics on the left (`GOOD_TO_KNOW_TOPICS`), text on the
-  right (`settings.goodToKnow.<topic>.title` / `.text` / optional `.more`). Where it fits, the switch sits
+- **Gut zu wissen** (`SettingsGoodToKnowTab`): in the tab layout topics on the left
+  (`GOOD_TO_KNOW_TOPICS`), text on the right; in the list layout the topics, each a page. The text is
+  `SettingsTopicText` (`settings.goodToKnow.<topic>.title` / `.text` / optional `.more`). Where it fits, the switch sits
   at the text. A `SettingsRow` with `moreTopic` gets a "Mehr dazu" link to its topic
   (`settingsWindow.showTopic`). **New feature with a quirk → new topic**, in all five languages; it
   says how HomeAce behaves, never how it is built. The first topic, "Was ist was" (`columns`), is the
@@ -104,15 +127,16 @@ Choosing a tree node always sets `isNavOpen = false`, and opening an entry alway
   sketch reuses the app's own words (`areas.viewFolders`, `detail.tabs.*`, `save.save`); change the
   sketch when the top bar, the detail tabs or the save footer move. The window opens on this topic.
   Topics and text scroll on their own (both columns `overflow: auto` in the fixed-height window), so
-  the topics stay in place; a new topic starts at the top of its text. On narrow screens, where the
-  topics sit above the text, the tab scrolls as one. "Zahlen und blasse Ordner" (`filterCounts`)
+  the topics stay in place; a new topic starts at the top of its text. "Zahlen und blasse Ordner" (`filterCounts`)
   draws three folder rows like the navigation (found, faded, folder only) as its legend.
 - **Über HomeAce** ends with the maker's signature "crafted with ♥ by shadowtsw" (link to the GitHub
   profile, `AUTHOR_URL`). The owner wanted a personal note; it is the same English words in every
   language, like a hand-written signature, so it has no locale keys.
 - **Rules:** a setting only exists when users really want it differently. Texts describe what the
   user notices, never how it is built (technical detail only behind "Technische Details").
-- Phone: for now the window fills the screen with the tabs on top; a list → page layout comes later.
+- **Aussehen** is a placeholder until the themes come (0.15).
+- Scripts click the tabs by their class `.settings-window__tab` (`scripts/screenshots.mjs` and the
+  comparison tools); keep the name.
 
 ## Keyboard
 

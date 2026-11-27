@@ -98,7 +98,7 @@ async function show(target: WhatsNewTarget): Promise<void> {
 
   // "Was ist neu" sits under "Über HomeAce" in the settings window
   if (target === "settings") {
-    settingsWindow.open(SETTINGS_TAB.about);
+    await settingsWindow.open(SETTINGS_TAB.about);
     await nextTick();
     flashElement(document.querySelector(".settings-window__panel"));
   }

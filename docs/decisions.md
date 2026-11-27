@@ -136,3 +136,4 @@
 | 2026-11-19 | vue-i18n from the start (DE first, EN second) | A public add-on needs English |
 | 2026-11-19 | Technical details hidden by default, toggle in settings | Entity IDs, storage badges and API names would put beginners off |
 | 2026-11-19 | All panes resizable, responsive from the start | Desktop: drag splitters (keyboard too); phone: list, then detail as full screen |
+| 2026-11-27 | Settings window on phones: the list of sections, each a page with "‹"; tabs only when all of them fit in one row (measured per language), words without icons; every step is an entry in the browser history via the route query | Owner (0.15, settings on phones): the back gesture goes exactly one step and never leaves the HomeAce panel. A route query instead of a raw `history.pushState`, so vue-router keeps its own history state. With icons, seven tabs fitted in English only |
