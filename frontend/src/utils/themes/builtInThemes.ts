@@ -1,16 +1,21 @@
+import { deriveDarkColors } from "@/core/themes/deriveDark";
+import type { OwnTheme } from "@/core/themes/ownThemes";
 import {
   COLOR_MODE,
-  deriveTokens,
-  withFineTokens,
+  STANDARD_COLORS,
+  type CheckedTheme,
   type ColorMode,
   type ThemeColors,
   type ThemeToken,
   type ThemeTokens,
-} from "./tokens";
+} from "@/core/themes/themeFormat";
+
+import { deriveTokens, withFineTokens } from "./tokens";
 
 /**
  * A theme: a light and a dark version of its colours (one of them may be missing, e.g. a theme that
- * is dark only). Names and notes come from the locales (settings.appearance.themes.<id>).
+ * is dark only). Ready-made themes take name and note from the locales
+ * (settings.appearance.themes.<id>); own themes bring their own.
  */
 export type ThemeDefinition = {
   id: string;
@@ -20,6 +25,9 @@ export type ThemeDefinition = {
   isStrong: boolean;
   /** Single values on top of the derived ones, per version (prepared pro mode, no UI yet). */
   fineTokens?: Partial<Record<ColorMode, Partial<ThemeTokens>>>;
+  /** Own themes only: the name the user gave or the file brought, and its maker. */
+  ownName?: string;
+  author?: string | null;
 };
 
 export const STANDARD_THEME_ID = "standard";
@@ -110,25 +118,9 @@ export const STANDARD_TOKENS: Record<ColorMode, ThemeTokens> = {
 export const BUILT_IN_THEMES: readonly ThemeDefinition[] = [
   {
     id: STANDARD_THEME_ID,
-    // The base colours of today's look, the start for a copy in the editor
-    light: {
-      background: "#eef0f4",
-      surface: "#ffffff",
-      text: "#161a24",
-      accent: "#3451d1",
-      flowWhen: "#b0620a",
-      flowIf: "#0d7569",
-      flowThen: "#3451d1",
-    },
-    dark: {
-      background: "#0e1117",
-      surface: "#161a22",
-      text: "#e6e9f0",
-      accent: "#8197ff",
-      flowWhen: "#f0a54a",
-      flowIf: "#4cc4b3",
-      flowThen: "#8197ff",
-    },
+    // The base colours of today's look: the start for a copy, and what a file lacks
+    light: STANDARD_COLORS.light,
+    dark: STANDARD_COLORS.dark,
     isStrong: false,
   },
   {
@@ -283,4 +275,41 @@ export function themeTokens({ theme, mode }: { theme: ThemeDefinition; mode: Col
   const fineTokens = theme.fineTokens?.[mode] ?? {};
 
   return withFineTokens({ tokens: derived, fineTokens });
+}
+
+/** An own theme (made or imported) as the app shows and applies it. */
+export function ownThemeDefinition({ id, theme }: OwnTheme): ThemeDefinition {
+  return {
+    id,
+    light: theme.light,
+    dark: theme.dark,
+    isStrong: theme.isStrong,
+    fineTokens: theme.fineTokens,
+    ownName: theme.name,
+    author: theme.author,
+  };
+}
+
+/**
+ * Any theme in the shape of a file, for "Exportieren" and "Kopieren".
+ *
+ * @param name - The shown name; ready-made themes take theirs from the locales.
+ */
+export function checkedThemeOf({
+  theme,
+  name,
+}: {
+  theme: ThemeDefinition;
+  name: string;
+}): CheckedTheme {
+  const dark = theme.dark ?? deriveDarkColors(theme.light ?? STANDARD_COLORS.light);
+
+  return {
+    name,
+    author: theme.author ?? null,
+    light: theme.light,
+    dark,
+    isStrong: theme.isStrong,
+    fineTokens: { light: theme.fineTokens?.light ?? {}, dark: theme.fineTokens?.dark ?? {} },
+  };
 }

@@ -122,6 +122,12 @@ export const MESSAGE_ID = {
   // Settings per HA user
   preferencesNoUser: "PREFERENCES_NO_USER",
   preferenceInvalid: "PREFERENCE_INVALID",
+
+  // Own themes per HA user
+  themesNoUser: "THEMES_NO_USER",
+  themeInvalid: "THEME_INVALID",
+  themeLimitReached: "THEME_LIMIT_REACHED",
+  themeNotFound: "THEME_NOT_FOUND",
 } as const;
 
 export type MessageId = (typeof MESSAGE_ID)[keyof typeof MESSAGE_ID];

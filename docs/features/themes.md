@@ -38,16 +38,63 @@ section): the brightness for this device and the theme for the user. The layout 
   the backend brings later, until the user picks a theme. It works on the direct port and in a new tab;
   inside the HA panel the address is HA's, so there the floor keeps every theme readable.
 
+## Own themes
+
+- "Meine Themes" on the page "Aussehen": themes the user imported (later also made in the editor).
+  **Per HA user** in the overlay (`userThemes`, `GET/POST/DELETE /api/themes`, [../api.md](../api.md)),
+  at most 20 (`MAX_OWN_THEMES`). Without a HA user (direct port, demo) only in this browser. The
+  browser always keeps a copy (`PREFERENCES.ownThemes`), so they show at once on the next start; the
+  backend's list replaces it (`stores/ownThemesStore.ts`). Whatever comes from storage or the backend
+  is checked again (`readOwnThemes`).
+- The chosen theme is the preference `theme` with the own theme's id (`own-` + twelve hex digits). A
+  deleted or unknown id shows Standard; deleting the theme that is on switches to Standard.
+- A name another own theme has gets " (2)" (`uniqueThemeName`); nothing is ever overwritten.
+
+## Import
+
+Never silent: a file or pasted text goes through the **gate**, the page "Theme importieren" (a step
+below "Aussehen" in the history, `SETTINGS_SUB_PAGE.themeImport`) shows a preview of both versions with
+the **check report**, and only "Übernehmen" keeps the theme and puts it on.
+
+- **Gate** (`utils/themes/themeGate.ts`): the size is checked before anything is read (64 KB,
+  `File.size`), then the text goes to a Web Worker of its own (`themeCheck.worker.ts`) with a 2 s
+  limit; the worker is ended afterwards. If it cannot start, nothing is taken over (no check without
+  the gate). The worker's answer is checked once more in the page (`readGateAnswer`): the theme again
+  with `checkThemeValue`, the report only with known kinds and codes and short plain-text values.
+- **Check** (`core/themes/checkTheme.ts`, the same in the backend): the marker `"homeace-theme": 1`
+  (older versions are converted later, newer ones refused), only known fields (unknown ones are named
+  and dropped, `__proto__` included), colours only `#rrggbb`, a missing colour from Standard, an
+  invalid one replaced, names as plain text (no HTML, no invisible or direction characters, at most
+  40), fine-tuned values only for known colour tokens. A new object is built from what passed; the
+  original text never reaches the app. A missing dark version is derived (`deriveDarkColors`).
+- **Report**: codes from the check plus what the floor will do (`floorFindings`): text it makes
+  readable, fine-tuned values it drops. Texts in `settings.appearance.report.<code>`.
+- Pasted text comes from a text field; the app never reads the clipboard by itself.
+
+## Sharing
+
+"Exportieren" saves `<name>.homeace-theme.json`, "Kopieren" puts the same text on the clipboard (for a
+forum code block). Where the clipboard is closed (HA over plain http, some apps) the page "Theme als
+Text" shows it to copy by hand (`composables/useThemeSharing.ts`). Ready-made themes can be shared too;
+the file is the format of `core/themes/themeFormat.ts` (`themeFileText`).
+
 ## Where what lives
 
 | What | Where |
 | --- | --- |
-| Colour arithmetic (`#rrggbb` only, mix, WCAG contrast, lightness) | `frontend/src/utils/themes/color.ts` |
-| Token list, derivation, floor, fine-tuned values | `frontend/src/utils/themes/tokens.ts` |
+| File format, token list, Standard's colours, file text and name | `core/themes/themeFormat.ts` (copied into both sides, see [../recipes.md](../recipes.md#shared-code-in-core)) |
+| Colour arithmetic (`#rrggbb` only, mix, WCAG contrast, lightness) | `core/themes/color.ts` |
+| Check of a theme from outside, report codes | `core/themes/checkTheme.ts` |
+| Dark version from a light one | `core/themes/deriveDark.ts` |
+| Own themes: ids, unique names, reading stored lists | `core/themes/ownThemes.ts` |
+| Derivation, floor, fine-tuned values | `frontend/src/utils/themes/tokens.ts` |
 | Standard's exact values, the ready-made themes, version of a theme | `frontend/src/utils/themes/builtInThemes.ts` |
+| Gate (Web Worker, size, time limit), what the floor will do | `frontend/src/utils/themes/themeGate.ts`, `themeCheck.worker.ts`, `floorReport.ts` |
 | Chosen theme, brightness, applying, escape hatch | `frontend/src/stores/themeStore.ts` |
-| Page "Aussehen": brightness switch, theme cards with a small preview | `frontend/src/components/settings/SettingsAppearanceTab.vue` |
-| Names and notes of the themes | `settings.appearance.themes.<id>` in `frontend/src/locales/*.ts` |
+| Own themes, import steps, copy page text | `frontend/src/stores/ownThemesStore.ts`, `themeImportStore.ts` |
+| Page "Aussehen", cards, actions, import and copy pages, report | `frontend/src/components/settings/SettingsAppearanceTab.vue`, `components/settings/appearance/` |
+| Names, notes, report texts | `settings.appearance.*` in `frontend/src/locales/*.ts`, `composables/texts/useThemeTexts.ts` |
+| Backend: list, create (checked again), delete | `backend/src/themes/` |
 
 ## Rules and pitfalls
 
@@ -59,7 +106,9 @@ section): the brightness for this device and the theme for the user. The layout 
 - Field names avoid `then`: an object with a `then` field looks like a promise to `await` (oxlint
   `no-thenable`), hence `flowWhen` / `flowIf` / `flowThen`.
 
+- The gate is shared with the templates of 0.16: keep `checkTheme.ts` free of anything theme-only that
+  a template check could not reuse (size, parse, allowlist, plain text, report codes).
+
 ## Still to come in 0.15
 
-Own themes and the import check (package 3), the editor with the phone preview (package 4), "Wie mein
-HA" (package 5).
+The editor with the phone preview (package 4), "Wie mein HA" (package 5).

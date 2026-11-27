@@ -20,8 +20,8 @@
         <section class="columns-sketch__pane">
           <strong>{{ t("settings.goodToKnow.columns.navigation") }}</strong>
           <span class="columns-sketch__chip">
-            <span>{{ t("areas.viewFolders") }}</span
-            ><span>·</span><span>{{ t("areas.viewAreas") }}</span>
+            <span>{{ t("areas.viewFolders") }}</span><span>·</span
+            ><span>{{ t("areas.viewAreas") }}</span>
           </span>
           <span class="columns-sketch__row"><span class="mdi mdi-folder-outline" /><i /></span>
           <span class="columns-sketch__row"><span class="mdi mdi-folder-outline" /><i /></span>

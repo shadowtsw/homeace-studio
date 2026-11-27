@@ -109,6 +109,11 @@ export const CATALOG_RU: Catalog = {
   PREFERENCES_NO_USER:
     "Настройки для каждого пользователя есть, только если HomeAce Studio открыт через Home Assistant.",
   PREFERENCE_INVALID: "У настройки «{name}» нет допустимого значения.",
+  THEMES_NO_USER:
+    "Свои темы принадлежат пользователю Home Assistant; без входа они остаются в браузере.",
+  THEME_INVALID: "Это не корректная тема.",
+  THEME_LIMIT_REACHED: "Не больше {count} своих тем. Удалите одну, чтобы добавить новую.",
+  THEME_NOT_FOUND: "Этой темы больше нет.",
   HELPER_NOT_DELETABLE:
     "{entityId} здесь удалить нельзя. Вспомогательные элементы-шаблоны и группы пока удаляйте в Home Assistant.",
 };

@@ -12,6 +12,9 @@ Browser (HA ingress) ──► backend (NestJS) ──► Home Assistant (REST +
                               └──◄ MCP clients (own port 8098, token)   see features/ai-mcp.md
 ```
 
+**Shared core** (`core/`): plain TypeScript both sides need, today the theme model and the check of an
+imported theme. Each side builds a copy in its own `src/core/`; see [recipes.md](recipes.md#shared-code-in-core).
+
 The HA token stays in the backend. As an add-on it is `SUPERVISOR_TOKEN` with `http://supervisor/core/api`
 and `ws://supervisor/core/websocket`. Locally it is `HA_URL` + `HA_TOKEN` from `.env`. With
 `HOMEACE_DEMO=true` an invented home in memory replaces HA (`backend/src/demo/`, see [setup.md](setup.md)).
@@ -48,6 +51,8 @@ backend/src/
   ai/               MCP server, access, AI folder plans                              features/ai-mcp.md
   entity-sorting/   the tool "Entitäten einsortieren": context, memory, batch moves  features/entity-sorting.md
   versions/         earlier versions of automations, scripts, scenes (Git light)     features/versions.md
+  themes/           own themes per HA user, checked again with core/                features/themes.md
+  core/             copy of the shared core/ (theme check); edit core/, not here     recipes.md
   demo/             FakeHa, demo home, demo traces, memory overlay                   setup.md
 ```
 

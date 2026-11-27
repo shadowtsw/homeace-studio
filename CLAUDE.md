@@ -15,6 +15,9 @@ git-ignored.
   all texts through vue-i18n (`src/locales/de.ts` is the schema; `en.ts`, `fr.ts`, `es.ts` and `ru.ts`
   must match, every new text in all of them; ru plurals have one form more than en, see
   `src/i18n/pluralRules.ts`).
+- Code both sides need lives once in `core/` (plain TypeScript, no dependencies); edit it there and run
+  `node scripts/sync-core.mjs`, never edit `frontend/src/core/` or `backend/src/core/` (see
+  [docs/recipes.md](docs/recipes.md#shared-code-in-core)).
 - Commits: Conventional Commits (`feat(frontend): …`).
 
 ## HA releases first

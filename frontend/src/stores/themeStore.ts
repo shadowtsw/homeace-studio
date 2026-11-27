@@ -4,6 +4,7 @@ import { computed, ref, watch, watchEffect } from "vue";
 
 import { usePreference } from "@/composables/usePreference";
 import { PREFERENCES } from "@/constants/preferences";
+import { useOwnThemesStore } from "@/stores/ownThemesStore";
 import {
   BUILT_IN_THEMES,
   STANDARD_THEME,
@@ -13,7 +14,12 @@ import {
   themeTokens,
   type ThemeDefinition,
 } from "@/utils/themes/builtInThemes";
-import { COLOR_MODE, THEME_TOKENS, type ColorMode, type ThemeTokens } from "@/utils/themes/tokens";
+import {
+  COLOR_MODE,
+  THEME_TOKENS,
+  type ColorMode,
+  type ThemeTokens,
+} from "@/core/themes/themeFormat";
 
 /** The brightness switch: a fixed version, or whatever the device's system says. */
 export const COLOR_MODE_CHOICE = { ...COLOR_MODE, system: "system" } as const;
@@ -66,10 +72,12 @@ export const useThemeStore = defineStore("theme", () => {
     defaultValue: COLOR_MODE_CHOICE.system,
   });
   const prefersDark = useMediaQuery(PREFERS_DARK_QUERY);
+  const ownThemes = useOwnThemesStore();
 
-  // The theme in use: an unknown or broken one (another device's newer theme, a typo) is Standard
+  // The theme in use: an unknown or broken one (deleted, another device's newer one) is Standard
+  const allThemes = computed(() => [...BUILT_IN_THEMES, ...ownThemes.themes]);
   const theme = computed<ThemeDefinition>(
-    () => BUILT_IN_THEMES.find((entry) => entry.id === storedThemeId.value) ?? STANDARD_THEME,
+    () => allThemes.value.find((entry) => entry.id === storedThemeId.value) ?? STANDARD_THEME,
   );
   const modeChoice = computed<ColorModeChoice>(() =>
     isColorModeChoice(storedModeChoice.value) ? storedModeChoice.value : COLOR_MODE_CHOICE.system,

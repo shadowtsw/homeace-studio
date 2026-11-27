@@ -145,6 +145,44 @@ describe("settingsWindowStore", () => {
     });
   });
 
+  describe("a page below a section (the theme import)", () => {
+    it("list layout: start → Aussehen → import, back leads to Aussehen", async () => {
+      const settingsWindow = await listLayoutStore();
+
+      await settingsWindow.openSubPage("themeImport");
+      expect(windowQuery()).toEqual({ settings: "appearance", topic: undefined, step: "3" });
+      expect(settingsWindow.subPage).toBe("themeImport");
+
+      settingsWindow.back();
+      await vi.waitFor(() => expect(settingsWindow.subPage).toBeNull());
+      expect(settingsWindow.section).toBe("appearance");
+    });
+
+    it("tab layout: a step on top of the tab; another tab first goes back below it", async () => {
+      const settingsWindow = useSettingsWindowStore();
+      await settingsWindow.open("appearance");
+
+      await settingsWindow.openSubPage("themeImport");
+      expect(windowQuery().step).toBe("2");
+
+      settingsWindow.selectTab("tools");
+      await vi.waitFor(() => expect(settingsWindow.tab).toBe("tools"));
+      expect(settingsWindow.subPage).toBeNull();
+      expect(windowQuery().step).toBe("1");
+    });
+
+    it("closing from the page takes all of the window's entries out", async () => {
+      const settingsWindow = useSettingsWindowStore();
+      await settingsWindow.open("appearance");
+      await settingsWindow.openSubPage("themeCopy");
+      const goSpy = vi.spyOn(router, "go");
+
+      settingsWindow.close();
+      await vi.waitFor(() => expect(settingsWindow.isOpen).toBe(false));
+      expect(goSpy).toHaveBeenCalledWith(-2);
+    });
+  });
+
   it("an address with the window open (after a reload) starts closed", async () => {
     await router.push({ query: { settings: "about", step: "2" } });
 

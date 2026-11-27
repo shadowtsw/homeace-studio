@@ -110,6 +110,11 @@ export const CATALOG_ES: Catalog = {
   PREFERENCES_NO_USER:
     "Los ajustes por usuario solo existen si HomeAce Studio se abre desde Home Assistant.",
   PREFERENCE_INVALID: "El ajuste “{name}” no tiene un valor válido.",
+  THEMES_NO_USER:
+    "Los temas propios pertenecen a un usuario de Home Assistant; sin iniciar sesión se quedan en el navegador.",
+  THEME_INVALID: "No es un tema válido.",
+  THEME_LIMIT_REACHED: "Como máximo {count} temas propios. Borra uno para añadir otro nuevo.",
+  THEME_NOT_FOUND: "Este tema ya no existe.",
   HELPER_NOT_DELETABLE:
     "{entityId} no se puede eliminar aquí. Por ahora, elimina los ayudantes de plantilla y de grupo en Home Assistant.",
 };

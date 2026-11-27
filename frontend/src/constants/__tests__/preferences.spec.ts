@@ -29,6 +29,7 @@ describe("PREFERENCES", () => {
       "detailFolded",
       "listScopes",
       "navMode",
+      "ownThemes",
       "paneWidths",
       "previewNoteRead",
       "settingsTab",

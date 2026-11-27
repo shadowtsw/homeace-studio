@@ -9,7 +9,9 @@ import {
   GOOD_TO_KNOW_TOPIC,
   SETTINGS_LIST_MEDIA_QUERY,
   SETTINGS_TAB,
+  SUB_PAGE_SECTION,
   type GoodToKnowTopic,
+  type SettingsSubPage,
   type SettingsTab,
 } from "@/constants/settings";
 import { usePreferencesStore } from "@/stores/preferencesStore";
@@ -20,6 +22,7 @@ import {
   placeChain,
   settingsEntryFromQuery,
   settingsQuery,
+  tabChain,
   type SettingsEntry,
   type SettingsPlace,
 } from "@/utils/settingsPlace";
@@ -53,6 +56,8 @@ export const useSettingsWindowStore = defineStore("settingsWindow", () => {
   const section = computed(() => entry.value?.section ?? null);
   /** List layout: the open topic of "Gut zu wissen"; null shows the list of topics. */
   const topic = computed(() => entry.value?.topic ?? null);
+  /** Both layouts: a page below the section (the theme import); null shows the section. */
+  const subPage = computed(() => entry.value?.subPage ?? null);
 
   /** Tab layout: opens on the tab used last, on this device. */
   const storedTab = usePreference<SettingsTab>({
@@ -117,27 +122,23 @@ export const useSettingsWindowStore = defineStore("settingsWindow", () => {
     });
   }
 
-  /** Tab layout: one history entry for the whole window; another tab replaces it. */
-  async function goToTab(place: SettingsPlace): Promise<void> {
+  /**
+   * The history entries that lead to a place, one per step. List layout: start → section → topic or
+   * page. Tab layout: the tab (one entry, another tab replaces it) and a page below it.
+   */
+  function chainFor(place: SettingsPlace): SettingsPlace[] {
+    if (isListLayout.value) return placeChain(place);
+
     if (place.section) storedTab.value = place.section;
-
-    const current = entry.value;
-    if (!current) {
-      await pushEntry({ section: place.section, topic: null, step: 1 });
-      return;
-    }
-
-    const shownSection = place.section ?? current.section;
-    await replaceEntry({ section: shownSection, topic: null, step: current.step });
+    return tabChain({ place, fallbackSection: entry.value?.section ?? null });
   }
 
   /**
-   * List layout: start → section → topic, one history entry per step. A jump (e.g. "Mehr dazu")
-   * first goes back to where its chain branches off, so "‹" always leads to the parent.
+   * Moves the history to a chain of places. A jump (e.g. "Mehr dazu") first goes back to where the
+   * chain branches off, so "‹" always leads to the parent and no stale entry stays behind.
    */
-  async function goToPage(place: SettingsPlace): Promise<void> {
+  async function goToChain(chain: SettingsPlace[]): Promise<void> {
     // Back to where the chain to the new place branches off
-    const chain = placeChain(place);
     const currentStep = entry.value?.step ?? 0;
     const branchStep = Math.min(currentStep, chain.length);
     if (currentStep > branchStep) await goBack(currentStep - branchStep);
@@ -153,7 +154,7 @@ export const useSettingsWindowStore = defineStore("settingsWindow", () => {
   }
 
   function goTo(place: SettingsPlace): Promise<void> {
-    return navigate(() => (isListLayout.value ? goToPage(place) : goToTab(place)));
+    return navigate(() => goToChain(chainFor(place)));
   }
 
   /**
@@ -162,17 +163,27 @@ export const useSettingsWindowStore = defineStore("settingsWindow", () => {
    * @returns Done when the window shows it.
    */
   function open(nextSection?: SettingsTab): Promise<void> {
-    return goTo({ section: nextSection ?? null, topic: null });
+    return goTo({ section: nextSection ?? null, topic: null, subPage: null });
   }
 
   function selectTab(nextTab: SettingsTab): void {
-    void goTo({ section: nextTab, topic: null });
+    void goTo({ section: nextTab, topic: null, subPage: null });
   }
 
   /** "Mehr dazu" next to a setting, or a topic in the list: the topic that explains it. */
   function showTopic(nextTopic: GoodToKnowTopic): void {
     goodToKnowTopic.value = nextTopic;
-    void goTo({ section: SETTINGS_TAB.goodToKnow, topic: nextTopic });
+    void goTo({ section: SETTINGS_TAB.goodToKnow, topic: nextTopic, subPage: null });
+  }
+
+  /**
+   * A page below its section (the theme import), a step of its own in both layouts.
+   *
+   * @returns Done when the window shows it.
+   */
+  function openSubPage(nextSubPage: SettingsSubPage): Promise<void> {
+    const section = SUB_PAGE_SECTION[nextSubPage];
+    return goTo({ section, topic: null, subPage: nextSubPage });
   }
 
   /** "‹": one step up. An entry with nothing of the window before it is replaced instead. */
@@ -217,6 +228,7 @@ export const useSettingsWindowStore = defineStore("settingsWindow", () => {
     isListLayout,
     section,
     topic,
+    subPage,
     tab,
     goodToKnowTopic,
     hasHaUser,
@@ -227,6 +239,7 @@ export const useSettingsWindowStore = defineStore("settingsWindow", () => {
     back,
     selectTab,
     showTopic,
+    openSubPage,
     reportTabsOverflow,
   };
 });

@@ -1,4 +1,5 @@
 import type { AiPlan, McpAccess } from "../ai/ai-plan.model";
+import type { OwnThemeRecord } from "../core/themes/ownThemes";
 import {
   EMPTY_SORTING_MEMORY,
   type EntitySortingMemory,
@@ -47,6 +48,11 @@ export type Overlay = {
    * "locale" → "de"). A user without an entry has not opened HomeAce Studio through HA yet.
    */
   userPreferences: Record<string, UserPreferences>;
+  /**
+   * Own themes per HA user ID (made or imported, at most MAX_OWN_THEMES each), stored in the theme
+   * file format plus an id. Checked with the shared rules (core/themes) on the way in and out.
+   */
+  userThemes: Record<string, OwnThemeRecord[]>;
 };
 
 export const EMPTY_OVERLAY: Overlay = {
@@ -63,4 +69,5 @@ export const EMPTY_OVERLAY: Overlay = {
   aiPlans: [],
   entitySorting: EMPTY_SORTING_MEMORY,
   userPreferences: {},
+  userThemes: {},
 };

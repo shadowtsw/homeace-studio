@@ -24,6 +24,7 @@ import { LiveModule } from "./live/live.module";
 import { LookupsModule } from "./lookups/lookups.module";
 import { MessagesModule } from "./messages/messages.module";
 import { PreferencesModule } from "./preferences/preferences.module";
+import { ThemesModule } from "./themes/themes.module";
 import { VersionsModule } from "./versions/versions.module";
 
 @Module({
@@ -47,6 +48,7 @@ import { VersionsModule } from "./versions/versions.module";
     RenameModule,
     DuplicateModule,
     PreferencesModule,
+    ThemesModule,
     EntitySortingModule,
     VersionsModule,
   ],

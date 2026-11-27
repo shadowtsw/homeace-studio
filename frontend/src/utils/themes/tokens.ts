@@ -1,62 +1,11 @@
-import { contrastRatio, ensureContrast, mixColors, readableOn } from "./color";
-
-export const COLOR_MODE = { light: "light", dark: "dark" } as const;
-export type ColorMode = (typeof COLOR_MODE)[keyof typeof COLOR_MODE];
-
-/** Every colour variable of styles/tokens.css. A theme sets all of them; fonts and radii stay. */
-export const THEME_TOKENS = [
-  "--bg",
-  "--surface",
-  "--surface-2",
-  "--sunken",
-  "--line",
-  "--line-strong",
-  "--fg",
-  "--muted",
-  "--faint",
-  "--accent",
-  "--accent-soft",
-  "--on-accent",
-  "--flow-when",
-  "--flow-when-soft",
-  "--flow-if",
-  "--flow-if-soft",
-  "--flow-then",
-  "--flow-then-soft",
-  "--kind-automation",
-  "--kind-automation-soft",
-  "--kind-script",
-  "--kind-script-soft",
-  "--kind-scene",
-  "--kind-scene-soft",
-  "--kind-helper",
-  "--kind-helper-soft",
-  "--ok",
-  "--ok-soft",
-  "--warn",
-  "--warn-soft",
-  "--err",
-  "--err-soft",
-  "--scrim",
-  "--shadow",
-] as const;
-
-export type ThemeToken = (typeof THEME_TOKENS)[number];
-export type ThemeTokens = Record<ThemeToken, string>;
-
-/**
- * What a theme is made of, per light or dark version: four base colours and the colours of the
- * flow sections ("Wenn", "Und nur wenn", "Dann"). Every other token is derived from them.
- */
-export type ThemeColors = {
-  background: string;
-  surface: string;
-  text: string;
-  accent: string;
-  flowWhen: string;
-  flowIf: string;
-  flowThen: string;
-};
+import { contrastRatio, ensureContrast, mixColors, readableOn } from "@/core/themes/color";
+import {
+  THEME_TOKENS,
+  type ColorMode,
+  type ThemeColors,
+  type ThemeToken,
+  type ThemeTokens,
+} from "@/core/themes/themeFormat";
 
 /**
  * The hard floor: below this contrast a colour is moved (derived) or dropped (a fine-tuned value),

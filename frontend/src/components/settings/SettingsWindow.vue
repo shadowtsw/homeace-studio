@@ -42,7 +42,10 @@
         class="settings-window__body"
         :role="settingsWindow.isListLayout ? undefined : 'tabpanel'"
       >
-        <SettingsSectionList v-if="!shownSection" />
+        <!-- A page below a section (the theme import) takes the place of the section -->
+        <ThemeImportPage v-if="settingsWindow.subPage === SETTINGS_SUB_PAGE.themeImport" />
+        <ThemeCopyPage v-else-if="settingsWindow.subPage === SETTINGS_SUB_PAGE.themeCopy" />
+        <SettingsSectionList v-else-if="!shownSection" />
         <SettingsGeneralTab v-else-if="shownSection === SETTINGS_TAB.general" />
         <SettingsAppearanceTab v-else-if="shownSection === SETTINGS_TAB.appearance" />
         <SettingsEditingTab v-else-if="shownSection === SETTINGS_TAB.editing" />
@@ -76,12 +79,14 @@ import { onKeyStroke } from "@vueuse/core";
 import { computed, onMounted, useTemplateRef, watch } from "vue";
 import { useI18n } from "vue-i18n";
 
-import { SETTINGS_TAB } from "@/constants/settings";
+import { SETTINGS_SUB_PAGE, SETTINGS_TAB } from "@/constants/settings";
 import { useCleanupStore } from "@/stores/cleanupStore";
 import { useEntitySortingStore } from "@/stores/entitySortingStore";
 import { useSettingsWindowStore } from "@/stores/settingsWindowStore";
 import { useWhatsNewStore } from "@/stores/whatsNewStore";
 
+import ThemeCopyPage from "./appearance/ThemeCopyPage.vue";
+import ThemeImportPage from "./appearance/ThemeImportPage.vue";
 import SettingsAboutTab from "./SettingsAboutTab.vue";
 import SettingsAiTab from "./SettingsAiTab.vue";
 import SettingsAppearanceTab from "./SettingsAppearanceTab.vue";
@@ -117,6 +122,7 @@ const shownSection = computed(() =>
 
 const title = computed(() => {
   if (!settingsWindow.isListLayout) return t("settings.title");
+  if (settingsWindow.subPage) return t(`settings.subPages.${settingsWindow.subPage}`);
   if (settingsWindow.topic) return t(`settings.goodToKnow.${settingsWindow.topic}.title`);
   if (settingsWindow.section) return t(`settings.tabs.${settingsWindow.section}`);
 
@@ -127,6 +133,8 @@ const title = computed(() => {
 const backLabel = computed(() => {
   if (!settingsWindow.isListLayout) return null;
   if (settingsWindow.topic) return t("settings.tabs.goodToKnow");
+  if (settingsWindow.subPage)
+    return t(`settings.tabs.${settingsWindow.section ?? SETTINGS_TAB.appearance}`);
   if (settingsWindow.section) return t("settings.title");
 
   return null;
@@ -134,7 +142,7 @@ const backLabel = computed(() => {
 
 // Every page starts at its top
 watch(
-  () => [settingsWindow.section, settingsWindow.topic],
+  () => [settingsWindow.section, settingsWindow.topic, settingsWindow.subPage],
   () => body.value?.scrollTo({ top: 0 }),
 );
 

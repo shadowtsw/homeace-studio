@@ -30,6 +30,23 @@ export const SETTINGS_TABS: readonly { tab: SettingsTab; icon: string }[] = [
  */
 export const SETTINGS_LIST_MEDIA_QUERY = "(max-width: 820px)";
 
+/**
+ * Pages below a section, each a step of its own (the back gesture leads back to the section): the
+ * theme import, and the text of a theme where copying to the clipboard is not allowed.
+ */
+export const SETTINGS_SUB_PAGE = {
+  themeImport: "themeImport",
+  themeCopy: "themeCopy",
+} as const;
+
+export type SettingsSubPage = (typeof SETTINGS_SUB_PAGE)[keyof typeof SETTINGS_SUB_PAGE];
+
+/** The section each page sits below. */
+export const SUB_PAGE_SECTION: Record<SettingsSubPage, SettingsTab> = {
+  themeImport: SETTINGS_TAB.appearance,
+  themeCopy: SETTINGS_TAB.appearance,
+};
+
 /** Where users report a bug or suggest an idea. */
 export const ISSUES_URL = "https://github.com/shadowtsw/homeace-studio/issues";
 /** The maker's GitHub profile, for the signature under "Über HomeAce". */

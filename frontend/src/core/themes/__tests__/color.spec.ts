@@ -1,3 +1,4 @@
+// Copied from core/themes/__tests__/color.spec.ts by scripts/sync-core.mjs. Edit it there and run the script.
 import { describe, expect, it } from "vitest";
 
 import {
@@ -8,7 +9,7 @@ import {
   mixColors,
   readableOn,
   withLightness,
-} from "@/utils/themes/color";
+} from "../color";
 
 describe("isHexColor", () => {
   it("takes only #rrggbb", () => {
@@ -55,8 +56,16 @@ describe("ensureContrast", () => {
   });
 
   it("moves a colour away from its background until it reaches the ratio", () => {
-    const onWhite = ensureContrast({ color: "#f0f0ff", background: "#ffffff", minRatio: 3 });
-    const onBlack = ensureContrast({ color: "#101018", background: "#000000", minRatio: 3 });
+    const onWhite = ensureContrast({
+      color: "#f0f0ff",
+      background: "#ffffff",
+      minRatio: 3,
+    });
+    const onBlack = ensureContrast({
+      color: "#101018",
+      background: "#000000",
+      minRatio: 3,
+    });
 
     expect(contrastRatio(onWhite, "#ffffff")).toBeGreaterThanOrEqual(3);
     expect(contrastRatio(onBlack, "#000000")).toBeGreaterThanOrEqual(3);

@@ -35,6 +35,11 @@ export const PREFERENCES = {
   theme: { storageKey: "homeace.theme", scope: PREFERENCE_SCOPE.user },
   /** Light, dark or as the system: depends on the device (a wall tablet light, a phone dark). */
   colorMode: { storageKey: "homeace.colorMode", scope: PREFERENCE_SCOPE.device },
+  /**
+   * Own themes: this browser's copy. With a HA user they follow the user through their own endpoint
+   * (/api/themes, too large for a setting); the copy only shows them at once on the next start.
+   */
+  ownThemes: { storageKey: "homeace.ownThemes", scope: PREFERENCE_SCOPE.device },
   paneWidths: { storageKey: "homeace.paneWidths", scope: PREFERENCE_SCOPE.device },
   detailFolded: { storageKey: "homeace.detailFolded", scope: PREFERENCE_SCOPE.device },
   navMode: { storageKey: "homeace.navMode", scope: PREFERENCE_SCOPE.device },

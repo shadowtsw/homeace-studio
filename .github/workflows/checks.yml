@@ -56,3 +56,16 @@ jobs:
           node-version: 22
       # The Preview app may differ from the normal one only in name, version, slug, texts and image.
       - run: node scripts/check-preview-config.mjs
+
+  core-copies:
+    name: Core copies
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      # frontend/src/core/ and backend/src/core/ are copies of core/ (shared code such as the check of
+      # an imported theme). The frontend and backend jobs test and build the copies; this step makes
+      # sure both copies are the same as core/, so the browser and the backend check alike.
+      - run: node scripts/check-core-copies.mjs

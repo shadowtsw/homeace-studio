@@ -139,7 +139,9 @@ Node 24 versions only print a warning.
 Raising `version` in `homeace-studio/config.yaml` on `main` starts the workflow
 `.github/workflows/build-images.yml`. It runs in three steps:
 
-1. **Checks** (`.github/workflows/checks.yml`): lint, tests and build of frontend and backend.
+1. **Checks** (`.github/workflows/checks.yml`): lint, tests and build of frontend and backend; the
+   Preview's config; and that `frontend/src/core/` and `backend/src/core/` are exact copies of `core/`
+   (`scripts/check-core-copies.mjs`, see [recipes.md](recipes.md#shared-code-in-core)).
 2. **Images** for amd64 and aarch64, only when the checks pass, pushed to
    `ghcr.io/shadowtsw/homeace-studio-<arch>:<version>`. `config.yaml` names that image (`image:`), so HA
    downloads it.

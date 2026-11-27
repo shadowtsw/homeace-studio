@@ -11,8 +11,9 @@ import {
   themeTokens,
   type ThemeDefinition,
 } from "@/utils/themes/builtInThemes";
-import { contrastRatio, isHexColor } from "@/utils/themes/color";
-import { COLOR_MODE, THEME_TOKENS, pairsBelowFloor, type ColorMode } from "@/utils/themes/tokens";
+import { contrastRatio, isHexColor } from "@/core/themes/color";
+import { COLOR_MODE, THEME_TOKENS, type ColorMode } from "@/core/themes/themeFormat";
+import { pairsBelowFloor } from "@/utils/themes/tokens";
 
 const TOKENS_CSS = readFileSync(join(__dirname, "..", "..", "..", "styles", "tokens.css"), "utf8");
 const DARK_BLOCK_START = "@media (prefers-color-scheme: dark)";

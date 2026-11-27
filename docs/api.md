@@ -531,6 +531,23 @@ through ingress; locally and in the demo there is no user.
 - Errors: `PREFERENCES_NO_USER` (400, no HA user), `PREFERENCE_INVALID` (400, bad name or value).
 - Kept in the overlay under `userPreferences[<HA user ID>]`.
 
+## Own themes per HA user: GET /api/themes · POST /api/themes · DELETE /api/themes/:id
+
+Themes the user made or imported ([features/themes.md](features/themes.md)). The user comes from the
+ingress headers as for the settings, never from the body. Without a HA user (locally, in the demo)
+own themes stay in the browser and these endpoints answer `THEMES_NO_USER`.
+
+- Everything is in the theme file format (`core/themes/themeFormat.ts`) plus `id` (`own-` and twelve hex
+  digits). `GET` → the user's list.
+- `POST` `{ theme }` → `{ id, themes }`. The theme goes through the same check as in the browser's gate
+  (`checkThemeValue`, `core/themes/checkTheme.ts`): only known fields, colours only as `#rrggbb`, names
+  as plain text. A name another own theme has gets " (2)"; nothing is overwritten.
+- `DELETE /:id` → the user's list without it.
+- Errors: `THEMES_NO_USER` (400), `THEME_INVALID` (400, no usable theme), `THEME_LIMIT_REACHED` (409,
+  at most 20 per user, `params.count`), `THEME_NOT_FOUND` (404, also for another user's id).
+- Kept in the overlay under `userThemes[<HA user ID>]`, checked again whenever it is read (the file can
+  be edited by hand).
+
 ## Scenes: /api/scenes
 
 Scenes are edited without switching anything: the values go into scenes.yaml through HA's config API

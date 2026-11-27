@@ -44,6 +44,27 @@ Checklists for changes that touch several places. Feature-specific recipes are o
 3. If keys are folder paths or entity IDs, move them along on folder rename (`CategoriesService.rename`)
    and on entity ID rename (`RenameService`), and drop them on delete.
 
+## Shared code in core/
+
+Code the frontend and the backend both need (the theme model and the check of an imported theme;
+later the dry-run engine and templates) lives once in `core/`, see `core/README.md`.
+
+1. Edit only in `core/`: plain TypeScript, relative imports, no Vue, NestJS, DOM or HA, no
+   user-facing texts (return codes; the frontend says them in the user's language).
+2. Run `node scripts/sync-core.mjs`. It copies `core/` into `frontend/src/core/` and
+   `backend/src/core/` with a header line; tests (`__tests__/`, Vitest) go to the frontend only.
+3. Import the copy: `@/core/themes/...` in the frontend, `../core/themes/...` in the backend.
+4. The checks fail while a copy differs (`scripts/check-core-copies.mjs`). Both sides lint, test and
+   build their copy, so core code must pass the stricter rules of both (the backend's type-aware
+   ESLint, the frontend's `noUncheckedIndexedAccess`).
+
+## Data from outside (a file, pasted text, a link)
+
+Security first: check it like a theme import does ([features/themes.md](features/themes.md#import)).
+Size before reading, parse in a Web Worker with a time limit, a fixed schema with an allowlist, a new
+object built from known fields only (never merge the original), the same check again in the backend
+before storing, and again whenever stored data is read.
+
 ## New kept preference (a setting or a remembered view state)
 
 1. Add it to `PREFERENCES` in `frontend/src/constants/preferences.ts` with its scope. The rule: what the

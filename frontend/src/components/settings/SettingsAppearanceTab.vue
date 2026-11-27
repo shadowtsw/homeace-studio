@@ -32,56 +32,104 @@
       :preference="PREFERENCES.theme"
     />
     <div class="appearance__themes" role="radiogroup" :aria-label="t('settings.appearance.theme')">
-      <button
+      <ThemeCard
         v-for="theme in BUILT_IN_THEMES"
         :key="theme.id"
-        class="appearance__theme"
-        :class="{ 'appearance__theme--on': theme.id === themeStore.theme.id }"
-        type="button"
-        role="radio"
-        :aria-checked="theme.id === themeStore.theme.id"
-        @click="themeStore.selectTheme(theme.id)"
-      >
-        <!-- The theme's own colours, drawn small: page, a surface with text, Wenn/Und nur wenn/Dann, accent -->
-        <span class="appearance__preview" :style="previewStyles[theme.id]" aria-hidden="true">
-          <span class="appearance__preview-surface">
-            <i class="appearance__preview-text" />
-            <i class="appearance__preview-text appearance__preview-text--quiet" />
-            <span class="appearance__preview-flow">
-              <b class="appearance__preview-when" />
-              <b class="appearance__preview-if" />
-              <b class="appearance__preview-then" />
-            </span>
-          </span>
-          <span class="appearance__preview-accent" />
-        </span>
-        <b class="appearance__name">{{ t(`settings.appearance.themes.${theme.id}.name`) }}</b>
-        <small class="appearance__note">
-          {{ t(`settings.appearance.themes.${theme.id}.note`) }}
-          <template v-if="!theme.light">· {{ t("settings.appearance.darkOnly") }}</template>
-        </small>
-      </button>
+        :tokens="previewTokens[theme.id] ?? STANDARD_TOKENS.light"
+        :name="themeName(theme)"
+        :note="themeNote(theme)"
+        :is-active="theme.id === themeStore.theme.id"
+        @select="themeStore.selectTheme(theme.id)"
+      />
     </div>
+
+    <SettingsRow
+      :title="t('settings.appearance.ownThemes')"
+      :hint="ownThemesHint"
+      :preference="PREFERENCES.theme"
+    >
+      <button
+        class="btn btn--sm"
+        type="button"
+        :disabled="ownThemes.isFull"
+        @click="fileInput?.click()"
+      >
+        <span class="mdi mdi-file-upload-outline" />{{ t("settings.appearance.importFile") }}
+      </button>
+      <button
+        class="btn btn--sm"
+        type="button"
+        :disabled="ownThemes.isFull"
+        @click="themeImport.startPaste()"
+      >
+        <span class="mdi mdi-clipboard-text-outline" />{{ t("settings.appearance.pasteText") }}
+      </button>
+      <!-- Only the file's size and text are used, never its name or path -->
+      <input
+        ref="fileInput"
+        class="appearance__file"
+        type="file"
+        :accept="FILE_TYPES"
+        tabindex="-1"
+        aria-hidden="true"
+        @change="checkChosenFile"
+      />
+    </SettingsRow>
+    <div
+      v-if="ownThemes.themes.length"
+      class="appearance__themes"
+      role="radiogroup"
+      :aria-label="t('settings.appearance.ownThemes')"
+    >
+      <ThemeCard
+        v-for="theme in ownThemes.themes"
+        :key="theme.id"
+        :tokens="previewTokens[theme.id] ?? STANDARD_TOKENS.light"
+        :name="themeName(theme)"
+        :note="themeNote(theme)"
+        :is-active="theme.id === themeStore.theme.id"
+        @select="themeStore.selectTheme(theme.id)"
+      />
+    </div>
+    <p v-else class="appearance__empty">{{ t("settings.appearance.noOwnThemes") }}</p>
+  </div>
+
+  <div class="appearance__actions">
+    <ThemeActions />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, useTemplateRef } from "vue";
 import { useI18n } from "vue-i18n";
 
+import { useThemeTexts } from "@/composables/texts/useThemeTexts";
 import { PREFERENCES } from "@/constants/preferences";
+import { MAX_OWN_THEMES } from "@/core/themes/ownThemes";
+import { COLOR_MODE, type ThemeTokens } from "@/core/themes/themeFormat";
+import { useOwnThemesStore } from "@/stores/ownThemesStore";
+import { useThemeImportStore } from "@/stores/themeImportStore";
 import { COLOR_MODE_CHOICES, useThemeStore } from "@/stores/themeStore";
-import { BUILT_IN_THEMES } from "@/utils/themes/builtInThemes";
-import { COLOR_MODE, type ThemeTokens } from "@/utils/themes/tokens";
+import { BUILT_IN_THEMES, STANDARD_TOKENS } from "@/utils/themes/builtInThemes";
 
+import ThemeActions from "./appearance/ThemeActions.vue";
+import ThemeCard from "./appearance/ThemeCard.vue";
 import SettingsRow from "./SettingsRow.vue";
 
+/** What the file picker offers; the gate checks the content anyway. */
+const FILE_TYPES = ".json,application/json";
+
 /**
- * "Aussehen": brightness on this device, the theme for the user. A theme with one version only
- * (Mitternacht) locks the brightness switch and says why.
+ * "Aussehen": brightness on this device, the theme for the user, own themes with import, and what
+ * can be done with the chosen theme. A theme with one version only (Mitternacht) locks the
+ * brightness switch and says why.
  */
 const { t } = useI18n();
 const themeStore = useThemeStore();
+const ownThemes = useOwnThemesStore();
+const themeImport = useThemeImportStore();
+const { themeName, themeNote } = useThemeTexts();
+const fileInput = useTemplateRef<HTMLInputElement>("fileInput");
 
 const brightnessHintKey = computed(() => {
   if (!themeStore.isModeLocked) return "settings.appearance.brightnessHint";
@@ -91,11 +139,27 @@ const brightnessHintKey = computed(() => {
     : "settings.appearance.onlyLight";
 });
 
+const ownThemesHint = computed(() => {
+  if (ownThemes.isFull) return t("settings.appearance.ownThemesFull", { count: MAX_OWN_THEMES });
+
+  return t("settings.appearance.ownThemesHint");
+});
+
 /** Each card draws its theme in the version it would show now. */
-const previewStyles = computed<Record<string, ThemeTokens>>(() => {
-  const entries = BUILT_IN_THEMES.map((theme) => [theme.id, themeStore.previewTokens(theme)]);
+const previewTokens = computed<Record<string, ThemeTokens>>(() => {
+  const shownThemes = [...BUILT_IN_THEMES, ...ownThemes.themes];
+  const entries = shownThemes.map((theme) => [theme.id, themeStore.previewTokens(theme)]);
   return Object.fromEntries(entries);
 });
+
+/** "Datei importieren": the chosen file goes straight into the gate, on the import page. */
+async function checkChosenFile(event: Event): Promise<void> {
+  const input = event.target as HTMLInputElement;
+  const file = input.files?.[0];
+  // The same file can be chosen again after a fix
+  input.value = "";
+  if (file) await themeImport.checkFile(file);
+}
 </script>
 
 <style scoped>
@@ -136,101 +200,18 @@ const previewStyles = computed<Record<string, ThemeTokens>>(() => {
   padding: 0 16px 16px;
 }
 
-.appearance__theme {
-  display: grid;
-  align-content: start;
-  gap: 6px;
-  padding: 8px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: var(--surface);
-  color: var(--fg);
-  text-align: left;
-  cursor: pointer;
-}
-
-.appearance__theme:hover {
-  border-color: var(--line-strong);
-}
-
-.appearance__theme--on,
-.appearance__theme--on:hover {
-  border-color: var(--accent);
-  box-shadow: inset 0 0 0 1px var(--accent);
-}
-
-.appearance__name {
-  font-size: 13px;
-}
-
-.appearance__note {
+.appearance__empty {
+  margin: 0;
+  padding: 0 16px 16px;
   color: var(--muted);
-  font-size: 11.5px;
-  line-height: 1.3;
+  font-size: 12.5px;
 }
 
-/* The small picture uses the card's own token values (inline), not the page's. */
-.appearance__preview {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: end;
-  gap: 6px;
-  height: 62px;
-  padding: 7px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--bg);
+.appearance__file {
+  display: none;
 }
 
-.appearance__preview-surface {
-  display: grid;
-  gap: 4px;
-  padding: 6px;
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  background: var(--surface);
-}
-
-.appearance__preview-text {
-  display: block;
-  width: 80%;
-  height: 5px;
-  border-radius: 3px;
-  background: var(--fg);
-}
-
-.appearance__preview-text--quiet {
-  width: 50%;
-  background: var(--muted);
-}
-
-.appearance__preview-flow {
-  display: flex;
-  gap: 3px;
-}
-
-.appearance__preview-flow b {
-  width: 12px;
-  height: 6px;
-  border-radius: 3px;
-}
-
-.appearance__preview-when {
-  background: var(--flow-when);
-}
-
-.appearance__preview-if {
-  background: var(--flow-if);
-}
-
-.appearance__preview-then {
-  background: var(--flow-then);
-}
-
-.appearance__preview-accent {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: var(--accent);
+.appearance__actions {
+  margin-top: 12px;
 }
 </style>

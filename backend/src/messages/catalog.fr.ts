@@ -110,6 +110,12 @@ export const CATALOG_FR: Catalog = {
   PREFERENCES_NO_USER:
     "Les paramètres par utilisateur n'existent que si HomeAce Studio est ouvert via Home Assistant.",
   PREFERENCE_INVALID: "Le paramètre « {name} » n'a pas de valeur valide.",
+  THEMES_NO_USER:
+    "Les thèmes personnels appartiennent à un utilisateur de Home Assistant ; sans connexion, ils restent dans le navigateur.",
+  THEME_INVALID: "Ce n'est pas un thème valide.",
+  THEME_LIMIT_REACHED:
+    "{count} thèmes personnels au maximum. Supprimez-en un pour en ajouter un nouveau.",
+  THEME_NOT_FOUND: "Ce thème n'existe plus.",
   HELPER_NOT_DELETABLE:
     "{entityId} ne peut pas être supprimé ici. Pour l'instant, supprimez les entrées de type modèle et groupe dans Home Assistant.",
 };
