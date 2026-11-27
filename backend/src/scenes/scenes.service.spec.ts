@@ -5,12 +5,22 @@ import { DemoHaConnectionService, DemoHaRestService } from "../demo/demo-ha.serv
 import { FakeHa } from "../demo/fake-ha";
 import { HaSceneRepository } from "./repositories/ha-scene.repository";
 import { ScenesService } from "./scenes.service";
+import type { VersionsService } from "src/versions/versions.service";
+
+/** Versions are not under test here; saving must work without them. */
+const noVersions = {
+  recordSaved: () => Promise.resolve(),
+  recordRename: () => Promise.resolve(),
+} as unknown as VersionsService;
 
 /** Scenes in the demo home, through the real repository and the fake HA. */
 function setup() {
   const fake = new FakeHa(createDemoHome());
   const ha = new DemoHaConnectionService(fake);
-  const service = new ScenesService(new HaSceneRepository(ha, new DemoHaRestService(fake)));
+  const service = new ScenesService(
+    new HaSceneRepository(ha, new DemoHaRestService(fake)),
+    noVersions,
+  );
   const stateOf = async (entityId: string) =>
     (await service.candidate(entityId)).current?.state ?? null;
 

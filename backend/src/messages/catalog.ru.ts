@@ -81,6 +81,13 @@ export const CATALOG_RU: Catalog = {
   FLOW_INVALID: "Home Assistant не принял логику: {reason}",
   FLOW_CREATED: "Создано в Home Assistant.",
   TRACES_KEPT: "Теперь Home Assistant хранит до {count} последних запусков.",
+  VERSIONS_UNSUPPORTED:
+    "У {entityId} нет версий: сохраняются только автоматизации, скрипты и сцены, которые HomeAce Studio может редактировать.",
+  VERSION_NOT_FOUND: "Этой версии больше нет.",
+  VERSION_NAMES_FULL: "У {max} версий уже есть имя. Сначала уберите имя у другой.",
+  VERSION_SAVED: "Сохранено.",
+  VERSION_RESTORED: "Восстановлено. Предыдущее состояние остаётся в версиях.",
+  VERSION_CLOSED: "Завершено. Следующее изменение начнёт новую версию.",
   FLOW_DELETED: "Удалено в Home Assistant.",
 
   MCP_SAVED: "Сохранено.",

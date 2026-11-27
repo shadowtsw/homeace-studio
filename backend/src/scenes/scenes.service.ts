@@ -4,6 +4,8 @@ import { apiError } from "../common/api/api-response";
 import { isRecord } from "../common/utils/record";
 import type { HaState } from "../ha/ha.types";
 import { MESSAGE_ID } from "../messages/message-ids";
+import type { VersionUser } from "../versions/versions.model";
+import { VersionsService } from "../versions/versions.service";
 import { SCENE_REPOSITORY } from "./scenes.constants";
 import type { SceneDevice, SceneValue, SceneView } from "./scene.model";
 import type { SceneRepository } from "./repositories/scene.repository";
@@ -17,6 +19,8 @@ const ENTITY_ONLY = { entity_only: true };
 export type SaveOptions = {
   entityId: string;
   entities: Record<string, SceneValue>;
+  /** Who saved, for the version list; missing outside HA's ingress. */
+  user?: VersionUser;
 };
 
 export type PreviewOptions = {
@@ -42,7 +46,10 @@ export class ScenesService {
   /** Per scene: what its previewed devices did before, to bring it back. */
   private readonly snapshots = new Map<string, Map<string, SceneValue>>();
 
-  constructor(@Inject(SCENE_REPOSITORY) private readonly scenes: SceneRepository) {}
+  constructor(
+    @Inject(SCENE_REPOSITORY) private readonly scenes: SceneRepository,
+    private readonly versions: VersionsService,
+  ) {}
 
   /** The scene's devices with what the scene sets and what they do right now. */
   async get(entityId: string): Promise<SceneView> {
@@ -107,7 +114,7 @@ export class ScenesService {
    *
    * @throws BadRequestException `SCENE_NOT_EDITABLE` for scenes outside scenes.yaml.
    */
-  async save({ entityId, entities }: SaveOptions): Promise<SceneView> {
+  async save({ entityId, entities, user }: SaveOptions): Promise<SceneView> {
     const found = await this.findConfig(entityId);
     if (!found) throw notEditable(entityId);
 
@@ -129,6 +136,8 @@ export class ScenesService {
       },
     });
     this.logger.log(`Saved scene ${entityId}`);
+    // Never throws: a missing version must not turn a successful save into an error.
+    await this.versions.recordSaved({ entityId, user });
 
     return this.get(entityId);
   }

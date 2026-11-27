@@ -5,6 +5,7 @@ import { ENTITY_LOOKUP_WAIT } from "src/common/utils/wait";
 import { removeExtras } from "src/entries/entry-extras";
 import { OVERLAY_REPOSITORY } from "src/overlay/overlay.constants";
 import type { OverlayRepository } from "src/overlay/repositories/overlay.repository";
+import { VersionsService } from "src/versions/versions.service";
 import type { CreateFlowDto } from "./dto/create-flow.dto";
 import {
   EDITOR_REPOSITORY,
@@ -58,6 +59,7 @@ export class FlowsService {
     @Inject(OVERLAY_REPOSITORY) private readonly overlay: OverlayRepository,
     @Inject(ENTITY_LOOKUP_WAIT) private readonly pause: (milliseconds: number) => Promise<void>,
     @Inject(FLOW_CLOCK) private readonly now: () => number,
+    private readonly versions: VersionsService,
   ) {}
 
   /**
@@ -95,6 +97,8 @@ export class FlowsService {
     }
 
     this.logger.log(`Created ${entityId}`);
+    // The first version: "in HomeAce angelegt" (never throws).
+    await this.versions.recordSaved({ entityId });
 
     return { entityId };
   }

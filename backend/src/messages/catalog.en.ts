@@ -80,6 +80,13 @@ export const CATALOG_EN: Catalog = {
   FLOW_INVALID: "Home Assistant rejected the flow: {reason}",
   FLOW_CREATED: "Created in Home Assistant.",
   TRACES_KEPT: "Home Assistant now keeps the last {count} runs.",
+  VERSIONS_UNSUPPORTED:
+    "{entityId} has no versions: only automations, scripts and scenes that HomeAce Studio can edit are kept.",
+  VERSION_NOT_FOUND: "This version no longer exists.",
+  VERSION_NAMES_FULL: "{max} versions already have a name. Remove the name of another one first.",
+  VERSION_SAVED: "Saved.",
+  VERSION_RESTORED: "Brought back. The previous state stays in the versions.",
+  VERSION_CLOSED: "Closed. The next change starts a new version.",
   FLOW_DELETED: "Deleted in Home Assistant.",
 
   MCP_SAVED: "Saved.",

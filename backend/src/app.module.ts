@@ -24,6 +24,7 @@ import { LiveModule } from "./live/live.module";
 import { LookupsModule } from "./lookups/lookups.module";
 import { MessagesModule } from "./messages/messages.module";
 import { PreferencesModule } from "./preferences/preferences.module";
+import { VersionsModule } from "./versions/versions.module";
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { PreferencesModule } from "./preferences/preferences.module";
     DuplicateModule,
     PreferencesModule,
     EntitySortingModule,
+    VersionsModule,
   ],
   providers: [
     // Every answer uses the { message, error, data } envelope (docs/api.md).

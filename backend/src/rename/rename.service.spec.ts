@@ -11,6 +11,13 @@ import { HaEntriesRepository } from "../entries/repositories/ha-entries.reposito
 import { LiveService } from "../live/live.service";
 import { HomeSnapshotService } from "../snapshot/home-snapshot.service";
 import { RenameService } from "./rename.service";
+import type { VersionsService } from "src/versions/versions.service";
+
+/** Versions are not under test here; saving must work without them. */
+const noVersions = {
+  recordSaved: () => Promise.resolve(),
+  recordRename: () => Promise.resolve(),
+} as unknown as VersionsService;
 
 /** Renames in the demo home, through the real services. */
 function setup() {
@@ -28,9 +35,10 @@ function setup() {
     ha,
     entries,
     snapshots,
-    new EditorService(editor),
+    new EditorService(editor, noVersions),
     editor,
     overlay,
+    noVersions,
   );
 
   return { service, editor, overlay };

@@ -5,6 +5,13 @@ import type { CatalogSources } from "./catalog.mapper";
 import { CATALOG_CACHE_MS } from "./editor.constants";
 import { EditorService } from "./editor.service";
 import type { EditorRepository } from "./repositories/editor.repository";
+import type { VersionsService } from "src/versions/versions.service";
+
+/** Versions are not under test here; saving must work without them. */
+const noVersions = {
+  recordSaved: () => Promise.resolve(),
+  recordRename: () => Promise.resolve(),
+} as unknown as VersionsService;
 
 const SOURCES: CatalogSources = {
   triggers: { "button.pressed": { fields: {}, target: null } },
@@ -47,7 +54,7 @@ function setup(overrides: Partial<EditorRepository> = {}) {
   };
 
   return {
-    service: new EditorService(repository),
+    service: new EditorService(repository, noVersions),
     loadCatalogSources,
     loadConfig,
     saveConfig,

@@ -90,6 +90,14 @@ export const MESSAGE_ID = {
   flowDeleted: "FLOW_DELETED",
   tracesKept: "TRACES_KEPT",
 
+  // Versions (Git light)
+  versionsUnsupported: "VERSIONS_UNSUPPORTED",
+  versionNotFound: "VERSION_NOT_FOUND",
+  versionNamesFull: "VERSION_NAMES_FULL",
+  versionSaved: "VERSION_SAVED",
+  versionRestored: "VERSION_RESTORED",
+  versionClosed: "VERSION_CLOSED",
+
   // AI access (MCP) and folder plans
   mcpSaved: "MCP_SAVED",
   mcpTokenRenewed: "MCP_TOKEN_RENEWED",

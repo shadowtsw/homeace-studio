@@ -2,6 +2,8 @@ import { BadRequestException, Inject, Injectable, Logger } from "@nestjs/common"
 
 import { apiError } from "src/common/api/api-response";
 import { MESSAGE_ID } from "src/messages/message-ids";
+import type { VersionUser } from "../versions/versions.model";
+import { VersionsService } from "../versions/versions.service";
 import { buildCatalog } from "./catalog.mapper";
 import {
   EDITOR_REPOSITORY,
@@ -28,6 +30,8 @@ export type GetCatalogOptions = {
 export type SaveFlowOptions = {
   entityId: string;
   config: Record<string, unknown>;
+  /** Who saved, for the version list; missing outside HA's ingress. */
+  user?: VersionUser;
 };
 
 type DescribeOptions = {
@@ -43,7 +47,10 @@ export class EditorService {
   private readonly logger = new Logger(EditorService.name);
   private readonly catalogs = new Map<string, CachedCatalog>();
 
-  constructor(@Inject(EDITOR_REPOSITORY) private readonly editor: EditorRepository) {}
+  constructor(
+    @Inject(EDITOR_REPOSITORY) private readonly editor: EditorRepository,
+    private readonly versions: VersionsService,
+  ) {}
 
   /**
    * The catalog of all trigger, condition and action types in one language. Cached for a while,
@@ -85,7 +92,7 @@ export class EditorService {
    * @throws BadRequestException `FLOW_NOT_EDITABLE` when the flow is not stored in those files
    *   or comes from a blueprint; `FLOW_INVALID` when HA rejects the config.
    */
-  async saveFlow({ entityId, config }: SaveFlowOptions): Promise<Flow> {
+  async saveFlow({ entityId, config, user }: SaveFlowOptions): Promise<Flow> {
     const { kind, key: storageKey } = await this.requireStoredFlow(entityId);
 
     if (isFromBlueprint(config)) {
@@ -105,6 +112,8 @@ export class EditorService {
       });
 
     this.logger.log(`Saved flow of ${entityId}`);
+    // Never throws: a missing version must not turn a successful save into an error.
+    await this.versions.recordSaved({ entityId, user });
 
     // HA reloads the flow in the background, so reading it back right away could still return
     // the old version; the saved config is what HA runs once the reload is done.

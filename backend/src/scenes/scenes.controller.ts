@@ -1,7 +1,19 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Put } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Get,
+  Headers,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+  Put,
+} from "@nestjs/common";
+import type { IncomingHttpHeaders } from "node:http";
 
 import { ResponseMessage } from "src/common/api/response-message.decorator";
 import { MESSAGE_ID } from "src/messages/message-ids";
+import { haUserFrom } from "../preferences/ha-user";
 import { CreateSceneDto } from "./dto/create-scene.dto";
 import { RestoreSceneDto } from "./dto/restore-scene.dto";
 import { SceneEntitiesDto } from "./dto/scene-entities.dto";
@@ -36,8 +48,13 @@ export class ScenesController {
 
   @Put(":entityId")
   @ResponseMessage(MESSAGE_ID.sceneSaved)
-  save(@Param("entityId") entityId: string, @Body() dto: SceneEntitiesDto): Promise<SceneView> {
-    return this.scenes.save({ entityId, entities: dto.entities });
+  save(
+    @Headers() headers: IncomingHttpHeaders,
+    @Param("entityId") entityId: string,
+    @Body() dto: SceneEntitiesDto,
+  ): Promise<SceneView> {
+    const user = haUserFrom(headers) ?? undefined;
+    return this.scenes.save({ entityId, entities: dto.entities, user });
   }
 
   @Post(":entityId/preview")

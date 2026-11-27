@@ -82,6 +82,13 @@ export const CATALOG_FR: Catalog = {
   FLOW_INVALID: "Home Assistant a refusé le déroulement : {reason}",
   FLOW_CREATED: "Créé dans Home Assistant.",
   TRACES_KEPT: "Home Assistant conserve désormais les {count} dernières exécutions.",
+  VERSIONS_UNSUPPORTED:
+    "{entityId} n’a pas de versions : seules les automatisations, scripts et scènes que HomeAce Studio peut modifier sont conservés.",
+  VERSION_NOT_FOUND: "Cette version n’existe plus.",
+  VERSION_NAMES_FULL: "{max} versions ont déjà un nom. Retirez d’abord le nom d’une autre.",
+  VERSION_SAVED: "Enregistré.",
+  VERSION_RESTORED: "Restauré. L’état précédent reste dans les versions.",
+  VERSION_CLOSED: "Clôturé. La prochaine modification commence une nouvelle version.",
   FLOW_DELETED: "Supprimé dans Home Assistant.",
 
   MCP_SAVED: "Enregistré.",

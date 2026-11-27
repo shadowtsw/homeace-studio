@@ -7,6 +7,13 @@ import { EditorService } from "./editor.service";
 import { firstFreeKey, scriptKeyFor } from "./flow-key";
 import { FlowsService } from "./flows.service";
 import type { EditorRepository, FindEntityIdOptions } from "./repositories/editor.repository";
+import type { VersionsService } from "src/versions/versions.service";
+
+/** Versions are not under test here; saving must work without them. */
+const noVersions = {
+  recordSaved: () => Promise.resolve(),
+  recordRename: () => Promise.resolve(),
+} as unknown as VersionsService;
 
 const NOW = 1_763_600_000_000;
 
@@ -32,11 +39,12 @@ function setup(overrides: Partial<EditorRepository> = {}) {
   const overlay = { update: jest.fn().mockResolvedValue(undefined) };
   const service = new FlowsService(
     repository,
-    new EditorService(repository),
+    new EditorService(repository, noVersions),
     categories as unknown as CategoriesService,
     overlay as unknown as OverlayRepository,
     () => Promise.resolve(),
     () => NOW,
+    noVersions,
   );
 
   return { service, saveConfig, deleteConfig, categories, overlay };

@@ -560,3 +560,30 @@ devices to "photograph" them.
 - `POST /api/scenes/:entityId/restore` `{ entityIds? }` applies the kept states again (all, or only the
   given devices, e.g. after trying one) and forgets them (`SCENE_RESTORED`). No snapshot scene is
   created in HA, so nothing extra shows up there.
+
+## Versions (Git light): /api/versions
+
+Earlier versions of automations, scripts and scenes, kept by `VersionsService` in one gzipped file per
+entry under `<config folder>/versions/` (next to the overlay, part of HA backups; in memory in the demo).
+An entry is found by HA's storage key through the entity registry, so renaming its entity ID keeps its
+versions. Only through this API: versions hold whole configs and are never offered over MCP.
+
+A version is taken when HomeAce Studio saves (flows, scenes, creating a flow; as HA stored it, read back
+through the config API), when HA reports a reload (`automation_reloaded`, `scene_reloaded`, or
+`call_service` `reload` for automation/script/scene, 2 s after the burst) and the stored config differs
+from the newest version (`outside`), and on start (`offline`, with `since` = the last compare). Saves in
+HomeAce Studio within 10 min join one open version; for 15 s after its own save, a reload never counts
+as outside. 20 versions without a name per entry, the oldest drops out; at most 10 named ones.
+
+- `GET /api/versions/:entityId` → `{ ref: { kind, key, entityId }, versions: [{ id, at, source, config,
+  user?, name?, openUntil?, saves?, since?, restoredFrom? }], openVersionId }`, oldest first. `source`:
+  `base` · `homeace` · `outside` · `offline` · `restore` (`ai` is reserved). An entry seen for the first
+  time gets its `base` version now. `404 VERSIONS_UNSUPPORTED` for other kinds and YAML-only entries.
+- `PUT /api/versions/:entityId/:versionId/name` `{ name }` names (plain text, at most 40 characters),
+  renames, or with an empty/null name unnames a version (`VERSION_SAVED`). `400 VERSION_NAMES_FULL`
+  beyond 10 named, `404 VERSION_NOT_FOUND`.
+- `POST /api/versions/:entityId/close` closes the open version (`VERSION_CLOSED`).
+- `POST /api/versions/:entityId/:versionId/restore` writes the version back to HA (the id of automations
+  and scenes stays) and keeps it as a new `restore` version, so the state before stays in the list
+  (`VERSION_RESTORED`). Entity IDs renamed in HomeAce Studio since that version are replaced by their
+  current ones; the answer lists them as `renamed: [{ from, to, at }]`.

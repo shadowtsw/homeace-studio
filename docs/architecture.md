@@ -47,6 +47,7 @@ backend/src/
   live/             HA events → SSE GET /api/events                                  features/live-updates.md
   ai/               MCP server, access, AI folder plans                              features/ai-mcp.md
   entity-sorting/   the tool "Entitäten einsortieren": context, memory, batch moves  features/entity-sorting.md
+  versions/         earlier versions of automations, scripts, scenes (Git light)     features/versions.md
   demo/             FakeHa, demo home, demo traces, memory overlay                   setup.md
 ```
 

@@ -4,6 +4,13 @@ import { FakeHa } from "../demo/fake-ha";
 import { EditorService } from "../editor/editor.service";
 import { HaEditorRepository } from "../editor/repositories/ha-editor.repository";
 import { TracesService } from "./traces.service";
+import type { VersionsService } from "src/versions/versions.service";
+
+/** Versions are not under test here; saving must work without them. */
+const noVersions = {
+  recordSaved: () => Promise.resolve(),
+  recordRename: () => Promise.resolve(),
+} as unknown as VersionsService;
 
 /** Runs of the demo home, through the real editor repository. */
 function setup() {
@@ -12,7 +19,7 @@ function setup() {
 
   const editor = new HaEditorRepository(ha, new DemoHaRestService(fake));
 
-  return new TracesService(ha, editor, new EditorService(editor));
+  return new TracesService(ha, editor, new EditorService(editor, noVersions));
 }
 
 describe("TracesService", () => {

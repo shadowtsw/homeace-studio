@@ -13,6 +13,7 @@ import { OVERLAY_REPOSITORY } from "../overlay/overlay.constants";
 import type { Overlay } from "../overlay/overlay.model";
 import type { OverlayRepository } from "../overlay/repositories/overlay.repository";
 import { HomeSnapshotService } from "../snapshot/home-snapshot.service";
+import { VersionsService } from "../versions/versions.service";
 import { countEntityId, ENTITY_ID_PATTERN, replaceEntityId } from "./entity-id";
 
 /** A flow, scene or group that names the entity, and how often. */
@@ -52,6 +53,7 @@ export class RenameService {
     private readonly flows: EditorService,
     @Inject(EDITOR_REPOSITORY) private readonly editor: EditorRepository,
     @Inject(OVERLAY_REPOSITORY) private readonly overlay: OverlayRepository,
+    private readonly versions: VersionsService,
   ) {}
 
   /** Where the entity ID appears: flows (with their count) and the members of scenes and groups. */
@@ -141,6 +143,8 @@ export class RenameService {
     await this.overlay.update((current) =>
       carryOver({ overlay: current, from: entityId, to: newEntityId }),
     );
+    // Older versions still name the old ID; bringing one back uses the new ID (never throws).
+    await this.versions.recordRename({ from: entityId, to: newEntityId });
 
     const updated: EntityReference[] = [];
     const skipped: EntityReference[] = [];

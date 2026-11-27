@@ -12,6 +12,13 @@ import { HaEntriesRepository } from "../entries/repositories/ha-entries.reposito
 import { HelpersService } from "../helpers/helpers.service";
 import { HaHelpersRepository } from "../helpers/repositories/ha-helpers.repository";
 import { DuplicateService } from "./duplicate.service";
+import type { VersionsService } from "src/versions/versions.service";
+
+/** Versions are not under test here; saving must work without them. */
+const noVersions = {
+  recordSaved: () => Promise.resolve(),
+  recordRename: () => Promise.resolve(),
+} as unknown as VersionsService;
 
 /** Duplicates in the demo home, through the real services. */
 function setup() {
@@ -21,7 +28,7 @@ function setup() {
   const categories = new CategoriesService(new HaCategoriesRepository(ha), overlay);
   const entries = new EntriesService(new HaEntriesRepository(ha), overlay, categories);
   const editor = new HaEditorRepository(ha, new DemoHaRestService(fake));
-  const editorService = new EditorService(editor);
+  const editorService = new EditorService(editor, noVersions);
   const flows = new FlowsService(
     editor,
     editorService,
@@ -29,6 +36,7 @@ function setup() {
     overlay,
     () => Promise.resolve(),
     () => 1_700_000_000_000,
+    noVersions,
   );
 
   const helpers = new HelpersService(new HaHelpersRepository(ha), categories, overlay, () =>
