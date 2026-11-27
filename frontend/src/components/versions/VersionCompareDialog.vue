@@ -36,7 +36,17 @@
           :mode="mode"
           :versions="view.versions"
           :version-id="versionId"
+          :label-of="labelOf"
           @pick="(id) => emit('pick', id)"
+        />
+
+        <VersionCompareHead
+          :mode="mode"
+          :version="version"
+          :previous="previous"
+          :versions="view.versions"
+          :when-of="whenOf"
+          @name="nameVersion"
         />
 
         <div class="version-dialog__body">
@@ -47,9 +57,6 @@
             :rows="rows"
             :show="show"
             :is-restore="mode === 'restore'"
-            :is-now-right="mode !== 'prev'"
-            :older-title="sides.olderTitle"
-            :newer-title="sides.newerTitle"
             :older-side="sides.olderSide"
             :newer-side="sides.newerSide"
             :only-old-text="sides.onlyOld"
@@ -79,7 +86,6 @@
             <button v-if="previous" class="btn" type="button" @click="mode = 'prev'">
               <span class="mdi mdi-compare-horizontal" />{{ t("versions.compare.withPrevious") }}
             </button>
-            <VersionNameControl :version="version" @name="nameVersion" />
             <span class="version-dialog__spacer" />
             <button
               class="btn btn--primary"
@@ -87,7 +93,7 @@
               :disabled="!diffCount || isNewest"
               @click="mode = 'restore'"
             >
-              <span class="mdi mdi-history" />{{ t("versions.compare.restore") }}
+              <span class="mdi mdi-history" />{{ restoreLabel }}
             </button>
           </template>
         </footer>
@@ -105,12 +111,13 @@ import { useVersionLines } from "@/composables/versions/useVersionLines";
 import type { Version, VersionsView } from "@/services/versionsService";
 import { useMessagesStore } from "@/stores/messagesStore";
 import { useToastStore } from "@/stores/toastStore";
+import { VERSION_LIMITS } from "@/constants/versions";
 import { useVersionsStore } from "@/stores/versionsStore";
 import type { Entry } from "@/types/entry";
 import { alignLines } from "@/utils/versions/compareLines";
 
+import VersionCompareHead from "./VersionCompareHead.vue";
 import VersionCompareRows from "./VersionCompareRows.vue";
-import VersionNameControl from "./VersionNameControl.vue";
 import VersionPicker from "./VersionPicker.vue";
 
 /** Only shown for a moment while a version that just dropped out is still open. */
@@ -125,7 +132,9 @@ const { t } = useI18n();
 const versions = useVersionsStore();
 const toasts = useToastStore();
 const messages = useMessagesStore();
-const { linesFor, labelOf, summaryOf } = useVersionLines({ entry: toRef(props, "entry") });
+const { linesFor, whenOf, labelOf, whenInText, summaryOf } = useVersionLines({
+  entry: toRef(props, "entry"),
+});
 
 const show = ref<(typeof SHOWS)[number]>("sideBySide");
 const mode = ref<Mode>("view");
@@ -160,8 +169,6 @@ const diffCount = computed(() => rows.value.filter((row) => row.change !== "same
 const sides = computed(() => {
   if (mode.value === "prev" && previous.value) {
     return {
-      olderTitle: `${t("versions.compare.before")} · ${labelOf(previous.value)}`,
-      newerTitle: `${t("versions.compare.after")} · ${labelOf(version.value)}`,
       olderSide: t("versions.compare.before"),
       newerSide: t("versions.compare.after"),
       onlyOld: t("versions.compare.removed"),
@@ -170,8 +177,6 @@ const sides = computed(() => {
   }
   const isRestore = mode.value === "restore";
   return {
-    olderTitle: labelOf(version.value) + (isRestore ? ` · ${t("versions.compare.isFetched")}` : ""),
-    newerTitle: t("versions.compare.now"),
     olderSide: isRestore ? t("versions.compare.isFetchedShort") : t("versions.compare.past"),
     newerSide: t("versions.compare.nowShort"),
     onlyOld: isRestore ? t("versions.compare.comesBack") : t("versions.compare.onlyThen"),
@@ -179,12 +184,25 @@ const sides = computed(() => {
   };
 });
 
+/** "Version von heute 07:30" or "Version „läuft stabil“": one word for what is kept (owner 28.11.). */
+const versionName = computed(() =>
+  version.value.name
+    ? t("versions.compare.titleNamed", { name: labelOf(version.value) })
+    : t("versions.compare.titleVersion", { label: whenInText(version.value.at) }),
+);
 const title = computed(() => {
-  if (mode.value === "prev")
-    return t("versions.compare.titlePrev", { when: labelOf(version.value) });
-  const name = t("versions.compare.titleVersion", { label: labelOf(version.value) });
+  if (mode.value === "prev") {
+    return t("versions.compare.titlePrev", { when: whenInText(version.value.at) });
+  }
+  const name = versionName.value;
   return mode.value === "restore" ? t("versions.compare.titleRestore", { name }) : name;
 });
+/** The button names what comes back, so it is clear it is the left side. */
+const restoreLabel = computed(() =>
+  version.value.name
+    ? t("versions.compare.restoreNamed", { name: labelOf(version.value) })
+    : t("versions.compare.restoreAt", { when: whenInText(version.value.at) }),
+);
 const subtitle = computed(() => {
   const who = version.value.user ? ` · ${version.value.user.name}` : "";
   const source = t(`versions.source.${version.value.source}`);
@@ -194,10 +212,22 @@ const subtitle = computed(() => {
   return `${source}${who} · ${summary}`;
 });
 
-async function nameVersion(name: string | null): Promise<void> {
+async function nameVersion(change: { name: string | null; confirmDrop?: boolean }): Promise<void> {
+  const { name, confirmDrop } = change;
+  const oldName = version.value.name ?? "";
   try {
-    await versions.name({ versionId: version.value.id, name });
-    if (name) toasts.show({ text: t("versions.named", { name }) });
+    await versions.name({ versionId: version.value.id, name, confirmDrop });
+    if (name) {
+      toasts.show({ text: t("versions.named", { name }) });
+    } else if (confirmDrop) {
+      // The version is gone; nothing left to show here
+      toasts.show({
+        text: t("versions.droppedUnpinned", { name: oldName, max: VERSION_LIMITS.unnamed }),
+      });
+      emit("close");
+    } else {
+      toasts.show({ text: t("versions.unnamed", { max: VERSION_LIMITS.unnamed }) });
+    }
   } catch (error) {
     toasts.show({
       text: messages.textFor({ error, fallback: t("errors.actionFailed") }),

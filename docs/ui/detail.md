@@ -22,9 +22,9 @@ banner, tabs, and a fixed save footer. Only the middle scrolls.
 
 | Kind | Tabs (first one is the default) | Tab content |
 | --- | --- | --- |
-| automation, script | Ablauf · Eigenschaften · Verlauf · Abhängigkeiten | `FlowView` ([flow-editor](../features/flow-editor.md)), properties, `RunHistoryView` ([run-history](../features/run-history.md)), `DependencyView` ([dependencies](../features/dependencies.md)) |
+| automation, script | Ablauf · Eigenschaften · Verlauf · Versionen · Abhängigkeiten | `FlowView` ([flow-editor](../features/flow-editor.md)), properties, `RunHistoryView` ([run-history](../features/run-history.md)), `VersionsView` ([versions](../features/versions.md)), `DependencyView` ([dependencies](../features/dependencies.md)) |
 | helper | Einstellungen · Eigenschaften · Abhängigkeiten | `HelperSettingsView` ([helpers](../features/helpers.md)) |
-| scene | Zustände · Eigenschaften · Abhängigkeiten | `SceneEditorView` ([scenes](../features/scenes.md)) |
+| scene | Zustände · Eigenschaften · Versionen · Abhängigkeiten | `SceneEditorView` ([scenes](../features/scenes.md)), `VersionsView` ([versions](../features/versions.md)) |
 
 The tab the user picked last (`pickedTab`) stays when the next entry has it too, so clicking through the
 list compares the same tab. Otherwise the entry starts on its first tab. The dependencies tab shows a

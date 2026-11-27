@@ -35,6 +35,14 @@ see.
 | Banner in the detail (to the flow, to the history, turn off, delete, ignore) | `frontend/src/components/checkup/CheckupBanner.vue` |
 | Store (`findings`, `findingsFor(entityId)`) | `frontend/src/stores/checkupStore.ts`, `services/checkupService.ts` |
 
+## Recently deleted
+
+At the end of the list, "Kürzlich gelöscht" shows deleted automations, scripts and scenes for 30 days, with
+when and where they were deleted, how many versions they keep and the days left (warning colour from 7
+days). "Wiederherstellen" creates the entry in HA again and opens it (`components/checkup/CheckupTrash.vue`;
+model and caveats in [versions.md](versions.md#trash-kürzlich-gelöscht)). With the battery overview the
+check-up becomes cards, and this becomes one of them.
+
 ## Rules
 
 - Ignored findings are kept in `overlay.checkupIgnored` as `<kind>:<entityId>`.

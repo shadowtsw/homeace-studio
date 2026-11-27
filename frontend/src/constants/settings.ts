@@ -77,6 +77,7 @@ export const GOOD_TO_KNOW_TOPIC = {
   filterCounts: "filterCounts",
   labels: "labels",
   sortingEntities: "sortingEntities",
+  versions: "versions",
 } as const;
 
 export type GoodToKnowTopic = (typeof GOOD_TO_KNOW_TOPIC)[keyof typeof GOOD_TO_KNOW_TOPIC];
@@ -93,4 +94,5 @@ export const GOOD_TO_KNOW_TOPICS: readonly { topic: GoodToKnowTopic; icon: strin
   { topic: GOOD_TO_KNOW_TOPIC.filterCounts, icon: "mdi-folder-eye-outline" },
   { topic: GOOD_TO_KNOW_TOPIC.labels, icon: "mdi-label-outline" },
   { topic: GOOD_TO_KNOW_TOPIC.sortingEntities, icon: "mdi-auto-fix" },
+  { topic: GOOD_TO_KNOW_TOPIC.versions, icon: "mdi-history" },
 ];

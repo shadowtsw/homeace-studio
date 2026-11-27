@@ -6,6 +6,7 @@
     <p v-else-if="versions.hasError" class="versions-view__note">{{ t("versions.loadFailed") }}</p>
 
     <template v-else-if="view">
+      <VersionsGuide />
       <div class="versions-view__head">
         <b>{{ t("detail.tabs.versions") }}</b>
         <small>{{ countText }}</small>
@@ -72,6 +73,7 @@ import { computed, ref, toRef, watch } from "vue";
 import { useI18n } from "vue-i18n";
 
 import { useVersionLines } from "@/composables/versions/useVersionLines";
+import { VERSION_LIMITS } from "@/constants/versions";
 import type { Version } from "@/services/versionsService";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { useVersionsStore } from "@/stores/versionsStore";
@@ -80,10 +82,8 @@ import { clockTime } from "@/utils/runs/runTime";
 
 import VersionCompareDialog from "./VersionCompareDialog.vue";
 import VersionRow from "./VersionRow.vue";
+import VersionsGuide from "./VersionsGuide.vue";
 
-/** Limits as in the backend (versions.constants.ts), for the count line. */
-const MAX_UNNAMED = 20;
-const MAX_NAMED = 10;
 const FILTERS = ["all", "named"] as const;
 const MINUTE_MS = 60_000;
 
@@ -132,9 +132,9 @@ const countText = computed(() => {
   const named = list.filter((version) => version.name).length;
   return t("versions.count", {
     unnamed: list.length - named,
-    max: MAX_UNNAMED,
+    max: VERSION_LIMITS.unnamed,
     named,
-    maxNamed: MAX_NAMED,
+    maxNamed: VERSION_LIMITS.named,
   });
 });
 

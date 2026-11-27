@@ -122,20 +122,42 @@ function dropOldUnnamed(versions: Version[]): Version[] {
 }
 
 export type NameVersionResult =
-  { ok: true; history: VersionHistory } | { ok: false; reason: "notFound" | "tooManyNamed" };
+  | { ok: true; history: VersionHistory }
+  | { ok: false; reason: "notFound" | "tooManyNamed" | "wouldDrop" };
+
+/**
+ * Whether taking the name away would delete the version at once: MAX_UNNAMED_VERSIONS newer versions
+ * without a name exist, so it would be the oldest beyond the limit.
+ */
+export function wouldDropWhenUnnamed({
+  versions,
+  versionId,
+}: {
+  versions: readonly Version[];
+  versionId: string;
+}): boolean {
+  const index = versions.findIndex((version) => version.id === versionId);
+  if (index < 0) return false;
+
+  const newerUnnamed = versions.slice(index + 1).filter((version) => !version.name).length;
+  return newerUnnamed >= MAX_UNNAMED_VERSIONS;
+}
 
 /**
  * Gives a version a name, renames it, or takes the name away (`name` empty or null). A named version
- * no longer counts against MAX_UNNAMED_VERSIONS; taking the name away lets it drop out again.
+ * no longer counts against MAX_UNNAMED_VERSIONS; taking the name away lets it drop out again. When that
+ * would delete it at once, only with `allowDrop` (the user confirmed it), else "wouldDrop".
  */
 export function nameVersion({
   history,
   versionId,
   name,
+  allowDrop = false,
 }: {
   history: VersionHistory;
   versionId: string;
   name: string | null;
+  allowDrop?: boolean;
 }): NameVersionResult {
   const target = history.versions.find((version) => version.id === versionId);
   if (!target) return { ok: false, reason: "notFound" };
@@ -144,6 +166,11 @@ export function nameVersion({
   const namedCount = history.versions.filter((version) => version.name).length;
   if (cleanName && !target.name && namedCount >= MAX_NAMED_VERSIONS) {
     return { ok: false, reason: "tooManyNamed" };
+  }
+
+  const isUnnaming = !cleanName && Boolean(target.name);
+  if (isUnnaming && !allowDrop && wouldDropWhenUnnamed({ versions: history.versions, versionId })) {
+    return { ok: false, reason: "wouldDrop" };
   }
 
   const versions = history.versions.map((version) => {

@@ -599,11 +599,20 @@ as outside. 20 versions without a name per entry, the oldest drops out; at most 
   user?, name?, openUntil?, saves?, since?, restoredFrom? }], openVersionId }`, oldest first. `source`:
   `base` · `homeace` · `outside` · `offline` · `restore` (`ai` is reserved). An entry seen for the first
   time gets its `base` version now. `404 VERSIONS_UNSUPPORTED` for other kinds and YAML-only entries.
-- `PUT /api/versions/:entityId/:versionId/name` `{ name }` names (plain text, at most 40 characters),
-  renames, or with an empty/null name unnames a version (`VERSION_SAVED`). `400 VERSION_NAMES_FULL`
-  beyond 10 named, `404 VERSION_NOT_FOUND`.
+- `PUT /api/versions/:entityId/:versionId/name` `{ name, confirmDrop? }` names (plain text, at most 40
+  characters), renames, or with an empty/null name unnames a version (`VERSION_SAVED`). `400
+  VERSION_NAMES_FULL` beyond 10 named, `404 VERSION_NOT_FOUND`. Unnaming a version that would drop out at
+  once (20 newer ones without a name) needs `confirmDrop: true`, else `409 VERSION_WOULD_DROP` (`max`).
 - `POST /api/versions/:entityId/close` closes the open version (`VERSION_CLOSED`).
 - `POST /api/versions/:entityId/:versionId/restore` writes the version back to HA (the id of automations
   and scenes stays) and keeps it as a new `restore` version, so the state before stays in the list
   (`VERSION_RESTORED`). Entity IDs renamed in HomeAce Studio since that version are replaced by their
   current ones; the answer lists them as `renamed: [{ from, to, at }]`.
+- `GET /api/versions/trash` → `[{ kind, key, entityId, name, deletedAt, where, daysLeft, versionCount }]`:
+  deleted automations, scripts and scenes, kept 30 days with their versions ("Kürzlich gelöscht").
+  `where`: `homeace` · `outside`.
+- `POST /api/versions/trash/:kind/:key/restore` creates the entry in HA again with its old id and keeps a
+  `restore` version with `fromTrash` → `{ entityId, name }` (the entity ID HA gave it)
+  (`TRASH_RESTORED`, `404 TRASH_NOT_FOUND`). Both trash routes are declared before `:entityId`.
+
+More on the model, the trash and the UI: [features/versions.md](features/versions.md).

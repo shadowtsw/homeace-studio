@@ -116,6 +116,17 @@ export function useVersionLines({ entry }: { entry: Ref<Entry | null> }) {
     return `${day} ${clockTime({ iso, locale: settings.locale })}`;
   }
 
+  /** The same inside a sentence: "Version von heute 07:30", not "von Heute 07:30". */
+  function whenInText(iso: string): string {
+    const day = dayLabel({
+      iso,
+      now: new Date(),
+      locale: settings.locale,
+      texts: { today: t("versions.todayInText"), yesterday: t("versions.yesterdayInText") },
+    });
+    return `${day} ${clockTime({ iso, locale: settings.locale })}`;
+  }
+
   /** How a version is called in titles: its name, else its time. */
   function labelOf(version: Pick<Version, "at" | "name">): string {
     return version.name ? `„${version.name}“` : whenOf(version.at);
@@ -164,5 +175,5 @@ export function useVersionLines({ entry }: { entry: Ref<Entry | null> }) {
     return `${from} · ${text}`;
   }
 
-  return { linesFor, whenOf, labelOf, summaryOf };
+  return { linesFor, whenOf, whenInText, labelOf, summaryOf };
 }

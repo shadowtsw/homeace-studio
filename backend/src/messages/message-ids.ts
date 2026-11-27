@@ -97,6 +97,7 @@ export const MESSAGE_ID = {
   versionSaved: "VERSION_SAVED",
   versionRestored: "VERSION_RESTORED",
   versionClosed: "VERSION_CLOSED",
+  versionWouldDrop: "VERSION_WOULD_DROP",
   trashRestored: "TRASH_RESTORED",
   trashNotFound: "TRASH_NOT_FOUND",
 

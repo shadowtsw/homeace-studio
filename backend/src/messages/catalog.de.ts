@@ -88,6 +88,8 @@ export const CATALOG_DE: Catalog = {
   VERSION_SAVED: "Gespeichert.",
   VERSION_RESTORED: "Zurückgeholt. Der vorige Stand bleibt in den Versionen.",
   VERSION_CLOSED: "Abgeschlossen. Die nächste Änderung beginnt eine neue Version.",
+  VERSION_WOULD_DROP:
+    "Diese Version ist älter als die letzten {max} und würde gelöscht. Das geht nur nach deiner Bestätigung.",
   TRASH_RESTORED: "{name} ist wieder da, in Home Assistant neu angelegt.",
   TRASH_NOT_FOUND: "Das steht nicht mehr im Papierkorb.",
   FLOW_DELETED: "In Home Assistant gelöscht.",

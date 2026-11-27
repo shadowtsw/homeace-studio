@@ -48,4 +48,9 @@ export const PREFERENCES = {
   settingsTab: { storageKey: "homeace.settingsTab", scope: PREFERENCE_SCOPE.device },
   /** Which edition of the Preview note was opened here; a newer one shows the dot again. */
   previewNoteRead: { storageKey: "homeace.previewNoteRead", scope: PREFERENCE_SCOPE.device },
+  /** "Verstanden" on the card "So funktionieren Versionen". */
+  versionsGuideRead: {
+    storageKey: "homeace.versionsGuideRead",
+    scope: PREFERENCE_SCOPE.device,
+  },
 } as const satisfies Record<string, Preference>;

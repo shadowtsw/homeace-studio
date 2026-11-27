@@ -54,7 +54,11 @@ export const useVersionsStore = defineStore("versions", () => {
     if (wanted === view.ref.entityId) current.value = view;
   }
 
-  async function name(options: { versionId: string; name: string | null }): Promise<void> {
+  async function name(options: {
+    versionId: string;
+    name: string | null;
+    confirmDrop?: boolean;
+  }): Promise<void> {
     if (!wanted) return;
     keep(await nameVersion({ entityId: wanted, ...options }));
   }

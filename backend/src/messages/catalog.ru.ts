@@ -88,6 +88,8 @@ export const CATALOG_RU: Catalog = {
   VERSION_SAVED: "Сохранено.",
   VERSION_RESTORED: "Восстановлено. Предыдущее состояние остаётся в версиях.",
   VERSION_CLOSED: "Завершено. Следующее изменение начнёт новую версию.",
+  VERSION_WOULD_DROP:
+    "Эта версия старше последних {max} и была бы удалена. Это происходит только после вашего подтверждения.",
   TRASH_RESTORED: "{name} снова на месте, заново создано в Home Assistant.",
   TRASH_NOT_FOUND: "Этого больше нет в корзине.",
   FLOW_DELETED: "Удалено в Home Assistant.",

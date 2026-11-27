@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 
 import {
   BadRequestException,
+  ConflictException,
   Inject,
   Injectable,
   Logger,
@@ -29,6 +30,7 @@ import {
   CALL_SERVICE_EVENT,
   COMPARE_CONCURRENCY,
   MAX_NAMED_VERSIONS,
+  MAX_UNNAMED_VERSIONS,
   RELOAD_DOMAINS,
   RELOAD_EVENTS,
   RELOAD_SERVICE,
@@ -191,25 +193,30 @@ export class VersionsService implements OnModuleInit, OnApplicationBootstrap, On
   /**
    * Gives a version a name (kept beyond the limit), renames it, or takes the name away (null).
    *
-   * @throws NotFoundException `VERSION_NOT_FOUND`; BadRequestException `VERSION_NAMES_FULL`.
+   * @throws NotFoundException `VERSION_NOT_FOUND`; BadRequestException `VERSION_NAMES_FULL`;
+   *   ConflictException `VERSION_WOULD_DROP` (unnaming would delete it and `confirmDrop` is not set).
    */
   async name({
     entityId,
     versionId,
     name,
+    confirmDrop = false,
   }: {
     entityId: string;
     versionId: string;
     name: string | null;
+    confirmDrop?: boolean;
   }): Promise<VersionsView> {
     const ref = await this.requireRef(entityId);
     // Filled inside the queued change, read after it; an object, so TypeScript does not narrow it.
-    const outcome: { failure: "notFound" | "tooManyNamed" | null } = { failure: null };
+    const outcome: { failure: "notFound" | "tooManyNamed" | "wouldDrop" | null } = {
+      failure: null,
+    };
 
     const history = await this.versions.update({
       ref,
       change: (current) => {
-        const result = nameVersion({ history: current, versionId, name });
+        const result = nameVersion({ history: current, versionId, name, allowDrop: confirmDrop });
         if (result.ok) return result.history;
 
         outcome.failure = result.reason;
@@ -218,6 +225,14 @@ export class VersionsService implements OnModuleInit, OnApplicationBootstrap, On
     });
 
     if (outcome.failure === "notFound") throw versionNotFound(versionId);
+    if (outcome.failure === "wouldDrop") {
+      throw new ConflictException(
+        apiError({
+          message: MESSAGE_ID.versionWouldDrop,
+          details: { params: { max: MAX_UNNAMED_VERSIONS } },
+        }),
+      );
+    }
     if (outcome.failure === "tooManyNamed") {
       throw new BadRequestException(
         apiError({

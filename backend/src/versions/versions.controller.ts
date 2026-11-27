@@ -72,7 +72,12 @@ export class VersionsController {
     @Param("versionId") versionId: string,
     @Body() dto: NameVersionDto,
   ): Promise<VersionsView> {
-    return this.versions.name({ entityId, versionId, name: dto.name ?? null });
+    return this.versions.name({
+      entityId,
+      versionId,
+      name: dto.name ?? null,
+      confirmDrop: dto.confirmDrop === true,
+    });
   }
 
   @Post(":entityId/close")

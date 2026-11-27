@@ -4,12 +4,7 @@
     class="compare-rows"
     :class="{ 'compare-rows--restore': isRestore }"
   >
-    <div class="compare-rows__head">{{ olderTitle }}</div>
-    <div class="compare-rows__head compare-rows__right">
-      <!-- "Jetzt" always right, always with the same tag (owner rule) -->
-      <span v-if="isNowRight" class="compare-rows__now">{{ t("versions.compare.nowTag") }}</span>
-      <template v-else>{{ newerTitle }}</template>
-    </div>
+    <!-- The head with both sides' names sits above, in VersionCompareHead -->
     <template v-for="(row, index) in rows" :key="index">
       <div v-for="side in SIDES" :key="side" :class="cellClass(row, side)">
         <template v-if="lineOf(row, side)">
@@ -31,7 +26,7 @@
 
   <div v-else class="compare-list">
     <div v-for="(row, index) in changed" :key="index">
-      <b>{{ t(`versions.section.${row.section}`) }}:</b>
+      <b :class="`compare-rows--${row.section}`">{{ t(`versions.section.${row.section}`) }}:</b>
       <template v-if="row.change === 'changed'">
         {{ row.older?.title }} <s>{{ (isRestore ? row.newer : row.older)?.text }}</s> →
         {{ (isRestore ? row.older : row.newer)?.text }}
@@ -60,9 +55,6 @@ const props = defineProps<{
   show: "sideBySide" | "changesOnly";
   /** Restoring: the older side comes back, so "only older" means "kommt dazu". */
   isRestore: boolean;
-  isNowRight: boolean;
-  olderTitle: string;
-  newerTitle: string;
   /** Short side names for one column on phones. */
   olderSide: string;
   newerSide: string;
@@ -111,27 +103,8 @@ const signClass = (row: LineRow): string =>
   font-size: 13px;
 }
 
-.compare-rows__head {
-  padding: 8px 12px;
-  border-bottom: 1px solid var(--line);
-  background: var(--surface-2);
-  color: var(--muted);
-  font-size: 11.5px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
 .compare-rows__right {
   border-left: 1px solid var(--line);
-}
-
-.compare-rows__now {
-  margin-left: 6px;
-  padding: 1px 6px;
-  border-radius: 5px;
-  background: var(--accent-soft);
-  color: var(--accent);
 }
 
 .compare-rows__cell {
@@ -163,9 +136,22 @@ const signClass = (row: LineRow): string =>
   letter-spacing: 0.3em;
 }
 
+/* Each section in its flow colour, as in the editor; the colours follow the theme. */
+.compare-rows--trigger {
+  --section-color: var(--flow-when);
+}
+
+.compare-rows--condition {
+  --section-color: var(--flow-if);
+}
+
+.compare-rows--action {
+  --section-color: var(--flow-then);
+}
+
 .compare-rows__kw {
   min-width: 46px;
-  color: var(--muted);
+  color: var(--section-color, var(--muted));
   font-size: 10.5px;
   font-weight: 700;
   text-transform: uppercase;
@@ -177,6 +163,7 @@ const signClass = (row: LineRow): string =>
   align-items: center;
   gap: 5px;
   font-weight: 600;
+  color: var(--section-color, inherit);
 }
 
 .compare-rows__txt {
@@ -204,6 +191,10 @@ const signClass = (row: LineRow): string =>
   display: grid;
   gap: 6px;
   font-size: 13px;
+}
+
+.compare-list b {
+  color: var(--section-color, inherit);
 }
 
 .compare-list > div {
@@ -234,7 +225,6 @@ const signClass = (row: LineRow): string =>
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .compare-rows__head,
   .compare-rows__gap,
   .compare-rows__same.compare-rows__right {
     display: none;

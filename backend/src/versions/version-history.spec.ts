@@ -131,6 +131,35 @@ describe("nameVersion", () => {
     expect(unnamed.history.versions[0].name).toBeUndefined();
   });
 
+  it("asks before taking the name of a version that would drop out at once", () => {
+    const ids = idsFrom("v");
+    let history = add(EMPTY, { brightness: 0, source: VERSION_SOURCE.base, now: T0, newId: ids });
+    const named = nameVersion({ history, versionId: "v1", name: "läuft stabil" });
+    if (!named.ok) throw new Error("naming failed");
+    history = named.history;
+    for (let step = 1; step <= MAX_UNNAMED_VERSIONS; step++) {
+      history = add(history, {
+        brightness: step,
+        source: VERSION_SOURCE.outside,
+        now: T0 + step * MINUTE,
+        newId: ids,
+      });
+    }
+
+    expect(nameVersion({ history, versionId: "v1", name: null })).toEqual({
+      ok: false,
+      reason: "wouldDrop",
+    });
+    const confirmed = nameVersion({ history, versionId: "v1", name: null, allowDrop: true });
+    if (!confirmed.ok) throw new Error("unnaming failed");
+    expect(confirmed.history.versions.some((version) => version.id === "v1")).toBe(false);
+
+    // A younger one becomes a normal version again without a question
+    const younger = nameVersion({ history, versionId: "v3", name: "neu" });
+    if (!younger.ok) throw new Error("naming failed");
+    expect(nameVersion({ history: younger.history, versionId: "v3", name: null }).ok).toBe(true);
+  });
+
   it("refuses a name beyond the limit and unknown versions", () => {
     const ids = idsFrom("v");
     let history = EMPTY;

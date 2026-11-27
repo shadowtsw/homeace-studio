@@ -44,18 +44,25 @@ export function fetchVersions(entityId: string): Promise<VersionsView> {
   return apiFetch<VersionsView>({ path: base(entityId) });
 }
 
-export type NameVersionOptions = { entityId: string; versionId: string; name: string | null };
+export type NameVersionOptions = {
+  entityId: string;
+  versionId: string;
+  name: string | null;
+  /** Taking the name away deletes the version at once; the user confirmed that. */
+  confirmDrop?: boolean;
+};
 
 /** Names, renames or (null) unnames a version. */
 export function nameVersion({
   entityId,
   versionId,
   name,
+  confirmDrop,
 }: NameVersionOptions): Promise<VersionsView> {
   return apiSend<VersionsView>({
     method: "PUT",
     path: `${base(entityId)}/${encodeURIComponent(versionId)}/name`,
-    body: { name },
+    body: { name, confirmDrop },
   });
 }
 

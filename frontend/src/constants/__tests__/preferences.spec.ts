@@ -33,6 +33,7 @@ describe("PREFERENCES", () => {
       "paneWidths",
       "previewNoteRead",
       "settingsTab",
+      "versionsGuideRead",
     ]);
   });
 
