@@ -45,6 +45,27 @@ function ensureDevice({ ha, name, areaId, parentId, info }: EnsureDeviceOptions)
   return device;
 }
 
+type EnsureEntityDeviceOptions = { ha: FakeHaData; entity: DemoEntity };
+
+/** The parent device an entity's device hangs below, if it names one. */
+function ensureParentDevice({ ha, entity }: EnsureEntityDeviceOptions): HaDevice | null {
+  if (!entity.parentDevice) return null;
+
+  return ensureDevice({ ha, name: entity.parentDevice, areaId: entity.areaId ?? null });
+}
+
+/** The entity's own device; below a parent it takes no area of its own. */
+function ensureOwnDevice({
+  ha,
+  entity,
+  parent,
+}: EnsureEntityDeviceOptions & { parent: HaDevice | null }): HaDevice | null {
+  if (!entity.device) return null;
+
+  const areaId = parent ? null : (entity.areaId ?? null);
+  return ensureDevice({ ha, name: entity.device, areaId, parentId: parent?.id, info: entity });
+}
+
 /** Adds an entity like HA: registry entry (not for state-only ones), state, folder, device, config. */
 export function addEntity({ ha, entity }: { ha: FakeHaData; entity: DemoEntity }): void {
   const configEntryId = entity.configEntryId ?? null;
@@ -57,19 +78,8 @@ export function addEntity({ ha, entity }: { ha: FakeHaData; entity: DemoEntity }
   }
 
   // Like HA: a device carries the area, its entities inherit it.
-  const areaId = entity.areaId ?? null;
-  const parent = entity.parentDevice
-    ? ensureDevice({ ha, name: entity.parentDevice, areaId })
-    : null;
-  const device = entity.device
-    ? ensureDevice({
-        ha,
-        name: entity.device,
-        areaId: parent ? null : areaId,
-        parentId: parent?.id,
-        info: entity,
-      })
-    : null;
+  const parent = ensureParentDevice({ ha, entity });
+  const device = ensureOwnDevice({ ha, entity, parent });
 
   if (!entity.isStateOnly)
     ha.registry.set(entity.entityId, {
