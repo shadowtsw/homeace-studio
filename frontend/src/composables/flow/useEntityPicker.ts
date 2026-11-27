@@ -130,9 +130,13 @@ export function useEntityPicker({ picker, query }: UseEntityPickerOptions) {
     openCriterion.value = openCriterion.value === key ? null : key;
   }
 
-  /** One value per criterion, like radio buttons: another chip switches, the chosen one clears. */
+  /**
+   * One value per criterion, like radio buttons: another chip switches, the chosen one clears.
+   * Choosing closes the values, so the results below get the room (the chip still shows the choice).
+   */
   function toggleCriterion({ key, value }: { key: CriterionKey; value: string }): void {
     criteria[key] = criteria[key] === value ? null : value;
+    if (criteria[key] !== null) openCriterion.value = null;
   }
 
   function resetCriteria(): void {

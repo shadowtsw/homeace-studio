@@ -45,7 +45,7 @@ const emit = defineEmits<{ pick: [deviceId: string] }>();
 /** Device kinds a scene editor offers to add; others can be in a scene and stay as they are. */
 const SCENE_DOMAINS = ["light", "switch", "cover", "climate", "fan", "media_player"];
 /** Size of the picker and its distance to the button and the window edges. */
-const PANEL = { width: 460, maxHeight: 460, minBelow: 320, gap: 6, margin: 12 };
+const PANEL = { width: 460, height: 460, gap: 6, margin: 12 };
 
 const { t } = useI18n();
 const lookups = useLookupsStore();
@@ -59,8 +59,8 @@ const panel = useTemplateRef("panel");
 onClickOutside(root, () => (isOpen.value = false));
 
 /**
- * Places the picker next to its button within the window: below, or above when there is more room
- * there, never taller than the room it has (it used to run out of the window at the bottom).
+ * Places the picker next to its button within the window: below when it fits there, otherwise on the
+ * side with more room, never taller than that room. Its height stays the same while it is open.
  */
 function place(): void {
   // Room below and above the button
@@ -69,7 +69,7 @@ function place(): void {
 
   const below = window.innerHeight - box.bottom - PANEL.gap - PANEL.margin;
   const above = box.top - PANEL.gap - PANEL.margin;
-  const opensUp = below < PANEL.minBelow && above > below;
+  const opensUp = below < PANEL.height && above > below;
 
   // Width and left edge, kept inside the window
   const width = Math.min(PANEL.width, window.innerWidth - 2 * PANEL.margin);
@@ -79,7 +79,7 @@ function place(): void {
   panelStyle.value = {
     left: `${left}px`,
     width: `${width}px`,
-    maxHeight: `${Math.min(PANEL.maxHeight, opensUp ? above : below)}px`,
+    height: `${Math.min(PANEL.height, opensUp ? above : below)}px`,
     ...(opensUp
       ? { bottom: `${window.innerHeight - box.top + PANEL.gap}px` }
       : { top: `${box.bottom + PANEL.gap}px` }),
@@ -124,6 +124,7 @@ useEventListener(window, "resize", () => (isOpen.value = false));
   z-index: 50;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
   padding: 8px;
   border-radius: 12px;
   border: 1px solid var(--line-strong);
