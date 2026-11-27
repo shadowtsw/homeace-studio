@@ -8,7 +8,22 @@ const es: MessageSchema = {
   app: {
     tagline: "Automatizaciones · Scripts · Escenas · Ayudantes",
     preview: "Vista previa",
-    previewHint: "Esta versión está terminada, pero aún no se ha anunciado. ¡Gracias por probarla!",
+    previewAbout: "¿Qué es la vista previa?",
+  },
+  /** The note behind the "Preview" mark of the Preview app. */
+  previewNote: {
+    title: "Te damos la bienvenida a la vista previa",
+    welcome: "¡Hola! Si has llegado hasta aquí, espero de verdad haber despertado tu curiosidad.",
+    purpose:
+      "Esta vista previa se creó para dar a la próxima versión un periodo de prueba. A partir de la v0.15.0, la vista previa es siempre la próxima versión terminada, solo que sin anuncio. Así formas parte de quienes ya pueden usar y probar a fondo las novedades.",
+    release:
+      "Todo lo que usas aquí llega tal cual a la versión publicada. La vista previa solo recibe correcciones y ajustes visuales.",
+    storage:
+      "Lo que cambies en automatizaciones, scripts, escenas y ayudantes va directamente a Home Assistant y vale en todas partes. Los favoritos, las notas y los colores de carpetas los guarda la vista previa por separado de la aplicación normal.",
+    feedback:
+      "Si notas algo, coméntalo con “Dar tu opinión”. ¡Muchas gracias y que disfrutes de HomeAce Studio!",
+    feedbackHint:
+      "“Dar tu opinión” abre un formulario preparado en GitHub con la versión ya indicada. La aplicación no envía nada.",
   },
   connection: {
     loading: "Cargando desde Home Assistant …",

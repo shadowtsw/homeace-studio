@@ -28,6 +28,7 @@ describe("PREFERENCES", () => {
       "listScopes",
       "navMode",
       "paneWidths",
+      "previewNoteRead",
       "settingsTab",
     ]);
   });

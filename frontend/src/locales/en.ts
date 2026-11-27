@@ -4,7 +4,22 @@ const en: MessageSchema = {
   app: {
     tagline: "Automations · Scripts · Scenes · Helpers",
     preview: "Preview",
-    previewHint: "This version is finished but not announced yet. Thanks for trying it!",
+    previewAbout: "What is the Preview?",
+  },
+  /** The note behind the "Preview" mark of the Preview app. */
+  previewNote: {
+    title: "Welcome to the Preview",
+    welcome: "Hello! If you made it here, I really hope I managed to spark your curiosity.",
+    purpose:
+      "This Preview was created to give the upcoming release a testing period. From v0.15.0 on, the Preview is always the finished next release, just without an announcement. That makes you one of the users who can already fully use and test what’s new.",
+    release:
+      "Everything you use here goes into the release exactly as it is. The Preview only gets fixes and visual adjustments.",
+    storage:
+      "What you change in automations, scripts, scenes and helpers goes straight into Home Assistant and applies everywhere. Favorites, notes and folder colors are kept by the Preview separately from the normal app.",
+    feedback:
+      "If you notice anything, feel free to report it via “Give feedback”. Thank you, and have fun with HomeAce Studio!",
+    feedbackHint:
+      "“Give feedback” opens a prepared form on GitHub with the version filled in. Nothing is sent from the app.",
   },
   connection: {
     loading: "Loading from Home Assistant …",

@@ -3,7 +3,23 @@ export default {
   app: {
     tagline: "Automationen · Skripte · Szenen · Helfer",
     preview: "Preview",
-    previewHint: "Diese Version ist fertig, aber noch nicht angekündigt. Danke fürs Ausprobieren!",
+    previewAbout: "Was ist die Preview?",
+  },
+  /** The note behind the "Preview" mark of the Preview app. */
+  previewNote: {
+    title: "Willkommen in der Preview",
+    welcome:
+      "Hallo! Wenn du es hierher geschafft hast, hoffe ich doch sehr, dass ich deine Neugier wecken konnte.",
+    purpose:
+      "Diese Preview wurde erstellt, um einen Testzeitraum für das bevorstehende Release zu ermöglichen. Ab v0.15.0 ist die Preview immer das fertige nächste Release, nur noch ohne Ankündigung. Damit gehörst du zu den Nutzern, die die Neuerungen schon vollständig nutzen und testen können.",
+    release:
+      "Alles, was du hier nutzt, kommt genau so ins Release. In der Preview gibt es nur noch Fixes und optische Anpassungen.",
+    storage:
+      "Was du an Automationen, Skripten, Szenen und Helfern änderst, landet direkt in Home Assistant und gilt überall. Favoriten, Notizen und Ordnerfarben merkt sich die Preview getrennt von der normalen App.",
+    feedback:
+      "Falls dir etwas auffällt, melde es gern über „Feedback geben“. Vielen Dank und viel Spaß mit HomeAce Studio!",
+    feedbackHint:
+      "„Feedback geben“ öffnet ein vorbereitetes Formular auf GitHub, die Version ist schon eingetragen. Aus der App wird nichts gesendet.",
   },
   connection: {
     loading: "Lade aus Home Assistant …",

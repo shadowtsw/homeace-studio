@@ -52,6 +52,8 @@ code,
   font-weight: 600;
   font-size: 13.5px;
   white-space: nowrap;
+  /* Links that look like buttons ("Feedback geben", "Alle Änderungen") are not underlined. */
+  text-decoration: none;
 }
 
 .btn:hover {
