@@ -531,7 +531,7 @@ through ingress; locally and in the demo there is no user.
 - Errors: `PREFERENCES_NO_USER` (400, no HA user), `PREFERENCE_INVALID` (400, bad name or value).
 - Kept in the overlay under `userPreferences[<HA user ID>]`.
 
-## Own themes per HA user: GET /api/themes · POST /api/themes · DELETE /api/themes/:id
+## Own themes per HA user: GET /api/themes · POST /api/themes · PUT /api/themes/:id · DELETE /api/themes/:id
 
 Themes the user made or imported ([features/themes.md](features/themes.md)). The user comes from the
 ingress headers as for the settings, never from the body. Without a HA user (locally, in the demo)
@@ -542,6 +542,9 @@ own themes stay in the browser and these endpoints answer `THEMES_NO_USER`.
 - `POST` `{ theme }` → `{ id, themes }`. The theme goes through the same check as in the browser's gate
   (`checkThemeValue`, `core/themes/checkTheme.ts`): only known fields, colours only as `#rrggbb`, names
   as plain text. A name another own theme has gets " (2)"; nothing is overwritten.
+- `PUT /:id` `{ theme }` → the user's list. The editor saved an own theme: checked the same way, it
+  keeps its id (so a chosen theme stays chosen) and its place; its name stays unique among the user's
+  other themes.
 - `DELETE /:id` → the user's list without it.
 - Errors: `THEMES_NO_USER` (400), `THEME_INVALID` (400, no usable theme), `THEME_LIMIT_REACHED` (409,
   at most 20 per user, `params.count`), `THEME_NOT_FOUND` (404, also for another user's id).

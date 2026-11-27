@@ -8,6 +8,7 @@ import {
 
 import { apiError } from "../common/api/api-response";
 import { checkThemeValue } from "../core/themes/checkTheme";
+import type { CheckedTheme } from "../core/themes/themeFormat";
 import {
   MAX_OWN_THEMES,
   newOwnThemeId,
@@ -28,6 +29,8 @@ export type CreateOptions = {
   /** The theme in the file format, from the request body: checked again here. */
   theme: unknown;
 };
+
+export type UpdateOptions = CreateOptions & { id: string };
 
 export type CreatedTheme = {
   id: string;
@@ -58,10 +61,7 @@ export class ThemesService {
   async create({ user, theme }: CreateOptions): Promise<CreatedTheme> {
     // Check the theme like a file from outside
     const knownUser = requireUser(user);
-    const result = checkThemeValue(theme);
-    if (!result.isValid || !result.theme.name) {
-      throw new BadRequestException(apiError({ message: MESSAGE_ID.themeInvalid }));
-    }
+    const checked = requireValidTheme(theme);
 
     // Add it in one step of the overlay queue (a failed step does not block the next one)
     const id = newOwnThemeId();
@@ -70,13 +70,40 @@ export class ThemesService {
       if (ownThemes.length >= MAX_OWN_THEMES) throw limitReached();
 
       const takenNames = ownThemes.map((ownTheme) => ownTheme.theme.name);
-      const name = uniqueThemeName({ name: result.theme.name, takenNames });
-      const added: OwnTheme = { id, theme: { ...result.theme, name } };
+      const name = uniqueThemeName({ name: checked.name, takenNames });
+      const added: OwnTheme = { id, theme: { ...checked, name } };
       const withAdded = [...ownThemes, added];
       return withOwnThemes({ overlay: current, user: knownUser, ownThemes: withAdded });
     });
 
     return { id, themes: ownThemesOf({ overlay, user: knownUser }).map(ownThemeRecord) };
+  }
+
+  /**
+   * Replaces an own theme (the editor saved it). Its name stays unique among the user's other
+   * themes; the id stays, so a chosen theme stays chosen.
+   *
+   * @returns The user's whole list.
+   */
+  async update({ user, id, theme }: UpdateOptions): Promise<OwnThemeRecord[]> {
+    // Check the theme like a file from outside
+    const knownUser = requireUser(user);
+    const checked = requireValidTheme(theme);
+
+    // Replace it in one step of the overlay queue
+    const overlay = await this.overlay.update((current) => {
+      const ownThemes = ownThemesOf({ overlay: current, user: knownUser });
+      const others = ownThemes.filter((ownTheme) => ownTheme.id !== id);
+      if (others.length === ownThemes.length) throw notFound();
+
+      const takenNames = others.map((ownTheme) => ownTheme.theme.name);
+      const name = uniqueThemeName({ name: checked.name, takenNames });
+      const replacement: OwnTheme = { id, theme: { ...checked, name } };
+      const replaced = ownThemes.map((ownTheme) => (ownTheme.id === id ? replacement : ownTheme));
+      return withOwnThemes({ overlay: current, user: knownUser, ownThemes: replaced });
+    });
+
+    return ownThemesOf({ overlay, user: knownUser }).map(ownThemeRecord);
   }
 
   /** @returns The user's list without the theme. */
@@ -86,9 +113,7 @@ export class ThemesService {
     const overlay = await this.overlay.update((current) => {
       const ownThemes = ownThemesOf({ overlay: current, user: knownUser });
       const kept = ownThemes.filter((ownTheme) => ownTheme.id !== id);
-      if (kept.length === ownThemes.length) {
-        throw new NotFoundException(apiError({ message: MESSAGE_ID.themeNotFound }));
-      }
+      if (kept.length === ownThemes.length) throw notFound();
 
       return withOwnThemes({ overlay: current, user: knownUser, ownThemes: kept });
     });
@@ -114,6 +139,19 @@ function withOwnThemes({
   const records = ownThemes.map(ownThemeRecord);
 
   return { ...overlay, userThemes: { ...overlay.userThemes, [user.id]: records } };
+}
+
+/** The checked theme; a request with no usable theme (or no name) is refused. */
+function requireValidTheme(theme: unknown): CheckedTheme {
+  const result = checkThemeValue(theme);
+  if (!result.isValid || !result.theme.name) {
+    throw new BadRequestException(apiError({ message: MESSAGE_ID.themeInvalid }));
+  }
+  return result.theme;
+}
+
+function notFound(): NotFoundException {
+  return new NotFoundException(apiError({ message: MESSAGE_ID.themeNotFound }));
 }
 
 function limitReached(): ConflictException {

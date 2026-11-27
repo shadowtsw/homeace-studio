@@ -48,6 +48,9 @@
       :hint="ownThemesHint"
       :preference="PREFERENCES.theme"
     >
+      <button class="btn btn--sm" type="button" :disabled="ownThemes.isFull" @click="newTheme">
+        <span class="mdi mdi-plus" />{{ t("settings.appearance.editor.newTheme") }}
+      </button>
       <button
         class="btn btn--sm"
         type="button"
@@ -94,6 +97,20 @@
     <p v-else class="appearance__empty">{{ t("settings.appearance.noOwnThemes") }}</p>
   </div>
 
+  <!-- A draft left in the editor waits here until it is saved or dropped -->
+  <div v-if="themeEditor.draft" class="appearance__draft">
+    <span class="mdi mdi-pencil-outline" />
+    <span class="appearance__draft-text">
+      {{ t("settings.appearance.editor.draftNote", { name: draftName }) }}
+    </span>
+    <button class="btn btn--sm btn--primary" type="button" @click="themeEditor.resume()">
+      {{ t("settings.appearance.editor.continue") }}
+    </button>
+    <button class="btn btn--sm" type="button" @click="themeEditor.discard()">
+      {{ t("settings.appearance.editor.discard") }}
+    </button>
+  </div>
+
   <div class="appearance__actions">
     <ThemeActions />
   </div>
@@ -108,9 +125,10 @@ import { PREFERENCES } from "@/constants/preferences";
 import { MAX_OWN_THEMES } from "@/core/themes/ownThemes";
 import { COLOR_MODE, type ThemeTokens } from "@/core/themes/themeFormat";
 import { useOwnThemesStore } from "@/stores/ownThemesStore";
+import { useThemeEditorStore } from "@/stores/themeEditorStore";
 import { useThemeImportStore } from "@/stores/themeImportStore";
 import { COLOR_MODE_CHOICES, useThemeStore } from "@/stores/themeStore";
-import { BUILT_IN_THEMES, STANDARD_TOKENS } from "@/utils/themes/builtInThemes";
+import { BUILT_IN_THEMES, STANDARD_THEME, STANDARD_TOKENS } from "@/utils/themes/builtInThemes";
 
 import ThemeActions from "./appearance/ThemeActions.vue";
 import ThemeCard from "./appearance/ThemeCard.vue";
@@ -128,6 +146,7 @@ const { t } = useI18n();
 const themeStore = useThemeStore();
 const ownThemes = useOwnThemesStore();
 const themeImport = useThemeImportStore();
+const themeEditor = useThemeEditorStore();
 const { themeName, themeNote } = useThemeTexts();
 const fileInput = useTemplateRef<HTMLInputElement>("fileInput");
 
@@ -151,6 +170,16 @@ const previewTokens = computed<Record<string, ThemeTokens>>(() => {
   const entries = shownThemes.map((theme) => [theme.id, themeStore.previewTokens(theme)]);
   return Object.fromEntries(entries);
 });
+
+const draftName = computed(
+  () => themeEditor.draft?.name || t("settings.appearance.editor.defaultName"),
+);
+
+/** "Neues Theme": a draft from Standard; another start can be picked in the editor. */
+function newTheme(): void {
+  const name = t("settings.appearance.editor.defaultName");
+  void themeEditor.open({ kind: "new", theme: STANDARD_THEME, name });
+}
 
 /** "Datei importieren": the chosen file goes straight into the gate, on the import page. */
 async function checkChosenFile(event: Event): Promise<void> {
@@ -209,6 +238,26 @@ async function checkChosenFile(event: Event): Promise<void> {
 
 .appearance__file {
   display: none;
+}
+
+.appearance__draft {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--accent-soft);
+}
+
+.appearance__draft .mdi {
+  color: var(--accent);
+}
+
+.appearance__draft-text {
+  flex: 1 1 180px;
+  font-size: 13px;
 }
 
 .appearance__actions {

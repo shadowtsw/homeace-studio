@@ -83,6 +83,37 @@ file holds only the seven colours per version, so a shared "Standard" would come
 its exact values. For a ready-made theme the bar under the cards only says "Fertiges Theme"; a copy to
 change comes with the editor ("Als Kopie bearbeiten").
 
+## Editor
+
+A page below "Aussehen" (`SETTINGS_SUB_PAGE.themeEditor`, a step in the history like the import), with
+the action bar (phone preview · Abbrechen · Speichern) fixed at the bottom.
+
+- **Ways in**: "Neues Theme" (a draft from Standard; "Ausgehend von" picks another ready-made start),
+  "Als Kopie bearbeiten" on a ready-made theme ("Wald (Kopie)"), "Bearbeiten" on an own one. Ready-made
+  themes are never changed themselves. Saving adds a new theme or replaces the own one in place
+  (`PUT /api/themes/:id`, checked again, keeps its id); names stay unique with " (2)".
+- **Fields** (`ThemeEditorFields`, `ThemeColorField`): four base colours and the three flow colours per
+  version, each with a colour picker and its code; a typed code counts only as a full `#rrggbb`.
+  "Hell bearbeiten / Dunkel bearbeiten" picks the version; a copy of a dark-only theme has only dark.
+- **"Dunkel automatisch ableiten"** (`deriveDarkColors`): on, the dark fields show the derived values
+  and cannot be changed; off, the hand-made dark version starts from the derived one. The file format
+  has no field for it: a theme opens with it on when its dark version is exactly the derived one. A new
+  theme from Standard starts with it on, a copy of another ready-made theme keeps its crafted dark.
+- **Contrast warnings** (`utils/themes/contrastChecks.ts`): text on background and on surfaces (reads
+  well from 4.5 : 1), accent on surfaces (3 : 1), for the version being edited; below the floor
+  "unlesbar, wird angepasst". "Vorschlag übernehmen" moves the lightness until it reads well (text
+  against both backgrounds). Saving stays allowed; the toast says what the floor adjusts.
+- **Previews** show only the draft (the page keeps its theme, so the window stays readable):
+  `ThemePreview` (list row, flow sections, buttons, switches, hint) and the **phone preview**
+  `ThemePhonePreview` (owner's variant B): beside the window from 1260 px
+  (`PHONE_PREVIEW_SIDE_MEDIA_QUERY`, the window keeps 880 px and moves left), narrower it takes the normal
+  preview's place, not offered in the list layout. Both are drawings in the app's look, not the live
+  app: a frame with the real app would share this browser's storage and need a second live connection.
+- **Draft** (`stores/themeEditorStore.ts`): kept until "Speichern" or "Verwerfen"; the back gesture or
+  another tab leave it, "Aussehen" then offers "Weiter bearbeiten · Verwerfen". "Abbrechen" asks once
+  when something changed. Closing the settings window drops it. Fine-tuned values of an imported theme
+  stay as they are (no UI yet).
+
 ## Where what lives
 
 | What | Where |
@@ -96,10 +127,11 @@ change comes with the editor ("Als Kopie bearbeiten").
 | Standard's exact values, the ready-made themes, version of a theme | `frontend/src/utils/themes/builtInThemes.ts` |
 | Gate (Web Worker, size, time limit), what the floor will do | `frontend/src/utils/themes/themeGate.ts`, `themeCheck.worker.ts`, `floorReport.ts` |
 | Chosen theme, brightness, applying, escape hatch | `frontend/src/stores/themeStore.ts` |
-| Own themes, import steps, copy page text | `frontend/src/stores/ownThemesStore.ts`, `themeImportStore.ts` |
-| Page "Aussehen", cards, actions, import and copy pages, report | `frontend/src/components/settings/SettingsAppearanceTab.vue`, `components/settings/appearance/` |
-| Names, notes, report texts | `settings.appearance.*` in `frontend/src/locales/*.ts`, `composables/texts/useThemeTexts.ts` |
-| Backend: list, create (checked again), delete | `backend/src/themes/` |
+| Own themes, import steps, copy page text, editor draft | `frontend/src/stores/ownThemesStore.ts`, `themeImportStore.ts`, `themeEditorStore.ts` |
+| Contrast warnings and suggestions of the editor | `frontend/src/utils/themes/contrastChecks.ts` |
+| Page "Aussehen", cards, actions, import, copy and editor pages, previews, report | `frontend/src/components/settings/SettingsAppearanceTab.vue`, `components/settings/appearance/` |
+| Names, notes, report and editor texts | `settings.appearance.*` in `frontend/src/locales/*.ts`, `composables/texts/useThemeTexts.ts` |
+| Backend: list, create, replace (checked again), delete | `backend/src/themes/` |
 
 ## Rules and pitfalls
 
@@ -116,4 +148,4 @@ change comes with the editor ("Als Kopie bearbeiten").
 
 ## Still to come in 0.15
 
-The editor with the phone preview (package 4), "Wie mein HA" (package 5).
+"Wie mein HA" with "Als eigenes Theme übernehmen" (package 5).

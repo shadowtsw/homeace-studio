@@ -5,6 +5,9 @@
       <small>{{ hint }}</small>
     </span>
     <template v-if="isOwn">
+      <button class="btn btn--sm" type="button" @click="editOwn">
+        <span class="mdi mdi-palette-outline" />{{ t("settings.appearance.editor.editOwn") }}
+      </button>
       <button class="btn btn--sm" type="button" @click="sharing.exportFile(themeStore.theme)">
         <span class="mdi mdi-download-outline" />{{ t("settings.appearance.export") }}
       </button>
@@ -15,6 +18,9 @@
         <span class="mdi mdi-delete-outline" />{{ t("settings.appearance.delete") }}
       </button>
     </template>
+    <button v-else class="btn btn--sm" type="button" @click="editCopy">
+      <span class="mdi mdi-content-duplicate" />{{ t("settings.appearance.editor.editCopy") }}
+    </button>
   </div>
 
   <ConfirmDialog
@@ -37,14 +43,15 @@ import { useThemeTexts } from "@/composables/texts/useThemeTexts";
 import { useThemeSharing } from "@/composables/useThemeSharing";
 import { useMessagesStore } from "@/stores/messagesStore";
 import { useOwnThemesStore } from "@/stores/ownThemesStore";
+import { useThemeEditorStore } from "@/stores/themeEditorStore";
 import { useThemeStore } from "@/stores/themeStore";
 import { useToastStore } from "@/stores/toastStore";
 import { STANDARD_THEME_ID } from "@/utils/themes/builtInThemes";
 
 /**
- * What can be done with the chosen theme. Own ones: share as a file or as text, delete. Ready-made
- * ones are not shared (owner's decision 2026-11-27): everyone has them already, and a file holds
- * only the seven colours, not Standard's exact values. A copy to change comes with the editor.
+ * What can be done with the chosen theme. Own ones: edit, share as a file or as text, delete.
+ * Ready-made ones are only edited as a copy; they are not shared (owner's decision 2026-11-27):
+ * everyone has them already, and a file holds only the seven colours, not Standard's exact values.
  */
 const { t } = useI18n();
 const themeStore = useThemeStore();
@@ -52,6 +59,7 @@ const ownThemes = useOwnThemesStore();
 const messages = useMessagesStore();
 const toasts = useToastStore();
 const sharing = useThemeSharing();
+const themeEditor = useThemeEditorStore();
 const { themeName } = useThemeTexts();
 
 const isConfirmingDelete = ref(false);
@@ -61,6 +69,16 @@ const hintKey = computed(() =>
   isOwn.value ? "settings.appearance.ownHint" : "settings.appearance.readyMadeHint",
 );
 const hint = computed(() => t(hintKey.value));
+
+function editOwn(): void {
+  void themeEditor.open({ kind: "edit", theme: themeStore.theme });
+}
+
+/** "Als Kopie bearbeiten": a ready-made theme is never changed itself. */
+function editCopy(): void {
+  const name = t("settings.appearance.editor.copyName", { name: themeName(themeStore.theme) });
+  void themeEditor.open({ kind: "new", theme: themeStore.theme, name });
+}
 
 async function deleteTheme(): Promise<void> {
   const name = themeName(themeStore.theme);

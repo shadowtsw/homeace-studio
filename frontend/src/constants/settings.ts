@@ -31,12 +31,20 @@ export const SETTINGS_TABS: readonly { tab: SettingsTab; icon: string }[] = [
 export const SETTINGS_LIST_MEDIA_QUERY = "(max-width: 820px)";
 
 /**
+ * From this width the editor's phone preview stands next to the settings window (owner's variant
+ * B); narrower, it takes the place of the normal preview inside the editor.
+ */
+export const PHONE_PREVIEW_SIDE_MEDIA_QUERY = "(min-width: 1260px)";
+
+/**
  * Pages below a section, each a step of its own (the back gesture leads back to the section): the
- * theme import, and the text of a theme where copying to the clipboard is not allowed.
+ * theme import, the text of a theme where copying to the clipboard is not allowed, and the theme
+ * editor.
  */
 export const SETTINGS_SUB_PAGE = {
   themeImport: "themeImport",
   themeCopy: "themeCopy",
+  themeEditor: "themeEditor",
 } as const;
 
 export type SettingsSubPage = (typeof SETTINGS_SUB_PAGE)[keyof typeof SETTINGS_SUB_PAGE];
@@ -45,6 +53,7 @@ export type SettingsSubPage = (typeof SETTINGS_SUB_PAGE)[keyof typeof SETTINGS_S
 export const SUB_PAGE_SECTION: Record<SettingsSubPage, SettingsTab> = {
   themeImport: SETTINGS_TAB.appearance,
   themeCopy: SETTINGS_TAB.appearance,
+  themeEditor: SETTINGS_TAB.appearance,
 };
 
 /** Where users report a bug or suggest an idea. */

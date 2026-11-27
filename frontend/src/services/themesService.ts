@@ -1,6 +1,6 @@
 import type { ThemeFileValue } from "@/core/themes/themeFormat";
 
-import { apiFetch, apiPost } from "./api";
+import { apiFetch, apiPost, apiSend } from "./api";
 
 /**
  * Own themes of the HA user (docs/api.md). Every answer is `unknown` on purpose: the theme store
@@ -20,5 +20,20 @@ export function deleteOwnTheme(id: string): Promise<unknown> {
   return apiFetch<unknown>({
     path: `/themes/${encodeURIComponent(id)}`,
     options: { method: "DELETE" },
+  });
+}
+
+/** Replaces an own theme (the editor saved it); answers with the whole list. */
+export function updateOwnTheme({
+  id,
+  theme,
+}: {
+  id: string;
+  theme: ThemeFileValue;
+}): Promise<unknown> {
+  return apiSend<unknown>({
+    method: "PUT",
+    path: `/themes/${encodeURIComponent(id)}`,
+    body: { theme },
   });
 }

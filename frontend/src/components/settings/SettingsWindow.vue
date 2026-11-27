@@ -1,5 +1,10 @@
 <template>
-  <div class="settings-window" role="presentation" @click.self="settingsWindow.close()">
+  <div
+    class="settings-window"
+    :class="{ 'settings-window--with-side': isSidePhoneShown }"
+    role="presentation"
+    @click.self="settingsWindow.close()"
+  >
     <section
       ref="panel"
       class="settings-window__panel"
@@ -45,6 +50,7 @@
         <!-- A page below a section (the theme import) takes the place of the section -->
         <ThemeImportPage v-if="settingsWindow.subPage === SETTINGS_SUB_PAGE.themeImport" />
         <ThemeCopyPage v-else-if="settingsWindow.subPage === SETTINGS_SUB_PAGE.themeCopy" />
+        <ThemeEditorPage v-else-if="settingsWindow.subPage === SETTINGS_SUB_PAGE.themeEditor" />
         <SettingsSectionList v-else-if="!shownSection" />
         <SettingsGeneralTab v-else-if="shownSection === SETTINGS_TAB.general" />
         <SettingsAppearanceTab v-else-if="shownSection === SETTINGS_TAB.appearance" />
@@ -71,22 +77,34 @@
         <span v-else><span class="mdi mdi-monitor" />{{ t("settings.scope.noUser") }}</span>
       </footer>
     </section>
+
+    <!-- The editor's phone preview beside the window (owner's variant B); a click on it closes nothing -->
+    <div v-if="isSidePhoneShown" class="settings-window__side">
+      <ThemePhonePreview :tokens="themeEditor.previewTokens" />
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onKeyStroke } from "@vueuse/core";
+import { onKeyStroke, useMediaQuery } from "@vueuse/core";
 import { computed, onMounted, useTemplateRef, watch } from "vue";
 import { useI18n } from "vue-i18n";
 
-import { SETTINGS_SUB_PAGE, SETTINGS_TAB } from "@/constants/settings";
+import {
+  PHONE_PREVIEW_SIDE_MEDIA_QUERY,
+  SETTINGS_SUB_PAGE,
+  SETTINGS_TAB,
+} from "@/constants/settings";
 import { useCleanupStore } from "@/stores/cleanupStore";
 import { useEntitySortingStore } from "@/stores/entitySortingStore";
 import { useSettingsWindowStore } from "@/stores/settingsWindowStore";
+import { useThemeEditorStore } from "@/stores/themeEditorStore";
 import { useWhatsNewStore } from "@/stores/whatsNewStore";
 
 import ThemeCopyPage from "./appearance/ThemeCopyPage.vue";
+import ThemeEditorPage from "./appearance/ThemeEditorPage.vue";
 import ThemeImportPage from "./appearance/ThemeImportPage.vue";
+import ThemePhonePreview from "./appearance/ThemePhonePreview.vue";
 import SettingsAboutTab from "./SettingsAboutTab.vue";
 import SettingsAiTab from "./SettingsAiTab.vue";
 import SettingsAppearanceTab from "./SettingsAppearanceTab.vue";
@@ -109,6 +127,7 @@ const emit = defineEmits<{
 
 const { t } = useI18n();
 const settingsWindow = useSettingsWindowStore();
+const themeEditor = useThemeEditorStore();
 const cleanup = useCleanupStore();
 const sorting = useEntitySortingStore();
 const whatsNew = useWhatsNewStore();
@@ -116,6 +135,16 @@ const panel = useTemplateRef("panel");
 const body = useTemplateRef("body");
 
 /** The section the body shows; null is the list of sections (list layout only). */
+/** The phone preview stands beside the window when the editor asks for it and there is room. */
+const isWide = useMediaQuery(PHONE_PREVIEW_SIDE_MEDIA_QUERY);
+const isSidePhoneShown = computed(
+  () =>
+    settingsWindow.subPage === SETTINGS_SUB_PAGE.themeEditor &&
+    themeEditor.isPhonePreviewShown &&
+    !settingsWindow.isListLayout &&
+    isWide.value,
+);
+
 const shownSection = computed(() =>
   settingsWindow.isListLayout ? settingsWindow.section : settingsWindow.tab,
 );
@@ -184,6 +213,22 @@ onKeyStroke("Escape", () => settingsWindow.close());
 }
 
 /* A fixed size, so switching tabs or pages does not make the window jump. */
+/* Variant B: window and phone side by side; the window keeps its width and moves left. */
+.settings-window--with-side {
+  grid-template-columns: auto auto;
+  justify-content: center;
+  column-gap: 28px;
+}
+
+.settings-window--with-side .settings-window__panel {
+  width: 880px;
+}
+
+.settings-window__side {
+  display: grid;
+  place-items: center;
+}
+
 .settings-window__panel {
   position: relative;
   display: flex;

@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Headers, Param, Post } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Headers, Param, Post, Put } from "@nestjs/common";
 import type { IncomingHttpHeaders } from "node:http";
 
 import type { OwnThemeRecord } from "../core/themes/ownThemes";
@@ -25,6 +25,16 @@ export class ThemesController {
     @Body() dto: CreateThemeDto,
   ): Promise<CreatedTheme> {
     return this.themes.create({ user: haUserFrom(headers), theme: dto.theme });
+  }
+
+  /** The editor saved an own theme; it is checked again and keeps its id. */
+  @Put(":id")
+  update(
+    @Headers() headers: IncomingHttpHeaders,
+    @Param("id") id: string,
+    @Body() dto: CreateThemeDto,
+  ): Promise<OwnThemeRecord[]> {
+    return this.themes.update({ user: haUserFrom(headers), id, theme: dto.theme });
   }
 
   @Delete(":id")

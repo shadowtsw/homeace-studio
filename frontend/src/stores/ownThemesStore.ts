@@ -13,7 +13,12 @@ import {
   type OwnTheme,
 } from "@/core/themes/ownThemes";
 import { themeFileValue, type CheckedTheme } from "@/core/themes/themeFormat";
-import { createOwnTheme, deleteOwnTheme, fetchOwnThemes } from "@/services/themesService";
+import {
+  createOwnTheme,
+  deleteOwnTheme,
+  fetchOwnThemes,
+  updateOwnTheme,
+} from "@/services/themesService";
 import { usePreferencesStore } from "@/stores/preferencesStore";
 import { isRecord } from "@/utils/record";
 import { ownThemeDefinition } from "@/utils/themes/builtInThemes";
@@ -98,5 +103,32 @@ export const useOwnThemesStore = defineStore("ownThemes", () => {
     keepList(await deleteOwnTheme(id));
   }
 
-  return { themes, ownThemes, isFull, hasHaUser, load, add, remove };
+  /**
+   * Replaces an own theme (the editor saved it). It keeps its id, so it stays chosen; its name stays
+   * unique among the other own themes.
+   *
+   * @returns The name it got.
+   */
+  async function update({ id, theme }: { id: string; theme: CheckedTheme }): Promise<string> {
+    // A name no other own theme has
+    const others = ownThemes.value.filter((ownTheme) => ownTheme.id !== id);
+    const takenNames = others.map((ownTheme) => ownTheme.theme.name);
+    const name = uniqueThemeName({ name: theme.name, takenNames });
+    const replacement: OwnTheme = { id, theme: { ...theme, name } };
+
+    // Without a HA user: only in this browser
+    if (!hasHaUser.value) {
+      const replaced = ownThemes.value.map((ownTheme) =>
+        ownTheme.id === id ? replacement : ownTheme,
+      );
+      storedCopy.value = replaced.map(ownThemeRecord);
+      return name;
+    }
+
+    // With one: the backend checks again and answers with the list
+    keepList(await updateOwnTheme({ id, theme: themeFileValue(replacement.theme) }));
+    return ownThemes.value.find((ownTheme) => ownTheme.id === id)?.theme.name ?? name;
+  }
+
+  return { themes, ownThemes, isFull, hasHaUser, load, add, update, remove };
 });

@@ -136,10 +136,13 @@ Choosing a tree node always sets `isNavOpen = false`, and opening an entry alway
   user notices, never how it is built (technical detail only behind "Technische Details").
 - **Aussehen**: brightness (device), theme and own themes (user), see
   [../features/themes.md](../features/themes.md).
-- **Pages below a section** (`SETTINGS_SUB_PAGE`, query `page`): "Theme importieren" and "Theme als
-  Text" below "Aussehen". A step of their own in both layouts (`openSubPage`): in the list layout
-  start → Aussehen → page ("‹ Aussehen"), in the tab layout the tab and the page on top of it.
-  Choosing another tab first goes back below the page. Each page keeps its action bar at the bottom.
+- **Pages below a section** (`SETTINGS_SUB_PAGE`, query `page`): "Theme importieren", "Theme als
+  Text" and "Theme-Editor" below "Aussehen". A step of their own in both layouts (`openSubPage`): in
+  the list layout start → Aussehen → page ("‹ Aussehen"), in the tab layout the tab and the page on top
+  of it. Choosing another tab first goes back below the page. Each page keeps its action bar at the
+  bottom.
+- **Beside the window**: the editor's phone preview (`settings-window--with-side`, from 1260 px); the
+  window keeps its 880 px and moves left, a click on the preview closes nothing.
 - Scripts click the tabs by their class `.settings-window__tab` (`scripts/screenshots.mjs` and the
   comparison tools); keep the name.
 

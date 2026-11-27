@@ -93,6 +93,41 @@ describe("ThemesService", () => {
     expect(await service.remove({ user: ALEX, id })).toEqual([]);
   });
 
+  it("replaces an own theme in place, checked again, keeping its id", async () => {
+    const service = createService();
+    const { id } = await service.create({ user: ALEX, theme: THEME_FILE });
+    const changed = { ...THEME_FILE, name: "Abendrot neu", dark: { ...DARK, accent: "#ff8800" } };
+
+    const themes = await service.update({ user: ALEX, id, theme: changed });
+
+    expect(themes).toHaveLength(1);
+    expect(themes[0]).toMatchObject({ id, name: "Abendrot neu", dark: { accent: "#ff8800" } });
+  });
+
+  it("keeps names unique when replacing, but a theme may keep its own name", async () => {
+    const service = createService();
+    const first = await service.create({ user: ALEX, theme: THEME_FILE });
+    const second = await service.create({ user: ALEX, theme: { ...THEME_FILE, name: "Nacht" } });
+
+    const keptName = await service.update({ user: ALEX, id: first.id, theme: THEME_FILE });
+    const renamed = await service.update({ user: ALEX, id: second.id, theme: THEME_FILE });
+
+    expect(keptName.map((theme) => theme.name)).toEqual(["Abendrot", "Nacht"]);
+    expect(renamed.map((theme) => theme.name)).toEqual(["Abendrot", "Abendrot (2)"]);
+  });
+
+  it("replaces only the user's own theme, and only with a valid one", async () => {
+    const service = createService();
+    const { id } = await service.create({ user: ALEX, theme: THEME_FILE });
+
+    await expect(service.update({ user: SAM, id, theme: THEME_FILE })).rejects.toThrow(
+      NotFoundException,
+    );
+    await expect(service.update({ user: ALEX, id, theme: { name: "x" } })).rejects.toThrow(
+      BadRequestException,
+    );
+  });
+
   it("checks stored themes again when reading (the overlay can be edited by hand)", async () => {
     const broken = { id: "own-000000000001", "homeace-theme": 1, name: "Broken" };
     const service = new ThemesService(
