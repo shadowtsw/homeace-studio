@@ -297,8 +297,8 @@ const CLIPS = [
     stored: ONLY_ENTITIES,
     prepare: async (page) => {
       await openFolder(page, ["House", "Terrace"]);
-      await click(page, ".entry-list__title-row button", "New");
-      await click(page, ".entry-list__new-menu button", "Automation");
+      await click(page, ".entry-list-head__title-row button", "New");
+      await click(page, ".entry-list-head__new-menu button", "Automation");
       await evaluate(page, `document.querySelector(".dialog-frame input")?.focus()`);
       await page.send("Input.insertText", { text: "Terrace light when someone comes" });
       await click(page, ".dialog-frame__buttons button", "Create");
@@ -351,7 +351,7 @@ const CLIPS = [
     prepare: async (page) => {
       await click(page, ".category-tree__special", "Uncategorized");
       // The demo has many loose entities (the sorting tool's work); the search finds the three
-      await evaluate(page, `document.querySelector(".entry-list__search input")?.focus()`);
+      await evaluate(page, `document.querySelector(".entry-list-head__search input")?.focus()`);
       await page.send("Input.insertText", { text: "Living room" });
       await sleep(600);
       // The toast sits in the middle of the page and the crop would cut it in half; opening the

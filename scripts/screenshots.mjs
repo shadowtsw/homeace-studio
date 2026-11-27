@@ -102,7 +102,7 @@ const SHOTS = [
       await click(page, ".category-tree-node", "House");
       await click(page, ".category-tree-node", "Garden");
       await click(page, ".entry-list-row__open", "Morning garden watering");
-      await click(page, ".entry-detail__tab", "History");
+      await click(page, ".entry-detail-tabs__tab", "History");
       // Yesterday's run took the "then" branch: the dry-soil case.
       await click(page, ".history__run", "30 min");
     },
@@ -123,7 +123,7 @@ const SHOTS = [
       await click(page, ".category-tree-node", "House");
       await click(page, ".category-tree-node", "Terrace");
       await click(page, ".entry-list-row__open", "Terrace light on motion");
-      await click(page, ".entry-detail__tab", "Dependencies");
+      await click(page, ".entry-detail-tabs__tab", "Dependencies");
     },
   },
   {
@@ -133,7 +133,7 @@ const SHOTS = [
       await click(page, ".category-tree-node", "House");
       await click(page, ".category-tree-node", "Terrace");
       await click(page, ".entry-list-row__open", "Terrace brightness at night");
-      await click(page, ".entry-detail__tab", "Properties");
+      await click(page, ".entry-detail-tabs__tab", "Properties");
       // The entity ID and the visibility section are the new parts; scroll them into view.
       await evaluate(
         page,
@@ -146,7 +146,7 @@ const SHOTS = [
     name: "phone-dark.png",
     view: { ...PHONE, isDark: true },
     steps: async (page) => {
-      await click(page, ".entry-list__nav-toggle");
+      await click(page, ".entry-list-head__nav-toggle");
       await click(page, ".category-tree-node", "House");
       await click(page, ".category-tree-node", "Terrace");
     },
@@ -155,7 +155,7 @@ const SHOTS = [
     name: "phone-flow-light.png",
     view: { ...PHONE, isDark: false },
     steps: async (page) => {
-      await click(page, ".entry-list__nav-toggle");
+      await click(page, ".entry-list-head__nav-toggle");
       await click(page, ".category-tree-node", "Routines");
       await click(page, ".entry-list-row__open", "Good night");
     },
@@ -167,7 +167,7 @@ const SHOTS = [
       await click(page, ".category-tree-node", "House");
       await click(page, ".category-tree-node", "Terrace");
       await click(page, ".entry-list-row__open", "Terrace brightness at night");
-      await click(page, ".entry-detail__tab", "Settings");
+      await click(page, ".entry-detail-tabs__tab", "Settings");
       // A minimum above the maximum: the check marks it red before anything is saved.
       await evaluate(
         page,
@@ -189,7 +189,7 @@ const SHOTS = [
     steps: async (page) => {
       await click(page, ".category-tree-node", "House");
       await click(page, ".entry-list-row__open", "Cozy evening");
-      await click(page, ".entry-detail__tab", "Properties");
+      await click(page, ".entry-detail-tabs__tab", "Properties");
       await click(page, "[data-label-toggle]");
       await evaluate(
         page,

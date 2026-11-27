@@ -1,4 +1,21 @@
 <template>
+  <MoveEntriesDialog
+    v-if="entityMove.movingIds.value"
+    :count="entityMove.movingIds.value.length"
+    :title="
+      t(
+        'list.entityMoveTitle',
+        { count: entityMove.movingIds.value.length },
+        entityMove.movingIds.value.length,
+      )
+    "
+    :all-paths="allPaths"
+    :is-busy="entityMove.isBusy.value"
+    @cancel="entityMove.cancel"
+    @confirm="
+      (path) => entityMove.move({ entityIds: entityMove.movingIds.value ?? [], categoryPath: path })
+    "
+  />
   <RenameCategoryDialog
     v-if="actions.renamingPath.value"
     :folder-path="actions.renamingPath.value"
@@ -98,6 +115,7 @@ import SettingsWindow from "@/components/settings/SettingsWindow.vue";
 import type { useAreaActions } from "@/composables/actions/useAreaActions";
 import type { useCategoryActions } from "@/composables/actions/useCategoryActions";
 import type { useCreateActions } from "@/composables/actions/useCreateActions";
+import type { useEntityBulkMove } from "@/composables/actions/useEntityBulkMove";
 import type { useEntryActions } from "@/composables/actions/useEntryActions";
 import { useLabelActions } from "@/composables/actions/useLabelActions";
 import { useAiStore } from "@/stores/aiStore";
@@ -120,6 +138,8 @@ const props = defineProps<{
   create: ReturnType<typeof useCreateActions>;
   entryActions: ReturnType<typeof useEntryActions>;
   areaActions: ReturnType<typeof useAreaActions>;
+  /** Several ticked entities into a folder at once. */
+  entityMove: ReturnType<typeof useEntityBulkMove>;
 }>();
 
 const labelActions = useLabelActions();

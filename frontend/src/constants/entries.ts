@@ -63,6 +63,18 @@ export const NAV_MODE = {
 
 export type NavMode = (typeof NAV_MODE)[keyof typeof NAV_MODE];
 
+/** The tabs of the detail column; which ones an entry has depends on its kind. */
+export const DETAIL_TAB = {
+  flow: "flow",
+  settings: "settings",
+  states: "states",
+  properties: "properties",
+  history: "history",
+  dependencies: "dependencies",
+} as const;
+
+export type DetailTab = (typeof DETAIL_TAB)[keyof typeof DETAIL_TAB];
+
 export const ENTRY_ACTION = {
   run: "run",
   turnOn: "turnOn",

@@ -31,30 +31,40 @@
 import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 
+import { useEntriesStore } from "@/stores/entriesStore";
 import { useSettingsWindowStore } from "@/stores/settingsWindowStore";
 
 import LanguageMenu from "./LanguageMenu.vue";
 import WhatsNewMenu from "./WhatsNewMenu.vue";
 
-export type ConnectionStatus = "loading" | "connected" | "failed";
+type ConnectionStatus = "loading" | "connected" | "failed";
 
 const props = defineProps<{
-  status: ConnectionStatus;
   /** The live event stream is open, so changes in HA show up on their own. */
   isLive: boolean;
-  entryCount: number;
 }>();
 
 const { t } = useI18n();
 const settingsWindow = useSettingsWindowStore();
+const entriesStore = useEntriesStore();
+
+/** How the connection to HA stands, as loading the entries shows it. */
+const status = computed((): ConnectionStatus => {
+  if (entriesStore.hasLoadError) return "failed";
+  if (entriesStore.isLoading) return "loading";
+
+  return "connected";
+});
 
 const statusText = computed(() => {
-  if (props.status === "connected" && props.isLive) {
-    return t("connection.live", { count: props.entryCount });
+  const entryCount = entriesStore.entries.length;
+
+  if (status.value === "connected" && props.isLive) {
+    return t("connection.live", { count: entryCount });
   }
 
-  if (props.status === "connected") return t("connection.connected", { count: props.entryCount });
-  if (props.status === "failed") return t("connection.failed");
+  if (status.value === "connected") return t("connection.connected", { count: entryCount });
+  if (status.value === "failed") return t("connection.failed");
 
   return t("connection.loading");
 });

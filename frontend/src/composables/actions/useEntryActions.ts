@@ -18,6 +18,8 @@ type EntryActions = {
   save: (options: { entityId: string; changes: EntryChanges }) => Promise<boolean>;
   /** Renames in HA with "Rückgängig" in the toast. */
   rename: (options: { entry: Entry; name: string }) => Promise<void>;
+  /** The inline name field (list row or title) was confirmed: closes it and renames that entry. */
+  renameInPlace: (options: { entityId: string; name: string }) => void;
   /** Copies an automation or script, opens the copy and lets the user name it right away. */
   duplicate: (options: { entry: Entry; place?: "list" | "title" }) => Promise<void>;
   act: (options: { entry: Entry; action: EntryAction }) => Promise<void>;
@@ -147,6 +149,26 @@ export function useEntryActions(): EntryActions {
     if (isDeleted) deletingEntry.value = null;
   }
 
+  async function rename({ entry, name }: { entry: Entry; name: string }): Promise<void> {
+    const previous = entry.name;
+    const isDone = await run({
+      action: () => entriesStore.updateEntry({ entityId: entry.entityId, changes: { name } }),
+    });
+    if (!isDone) return;
+
+    toasts.show({
+      text: t("toast.renamedEntry", { name }),
+      tone: "success",
+      undo: () => {
+        void run({
+          action: () =>
+            entriesStore.updateEntry({ entityId: entry.entityId, changes: { name: previous } }),
+          successText: t("toast.undone"),
+        });
+      },
+    });
+  }
+
   return {
     isBusy,
     deletingEntry,
@@ -175,24 +197,11 @@ export function useEntryActions(): EntryActions {
         },
       });
     },
-    rename: async ({ entry, name }) => {
-      const previous = entry.name;
-      const isDone = await run({
-        action: () => entriesStore.updateEntry({ entityId: entry.entityId, changes: { name } }),
-      });
-      if (!isDone) return;
-
-      toasts.show({
-        text: t("toast.renamedEntry", { name }),
-        tone: "success",
-        undo: () => {
-          void run({
-            action: () =>
-              entriesStore.updateEntry({ entityId: entry.entityId, changes: { name: previous } }),
-            successText: t("toast.undone"),
-          });
-        },
-      });
+    rename,
+    renameInPlace: ({ entityId, name }) => {
+      studio.stopRename();
+      const entry = entriesStore.entries.find((item) => item.entityId === entityId);
+      if (entry) void rename({ entry, name });
     },
     act: async ({ entry, action }) => {
       await run({
