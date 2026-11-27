@@ -12,7 +12,8 @@ folder, with search, scope tabs, a "Neu" menu and bulk actions. A click opens th
 | Head: title with breadcrumb, "Neu" menu, search, filter bar | `components/entries/list/EntryListHead.vue` |
 | Selection bar of ticked entries (move, area, labels, take out, all, none) | `components/entries/list/EntryBulkBar.vue` |
 | Plain entities of a group, in pages of 150 | `components/entries/list/ListGroupEntities.vue` |
-| Groups (open, toggled, paged) · title and group labels · ticking with shift ranges and its toasts · arrow keys | `composables/entryList/useListGroups.ts`, `composables/entryList/useListTitle.ts`, `composables/entryList/useListTicking.ts`, `composables/entryList/useListArrowKeys.ts` |
+| Head of a folder group: open or closed, name, count | `components/entries/list/ListGroupHead.vue` |
+| Groups (open, toggled, paged) · title and group labels · ticking with shift ranges and its toasts · arrow keys · room for the floating bar | `composables/entryList/useListGroups.ts`, `composables/entryList/useListTitle.ts`, `composables/entryList/useListTicking.ts`, `composables/entryList/useListArrowKeys.ts`, `composables/entryList/useDockRoom.ts` |
 | Filter bar (combinable: Strg/⌘+Klick, right-click menu, long press on touch; accent border while not "Alle") | `components/entries/list/ListScopeTabs.vue`, rules in `utils/entries/listScopes.ts`, `isListNarrowed` in `utils/entries/emptyList.ts` |
 | What an empty list says (what the filters hide, "Alle zeigen") | `components/entries/list/EntryListEmpty.vue`, `emptyListReason` in `utils/entries/emptyList.ts` |
 | One plain entity (light, sensor …): drag source, click offers its folder, checkbox | `components/entries/list/EntityListRow.vue` |

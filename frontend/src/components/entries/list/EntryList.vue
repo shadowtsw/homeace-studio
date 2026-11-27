@@ -26,19 +26,12 @@
       />
 
       <template v-for="group in groups" :key="group.path ?? ''">
-        <button
-          type="button"
-          class="entry-list__group"
-          :aria-expanded="isOpen(group)"
-          @click="toggleGroup(group)"
-        >
-          <span class="mdi" :class="isOpen(group) ? 'mdi-chevron-down' : 'mdi-chevron-right'" />
-          <span class="entry-list__group-name">{{ groupLabel(group.path) }}</span>
-          <span class="entry-list__group-line" />
-          <span class="entry-list__group-count">{{
-            group.entries.length + group.entities.length
-          }}</span>
-        </button>
+        <ListGroupHead
+          :name="groupLabel(group.path)"
+          :count="group.entries.length + group.entities.length"
+          :is-open="isOpen(group)"
+          @toggle="toggleGroup(group)"
+        />
         <EntryListRow
           v-for="entry in isOpen(group) ? group.entries : []"
           :key="entry.entityId"
@@ -101,10 +94,10 @@
 </template>
 
 <script setup lang="ts">
-import { useElementSize } from "@vueuse/core";
 import { computed, toRef, useTemplateRef } from "vue";
 import { useI18n } from "vue-i18n";
 
+import { useDockRoom } from "@/composables/entryList/useDockRoom";
 import { useListArrowKeys } from "@/composables/entryList/useListArrowKeys";
 import { useListGroups } from "@/composables/entryList/useListGroups";
 import { useListTicking } from "@/composables/entryList/useListTicking";
@@ -128,6 +121,7 @@ import EntryListEmpty from "./EntryListEmpty.vue";
 import EntryListHead from "./EntryListHead.vue";
 import EntryListRow from "./EntryListRow.vue";
 import ListGroupEntities from "./ListGroupEntities.vue";
+import ListGroupHead from "./ListGroupHead.vue";
 
 /**
  * The entries (and plain entities) of the picked folder or filter, in folder groups, with ticking
@@ -170,16 +164,7 @@ const { t } = useI18n();
 const studio = useStudioStore();
 const settings = useSettingsStore();
 
-/** Gap between the floating bar and the list's bottom edge (its `bottom`), plus a little air. */
-const DOCK_ROOM_EXTRA_PX = 18;
-const dock = useTemplateRef<HTMLElement>("dock");
-// The bar wraps to more lines in some languages and in a narrow list, so its room is measured.
-const { height: dockHeight } = useElementSize(dock, undefined, { box: "border-box" });
-const dockRoomStyle = computed(() =>
-  dockHeight.value > 0
-    ? { "--dock-room": `${Math.ceil(dockHeight.value) + DOCK_ROOM_EXTRA_PX}px` }
-    : {},
-);
+const { dockRoomStyle } = useDockRoom(useTemplateRef<HTMLElement>("dock"));
 /** Rows are ticked, so a bar floats over the list. */
 const isDocked = computed(() => studio.checkedIds.size > 0 || studio.checkedEntityIds.size > 0);
 
@@ -243,37 +228,6 @@ function addFolder(): void {
   box-shadow: var(--shadow);
 }
 
-/* Plain entities inside a folder group, after its entries */
-.entry-list__entity-sep {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin: 8px 10px 2px 16px;
-  color: var(--faint);
-  font-size: 11.5px;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-
-.entry-list__more {
-  display: block;
-  margin: 4px 0 8px 26px;
-  padding: 4px 8px;
-  border: 0;
-  border-radius: 7px;
-  background: none;
-  color: var(--accent);
-  font: inherit;
-  font-size: 12.5px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.entry-list__more:hover {
-  background: var(--sunken);
-}
-
 .entry-list__hint {
   display: flex;
   gap: 8px;
@@ -298,50 +252,5 @@ function addFolder(): void {
 .entry-list__body--docked {
   padding-bottom: var(--dock-room, 140px);
   scroll-padding-bottom: var(--dock-room, 140px);
-}
-
-.entry-list__group {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  width: calc(100% - 4px);
-  margin: 10px 2px 4px;
-  padding: 5px 6px;
-  border: 0;
-  border-radius: 7px;
-  background: none;
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 600;
-  text-align: left;
-  cursor: pointer;
-}
-
-.entry-list__group:hover {
-  background: var(--sunken);
-  color: var(--fg);
-}
-
-.entry-list__group .mdi {
-  color: var(--faint);
-  font-size: 16px;
-}
-
-.entry-list__group-name {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.entry-list__group-line {
-  flex: 1;
-  height: 1px;
-  background: var(--line);
-}
-
-.entry-list__group-count {
-  color: var(--faint);
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
 }
 </style>
