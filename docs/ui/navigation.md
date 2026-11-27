@@ -58,9 +58,9 @@ Two kinds of drags, told apart by their own MIME types:
   entities: `useEntryDropTarget` only accepts them where a second handler is given.
 - **List row → node** (`ENTRY_DRAG_TYPE`): moves the entry into that folder, or onto "Ohne Kategorie"
   (`path` null). If the row is ticked together with others, all ticked rows move (`dropEntry` in
-  StudioView). In the area view, dropping sets the entry's own area (`dropOnArea`).
+  StudioNav). In the area view, dropping sets the entry's own area (`dropOnArea`).
 - **Folder → sibling folder** (`FOLDER_DRAG_TYPE`): sorts folders, only among siblings. Browsers hide drag
-  data during `dragover`, so the dragged path is in the module ref `draggedFolder`. StudioView
+  data during `dragover`, so the dragged path is in the module ref `draggedFolder`. StudioNav
   `reorderFolder` saves the whole sibling list (`actions.saveOrder`). "A–Z" in the heading resets the order
   (it only shows while an own order exists).
 
@@ -79,4 +79,4 @@ Two kinds of drags, told apart by their own MIME types:
 - A folder path is also the HA category name. Renaming a folder renames HA categories in every scope,
   see [../features/folders.md](../features/folders.md).
 - `CategoryTreeNode` re-emits every event of its children. A new event has to be added at both levels
-  (`CategoryTreeNode` → `CategoryTree` → StudioView).
+  (`CategoryTreeNode` → `CategoryTree` → StudioNav).

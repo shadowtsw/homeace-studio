@@ -10,7 +10,7 @@ It never changes anything itself: the user reviews every plan in the UI and appl
 | Own node HTTP server on `MCP_PORT` (default 8098, not under `/api`), stateless Streamable HTTP per request, Bearer token check, 1 MB body limit | `backend/src/ai/mcp-http.server.ts` |
 | The four tools: `list_folders`, `list_entries`, `propose_folder_plan`, `get_plan_status` | `backend/src/ai/mcp-tools.ts` (`MCP_TOOLS_VERSION`) |
 | Switch, token (`hac_…`, constant-time compare), last client, Supervisor host-port lookup | `backend/src/ai/mcp-access.service.ts` |
-| Plans: propose (validated, all problems at once), list with live state, apply, reject | `backend/src/ai/ai-plans.service.ts`, `ai-plan.model.ts` |
+| Plans: propose (validated, all problems at once), list with live state, apply, reject | `backend/src/ai/ai-plans.service.ts`, `ai-plan.model.ts`; the pure rules (checking a proposal, an operation's state, the view, which plans are kept) in `ai-plan-rules.ts` |
 | `GET/PUT /api/mcp`, `POST /api/mcp/token`, `GET /api/ai-plans`, `POST /api/ai-plans/:id/apply · /reject` | `backend/src/ai/ai.controller.ts` |
 | Limits (open plans, kept plans, operations, lengths) | `backend/src/ai/ai.constants.ts` |
 | Settings, as the tab "KI-Zugang" of the settings window (switch, URL, token, client config; what an AI may do, open plans) | `frontend/src/components/ai/McpSettingsPanel.vue`; switching, new token and copying with toasts in `composables/actions/useMcpActions.ts`, `McpAccessRules.vue`, `components/settings/SettingsAiTab.vue` |

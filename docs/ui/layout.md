@@ -13,8 +13,10 @@ they help each other. Use exactly these words in every user text (app, README, D
 
 | What | File |
 | --- | --- |
-| The page: loads data, wires the three columns, handles their events | `views/StudioView.vue` |
-| Everything the page derives (tree, filtered entries, counts, area nav, open entry) | `composables/useStudioData.ts` |
+| The page: grid, the state the columns share (drawer, detail layer, color dialog, label picker), the overlays | `views/StudioView.vue` |
+| Wiring of each column: folders or areas with drops and order · list with area view and "Neu" · detail with its actions | `components/layout/StudioNav.vue`, `StudioList.vue`, `StudioDetail.vue` |
+| Loading at the start and after entry changes · picking (drawer closes, detail opens) · F2 and `beforeunload` · the flow the detail shows | `composables/studio/useStudioLoading.ts`, `composables/studio/useStudioSelection.ts`, `composables/studio/useStudioWindowEvents.ts`, `composables/flow/useDisplayFlow.ts` |
+| Everything the page derives (tree, filtered entries, counts, area nav, open entry) | `composables/studio/useStudioData.ts` |
 | What the user is looking at: tree selection, scope tab, search, open entry, ticked rows, inline rename | `stores/studioStore.ts` |
 | Settings the user changes on purpose (scope `user`): technical details, language, scene auto-save | `stores/settingsStore.ts` |
 | How the columns look on this device (scope `device`): pane widths, nav mode, detail folded | `stores/layoutStore.ts` |
@@ -22,8 +24,8 @@ they help each other. Use exactly these words in every user text (app, README, D
 | Top bar (connection status, live dot, language menu, gear, What's new) | `components/layout/AppTopBar.vue`, `LanguageMenu.vue`, `WhatsNewMenu.vue` |
 | Settings window (tabs, one file per tab, scope symbol per setting) | `components/settings/SettingsWindow.vue`, `SettingsRow.vue`, `Settings*Tab.vue`, `stores/settingsWindowStore.ts`, `constants/settings.ts` |
 | Splitters between the columns | `components/layout/PaneSplitter.vue`, limits in `constants/layout.ts` |
-| Every dialog and the toasts of the page | `components/layout/StudioDialogs.vue` with its topic parts `components/areas/AreaDialogs.vue`, `components/entries/EntryDialogs.vue`, `components/layout/CreateDialogs.vue` (folder, helper, automation/script); `components/common/ToastHost.vue` |
-| Actions with toasts and error texts | `composables/actions/useCategoryActions.ts` (move, rename, order), `useCreateActions.ts` (folders, helpers, flows), `useEntryActions.ts` (entry actions), `useAreaActions.ts` |
+| Every dialog and the toasts of the page (the entity menu and the label picker for ticked rows sit in StudioView) | `components/layout/StudioDialogs.vue` with its topic parts `components/areas/AreaDialogs.vue`, `components/entries/EntryDialogs.vue`, `components/layout/CreateDialogs.vue` (folder, helper, automation/script); `components/common/ToastHost.vue` |
+| Actions with toasts and error texts | `composables/actions/useCategoryActions/` (move, rename, order, sort by area), `useCreateActions.ts` (folders, helpers, flows), `useEntryActions.ts` (entry actions), `useAreaActions.ts` |
 
 ## Grid and splitters
 
@@ -35,7 +37,7 @@ they help each other. Use exactly these words in every user text (app, README, D
   (`layout.resetPaneWidth`). `PANE_WIDTH_LIMITS`: nav 200–440, list 300–700 px.
 - **Folding the detail:** the round button on the list splitter toggles `layout.isDetailFolded`. The list
   then takes the whole width and the button gets a 28 px rail of its own (`--fold-rail`). Opening an entry
-  unfolds the detail again (`selectEntry` in StudioView).
+  unfolds the detail again (`selectEntry` in `useStudioSelection`). The button is `components/layout/DetailFoldButton.vue`.
 
 ## Responsive states
 
@@ -53,8 +55,8 @@ Choosing a tree node always sets `isNavOpen = false`, and opening an entry alway
 1. `onMounted`: `entriesStore.load()`, `foldersStore.load()`, `lookups.load()` (areas, labels),
    `ai.loadPlans()`.
 2. Every new `entriesStore.entries` (after moves, renames or live updates) triggers a quiet reload of the
-   cleanup proposals, check-up, dependencies, run history and entry areas (the `watch` at the end of
-   StudioView).
+   cleanup proposals, check-up, dependencies, run history and entry areas (the `watch` in
+   `useStudioLoading`, called at the end of StudioView).
 3. Opening an automation or script loads its flow (`editorStore.loadFlow`). Other kinds clear it. The
    block catalog is loaded per UI language.
 4. Live updates: see [../features/live-updates.md](../features/live-updates.md).
@@ -110,14 +112,14 @@ Choosing a tree node always sets `isNavOpen = false`, and opening an entry alway
 
 ## Keyboard
 
-- `↑` / `↓` walk through the open list rows and open each entry (`EntryList`, not inside inputs or dialogs).
+- `↑` / `↓` walk through the open list rows and open each entry (`useListArrowKeys` in EntryList, not inside inputs or dialogs).
 - `F2` renames the open entry, in its list row when that row is visible, otherwise in the detail title
-  (StudioView).
+  (`useStudioWindowEvents`).
 
 ## Rules
 
-- Entries with unsaved flow edits make the browser ask before closing the tab (`beforeunload` in StudioView).
-- Detail handlers run only while an entry is open. They are wrapped in `onSelected(...)`.
+- Entries with unsaved flow edits make the browser ask before closing the tab (`beforeunload` in `useStudioWindowEvents`).
+- Detail handlers run only while an entry is open. They are wrapped in `onSelected(...)` (StudioDetail).
 - Technical details (entity IDs, domains, API keys, the category name HA stores for a folder) are
   hidden unless `settings.isTechnicalDetailsVisible` is on. Pass the flag down; don't read the store in
   leaf components.

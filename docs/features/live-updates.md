@@ -9,7 +9,7 @@ debounces them and tells every browser over Server-Sent Events. The browser then
 HA WebSocket ──state_changed, *_registry_updated──► LiveService (isRelevantChange)
    ──debounce 500 ms, shared──► GET /api/events (SSE, LiveController, heartbeat as own event type)
    ──► useLiveUpdates (VueUse useEventSource, autoReconnect)
-        → entriesStore.refresh()   → StudioView watch → cleanup, check-up, dependencies, traces, entry areas
+        → entriesStore.refresh()   → useStudioLoading watch → cleanup, check-up, dependencies, traces, entry areas
         → editorStore.refreshFlow() → hasRemoteChange if a draft's base differs
         → lookups.loadEntities(true) → only while plain entities are shown (filter "Entitäten")
         → ai.loadPlans()

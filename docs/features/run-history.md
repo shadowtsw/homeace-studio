@@ -23,7 +23,7 @@ by block, and "Im Ablauf zeigen" puts it on the flow.
    run may be done now.
 2. The backend reads `trace/list` (summaries), then `trace/get` for the runs it shows. If HA dropped a run
    meanwhile, the summary has to do.
-3. "Im Ablauf zeigen" → `traces.showOnFlow(runId)` and the tab switches to the flow. `EntryDetail` computes
+3. "Im Ablauf zeigen" → `traces.showOnFlow(runId)` and the tab switches to the flow. `EntryFlowTab` computes
    `runStatesFor(run, displayFlow)` and passes it to `FlowView`, which provides it (`FLOW_RUN_STATES`) to
    every `FlowBlock`. Opening another entry resets it.
 4. Block ids (`actions.2.then.0`) map to HA's trace paths (`action/2/then/0`) with `tracePathOf`.

@@ -8,17 +8,21 @@ folder, with search, scope tabs, a "Neu" menu and bulk actions. A click opens th
 
 | What | File |
 | --- | --- |
-| Column: title with breadcrumb, "Neu" menu, search, bulk bar, groups | `components/entries/EntryList.vue` |
-| Filter bar (combinable: Strg/⌘+Klick, right-click menu, long press on touch) | `components/entries/ListScopeTabs.vue`, rules in `utils/entries/listScopes.ts` |
-| One plain entity (light, sensor …): drag source, click offers its folder, checkbox | `components/entries/EntityListRow.vue` |
-| Selection bar of ticked entities, moving them | `components/entries/EntityBulkBar.vue`, `composables/actions/useEntityBulkMove.ts` |
+| Column: folder groups with their rows, the floating bar for ticked rows | `components/entries/list/EntryList.vue` |
+| Head: title with breadcrumb, "Neu" menu, search, filter bar | `components/entries/list/EntryListHead.vue` |
+| Selection bar of ticked entries (move, area, labels, take out, all, none) | `components/entries/list/EntryBulkBar.vue` |
+| Plain entities of a group, in pages of 150 | `components/entries/list/ListGroupEntities.vue` |
+| Groups (open, toggled, paged) · title and group labels · ticking with shift ranges and its toasts · arrow keys | `composables/entryList/useListGroups.ts`, `composables/entryList/useListTitle.ts`, `composables/entryList/useListTicking.ts`, `composables/entryList/useListArrowKeys.ts` |
+| Filter bar (combinable: Strg/⌘+Klick, right-click menu, long press on touch) | `components/entries/list/ListScopeTabs.vue`, rules in `utils/entries/listScopes.ts` |
+| One plain entity (light, sensor …): drag source, click offers its folder, checkbox | `components/entries/list/EntityListRow.vue` |
+| Selection bar of ticked entities, moving them | `components/entries/list/EntityBulkBar.vue`, `composables/actions/useEntityBulkMove.ts` |
 | Which plain entities a view shows, groups of entries + entities | `utils/entities/entityList.ts` (`filterListEntities`, `groupListItems`) |
-| One row: checkbox, icon, name (inline rename), star, unsaved dot, quick actions, drag source | `components/entries/EntryListRow.vue` |
+| One row: checkbox, icon, name (inline rename), star, unsaved dot, quick actions, drag source | `components/entries/list/EntryListRow.vue` |
 | Check-up instead of the list (node "Check-up") | `components/checkup/CheckupList.vue` |
 | Filter, search, counts, grouping, which groups start open | `utils/entries/entryFilter.ts` |
-| The filtered entries and the scope counts | `composables/useStudioData.ts` (`visibleEntries`, `scopeCounts`) |
+| The filtered entries and the scope counts | `composables/studio/useStudioData.ts` (`visibleEntries`, `scopeCounts`) |
 | Which quick actions a row offers | `utils/entries/entryActions.ts` (`supportsAction`, `canToggle`, `canDuplicate`) |
-| Area view notes per row ("über Bewegungsmelder · auch in Garten") | `utils/areas/areaNotes.ts`, `areaView` in StudioView |
+| Area view notes per row ("über Bewegungsmelder · auch in Garten") | `utils/areas/areaNotes.ts`, `areaView` in StudioList |
 
 ## Filtering
 
@@ -82,7 +86,7 @@ the list:
   `scroll-padding-bottom`, so a row that arrow keys or Tab scroll to stays above the bar. The room
   is the bar's measured height (`--dock-room`), because the bar wraps to more lines in some languages
   and in a narrow list (measured 26.11.: 86 px in English, 122 px in the other four languages).
-  Dragging a ticked entity onto a folder takes all ticked ones along (`dropEntity` in StudioView),
+  Dragging a ticked entity onto a folder takes all ticked ones along (`dropEntity` in StudioNav),
   like ticked entries.
 - **Label chips:** with "Labels in der Liste zeigen" on (per user, off by default), each row shows its
   labels as small chips without icon (`EntryListRow`, prop `isLabelsVisible`).
@@ -98,7 +102,7 @@ the list:
 ## "Neu" menu
 
 Automation, script, helper, then "new folder", or "new subfolder" while a real folder is selected.
-StudioView `onCreate` opens `NewFlowDialog` (automation, script) or `NewHelperDialog`. A new entry is
+StudioList `onCreate` opens `NewFlowDialog` (automation, script) or `NewHelperDialog`. A new entry is
 created in the current folder and opened (`@created` → `selectEntry`).
 
 ## Check-up node
@@ -110,7 +114,7 @@ kind, with ignore and restore. It reloads on mount. See [../features/checkup.md]
 
 - The search field is a `v-model` on `studio.search`; the filters go through `studio.selectScope` /
   `studio.toggleListScope`. Don't keep a copy in the component.
-- Arrow-key navigation is a `window` listener in `EntryList`. It skips inputs and dialogs. New
+- Arrow-key navigation is a `window` listener in `useListArrowKeys` (EntryList). It skips inputs and dialogs. New
   keyboard-driven UI has to do the same.
 - Drag sources show the closed hand through a class set on `pointerdown` and cleared on
   `pointerup`, `dragstart` and `dragend` (see `EntityListRow`), never through `:active`: Chromium

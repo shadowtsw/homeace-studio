@@ -17,7 +17,7 @@ afterwards.
 | Automatic saving and "Alles rückgängig" | `frontend/src/composables/scenes/useSceneAutoSave.ts` |
 | Dropping a plain entity from the list onto the devices | `frontend/src/composables/scenes/useSceneEntityDrop.ts`, what fits: `sceneMisfit` in `utils/flow/entityBlocks.ts` |
 | Controls of one device (on/off, brightness, white tone, color, position, temperature, …) | `frontend/src/components/scenes/SceneDeviceRow.vue`; lights in `SceneLightControls.vue`, the ⋮ menu in `SceneRowMenu.vue`, shared row styles in `sceneRowLines.css`, texts in `composables/texts/useSceneTexts.ts` |
-| HA attributes ↔ controls, light capabilities, presets, "extras" the editor cannot show | `frontend/src/utils/sceneValues.ts` (`readControls`, `writeControls`, `lightCaps`, `extrasOf`) |
+| HA attributes ↔ controls, light capabilities, presets, "extras" the editor cannot show | `frontend/src/utils/sceneValues/` (`controls.ts`: `readControls`, `writeControls`, `lightCaps`; `extras.ts`: `extrasOf`; `lightTones.ts`: presets and tones; `climate.ts`) |
 | API calls, `sendBeacon` restore | `frontend/src/services/scenesService.ts` |
 | Endpoints `/api/scenes` | `backend/src/scenes/scenes.controller.ts` |
 | "Neu" → "Szene": empty scene, folder, wait for HA's entity | `backend/src/scenes/scene-create.service.ts`; dialog `frontend/src/components/flow/NewFlowDialog.vue` (shared with automations and scripts) |
@@ -51,7 +51,7 @@ Alles rückgängig → PUT :id { the state before the first automatic save }
 
 ## Rules
 
-- A new color or white tone removes **all** old color attributes of a light (`sceneValues.ts`).
+- A new color or white tone removes **all** old color attributes of a light (`sceneValues/controls.ts`).
   Otherwise HA would get conflicting `hs_color` / `color_temp_kelvin` / `rgb_color`.
 - Attributes without a control stay in the value unchanged and are listed as extras. "Aktuellen Zustand
   übernehmen" takes everything the device has right now.
@@ -78,8 +78,8 @@ Alles rückgängig → PUT :id { the state before the first automatic save }
 ## Recipe: support a new device kind
 
 1. Controls in `SceneControls`, `readControls` / `writeControls` and the shown attributes in
-   `sceneValues.ts`, plus tests in `utils/__tests__/sceneValues.spec.ts`.
+   `sceneValues/`, plus tests in `utils/__tests__/sceneValues.spec.ts`.
 2. The row UI in `SceneDeviceRow.vue` (a light control in `SceneLightControls.vue`) and texts under `scene.*` in all five locales.
-3. Add the domain to `SCENE_DOMAINS` and, if it switches on/off, to the on/off list in `sceneValues.ts`.
+3. Add the domain to `SCENE_DOMAINS` and, if it switches on/off, to the on/off list in `sceneValues/controls.ts`.
 4. The demo's `scene.apply` (`backend/src/demo/fake-ha.ts`) applies state and attributes generically.
    Check that the demo home has such a device.

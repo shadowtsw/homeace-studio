@@ -7,8 +7,12 @@ banner, tabs, and a fixed save footer. Only the middle scrolls.
 
 | What | File |
 | --- | --- |
-| Column frame, tabs, which tab shows what, save footer slot | `components/entries/EntryDetail.vue` |
-| Header: kind, title (inline rename), rename / duplicate buttons, on/off or "Aktivieren", run, favorite, delete, back (phone) | `components/entries/EntryDetailHeader.vue` |
+| Column frame, which tab body shows, save footer slot | `components/entries/detail/EntryDetail.vue` |
+| Tab bar with the count on the dependencies tab | `components/entries/detail/EntryDetailTabs.vue` |
+| Which tabs an entry has, the active tab, the dependency count; a newly opened entry starts on its tab, shows no run on its flow and loads its dependencies | `composables/useDetailTabs.ts`, tab keys in `DETAIL_TAB` (`constants/entries.ts`) |
+| Flow tab: the flow, and a run from the history on its blocks | `components/entries/detail/EntryFlowTab.vue` |
+| Properties tab: folder, identity, visibility, own note, status rows | `components/entries/detail/EntryProperties.vue` |
+| Header: kind, title (inline rename), rename / duplicate buttons, on/off or "Aktivieren", run, favorite, delete, back (phone) | `components/entries/detail/EntryDetailHeader.vue` |
 | Start tab of a newly opened entry | `utils/entries/detailTab.ts` (`startTab`) |
 | Check-up banner above the tabs | `components/checkup/CheckupBanner.vue` |
 | Save footer ("Ungespeicherte Änderungen · Verwerfen · In HA speichern", or the status line of automatic saving) | `components/common/SaveFooter.vue` |
@@ -52,7 +56,7 @@ Entries outside the registry (YAML without `unique_id`) only get a hint, the not
 
 The footer `<div id="entry-detail-footer">` always exists while an entry is open.
 
-- **Flows:** `EntryDetail` renders the `SaveFooter` itself (`hasUnsavedChanges`, note when HA changed
+- **Flows:** `EntryDetail` renders the `SaveFooter` itself (`editorStore.isDirty`, note when HA changed
   meanwhile).
 - **Helper settings and scenes:** the tab teleports its own `SaveFooter` in
   (`<Teleport defer to="#entry-detail-footer">`). `blockedBy` disables saving while the form has a problem.
@@ -64,8 +68,8 @@ The footer `<div id="entry-detail-footer">` always exists while an entry is open
 
 | Data | Loaded by |
 | --- | --- |
-| Flow (automation, script) | StudioView watch → `editorStore.loadFlow` |
-| Dependencies | `EntryDetail` watch → `dependenciesStore.load` |
+| Flow (automation, script) | `useDisplayFlow` watch (StudioView) → `editorStore.loadFlow` |
+| Dependencies | `useDetailTabs` watch → `dependenciesStore.load` |
 | Run history | `RunHistoryView` → `tracesStore.load`. The run shown on the flow is reset when the entry changes |
 | Scene / helper settings | their tab components on mount and on entity change; a kept draft from `draftsStore` comes back on top |
 
@@ -81,5 +85,5 @@ Every store drops answers that arrive for an entry that is no longer open.
 - Form components take over a new `entry` object from live updates only while the user is not editing
   (`useEntryForm` compares with the values the form was filled from, its `base`), and save only what the
   user changed against that base. New forms should follow the same pattern.
-- A new tab needs: a key in `TAB`, the `tabs` list per kind, a `detail.tabs.<key>` text in every locale,
+- A new tab needs: a key in `DETAIL_TAB`, the `tabs` list per kind in `useDetailTabs`, a `detail.tabs.<key>` text in every locale,
   and a body `v-else-if`.

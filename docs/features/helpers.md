@@ -19,7 +19,7 @@ HA has two kinds of helpers, and HomeAce Studio treats them differently:
 | Which helpers are deletable / copyable / editable | `frontend/src/utils/entries/entryActions.ts`, `DELETABLE_HELPER_DOMAINS` in `constants/entries.ts` |
 | `POST /api/helpers`, `GET/PUT /api/helpers/:id/settings`, `DELETE /api/helpers/:id` | `backend/src/helpers/helpers.controller.ts` |
 | Create, delete, settings, copy | `backend/src/helpers/helpers.service.ts` |
-| Settings checks and mapping (camelCase UI ↔ HA field names) | `backend/src/helpers/helper-payload.ts` |
+| Settings checks and mapping (camelCase UI ↔ HA field names) | `backend/src/helpers/helper-payload/` (`settings.ts` reads and checks, `create-payload.ts` builds, `stored-helper.ts` edits and copies) |
 | HA calls (`<type>/create · list · update · delete`, registry) | `backend/src/helpers/repositories/ha-helpers.repository.ts` |
 
 ## Flows
@@ -41,7 +41,7 @@ HA has two kinds of helpers, and HomeAce Studio treats them differently:
 
 - The frontend check (`helperSettings.ts`) shows problems while typing and marks the fields red. It must
   never refuse what the backend accepts. The backend is the authority.
-- Timer durations: HA stores `0:05:00`, and the form shows `00:05:00` (`helper-payload.ts`).
+- Timer durations: HA stores `0:05:00`, and the form shows `00:05:00` (`helper-payload/stored-helper.ts`).
 - `input_text` max length is capped at HA's own limit.
 - Unsaved settings are kept per entry in `draftsStore` (`keepHelper`), so they survive switching tabs
   and entries. The tab reloads HA's settings on entity change and puts the kept draft on top; when HA's

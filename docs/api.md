@@ -277,7 +277,7 @@ Creates a helper in HA and optionally sorts it into a folder.
 
 - `type`: `input_boolean`, `input_button`, `input_number`, `input_text`, `input_select`, `input_datetime`,
   `counter`, `timer`.
-- `settings` per type (camelCase; mapped to HA's names in `backend/src/helpers/helper-payload.ts`):
+- `settings` per type (camelCase; mapped to HA's names in `backend/src/helpers/helper-payload/`):
   - `input_number`: `min`, `max` (required, max > min), `step` (1), `mode` (`slider` | `box`), `unitOfMeasurement`
   - `input_text`: `min` (0), `max` (100, at most 255), `mode` (`text` | `password`), `pattern`
   - `input_select`: `options` (at least one, no blanks, no duplicates)

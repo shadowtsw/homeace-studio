@@ -27,8 +27,8 @@ Disabled entries have no state and cannot act (`supportsAction`). The header sho
 | --- | --- |
 | Frontend actions with toasts, confirmations, undo | `frontend/src/composables/actions/useEntryActions.ts` |
 | Dialogs (delete with users, disable with users, entity ID) | `frontend/src/components/entries/EntryDialogs.vue` (mounted by `layout/StudioDialogs.vue`), `components/entries/RenameEntityDialog.vue` |
-| Entity ID field with suggestion (`slugifyName` like HA) | `components/entries/EntityIdField.vue`, `utils/entities/entityId.ts` |
-| Enabled / hidden / aliases | `components/entries/EntryVisibilityForm.vue` |
+| Entity ID field with suggestion (`slugifyName` like HA) | `components/entries/detail/EntityIdField.vue`, `utils/entities/entityId.ts` |
+| Enabled / hidden / aliases | `components/entries/detail/EntryVisibilityForm.vue` |
 | Inline name input (list row, title, folders, areas) | `components/common/InlineNameInput.vue`. Enter or blur saves, Esc cancels |
 | Entries, update, extras, actions | `backend/src/entries/entries.service.ts`, `entries.controller.ts`, `entry-extras.ts` |
 | Entity ID rename | `backend/src/rename/rename.service.ts`, `entity-id.ts` (pure: `countEntityId`, `replaceEntityId`) |

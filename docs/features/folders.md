@@ -36,11 +36,11 @@ unchanged, keeps the `category_id` on rename, and refuses a duplicate name withi
 | Moving an entry (`POST /api/entries/:id/move`) | `backend/src/entries/entries.service.ts` → `CategoriesService.assign` |
 | Moving a plain entity (`POST /api/entities/:id/move`), its folder in `GET /api/entities` | `backend/src/categories/entity-folders.controller.ts` → `CategoriesService.moveEntity`; `backend/src/lookups/entity-options.ts` |
 | Tidy-up assistant (`/api/categories/cleanup`) | `backend/src/categories/cleanup/` (`cleanup-analysis.ts` is pure) |
-| Frontend actions with toasts (move one / many, rename dialog + inline, order) | `frontend/src/composables/actions/useCategoryActions.ts` |
+| Frontend actions with toasts (move one / many, rename dialog + inline, order, sort by area) | `frontend/src/composables/actions/useCategoryActions/` (`index.ts` puts `entryMoves.ts`, `folderRenames.ts`, `folderOrder.ts`, `areaTidy.ts` together) |
 | Rename dialog with preview of every changed HA category | `frontend/src/components/categories/RenameCategoryDialog.vue` |
 | New folder, folder color | `components/categories/NewFolderDialog.vue`, `FolderColorDialog.vue`, `composables/actions/useCreateActions.ts` |
 | Move dialog for ticked rows, move field in the properties | `components/entries/MoveEntriesDialog.vue`, `CategoryMoveField.vue` |
-| Tidy-up hint and dialog | `components/cleanup/CleanupHint.vue`, `CleanupDialog.vue`, `stores/cleanupStore.ts`, `utils/categories/cleanupSelection.ts` |
+| Tidy-up hint and dialog | `components/cleanup/CleanupHint.vue`, `CleanupDialog.vue` with its lines `CleanupSplitRow.vue`, `CleanupMergeRow.vue` and the step `CleanupPreview.vue` (shared `cleanupDialog.css`), `stores/cleanupStore.ts`, `utils/categories/cleanupSelection.ts`; the lines in `composables/useCleanupChoices.ts`, texts in `composables/texts/useCleanupTexts.ts`, scope order in `constants/cleanup.ts` |
 
 ## Call chains
 
