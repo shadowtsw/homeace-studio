@@ -102,8 +102,7 @@ const ru: MessageSchema = {
       onlyLight: "Эта тема бывает только светлой.",
       modes: { light: "Светлое", dark: "Тёмное", system: "Системное" },
       theme: "Тема",
-      themeHint:
-        "Цвета HomeAce. «Когда», «И только если» и «Тогда» сохраняют свой цвет в каждой теме.",
+      themeHint: "Цвета HomeAce. Триггеры, условия и действия сохраняют свой цвет в каждой теме.",
       darkOnly: "только тёмная",
       themes: {
         standard: { name: "Стандарт", note: "привычный HomeAce" },

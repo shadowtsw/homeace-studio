@@ -100,7 +100,7 @@ export default {
       modes: { light: "Hell", dark: "Dunkel", system: "System" },
       theme: "Theme",
       themeHint:
-        "Die Farben von HomeAce. „Wenn“, „Und nur wenn“ und „Dann“ behalten in jedem Theme ihre Farbe.",
+        "Die Farben von HomeAce. Auslöser, Bedingungen und Aktionen behalten in jedem Theme ihre Farbe.",
       darkOnly: "nur dunkel",
       themes: {
         standard: { name: "Standard", note: "das bekannte HomeAce" },

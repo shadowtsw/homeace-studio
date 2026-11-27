@@ -100,7 +100,7 @@ const en: MessageSchema = {
       modes: { light: "Light", dark: "Dark", system: "System" },
       theme: "Theme",
       themeHint:
-        "The colours of HomeAce. “When”, “And only if” and “Then” keep their colour in every theme.",
+        "The colours of HomeAce. Triggers, conditions and actions keep their colour in every theme.",
       darkOnly: "dark only",
       themes: {
         standard: { name: "Standard", note: "the familiar HomeAce" },

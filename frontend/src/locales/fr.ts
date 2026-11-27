@@ -105,7 +105,7 @@ const fr: MessageSchema = {
       modes: { light: "Clair", dark: "Sombre", system: "Système" },
       theme: "Thème",
       themeHint:
-        "Les couleurs de HomeAce. « Quand », « Et seulement si » et « Alors » gardent leur couleur dans chaque thème.",
+        "Les couleurs de HomeAce. Déclencheurs, conditions et actions gardent leur couleur dans chaque thème.",
       darkOnly: "sombre uniquement",
       themes: {
         standard: { name: "Standard", note: "le HomeAce habituel" },
