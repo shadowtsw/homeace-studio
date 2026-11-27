@@ -142,16 +142,14 @@ export class FakeHa {
 
   /** REST GET below `/api`; null for unknown resources, like HA's 404. */
   restGet(path: string): unknown {
-    return path.startsWith(HA_REST_PATH.sceneConfig)
-      ? readScene({ ha: this.ha, path })
-      : readFlow({ ha: this.ha, path });
+    if (path.startsWith(HA_REST_PATH.sceneConfig)) return readScene({ ha: this.ha, path });
+    return readFlow({ ha: this.ha, path });
   }
 
   /** REST POST below `/api`: saves a scene, automation or script; a new key creates its entity. */
   restPost({ path, body }: RestPostOptions): unknown {
-    return path.startsWith(HA_REST_PATH.sceneConfig)
-      ? saveScene({ ha: this.ha, path, body })
-      : saveFlow({ ha: this.ha, path, body });
+    if (path.startsWith(HA_REST_PATH.sceneConfig)) return saveScene({ ha: this.ha, path, body });
+    return saveFlow({ ha: this.ha, path, body });
   }
 
   /** REST DELETE below `/api`: removes an automation or script and its entity. */

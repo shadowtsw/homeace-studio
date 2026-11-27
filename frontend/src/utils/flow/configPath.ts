@@ -38,7 +38,10 @@ export function setAtPath({ root, path, value }: SetAtPathOptions): unknown {
   const [head, ...rest] = path;
 
   if (typeof head === "number") {
-    if (!Array.isArray(root)) return head === 0 ? setAtPath({ root, path: rest, value }) : root;
+    // A single item where HA allows one: index 0 is that item, any other index leaves it alone
+    const isSingleItem = !Array.isArray(root);
+    if (isSingleItem && head !== 0) return root;
+    if (isSingleItem) return setAtPath({ root, path: rest, value });
 
     const copy: unknown[] = [...root];
     copy[head] = setAtPath({ root: copy[head], path: rest, value });

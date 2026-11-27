@@ -195,7 +195,9 @@ export const useEntriesStore = defineStore("entries", () => {
   async function deleteEntry(entry: Entry): Promise<void> {
     const isFlow = entry.kind === "automation" || entry.kind === "script";
 
-    await (isFlow ? deleteFlowRequest(entry.entityId) : deleteHelperRequest(entry.entityId));
+    if (isFlow) await deleteFlowRequest(entry.entityId);
+    else await deleteHelperRequest(entry.entityId);
+
     await load();
   }
 

@@ -15,12 +15,18 @@ export type NewFlow = {
 /** Creates an empty automation, script or scene in HA. @returns Its entity ID. */
 export async function createFlow(flow: NewFlow): Promise<string> {
   const { kind, name, categoryPath } = flow;
-  const result =
-    kind === "scene"
-      ? await apiPost<{ entityId: string }>({ path: "/scenes", body: { name, categoryPath } })
-      : await apiPost<{ entityId: string }>({ path: "/flows", body: flow });
 
-  return result.entityId;
+  // Scenes have their own endpoint; automations and scripts share one
+  if (kind === "scene") {
+    const scene = await apiPost<{ entityId: string }>({
+      path: "/scenes",
+      body: { name, categoryPath },
+    });
+    return scene.entityId;
+  }
+
+  const created = await apiPost<{ entityId: string }>({ path: "/flows", body: flow });
+  return created.entityId;
 }
 
 /** Deletes an automation or script from automations.yaml / scripts.yaml. */

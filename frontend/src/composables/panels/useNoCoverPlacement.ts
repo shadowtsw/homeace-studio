@@ -56,9 +56,8 @@ export function useNoCoverPlacement({ field, panel }: UseNoCoverPlacementOptions
     const scroller = scrollParentOf(fieldEl);
     // Nothing to scroll (inside a fixed panel): the side with more room, shorter
     if (!scroller) {
-      return roomAbove > roomBelow
-        ? setAbove({ box, room: roomAbove, height })
-        : setBelow({ box, room: roomBelow });
+      if (roomAbove > roomBelow) return setAbove({ box, room: roomAbove, height });
+      return setBelow({ box, room: roomBelow });
     }
     ownScrollUntil = Date.now() + 600;
     scroller.scrollTop += box.top - (scroller.getBoundingClientRect().top + GAP);
