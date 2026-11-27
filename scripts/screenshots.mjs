@@ -57,7 +57,7 @@ const SHOTS = [
     steps: async (page) => {
       await click(page, ".category-tree-node", "Energy");
       await click(page, ".entry-list-row__open", "Solar surplus into the wallbox");
-      await click(page, ".flow-block__chip--editable", "1500");
+      await click(page, ".flow-block-chip--editable", "1500");
     },
   },
   {
@@ -87,7 +87,7 @@ const SHOTS = [
       // The light of the "Turn on" action; the same name also appears in other blocks.
       await evaluate(
         page,
-        `[...document.querySelectorAll(".flow-block__chip--entity")]
+        `[...document.querySelectorAll(".flow-block-chip--entity")]
           .find((chip) => chip.closest(".flow-block")?.textContent.includes("Turn on"))
           ?.click()`,
       );

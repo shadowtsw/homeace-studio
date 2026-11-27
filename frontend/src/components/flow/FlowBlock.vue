@@ -23,33 +23,24 @@
           :title="t('flow.scriptStart.hint')"
           :aria-label="t('flow.scriptStart.hint')"
         />
-        <component
-          :is="isChipEditable(chip) ? 'button' : 'span'"
+        <FlowBlockChip
           v-for="(chip, index) in block.chips"
           :key="index"
-          :type="isChipEditable(chip) ? 'button' : undefined"
-          class="flow-block__chip"
-          :class="[
-            `flow-block__chip--${chip.kind}`,
-            {
-              'flow-block__chip--editable': isChipEditable(chip),
-              'flow-block__chip--missing': chip.isMissing,
-              'flow-block__chip--gone': chip.isGone,
-            },
-          ]"
-          @click="(event: MouseEvent) => openChip({ chip, event })"
-        >
-          <span v-if="chip.label" class="flow-block__chip-label">{{ chip.label }}</span>
-          {{ chip.text }}
-        </component>
-        <button
+          :kind="chip.kind"
+          :text="chip.text"
+          :label="chip.label"
+          :is-editable="isChipEditable(chip)"
+          :is-missing="chip.isMissing"
+          :is-gone="chip.isGone"
+          @open="(event) => openChip({ chip, event })"
+        />
+        <FlowBlockChip
           v-if="editing?.isEditable.value && block.addable.length > 0"
-          type="button"
-          class="flow-block__chip flow-block__chip--add"
-          @click="(event: MouseEvent) => openAdd(event)"
-        >
-          <span class="mdi mdi-plus" /> {{ t("flow.edit.add") }}
-        </button>
+          kind="add"
+          icon="mdi-plus"
+          :text="t('flow.edit.add')"
+          @open="openAdd"
+        />
         <span v-if="block.isDisabled" class="flow-block__tag">{{ t("flow.disabled") }}</span>
       </div>
       <button
@@ -64,16 +55,7 @@
       </button>
     </div>
 
-    <p
-      v-if="runState"
-      class="flow-block__run"
-      :class="`flow-block__run--${runStatusTone(runState.status)}`"
-    >
-      <span class="flow-block__run-icon">
-        <span class="mdi" :class="RUN_STATUS_ICON[runState.status]" />
-      </span>
-      <span>{{ runState.error ? errorText(runState.error) : noteOf(runState) }}</span>
-    </p>
+    <FlowBlockRunNote v-if="runState" :run-state="runState" />
 
     <p v-if="block.isUnknown" class="flow-block__hint">{{ t("flow.unknownHint") }}</p>
     <pre v-if="block.isUnknown && isTechnicalDetailsVisible" class="flow-block__raw">{{
@@ -115,12 +97,14 @@
 import { computed, inject } from "vue";
 import { useI18n } from "vue-i18n";
 
-import { RUN_STATUS_ICON, runStatusTone, useRunTexts } from "@/composables/texts/useRunTexts";
+import { runStatusTone } from "@/composables/texts/useRunTexts";
 import type { BlockChip, DisplayBlock, DisplayBranch } from "@/types/editor";
 import { dropKey } from "@/utils/flow/dropTargets";
 import { isScriptStartBlock } from "@/utils/flow/scriptStart";
 
 import AddBlockButton from "./AddBlockButton.vue";
+import FlowBlockChip from "./FlowBlockChip.vue";
+import FlowBlockRunNote from "./FlowBlockRunNote.vue";
 import { FLOW_EDITING, FLOW_RUN_STATES } from "./flowEditing";
 
 const JSON_INDENT = 2;
@@ -152,7 +136,6 @@ const editing = inject(FLOW_EDITING, null);
 /** Set while a run is shown on the flow: what this block did in it. */
 const runStates = inject(FLOW_RUN_STATES, null);
 const runState = computed(() => runStates?.value?.get(props.block.id) ?? null);
-const { noteOf, errorText } = useRunTexts();
 
 function isChipEditable(chip: BlockChip): boolean {
   return Boolean(editing?.isEditable.value && chip.edit);
@@ -204,50 +187,6 @@ function openMenu(event: MouseEvent): void {
 
 .flow-block--run-none > .flow-block__head {
   opacity: 0.55;
-}
-
-.flow-block__run {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin: 0;
-  color: var(--muted);
-  font-size: 12.5px;
-}
-
-.flow-block__run--err {
-  color: var(--err);
-}
-
-.flow-block__run-icon {
-  display: grid;
-  flex: none;
-  place-items: center;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: var(--sunken);
-  font-size: 12px;
-}
-
-.flow-block__run--ok .flow-block__run-icon {
-  background: var(--ok-soft);
-  color: var(--ok);
-}
-
-.flow-block__run--warn .flow-block__run-icon {
-  background: var(--warn-soft);
-  color: var(--warn);
-}
-
-.flow-block__run--err .flow-block__run-icon {
-  background: var(--err-soft);
-  color: var(--err);
-}
-
-.flow-block__run--run .flow-block__run-icon {
-  background: var(--accent-soft);
-  color: var(--accent);
 }
 
 /* The ⋮ menu shows on hover of its own block only (not of every parent), always on touch. */
@@ -327,87 +266,6 @@ function openMenu(event: MouseEvent): void {
 .flow-block__info {
   color: var(--text-muted);
   cursor: help;
-}
-
-.flow-block__chip {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 5px;
-  max-width: 100%;
-  padding: 2px 9px;
-  border-radius: 7px;
-  background: var(--sunken);
-  font-size: 13.5px;
-  font-weight: 600;
-  overflow-wrap: anywhere;
-}
-
-button.flow-block__chip {
-  border: 0;
-  color: inherit;
-  font-family: inherit;
-  line-height: inherit;
-  text-align: left;
-}
-
-.flow-block__chip--editable {
-  cursor: pointer;
-  box-shadow: inset 0 -2px 0 var(--line-strong);
-  transition: background 0.12s;
-}
-
-.flow-block__chip--editable:hover {
-  background: var(--line);
-}
-
-/* A required value is still empty: outlined in the warning color, like in the click dummy. */
-.flow-block__chip--gone,
-.flow-block__chip--gone.flow-block__chip--entity {
-  background: var(--err-soft);
-  color: var(--err);
-  box-shadow: inset 0 0 0 1.5px var(--err);
-}
-
-.flow-block__chip--missing,
-.flow-block__chip--missing.flow-block__chip--entity {
-  background: transparent;
-  box-shadow: inset 0 0 0 1.5px var(--warn);
-  color: var(--warn);
-}
-
-.flow-block__chip--missing.flow-block__chip--editable:hover {
-  background: var(--warn-soft);
-}
-
-.flow-block__chip--add {
-  align-items: center;
-  background: transparent;
-  color: var(--faint);
-  font-weight: 500;
-  cursor: pointer;
-}
-
-.flow-block__chip--add:hover {
-  background: var(--sunken);
-  color: var(--fg);
-}
-
-.flow-block__chip--entity {
-  background: var(--section-soft);
-  box-shadow: inset 0 -2px 0 color-mix(in srgb, var(--section-color) 40%, transparent);
-}
-
-.flow-block__chip--entity.flow-block__chip--editable:hover {
-  background: color-mix(in srgb, var(--section-color) 22%, var(--surface));
-}
-
-.flow-block__chip-label {
-  /* A long value may wrap; the short label in front of it must not break mid-word. */
-  flex: none;
-  white-space: nowrap;
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 500;
 }
 
 .flow-block__tag {
