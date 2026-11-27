@@ -58,7 +58,7 @@ import type { useAreaActions } from "@/composables/actions/useAreaActions";
 import type { useCategoryActions } from "@/composables/actions/useCategoryActions";
 import type { useCreateActions } from "@/composables/actions/useCreateActions";
 import type { useEntityBulkMove } from "@/composables/actions/useEntityBulkMove";
-import type { useStudioData } from "@/composables/useStudioData";
+import type { useStudioData } from "@/composables/studio/useStudioData";
 import { CATEGORY_FILTER, NAV_MODE, type NavMode } from "@/constants/entries";
 import { useAreasStore } from "@/stores/areasStore";
 import { useCheckupStore } from "@/stores/checkupStore";

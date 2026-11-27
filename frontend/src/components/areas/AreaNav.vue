@@ -68,7 +68,7 @@
 <script setup lang="ts">
 import { useI18n } from "vue-i18n";
 
-import type { AreaNavItem } from "@/composables/useStudioData";
+import type { AreaNavItem } from "@/composables/studio/useStudioData";
 import { areaFilter } from "@/utils/entries/entryFilter";
 
 import AreaNavNode from "./AreaNavNode.vue";

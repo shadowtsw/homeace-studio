@@ -73,7 +73,7 @@ import { onClickOutside } from "@vueuse/core";
 import { ref, useTemplateRef } from "vue";
 import { useI18n } from "vue-i18n";
 
-import type { ListTitle } from "@/composables/useListTitle";
+import type { ListTitle } from "@/composables/entryList/useListTitle";
 import {
   ENTRY_KIND_ICON,
   NEW_ENTRY_KINDS,

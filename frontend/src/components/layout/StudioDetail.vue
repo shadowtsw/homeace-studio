@@ -39,10 +39,10 @@
 import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 
-import EntryDetail from "@/components/entries/EntryDetail.vue";
+import EntryDetail from "@/components/entries/detail/EntryDetail.vue";
 import type { useCategoryActions } from "@/composables/actions/useCategoryActions";
 import type { useEntryActions } from "@/composables/actions/useEntryActions";
-import type { useStudioData } from "@/composables/useStudioData";
+import type { useStudioData } from "@/composables/studio/useStudioData";
 import type { EntryAction } from "@/constants/entries";
 import { useCheckupStore } from "@/stores/checkupStore";
 import { useEditorStore } from "@/stores/editorStore";

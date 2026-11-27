@@ -98,10 +98,10 @@ import { useElementSize } from "@vueuse/core";
 import { computed, toRef, useTemplateRef } from "vue";
 import { useI18n } from "vue-i18n";
 
-import { useListArrowKeys } from "@/composables/useListArrowKeys";
-import { useListGroups } from "@/composables/useListGroups";
-import { useListTicking } from "@/composables/useListTicking";
-import { useListTitle } from "@/composables/useListTitle";
+import { useListArrowKeys } from "@/composables/entryList/useListArrowKeys";
+import { useListGroups } from "@/composables/entryList/useListGroups";
+import { useListTicking } from "@/composables/entryList/useListTicking";
+import { useListTitle } from "@/composables/entryList/useListTitle";
 import type { EntryAction, ListScope, NewEntryKind } from "@/constants/entries";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { useStudioStore } from "@/stores/studioStore";

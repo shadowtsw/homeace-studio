@@ -38,13 +38,13 @@ import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 
 import CheckupList from "@/components/checkup/CheckupList.vue";
-import EntryList from "@/components/entries/EntryList.vue";
+import EntryList from "@/components/entries/list/EntryList.vue";
 import type { useCategoryActions } from "@/composables/actions/useCategoryActions";
 import type { useCreateActions } from "@/composables/actions/useCreateActions";
 import type { useEntityBulkMove } from "@/composables/actions/useEntityBulkMove";
 import type { useEntryActions } from "@/composables/actions/useEntryActions";
 import type { useEntityMenu } from "@/composables/useEntityMenu";
-import type { useStudioData } from "@/composables/useStudioData";
+import type { useStudioData } from "@/composables/studio/useStudioData";
 import { CATEGORY_FILTER, NEW_ENTRY_KIND, type NewEntryKind } from "@/constants/entries";
 import { useAreasStore } from "@/stores/areasStore";
 import { useEntriesStore } from "@/stores/entriesStore";
