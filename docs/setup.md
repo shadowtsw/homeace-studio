@@ -154,8 +154,30 @@ Push the version change only together with that CHANGELOG section (rename "## Un
 update right away, and the download works once the workflow is done (a few minutes). The packages on
 ghcr.io must be public (GitHub → profile → Packages → package → Package settings → Change visibility).
 
-The checks also run on every push to `main` and on every pull request, Dependabot's included
+The checks also run on every push to `main` and `next` and on every pull request, Dependabot's included
 (`.github/dependabot.yml`: weekly npm updates, grouped; monthly actions and the Node base image).
+
+### Branches
+
+| Branch | Holds | Gets |
+| --- | --- | --- |
+| `main` | the release line: exactly what is in the Preview, plus its fixes | fixes only while a version waits in the Preview |
+| `next` | the next version, collected piece by piece | finished pieces (features, clean-ups), each after the checks and one approval |
+| feature branches | one piece of work | merged into `next` when done |
+
+Both image workflows build from `main` only, so nothing on `next` ever reaches a user by accident.
+
+- **A new version goes out:** test build from `next` on a real HA, the two release approvals, then `main`
+  fast-forwards to `next` and `homeace-studio-preview/config.yaml` gets the new version
+  (`0.15.0-preview.1`). The Preview workflow builds it.
+- **Moving on to the normal app:** `homeace-studio/config.yaml` on `main` gets the same version without
+  the suffix (`0.15.0`), with its CHANGELOG section; the normal workflow builds it from the very code the
+  Preview ran.
+- **Fixes while a version waits in the Preview:** on `main` (bump `preview.N`), then merged into `next`.
+- **An urgent fix for the normal app while a newer version waits in the Preview** (rare): a branch from the
+  last normal tag (e.g. `v0.14.1`), the fix there, the normal version raised on that branch, and "Build app
+  images" started by hand on it (Actions → Run workflow → that branch). Afterwards the fix goes into `main`
+  and `next` too (rule 8 below).
 
 ### Preview channel
 
