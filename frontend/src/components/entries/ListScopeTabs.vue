@@ -7,20 +7,28 @@
       :aria-pressed="scopes.includes(option)"
       :class="{ 'entry-list__scope--active': scopes.includes(option) }"
       :title="t('scopeMenu.hint', { name: t(`scope.${option}`), key: modifierKey })"
-      @click="(event: MouseEvent) => onClick(event, option)"
-      @contextmenu.prevent="(event: MouseEvent) => openMenu(event, option)"
-      @pointerdown="(event: PointerEvent) => startLongPress(event, option)"
+      @click="(event: MouseEvent) => onClick({ event, scope: option })"
+      @contextmenu.prevent="(event: MouseEvent) => openMenu({ event, scope: option })"
+      @pointerdown="(event: PointerEvent) => startLongPress({ event, scope: option })"
     >
       <span v-if="option === SCOPE_ENTITIES" class="mdi mdi-devices" />
       {{ t(`scope.${option}`) }}<span class="list-scope-tabs__count">{{ counts[option] }}</span>
     </button>
 
     <div v-if="menu" class="list-scope-tabs__menu" role="menu" :style="menu.style">
-      <button type="button" role="menuitem" @click="choose('select', menu.scope)">
+      <button
+        type="button"
+        role="menuitem"
+        @click="choose({ action: 'select', scope: menu.scope })"
+      >
         <span class="mdi mdi-filter-outline" />
         {{ t("scopeMenu.only", { name: t(`scope.${menu.scope}`) }) }}
       </button>
-      <button type="button" role="menuitem" @click="choose('toggle', menu.scope)">
+      <button
+        type="button"
+        role="menuitem"
+        @click="choose({ action: 'toggle', scope: menu.scope })"
+      >
         <span
           class="mdi"
           :class="
@@ -73,7 +81,7 @@ let pressTimer: ReturnType<typeof setTimeout> | undefined;
 /** The click after a long press only lifts the finger; it must not choose the filter as well. */
 let isPressHandled = false;
 
-function onClick(event: MouseEvent, scope: ListScope): void {
+function onClick({ event, scope }: { event: MouseEvent; scope: ListScope }): void {
   if (isPressHandled) {
     isPressHandled = false;
     return;
@@ -83,7 +91,7 @@ function onClick(event: MouseEvent, scope: ListScope): void {
   else emit("select", scope);
 }
 
-function openMenu(event: MouseEvent | PointerEvent, scope: ListScope): void {
+function openMenu({ event, scope }: { event: MouseEvent | PointerEvent; scope: ListScope }): void {
   // On touch the long press opened it already; the context menu event follows on some phones
   if (menu.value?.scope === scope && isPressHandled) return;
 
@@ -94,7 +102,7 @@ function openMenu(event: MouseEvent | PointerEvent, scope: ListScope): void {
   menu.value = { scope, style: { left: `${Math.max(0, left)}px`, top: `${top}px` } };
 }
 
-function startLongPress(event: PointerEvent, scope: ListScope): void {
+function startLongPress({ event, scope }: { event: PointerEvent; scope: ListScope }): void {
   if (event.pointerType === "mouse") return;
 
   isPressHandled = false;
@@ -102,12 +110,12 @@ function startLongPress(event: PointerEvent, scope: ListScope): void {
   const target = event.currentTarget as HTMLElement;
   pressTimer = setTimeout(() => {
     isPressHandled = true;
-    openMenu({ currentTarget: target } as unknown as PointerEvent, scope);
+    openMenu({ event: { currentTarget: target } as unknown as PointerEvent, scope });
   }, LONG_PRESS_MS);
 }
 
 /** The scope is passed in: the menu closes first, and with it `menu`. */
-function choose(action: "select" | "toggle", scope: ListScope): void {
+function choose({ action, scope }: { action: "select" | "toggle"; scope: ListScope }): void {
   menu.value = null;
   if (action === "select") emit("select", scope);
   else emit("toggle", scope);

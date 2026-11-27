@@ -54,7 +54,12 @@
             :value="move.area.areaId"
             :title="t('areas.tidy.pickArea')"
             :aria-label="t('areas.tidy.pickArea')"
-            @change="pick(move.entry.entityId, ($event.target as HTMLSelectElement).value)"
+            @change="
+              pick({
+                entityId: move.entry.entityId,
+                areaId: ($event.target as HTMLSelectElement).value,
+              })
+            "
           >
             <option v-for="area in move.areas" :key="area.areaId" :value="area.areaId">
               {{ area.name }}
@@ -183,7 +188,7 @@ function toggle(entityId: string): void {
   skipped.value = next;
 }
 
-function pick(entityId: string, areaId: string): void {
+function pick({ entityId, areaId }: { entityId: string; areaId: string }): void {
   picks.value = { ...picks.value, [entityId]: areaId };
 }
 

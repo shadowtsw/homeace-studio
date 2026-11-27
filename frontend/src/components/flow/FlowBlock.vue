@@ -37,7 +37,7 @@
               'flow-block__chip--gone': chip.isGone,
             },
           ]"
-          @click="(event: MouseEvent) => openChip(chip, event)"
+          @click="(event: MouseEvent) => openChip({ chip, event })"
         >
           <span v-if="chip.label" class="flow-block__chip-label">{{ chip.label }}</span>
           {{ chip.text }}
@@ -158,7 +158,7 @@ function isChipEditable(chip: BlockChip): boolean {
   return Boolean(editing?.isEditable.value && chip.edit);
 }
 
-function openChip(chip: BlockChip, event: MouseEvent): void {
+function openChip({ chip, event }: { chip: BlockChip; event: MouseEvent }): void {
   if (!editing || !chip.edit || !isChipEditable(chip)) return;
 
   editing.openEditor({ edit: chip.edit, anchor: event.currentTarget as HTMLElement });

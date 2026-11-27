@@ -87,18 +87,18 @@ type Row = { node: CategoryNode; depth: number };
 const rows = computed<Row[]>(() => {
   const result: Row[] = [];
   const needle = query.value.trim().toLowerCase();
-  const walk = (nodes: CategoryNode[], depth: number): void => {
+  const walk = ({ nodes, depth }: { nodes: CategoryNode[]; depth: number }): void => {
     for (const node of nodes) {
       if (needle) {
         if (node.path.toLowerCase().includes(needle)) result.push({ node, depth: 0 });
-        walk(node.children, depth + 1);
+        walk({ nodes: node.children, depth: depth + 1 });
       } else {
         result.push({ node, depth });
-        if (expanded.value.has(node.path)) walk(node.children, depth + 1);
+        if (expanded.value.has(node.path)) walk({ nodes: node.children, depth: depth + 1 });
       }
     }
   };
-  walk(tree.value, 0);
+  walk({ nodes: tree.value, depth: 0 });
 
   return result;
 });

@@ -24,7 +24,7 @@
               :key="`${group.role}:${use.entityId}`"
               :use="use"
               :option="optionOf(use.entityId)"
-              :label="labelOf(use.entityId, use.name)"
+              :label="labelOf({ entityId: use.entityId, name: use.name })"
               :entry="entryOf(use.entityId)"
               :entry-of="entryOf"
               :gone-hint="goneHint"
@@ -138,7 +138,7 @@ function entryOf(entityId: string): Entry | null {
 }
 
 /** "Front door sensor: Battery" when HA knows the device, else the name, else the ID. */
-function labelOf(entityId: string, name: string | null): string {
+function labelOf({ entityId, name }: { entityId: string; name: string | null }): string {
   const option = optionOf(entityId);
   if (option)
     return rowLabel({ entity: option, where: "list", deviceEntityCounts: deviceCounts.value });
