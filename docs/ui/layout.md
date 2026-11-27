@@ -134,7 +134,7 @@ Choosing a tree node always sets `isNavOpen = false`, and opening an entry alway
   language, like a hand-written signature, so it has no locale keys.
 - **Rules:** a setting only exists when users really want it differently. Texts describe what the
   user notices, never how it is built (technical detail only behind "Technische Details").
-- **Aussehen** is a placeholder until the themes come (0.15).
+- **Aussehen**: brightness (device) and theme (user), see [../features/themes.md](../features/themes.md).
 - Scripts click the tabs by their class `.settings-window__tab` (`scripts/screenshots.mjs` and the
   comparison tools); keep the name.
 

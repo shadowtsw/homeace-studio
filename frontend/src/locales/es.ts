@@ -96,7 +96,25 @@ const es: MessageSchema = {
     title: "Ajustes",
     close: "Cerrar",
     backTo: "Volver a {name}",
-    appearanceSoon: "Pronto aquí: los temas y la elección entre claro y oscuro.",
+    appearance: {
+      brightness: "Brillo",
+      brightnessHint: "Claro, oscuro o como esté ajustado este dispositivo.",
+      onlyDark: "Este tema solo existe en oscuro.",
+      onlyLight: "Este tema solo existe en claro.",
+      modes: { light: "Claro", dark: "Oscuro", system: "Sistema" },
+      theme: "Tema",
+      themeHint:
+        "Los colores de HomeAce. “Cuando”, “Y solo si” y “Entonces” mantienen su color en cada tema.",
+      darkOnly: "solo oscuro",
+      themes: {
+        standard: { name: "Estándar", note: "el HomeAce de siempre" },
+        fjord: { name: "Fiordo", note: "fresco, gris azulado" },
+        forest: { name: "Bosque", note: "cálido, verde, terroso" },
+        sand: { name: "Arena", note: "beige y terracota" },
+        midnight: { name: "Medianoche", note: "casi negro, para la noche" },
+        contrast: { name: "Contraste", note: "intenso y fácil de leer" },
+      },
+    },
     summary: {
       on: "activado",
       off: "desactivado",

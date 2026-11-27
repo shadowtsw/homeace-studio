@@ -19,11 +19,13 @@ describe("PREFERENCES", () => {
       "seenVersion",
       "storedTraces",
       "technicalDetails",
+      "theme",
     ]);
   });
 
-  it("keeps the look of the columns and the filters on this device", () => {
+  it("keeps the look of the columns, the filters and the brightness on this device", () => {
     expect(preferenceNamesWithScope(PREFERENCE_SCOPE.device)).toEqual([
+      "colorMode",
       "detailFolded",
       "listScopes",
       "navMode",

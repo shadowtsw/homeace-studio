@@ -1,5 +1,8 @@
 /*
  * Design tokens, taken from the click dummy. Components use only these variables.
+ * These are the theme Standard, for the first paint: once the app runs, the theme store sets every
+ * colour of the chosen theme on <html> (utils/themes/). Keep the values equal to STANDARD_TOKENS in
+ * utils/themes/builtInThemes.ts; a test compares them.
  * Light is the default; dark follows the system setting.
  */
 :root {
@@ -15,6 +18,13 @@
   --accent: #3451d1;
   --accent-soft: #e7ebfc;
   --on-accent: #ffffff;
+  /* The flow sections "Wenn", "Und nur wenn", "Dann": orange, teal, blue in every theme */
+  --flow-when: #b0620a;
+  --flow-when-soft: #fcefdc;
+  --flow-if: #0d7569;
+  --flow-if-soft: #dcf1ed;
+  --flow-then: #3451d1;
+  --flow-then-soft: #e7ebfc;
   --kind-automation: #b0620a;
   --kind-automation-soft: #fcefdc;
   --kind-script: #6b43c2;
@@ -58,6 +68,12 @@
     --accent: #8197ff;
     --accent-soft: #222b50;
     --on-accent: #0e1117;
+    --flow-when: #f0a54a;
+    --flow-when-soft: #38270f;
+    --flow-if: #4cc4b3;
+    --flow-if-soft: #11322d;
+    --flow-then: #8197ff;
+    --flow-then-soft: #222b50;
     --kind-automation: #f0a54a;
     --kind-automation-soft: #38270f;
     --kind-script: #b595f6;

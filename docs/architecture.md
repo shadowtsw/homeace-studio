@@ -92,12 +92,12 @@ frontend/src/
   stores/                Pinia, one per concern (entries, studio, settings, editor, folders, …)
   services/              API calls, one file per backend area; api.ts has apiFetch / ApiError
   utils/                 pure logic in topic folders (areas/, categories/, entries/, entities/, flow/,
-                         entitySorting/, runs/, whatsNew/) plus small shared helpers; tests in a
+                         entitySorting/, runs/, themes/, whatsNew/) plus small shared helpers; tests in a
                          __tests__/ folder next to the code
   types/                 mirrors of backend models (entry.ts, editor.ts)
   constants/             kinds, filters, actions, layout, helpers, What's new
   i18n/, locales/        vue-i18n, de.ts is the schema                         features/i18n.md
-  styles/                tokens.css (light + dark), base.css (shared buttons)
+  styles/                tokens.css (theme Standard, light + dark), base.css (shared buttons)   features/themes.md
 ```
 
 - **Behind HA ingress** the app runs under a changing prefix (`/api/hassio_ingress/<token>/`). So Vite
@@ -166,6 +166,7 @@ Risk per area, quick checks and the check per HA release: [ha-compatibility.md](
 | live updates | [features/live-updates.md](features/live-updates.md) |
 | AI / MCP | [features/ai-mcp.md](features/ai-mcp.md) |
 | the tool "Entitäten einsortieren" | [features/entity-sorting.md](features/entity-sorting.md) |
+| themes, brightness, colour tokens | [features/themes.md](features/themes.md) |
 | texts, languages, error messages | [features/i18n.md](features/i18n.md) |
 | new endpoint, HA command, overlay field, component | [recipes.md](recipes.md) |
 | a new HA release, what it can break, HA interfaces at risk | [ha-compatibility.md](ha-compatibility.md) |

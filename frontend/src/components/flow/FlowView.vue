@@ -267,23 +267,26 @@ watch(() => props.entityId, close);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
 }
 
-/* Each section has its color; blocks and chips inside take it from these variables. */
+/*
+ * Each section has its color; blocks and chips inside take it from these variables. The flow
+ * colors keep their family in every theme, also when the theme's accent is another color.
+ */
 .flow-view__section {
-  --section-color: var(--accent);
-  --section-soft: var(--accent-soft);
+  --section-color: var(--flow-then);
+  --section-soft: var(--flow-then-soft);
 
   position: relative;
   padding: 0 0 24px 30px;
 }
 
 .flow-view__section--when {
-  --section-color: var(--kind-automation);
-  --section-soft: var(--kind-automation-soft);
+  --section-color: var(--flow-when);
+  --section-soft: var(--flow-when-soft);
 }
 
 .flow-view__section--if {
-  --section-color: var(--kind-helper);
-  --section-soft: var(--kind-helper-soft);
+  --section-color: var(--flow-if);
+  --section-soft: var(--flow-if-soft);
 }
 
 /* While an entity is dragged: fitting sections light up, the others step back. */

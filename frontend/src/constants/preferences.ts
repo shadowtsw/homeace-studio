@@ -31,6 +31,10 @@ export const PREFERENCES = {
   storedTraces: { storageKey: "homeace.storedTraces", scope: PREFERENCE_SCOPE.user },
   /** The version whose "What's new" highlights the user confirmed with "OK". */
   seenVersion: { storageKey: "homeace.seenVersion", scope: PREFERENCE_SCOPE.user },
+  /** The chosen theme (its id); it follows the user like the language. */
+  theme: { storageKey: "homeace.theme", scope: PREFERENCE_SCOPE.user },
+  /** Light, dark or as the system: depends on the device (a wall tablet light, a phone dark). */
+  colorMode: { storageKey: "homeace.colorMode", scope: PREFERENCE_SCOPE.device },
   paneWidths: { storageKey: "homeace.paneWidths", scope: PREFERENCE_SCOPE.device },
   detailFolded: { storageKey: "homeace.detailFolded", scope: PREFERENCE_SCOPE.device },
   navMode: { storageKey: "homeace.navMode", scope: PREFERENCE_SCOPE.device },

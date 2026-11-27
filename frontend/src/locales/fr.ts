@@ -97,7 +97,25 @@ const fr: MessageSchema = {
     title: "Paramètres",
     close: "Fermer",
     backTo: "Retour à {name}",
-    appearanceSoon: "Les thèmes et le choix entre clair et sombre arrivent bientôt ici.",
+    appearance: {
+      brightness: "Luminosité",
+      brightnessHint: "Clair, sombre ou comme réglé sur cet appareil.",
+      onlyDark: "Ce thème n’existe qu’en sombre.",
+      onlyLight: "Ce thème n’existe qu’en clair.",
+      modes: { light: "Clair", dark: "Sombre", system: "Système" },
+      theme: "Thème",
+      themeHint:
+        "Les couleurs de HomeAce. « Quand », « Et seulement si » et « Alors » gardent leur couleur dans chaque thème.",
+      darkOnly: "sombre uniquement",
+      themes: {
+        standard: { name: "Standard", note: "le HomeAce habituel" },
+        fjord: { name: "Fjord", note: "frais, gris-bleu" },
+        forest: { name: "Forêt", note: "chaud, vert, terreux" },
+        sand: { name: "Sable", note: "beige et terre cuite" },
+        midnight: { name: "Minuit", note: "presque noir, pour la nuit" },
+        contrast: { name: "Contraste", note: "marqué et bien lisible" },
+      },
+    },
     summary: {
       on: "activé",
       off: "désactivé",

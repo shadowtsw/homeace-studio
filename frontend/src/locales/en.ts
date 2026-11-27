@@ -92,7 +92,25 @@ const en: MessageSchema = {
     title: "Settings",
     close: "Close",
     backTo: "Back to {name}",
-    appearanceSoon: "Themes and the choice between light and dark will be here soon.",
+    appearance: {
+      brightness: "Brightness",
+      brightnessHint: "Light, dark, or as this device is set.",
+      onlyDark: "This theme only comes in dark.",
+      onlyLight: "This theme only comes in light.",
+      modes: { light: "Light", dark: "Dark", system: "System" },
+      theme: "Theme",
+      themeHint:
+        "The colours of HomeAce. “When”, “And only if” and “Then” keep their colour in every theme.",
+      darkOnly: "dark only",
+      themes: {
+        standard: { name: "Standard", note: "the familiar HomeAce" },
+        fjord: { name: "Fjord", note: "cool, blue-grey" },
+        forest: { name: "Forest", note: "warm, green, earthy" },
+        sand: { name: "Sand", note: "beige and terracotta" },
+        midnight: { name: "Midnight", note: "almost black, for the night" },
+        contrast: { name: "Contrast", note: "strong and easy to read" },
+      },
+    },
     summary: {
       on: "on",
       off: "off",

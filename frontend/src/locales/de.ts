@@ -92,7 +92,25 @@ export default {
     title: "Einstellungen",
     close: "Schließen",
     backTo: "Zurück zu {name}",
-    appearanceSoon: "Hier kommen bald die Themes und die Wahl zwischen hell und dunkel hin.",
+    appearance: {
+      brightness: "Helligkeit",
+      brightnessHint: "Hell, dunkel oder so, wie dieses Gerät eingestellt ist.",
+      onlyDark: "Dieses Theme gibt es nur dunkel.",
+      onlyLight: "Dieses Theme gibt es nur hell.",
+      modes: { light: "Hell", dark: "Dunkel", system: "System" },
+      theme: "Theme",
+      themeHint:
+        "Die Farben von HomeAce. „Wenn“, „Und nur wenn“ und „Dann“ behalten in jedem Theme ihre Farbe.",
+      darkOnly: "nur dunkel",
+      themes: {
+        standard: { name: "Standard", note: "das bekannte HomeAce" },
+        fjord: { name: "Fjord", note: "kühl, Blaugrau" },
+        forest: { name: "Wald", note: "warm, grün, erdig" },
+        sand: { name: "Sand", note: "Beige und Terrakotta" },
+        midnight: { name: "Mitternacht", note: "fast schwarz, für nachts" },
+        contrast: { name: "Kontrast", note: "kräftig und gut lesbar" },
+      },
+    },
     /** The line under each section in the list on phones: its current values. */
     summary: {
       on: "an",

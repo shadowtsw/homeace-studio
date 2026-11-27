@@ -33,6 +33,7 @@ import { LOCALE_NAMES } from "@/i18n";
 import { useAiStore } from "@/stores/aiStore";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { useSettingsWindowStore } from "@/stores/settingsWindowStore";
+import { useThemeStore } from "@/stores/themeStore";
 import { useWhatsNewStore } from "@/stores/whatsNewStore";
 
 const SUMMARY_SEPARATOR = " · ";
@@ -49,6 +50,7 @@ const settingsWindow = useSettingsWindowStore();
 const settings = useSettingsStore();
 const ai = useAiStore();
 const whatsNew = useWhatsNewStore();
+const themeStore = useThemeStore();
 
 const generalSummary = computed(() => {
   const technicalKey = settings.isTechnicalDetailsVisible
@@ -59,6 +61,14 @@ const generalSummary = computed(() => {
     : "settings.summary.listLabelsOff";
 
   return [LOCALE_NAMES[settings.locale], t(technicalKey), t(labelsKey)].join(SUMMARY_SEPARATOR);
+});
+
+/** Brightness, then the theme: "System · Standard". */
+const appearanceSummary = computed(() => {
+  const brightness = t(`settings.appearance.modes.${themeStore.modeChoice}`);
+  const themeName = t(`settings.appearance.themes.${themeStore.theme.id}.name`);
+
+  return [brightness, themeName].join(SUMMARY_SEPARATOR);
 });
 
 const editingSummary = computed(() => {
@@ -84,7 +94,7 @@ const aboutSummary = computed(() => {
 
 const summaries = computed<Record<SettingsTab, string>>(() => ({
   general: generalSummary.value,
-  appearance: "",
+  appearance: appearanceSummary.value,
   editing: editingSummary.value,
   tools: toolsSummary.value,
   ai: "",

@@ -264,7 +264,7 @@ function openMenu(event: MouseEvent): void {
 }
 
 .flow-block__info {
-  color: var(--text-muted);
+  color: var(--muted);
   cursor: help;
 }
 
