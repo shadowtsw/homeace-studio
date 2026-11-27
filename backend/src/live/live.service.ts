@@ -15,6 +15,12 @@ export const LIVE_DEBOUNCE_MS = 500;
 export class LiveService implements OnModuleInit {
   private readonly changes = new Subject<void>();
 
+  /**
+   * Fires at once for every relevant change. For caches: a request right after a change must not
+   * get the old data while the burst is still going on.
+   */
+  readonly eachChange$: Observable<void> = this.changes.asObservable();
+
   /** Fires once after a burst of relevant HA events. Shared by all connected browsers. */
   readonly changes$: Observable<void> = this.changes.pipe(debounceTime(LIVE_DEBOUNCE_MS), share());
 

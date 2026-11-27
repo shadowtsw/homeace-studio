@@ -35,11 +35,16 @@ export type HomeSnapshot = {
 
 const FLOW_KINDS: readonly FlowKind[] = [FLOW_KIND.automation, FLOW_KIND.script];
 
+/** A read in progress, with the generation of the data it started on. */
+type RunningRead = { generation: number; snapshot: Promise<HomeSnapshot> };
+
 /** Reads entries, states, registry and every flow config from HA, shared for a short while. */
 @Injectable()
 export class HomeSnapshotService implements OnModuleInit {
   private cached: HomeSnapshot | null = null;
-  private running: Promise<HomeSnapshot> | null = null;
+  private running: RunningRead | null = null;
+  /** Counts the changes; a read that started before one is neither kept nor shared. */
+  private generation = 0;
 
   constructor(
     private readonly entries: EntriesService,
@@ -49,24 +54,49 @@ export class HomeSnapshotService implements OnModuleInit {
     private readonly live: LiveService,
   ) {}
 
-  /** Anything that changes in HA makes the next request read again. */
+  /**
+   * Anything that changes in HA makes the next request read again, at once and not only after the
+   * burst of events, so a request right after a change never gets the old data.
+   */
   onModuleInit(): void {
-    this.live.changes$.subscribe(() => this.invalidate());
+    this.live.eachChange$.subscribe(() => this.invalidate());
   }
 
   invalidate(): void {
     this.cached = null;
+    this.generation++;
   }
 
-  /** The current snapshot; requests during a read share it. */
+  /** The current snapshot; requests during a read share it, unless something changed meanwhile. */
   get(): Promise<HomeSnapshot> {
     const now = this.clock();
 
     if (this.cached && now - this.cached.at < SNAPSHOT_CACHE_MS)
       return Promise.resolve(this.cached);
 
-    this.running ??= this.read(now).finally(() => (this.running = null));
-    return this.running;
+    if (this.running?.generation !== this.generation) {
+      const generation = this.generation;
+      this.running = { generation, snapshot: this.readAndKeep({ now, generation }) };
+    }
+
+    return this.running.snapshot;
+  }
+
+  /** Reads and keeps the result, unless something changed while reading (it may be old then). */
+  private async readAndKeep({
+    now,
+    generation,
+  }: {
+    now: number;
+    generation: number;
+  }): Promise<HomeSnapshot> {
+    try {
+      const snapshot = await this.read(now);
+      if (generation === this.generation) this.cached = snapshot;
+      return snapshot;
+    } finally {
+      if (this.running?.generation === generation) this.running = null;
+    }
   }
 
   private async read(now: number): Promise<HomeSnapshot> {
@@ -98,7 +128,7 @@ export class HomeSnapshotService implements OnModuleInit {
       }),
     );
 
-    this.cached = {
+    return {
       at: now,
       entries,
       states,
@@ -108,7 +138,6 @@ export class HomeSnapshotService implements OnModuleInit {
       configs,
       lastRuns: lastRunsOf({ traces, registry }),
     };
-    return this.cached;
   }
 }
 
