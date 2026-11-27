@@ -3,9 +3,7 @@
     <div class="app-top-bar__brand">
       <span class="app-top-bar__mark"><span class="mdi mdi-file-tree-outline" /></span>
       <span class="app-top-bar__name">HomeAce Studio</span>
-      <span v-if="IS_PREVIEW" class="app-top-bar__preview" :title="t('app.previewHint')">
-        {{ t("app.preview") }}
-      </span>
+      <PreviewNote v-if="IS_PREVIEW" />
       <span class="app-top-bar__tagline">{{ t("app.tagline") }}</span>
     </div>
 
@@ -39,11 +37,12 @@ import { useSettingsWindowStore } from "@/stores/settingsWindowStore";
 import { isPreviewVersion } from "@/utils/releaseChannel";
 
 import LanguageMenu from "./LanguageMenu.vue";
+import PreviewNote from "./PreviewNote.vue";
 import WhatsNewMenu from "./WhatsNewMenu.vue";
 
 type ConnectionStatus = "loading" | "connected" | "failed";
 
-/** The Preview app shows a small mark next to the name (set at build time, vite.config.ts). */
+/** The Preview app shows its mark next to the name (set at build time, vite.config.ts). */
 const IS_PREVIEW = isPreviewVersion(__APP_VERSION__);
 
 const props = defineProps<{
@@ -117,20 +116,6 @@ const statusText = computed(() => {
   letter-spacing: -0.01em;
   white-space: nowrap;
   text-overflow: ellipsis;
-}
-
-.app-top-bar__preview {
-  flex: none;
-  padding: 2px 8px;
-  border-radius: 999px;
-  background: var(--accent-soft);
-  color: var(--accent);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  white-space: nowrap;
-  cursor: help;
 }
 
 .app-top-bar__tagline {

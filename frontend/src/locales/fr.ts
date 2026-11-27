@@ -8,7 +8,22 @@ const fr: MessageSchema = {
   app: {
     tagline: "Automatisations · Scripts · Scènes · Entrées",
     preview: "Aperçu",
-    previewHint: "Cette version est terminée mais pas encore annoncée. Merci de l’essayer !",
+    previewAbout: "Qu’est-ce que l’aperçu ?",
+  },
+  /** The note behind the "Preview" mark of the Preview app. */
+  previewNote: {
+    title: "Bienvenue dans l’aperçu",
+    welcome: "Bonjour ! Si vous lisez ceci, j’espère vraiment avoir éveillé votre curiosité.",
+    purpose:
+      "Cet aperçu a été créé pour offrir une période de test à la prochaine version. À partir de la v0.15.0, l’aperçu est toujours la prochaine version terminée, simplement sans annonce. Vous faites ainsi partie des utilisateurs qui peuvent déjà utiliser et tester pleinement les nouveautés.",
+    release:
+      "Tout ce que vous utilisez ici arrive tel quel dans la version publiée. L’aperçu ne reçoit plus que des corrections et des ajustements visuels.",
+    storage:
+      "Ce que vous modifiez dans les automatisations, scripts, scènes et entrées va directement dans Home Assistant et s’applique partout. Les favoris, notes et couleurs de dossiers sont conservés par l’aperçu séparément de l’application normale.",
+    feedback:
+      "Si vous remarquez quelque chose, signalez-le via « Donner un avis ». Merci beaucoup et amusez-vous bien avec HomeAce Studio !",
+    feedbackHint:
+      "« Donner un avis » ouvre un formulaire préparé sur GitHub, avec la version déjà indiquée. Rien n’est envoyé depuis l’application.",
   },
   connection: {
     loading: "Chargement depuis Home Assistant …",

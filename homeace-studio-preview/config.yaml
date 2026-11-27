@@ -2,7 +2,7 @@
 # Must match homeace-studio/config.yaml except the keys scripts/check-preview-config.mjs allows.
 # Docs: https://developers.home-assistant.io/docs/add-ons/configuration
 name: HomeAce Studio Preview
-version: "0.14.2-preview.1"
+version: "0.14.2-preview.2"
 # Oldest HA this version works with: the flow editor reads trigger and condition types live
 # (trigger_platforms/subscribe since 2025.7, condition_platforms/subscribe since 2025.8).
 homeassistant: "2025.8.0"

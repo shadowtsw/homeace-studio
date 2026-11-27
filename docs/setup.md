@@ -200,6 +200,12 @@ shows a "Preview" mark in the top bar and "Give feedback" under About HomeAce, w
 `.github/ISSUE_TEMPLATE/preview-feedback.yml` (label `preview`) with the version filled in. The repository
 needs the label `preview` once.
 
+The "Preview" mark is a button (`components/layout/PreviewNote.vue`): it opens a note on what the Preview is,
+what carries over to the normal app (changes in HA do; favorites, notes and folder colors stay per app, since
+each app has its own config folder) and how to give feedback. It never opens by itself; a dot shows until the
+note was opened once on this device (`homeace.previewNoteRead`). When the text changes, raise `NOTE_EDITION`
+there, so the dot shows again (planned with new wording for 0.15).
+
 The rules the maintainer works by:
 
 1. Only finished releases go into the Preview, with the same quality as a normal release.
