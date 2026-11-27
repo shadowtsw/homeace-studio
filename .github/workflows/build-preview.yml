@@ -1,0 +1,80 @@
+# Builds the images of the Preview channel (homeace-studio-preview/), one per architecture, and pushes them
+# to ghcr.io/<owner>/homeace-studio-preview-<arch>:<version>. Runs when the version in
+# homeace-studio-preview/config.yaml changes on main, or by hand (Actions → Build preview images).
+# The Preview is a release before its announcement: same checks and same sources as the normal app,
+# but on purpose no tag and no GitHub release, because a GitHub release notifies everyone who watches
+# the repository. The commit is kept in the image label org.opencontainers.image.revision.
+name: Build preview images
+
+on:
+  push:
+    branches: [main]
+    paths: ["homeace-studio-preview/config.yaml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: build-preview
+  cancel-in-progress: false
+
+jobs:
+  checks:
+    uses: ./.github/workflows/checks.yml
+
+  build:
+    name: Preview image ${{ matrix.arch }}
+    needs: checks
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - arch: amd64
+            platform: linux/amd64
+          - arch: aarch64
+            platform: linux/arm64
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Read the version from the preview config.yaml
+        id: version
+        run: |
+          version="$(sed -n 's/^version: *"\(.*\)"/\1/p' homeace-studio-preview/config.yaml)"
+          test -n "$version"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      # The same folder the HA Supervisor would build from, with the Preview's config and texts.
+      - name: Assemble the build folder
+        run: node scripts/build-addon.mjs --channel preview
+
+      - uses: docker/setup-qemu-action@v4
+      - uses: docker/setup-buildx-action@v4
+
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/build-push-action@v7
+        with:
+          context: dist-addon/homeace_studio_preview
+          platforms: ${{ matrix.platform }}
+          build-args: |
+            BUILD_VERSION=${{ steps.version.outputs.version }}
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/homeace-studio-preview-${{ matrix.arch }}:${{ steps.version.outputs.version }}
+          labels: |
+            io.hass.name=HomeAce Studio Preview
+            io.hass.version=${{ steps.version.outputs.version }}
+            io.hass.type=addon
+            io.hass.arch=${{ matrix.arch }}
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.description=HomeAce Studio Preview: the next release before it is announced
+            org.opencontainers.image.licenses=MIT
+          cache-from: type=gha,scope=preview-${{ matrix.arch }}
+          cache-to: type=gha,mode=max,scope=preview-${{ matrix.arch }}

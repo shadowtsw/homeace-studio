@@ -3,6 +3,9 @@
     <div class="app-top-bar__brand">
       <span class="app-top-bar__mark"><span class="mdi mdi-file-tree-outline" /></span>
       <span class="app-top-bar__name">HomeAce Studio</span>
+      <span v-if="IS_PREVIEW" class="app-top-bar__preview" :title="t('app.previewHint')">
+        {{ t("app.preview") }}
+      </span>
       <span class="app-top-bar__tagline">{{ t("app.tagline") }}</span>
     </div>
 
@@ -33,11 +36,15 @@ import { useI18n } from "vue-i18n";
 
 import { useEntriesStore } from "@/stores/entriesStore";
 import { useSettingsWindowStore } from "@/stores/settingsWindowStore";
+import { isPreviewVersion } from "@/utils/releaseChannel";
 
 import LanguageMenu from "./LanguageMenu.vue";
 import WhatsNewMenu from "./WhatsNewMenu.vue";
 
 type ConnectionStatus = "loading" | "connected" | "failed";
+
+/** The Preview app shows a small mark next to the name (set at build time, vite.config.ts). */
+const IS_PREVIEW = isPreviewVersion(__APP_VERSION__);
 
 const props = defineProps<{
   /** The live event stream is open, so changes in HA show up on their own. */
@@ -106,6 +113,20 @@ const statusText = computed(() => {
   font: 700 19px/1 var(--font-display);
   letter-spacing: -0.01em;
   white-space: nowrap;
+}
+
+.app-top-bar__preview {
+  flex: none;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: help;
 }
 
 .app-top-bar__tagline {

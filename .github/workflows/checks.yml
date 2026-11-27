@@ -45,3 +45,14 @@ jobs:
       - run: npm test
       # The frontend build includes the type check (vue-tsc).
       - run: npm run build
+
+  preview-config:
+    name: Preview config
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      # The Preview app may differ from the normal one only in name, version, slug, texts and image.
+      - run: node scripts/check-preview-config.mjs

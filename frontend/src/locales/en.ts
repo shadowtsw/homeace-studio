@@ -3,6 +3,8 @@ import type { MessageSchema } from "@/i18n";
 const en: MessageSchema = {
   app: {
     tagline: "Automations · Scripts · Scenes · Helpers",
+    preview: "Preview",
+    previewHint: "This version is finished but not announced yet. Thanks for trying it!",
   },
   connection: {
     loading: "Loading from Home Assistant …",
@@ -139,6 +141,10 @@ const en: MessageSchema = {
     allChangesHint: "The full changelog on GitHub.",
     issues: "Report a bug or suggest an idea",
     issuesHint: "On GitHub.",
+    previewFeedback: "Feedback on the Preview",
+    previewFeedbackHint:
+      "What did you notice? Opens a prepared form on GitHub with the version filled in. Nothing is sent from the app.",
+    previewFeedbackOpen: "Give feedback",
   },
   whatsNew: {
     open: "What's new",

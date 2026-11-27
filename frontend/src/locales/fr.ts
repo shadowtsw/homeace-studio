@@ -7,6 +7,8 @@ import type { MessageSchema } from "@/i18n";
 const fr: MessageSchema = {
   app: {
     tagline: "Automatisations · Scripts · Scènes · Entrées",
+    preview: "Aperçu",
+    previewHint: "Cette version est terminée mais pas encore annoncée. Merci de l’essayer !",
   },
   connection: {
     loading: "Chargement depuis Home Assistant …",
@@ -147,6 +149,10 @@ const fr: MessageSchema = {
     allChangesHint: "Le journal complet des modifications sur GitHub.",
     issues: "Signaler un bug ou proposer une idée",
     issuesHint: "Sur GitHub.",
+    previewFeedback: "Avis sur l’aperçu",
+    previewFeedbackHint:
+      "Qu’avez-vous remarqué ? Ouvre un formulaire préparé sur GitHub, avec la version déjà indiquée. Rien n’est envoyé depuis l’application.",
+    previewFeedbackOpen: "Donner un avis",
   },
   whatsNew: {
     open: "Nouveautés",

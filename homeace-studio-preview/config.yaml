@@ -1,0 +1,43 @@
+# The Preview channel: the next release before it is announced, installable next to the normal app.
+# Must match homeace-studio/config.yaml except the keys scripts/check-preview-config.mjs allows.
+# Docs: https://developers.home-assistant.io/docs/add-ons/configuration
+name: HomeAce Studio Preview
+version: "0.14.2-preview.1"
+# Oldest HA this version works with: the flow editor reads trigger and condition types live
+# (trigger_platforms/subscribe since 2025.7, condition_platforms/subscribe since 2025.8).
+homeassistant: "2025.8.0"
+slug: homeace_studio_preview
+description: The next HomeAce Studio release before it is announced. Back up first.
+url: https://github.com/shadowtsw/homeace-studio
+arch:
+  - amd64
+  - aarch64
+# Ready-made images from GitHub; HA downloads instead of building. Local development builds from
+# source: scripts/build-addon.mjs removes this line.
+image: ghcr.io/shadowtsw/homeace-studio-preview-{arch}
+init: false
+startup: application
+boot: auto
+
+# Opens inside HA (sidebar entry); the UI needs no own port, login or token.
+ingress: true
+ingress_port: 8099
+panel_icon: mdi:file-tree-outline
+panel_title: HomeAce Preview
+
+# Gives the add-on SUPERVISOR_TOKEN and the Core API through the Supervisor proxy.
+homeassistant_api: true
+# Reads its own info from the Supervisor, to show which host port the MCP endpoint got.
+hassio_api: true
+
+# AI access (MCP) for clients like Claude. Closed until the user enters a host port under
+# Configuration → Network, and it also has to be switched on in HomeAce Studio (with a token).
+ports:
+  8098/tcp: null
+ports_description:
+  8098/tcp: AI access (MCP), only when switched on in HomeAce Studio
+
+# /config inside the container = the add-on's own config folder (part of HA backups).
+# The overlay file (own extras like owned categories) lives there.
+map:
+  - addon_config:rw

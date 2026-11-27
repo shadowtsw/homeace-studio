@@ -2,6 +2,8 @@
 export default {
   app: {
     tagline: "Automationen · Skripte · Szenen · Helfer",
+    preview: "Preview",
+    previewHint: "Diese Version ist fertig, aber noch nicht angekündigt. Danke fürs Ausprobieren!",
   },
   connection: {
     loading: "Lade aus Home Assistant …",
@@ -140,6 +142,10 @@ export default {
     allChangesHint: "Der vollständige Changelog auf GitHub.",
     issues: "Fehler melden oder Idee vorschlagen",
     issuesHint: "Auf GitHub, gern auch auf Deutsch.",
+    previewFeedback: "Feedback zur Preview",
+    previewFeedbackHint:
+      "Was ist dir aufgefallen? Öffnet ein vorbereitetes Formular auf GitHub, die Version ist schon eingetragen. Aus der App wird nichts gesendet.",
+    previewFeedbackOpen: "Feedback geben",
   },
   whatsNew: {
     open: "Was ist neu",

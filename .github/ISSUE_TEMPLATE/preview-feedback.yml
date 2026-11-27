@@ -1,0 +1,48 @@
+name: Preview feedback
+description: Something you noticed in HomeAce Studio Preview
+labels: [preview]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for trying the Preview. German or English, both are fine. Please remove private
+        things (names, addresses, tokens) from logs and screenshots. Security issues please not
+        here, see SECURITY.md.
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What is it?
+      options:
+        - Something does not work
+        - Something feels odd
+        - An idea
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: And what did you expect instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: How to get there (if you know)
+      placeholder: |
+        1. Open …
+        2. Click …
+  - type: input
+    id: version
+    attributes:
+      label: HomeAce Studio Preview version
+      description: Filled in when you come from "Give feedback" in the app.
+      placeholder: "0.15.0-preview.1"
+    validations:
+      required: true
+  - type: input
+    id: ha-version
+    attributes:
+      label: Home Assistant version
+      description: Settings → About.
+      placeholder: "2026.12.0"

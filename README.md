@@ -185,6 +185,9 @@ store), on amd64 or aarch64 (Raspberry Pi 4/5, HA Green and Yellow).
 Updates arrive like for any other app. The app documentation explains the AI access:
 [homeace-studio/DOCS.md](homeace-studio/DOCS.md).
 
+The same repository also has **HomeAce Studio Preview**: the next release a few days before it is
+announced, installable next to the normal app ([homeace-studio-preview/DOCS.md](homeace-studio-preview/DOCS.md)).
+
 ## For developers
 
 ```text

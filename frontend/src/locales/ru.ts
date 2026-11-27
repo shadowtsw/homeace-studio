@@ -6,6 +6,8 @@ import type { MessageSchema } from "@/i18n";
 const ru: MessageSchema = {
   app: {
     tagline: "Автоматизации · Скрипты · Сцены · Вспомогательные",
+    preview: "Превью",
+    previewHint: "Эта версия готова, но ещё не анонсирована. Спасибо, что пробуете!",
   },
   connection: {
     loading: "Загрузка из Home Assistant …",
@@ -143,6 +145,10 @@ const ru: MessageSchema = {
     allChangesHint: "Полный список изменений на GitHub.",
     issues: "Сообщить об ошибке или предложить идею",
     issuesHint: "На GitHub.",
+    previewFeedback: "Отзыв о превью",
+    previewFeedbackHint:
+      "Что вы заметили? Откроется готовая форма на GitHub, версия уже указана. Из приложения ничего не отправляется.",
+    previewFeedbackOpen: "Оставить отзыв",
   },
   whatsNew: {
     open: "Что нового",

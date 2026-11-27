@@ -157,6 +157,42 @@ ghcr.io must be public (GitHub → profile → Packages → package → Package 
 The checks also run on every push to `main` and on every pull request, Dependabot's included
 (`.github/dependabot.yml`: weekly npm updates, grouped; monthly actions and the Node base image).
 
+### Preview channel
+
+`homeace-studio-preview/` is a second app, **HomeAce Studio Preview** (slug `homeace_studio_preview`),
+built from the same sources. It holds only what differs: `config.yaml`, `DOCS.md`, `CHANGELOG.md` and the
+icons; `node scripts/build-addon.mjs --channel preview` assembles it from `homeace-studio/` plus these
+files. `scripts/check-preview-config.mjs` (part of the checks) fails when its `config.yaml` differs from the
+normal one in anything but name, version, slug, description, image and panel title, so the Preview never
+asks HA for more access.
+
+Raising `version` in `homeace-studio-preview/config.yaml` on `main` starts
+`.github/workflows/build-preview.yml`: the same checks, then the images
+`ghcr.io/shadowtsw/homeace-studio-preview-<arch>:<version>`. On purpose there is no tag and no GitHub
+release (a release notifies everyone who watches the repository); the image label
+`org.opencontainers.image.revision` keeps the commit. Make the two new packages public once, like the
+normal ones.
+
+The app knows it is the Preview from its version (`0.15.0-preview.2`, `utils/releaseChannel.ts`): it then
+shows a "Preview" mark in the top bar and "Give feedback" under About HomeAce, which opens the issue form
+`.github/ISSUE_TEMPLATE/preview-feedback.yml` (label `preview`) with the version filled in. The repository
+needs the label `preview` once.
+
+The rules the maintainer works by:
+
+1. Only finished releases go into the Preview, with the same quality as a normal release.
+2. Before the Preview: the same steps as before any release (test build on a real HA, two approvals).
+3. While a version waits in the Preview: fixes only; no new features, no logic or breaking changes.
+4. Fixes count up only in the Preview (`0.15.0-preview.1` → `.2`); the normal line gets no extra version.
+5. When it moves on, the very code that last ran in the Preview becomes the normal version (`0.15.0`); the
+   normal changelog does not list the Preview fixes one by one.
+6. It moves on when the announcement is ready and nothing serious is open; there is no fixed waiting time.
+7. Moving on needs its own approval; announcements come only after that.
+8. An urgent fix for the normal app also goes into the Preview, so the Preview is never behind.
+9. A serious problem gets a quick `preview.N+1`, or the Preview goes back to the normal app's state; so the
+   Preview never changes its own stored data in a way that going back would break.
+10. After moving on, both apps are the same until the next release comes into the Preview.
+
 ## As an add-on (local app on HA OS, for development)
 
 Since HA 2026.2 the UI calls add-ons **apps** (Settings → Apps). The "Marketplace" (2026.11) is the former

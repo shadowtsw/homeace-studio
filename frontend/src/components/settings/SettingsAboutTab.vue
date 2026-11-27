@@ -18,6 +18,16 @@
         <span class="mdi mdi-open-in-new" />{{ t("settings.toolOpen") }}
       </a>
     </SettingsRow>
+    <!-- Only the Preview app: a prepared GitHub form, nothing is sent from the app -->
+    <SettingsRow
+      v-if="IS_PREVIEW"
+      :title="t('settings.previewFeedback')"
+      :hint="t('settings.previewFeedbackHint')"
+    >
+      <a class="btn" :href="PREVIEW_FEEDBACK_URL" target="_blank" rel="noopener noreferrer">
+        <span class="mdi mdi-message-text-outline" />{{ t("settings.previewFeedbackOpen") }}
+      </a>
+    </SettingsRow>
     <!-- Technical detail: which HA user the add-on sees; settings per user build on it. -->
     <SettingsRow
       v-if="settings.isTechnicalDetailsVisible && settingsWindow.detectedHaUser !== undefined"
@@ -43,11 +53,14 @@ import { RELEASES_URL } from "@/constants/whatsNew";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { useSettingsWindowStore } from "@/stores/settingsWindowStore";
 import { useWhatsNewStore } from "@/stores/whatsNewStore";
+import { isPreviewVersion, previewFeedbackUrl } from "@/utils/releaseChannel";
 
 import SettingsRow from "./SettingsRow.vue";
 
 /** Set at build time from the app version (vite.config.ts). */
 const APP_VERSION = __APP_VERSION__;
+const IS_PREVIEW = isPreviewVersion(APP_VERSION);
+const PREVIEW_FEEDBACK_URL = previewFeedbackUrl(APP_VERSION);
 
 const emit = defineEmits<{
   /** "Was ist neu" for the running version; the window closes for its popover. */
