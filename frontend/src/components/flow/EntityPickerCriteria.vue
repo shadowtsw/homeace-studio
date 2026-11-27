@@ -135,10 +135,15 @@ function areaIcon(value: string): string {
   cursor: pointer;
 }
 
+/* About three rows of chips; more scroll, so the results below always keep their room. */
 .entity-picker__panel {
   display: flex;
+  flex: none;
   flex-wrap: wrap;
   gap: 5px;
+  max-height: 118px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 8px;
   border: 1px solid var(--line);
   border-radius: 10px;

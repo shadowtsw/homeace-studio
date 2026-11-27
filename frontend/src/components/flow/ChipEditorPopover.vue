@@ -207,9 +207,10 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+/* The entity picker: one fixed height, so opening a criterion does not change the size. */
 .chip-editor--wide {
   width: 440px;
-  max-height: min(600px, 80vh);
+  height: min(460px, 75vh);
 }
 
 /* A column: title, search and buttons stay in view, only the list in between scrolls. */

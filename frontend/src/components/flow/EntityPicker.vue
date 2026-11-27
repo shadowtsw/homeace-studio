@@ -198,8 +198,11 @@ onMounted(() => searchInput.value?.focus({ preventScroll: true }));
 </script>
 
 <style scoped>
+/* A column: search, criteria and hint keep their height, the list takes the rest and scrolls. */
 .entity-picker {
-  display: grid;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
   gap: 8px;
   min-height: 0;
 }
@@ -218,6 +221,8 @@ onMounted(() => searchInput.value?.focus({ preventScroll: true }));
 
 .entity-picker__list {
   display: block;
+  flex: 1 1 auto;
+  min-height: 0;
   max-height: min(380px, 50vh);
   overflow: auto;
 }
