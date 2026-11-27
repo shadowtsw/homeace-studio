@@ -76,6 +76,6 @@ export function useCategoryActions(): CategoryActions {
     ...useEntryMoves({ isBusy, showError }),
     ...useFolderRenames({ isBusy, showError }),
     ...useFolderOrder({ showError }),
-    ...useAreaTidy({ isBusy, showError }),
+    ...useAreaTidy({ isBusy }),
   };
 }

@@ -6,14 +6,11 @@ import { useMessagesStore } from "@/stores/messagesStore";
 import { useToastStore } from "@/stores/toastStore";
 import type { TidyMove } from "@/utils/areas/areaTidy";
 
-/** "Ordnung in einem Klick": every entry into the folder of its area. */
-export function useAreaTidy({
-  isBusy,
-  showError,
-}: {
-  isBusy: Ref<boolean>;
-  showError: (error: unknown) => void;
-}) {
+/**
+ * "Ordnung in einem Klick": every entry into the folder of its area. Failed moves are named in a
+ * toast of their own, so there is no error toast for the whole run.
+ */
+export function useAreaTidy({ isBusy }: { isBusy: Ref<boolean> }) {
   const { t } = useI18n();
   const entriesStore = useEntriesStore();
   const messages = useMessagesStore();
