@@ -10,7 +10,7 @@
       :style="tone ? { '--tone': tone } : undefined"
       @input="change({ brightness: Number(($event.target as HTMLInputElement).value) })"
     />
-    <span class="scene-row__value">{{ controls.brightness ?? 100 }} %</span>
+    <span class="scene-row__value">{{ percentText(controls.brightness ?? 100) }}</span>
   </label>
 
   <div v-if="caps.white || caps.color" class="scene-row__line">
@@ -56,6 +56,7 @@
 <script setup lang="ts">
 import { useI18n } from "vue-i18n";
 
+import { useSceneTexts } from "@/composables/texts/useSceneTexts";
 import {
   COLOR_PRESETS,
   WHITE_PRESETS,
@@ -85,6 +86,7 @@ const WHITES = Object.keys(WHITE_PRESETS) as WhitePreset[];
 const COLORS = Object.keys(COLOR_PRESETS) as ColorPreset[];
 
 const { t } = useI18n();
+const { percentText } = useSceneTexts();
 
 function change(next: Partial<SceneControls>): void {
   emit("change", next);

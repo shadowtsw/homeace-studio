@@ -63,6 +63,18 @@ const en: MessageSchema = {
         text: "A click on a filter above the list shows only that one. That way one click always takes you back.",
         more: "With {key} + click or a right-click you add more, for example automations and entities together. On a phone, use a long press.",
       },
+      filterCounts: {
+        title: "Numbers and faded folders",
+        text: "With a filter chosen, the navigation counts only what it shows: with “Scenes”, “All entries”, every folder and every area count scenes only. Only the check-up always counts everything.",
+        more: "Folders and areas without a match fade, and areas move to the end. The numbers on the filters above the list, on the other hand, show what each filter would show in the open folder.",
+        legend: "Example: three folders in the navigation",
+        found: { name: "Heating", text: "The filter finds something here." },
+        faded: {
+          name: "Lights",
+          text: "The filter finds nothing here. You can still open it and drop entries on it.",
+        },
+        folderOnly: { name: "Sensors" },
+      },
       labels: {
         title: "Labels apply across Home Assistant",
         text: "A label you give here is a Home Assistant label. You see it everywhere there, on devices and areas too.",
@@ -166,6 +178,8 @@ const en: MessageSchema = {
     close: "Close",
     /** A name or value quoted the way this language does it. */
     quoted: "“{text}”",
+    /** A percentage the way this language writes it (as Home Assistant does): "25 %" or "25%". */
+    percent: "{value}%",
   },
   folder: {
     title: "New folder",
@@ -514,7 +528,7 @@ const en: MessageSchema = {
     off: "off",
     open: "open",
     closed: "closed",
-    openPercent: "{percent} % open",
+    openPercent: "{percent}% open",
     try: "Try",
     tryHint: "Set only this device to the scene's value for a moment",
     tryBack: "Back",
@@ -721,6 +735,26 @@ const en: MessageSchema = {
     favoritesSubtitle: "Marked in HomeAce Studio only",
     directIn: "Directly in {name}",
     empty: "Nothing here.",
+    /** An empty list whose filters hide what is here. */
+    filtered: {
+      noHits: "Nothing found for “{search}”.",
+      none: "No {kinds}.",
+      noneIn: "No {kinds} in “{place}”.",
+      hides: "The “{names}” filter hides {hidden}. | The “{names}” filters hide {hidden}.",
+      otherEntries: "one other entry | {count} other entries",
+      entities: "one entity | {count} entities",
+      showAll: "Show all",
+      showEntities: "Show entities",
+      /** What the chosen filters look for, as used in `none` and `noneIn`. */
+      kinds: {
+        all: "entries",
+        automation: "automations",
+        script: "scripts",
+        scene: "scenes",
+        helper: "helpers",
+        entities: "entities",
+      },
+    },
     resize: "Resize list",
   },
   detail: {

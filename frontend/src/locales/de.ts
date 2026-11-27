@@ -63,6 +63,18 @@ export default {
         text: "Ein Klick auf einen Filter über der Liste zeigt nur diesen. So kommst du mit einem Klick immer zurück.",
         more: "Mit {key} + Klick oder einem Rechtsklick schaltest du weitere dazu, zum Beispiel Automationen und Entitäten zusammen. Am Handy geht das mit langem Drücken.",
       },
+      filterCounts: {
+        title: "Zahlen und blasse Ordner",
+        text: "Ist ein Filter gewählt, zählt die Navigation nur, was er zeigt: Bei „Szenen“ zählen „Alle Einträge“, jeder Ordner und jeder Bereich nur Szenen. Nur die Durchsicht zählt immer alles.",
+        more: "Ordner und Bereiche ohne Treffer werden blass, Bereiche rutschen dazu ans Ende. Die Zahlen an den Filtern über der Liste zeigen dagegen, was jeder Filter im geöffneten Ordner zeigen würde.",
+        legend: "Beispiel: drei Ordner in der Navigation",
+        found: { name: "Heizung", text: "Der Filter findet hier etwas." },
+        faded: {
+          name: "Lampen",
+          text: "Der Filter findet hier nichts. Öffnen und Hineinziehen gehen trotzdem.",
+        },
+        folderOnly: { name: "Sensoren" },
+      },
       labels: {
         title: "Labels gelten in ganz Home Assistant",
         text: "Ein Label, das du hier vergibst, ist ein Label von Home Assistant. Du siehst es dort überall, auch an Geräten und Bereichen.",
@@ -167,6 +179,8 @@ export default {
     close: "Schließen",
     /** A name or value quoted the way this language does it. */
     quoted: "„{text}“",
+    /** A percentage the way this language writes it (as Home Assistant does): "25 %" or "25%". */
+    percent: "{value} %",
   },
   folder: {
     title: "Neuer Ordner",
@@ -728,6 +742,27 @@ export default {
     favoritesSubtitle: "Nur in HomeAce Studio markiert",
     directIn: "Direkt in {name}",
     empty: "Hier ist nichts.",
+    /** An empty list whose filters hide what is here. */
+    filtered: {
+      noHits: "Nichts gefunden für „{search}“.",
+      none: "Keine {kinds}.",
+      noneIn: "Keine {kinds} in „{place}“.",
+      hides:
+        "Der Filter „{names}“ blendet {hidden} aus. | Die Filter „{names}“ blenden {hidden} aus.",
+      otherEntries: "einen anderen Eintrag | {count} andere Einträge",
+      entities: "eine Entität | {count} Entitäten",
+      showAll: "Alle zeigen",
+      showEntities: "Entitäten zeigen",
+      /** What the chosen filters look for, as used in `none` and `noneIn`. */
+      kinds: {
+        all: "Einträge",
+        automation: "Automationen",
+        script: "Skripte",
+        scene: "Szenen",
+        helper: "Helfer",
+        entities: "Entitäten",
+      },
+    },
     resize: "Breite der Liste ändern",
   },
   detail: {

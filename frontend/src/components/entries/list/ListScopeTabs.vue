@@ -1,5 +1,11 @@
 <template>
-  <div ref="root" class="list-scope-tabs" role="group" :aria-label="t('scopeMenu.label')">
+  <div
+    ref="root"
+    class="list-scope-tabs"
+    :class="{ 'list-scope-tabs--narrowed': isListNarrowed(scopes) }"
+    role="group"
+    :aria-label="t('scopeMenu.label')"
+  >
     <button
       v-for="option in LIST_SCOPES"
       :key="option"
@@ -55,6 +61,7 @@ import { useI18n } from "vue-i18n";
 
 import { useModifierKey } from "@/composables/useModifierKey";
 import { LIST_SCOPES, SCOPE_ENTITIES, type ListScope } from "@/constants/entries";
+import { isListNarrowed } from "@/utils/entries/emptyList";
 
 defineProps<{
   scopes: readonly ListScope[];
@@ -172,6 +179,18 @@ onClickOutside(root, () => (menu.value = null));
   background: var(--surface);
   color: var(--fg);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+/* A filter other than "Alle" hides entries: a fine accent border, so an empty list is no surprise. */
+.list-scope-tabs--narrowed > .entry-list__scope--active {
+  color: var(--accent);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--accent) 55%, transparent),
+    0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+.list-scope-tabs--narrowed > .entry-list__scope--active .list-scope-tabs__count {
+  color: color-mix(in srgb, var(--accent) 70%, var(--faint));
 }
 
 .list-scope-tabs__menu {

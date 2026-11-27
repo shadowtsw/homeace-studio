@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.14.1
+
+- Active filters stand out: a filter other than "Alle" gets a coloured border, and an empty list
+  says what the filter hides ("Der Filter „Szenen“ blendet 35 andere Einträge aus") with a button
+  "Alle zeigen". Before, a folder hidden by the filter claimed to be empty.
+- Folders in the navigation are faded with 0 whenever the chosen filter finds nothing in them,
+  also folders created in HomeAce Studio, which stayed bright before. Faded folders can still be
+  opened and take dropped entries.
+- New in "Gut zu wissen": "Zahlen und blasse Ordner" explains what the navigation counts while a
+  filter is chosen.
+- "Gut zu wissen": the topics stay in place while a long text scrolls.
+- Thermostats in scenes show Home Assistant's unit in the "gerade:" line (°F too), not always °C.
+- Numbers follow the UI language as in Home Assistant: "21,5 °C" and "1.527 W" in German, "25%"
+  without a space in English, Spanish and Russian. Only the display changes; stored values stay
+  as they are.
+
 ## 0.14.0
 
 - Needs Home Assistant 2025.8 or newer.

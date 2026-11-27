@@ -1,46 +1,53 @@
+import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 
-import { readControls, type SceneValue } from "@/utils/sceneValues";
+import { formatNumber } from "@/utils/formatNumber";
+import { describeSceneValue, sceneLineTexts } from "@/utils/sceneTexts";
+import type { SceneValue } from "@/utils/sceneValues";
 
 type SceneTexts = {
-  /** "an · 25 %", "40 % offen", "heizen · 22 °C" … for the "gerade:" line; "–" without a state. */
-  describe: (options: { domain: string; value: SceneValue | null }) => string;
+  /**
+   * "an · 25 %", "40 % offen", "heizen · 21,5 °C" … for the "gerade:" line; "–" without a state.
+   * `unit` is the unit HA shows temperatures in ("°C" or "°F"); °C until it is known.
+   */
+  describe: (options: { domain: string; value: SceneValue | null; unit?: string }) => string;
   /** A value the editor keeps but has no control for, e.g. `Effekt „Regenbogen“`. */
   extraText: (options: { key: string; value: unknown }) => string;
   /** A climate mode as people read it ("heizen"); unknown ones as HA names them. */
   hvacLabel: (mode: string) => string;
+  /** "25 %" in German, "25%" in English, as Home Assistant writes it. */
+  percentText: (value: number | string) => string;
 };
 
 /** Texts of the scene editor's device rows. */
 export function useSceneTexts(): SceneTexts {
-  const { t, te } = useI18n();
+  const { t, te, locale } = useI18n();
+  const lineTexts = computed(() => sceneLineTexts({ t, te }));
 
   function hvacLabel(mode: string): string {
-    return te(`scene.hvac.${mode}`) ? t(`scene.hvac.${mode}`) : mode;
+    return lineTexts.value.hvacMode(mode);
   }
 
-  function describe({ domain, value }: { domain: string; value: SceneValue | null }): string {
-    if (!value || value.state === undefined) return "–";
-    const read = readControls({ domain, value });
+  function percentText(value: number | string): string {
+    return lineTexts.value.percent(formatNumber({ value, locale: locale.value }));
+  }
 
-    if (domain === "cover") {
-      if (read.position === 0) return t("scene.closed");
-      return read.position === 100
-        ? t("scene.open")
-        : t("scene.openPercent", { percent: read.position });
-    }
-    if (domain === "climate") {
-      const mode = hvacLabel(String(value.state));
-      return read.temperature === null || value.state === "off"
-        ? mode
-        : `${mode} · ${read.temperature} °C`;
-    }
-    if (read.on === null) return String(value.state);
-    if (!read.on) return t("scene.off");
-
-    return domain === "light" && read.brightness !== null
-      ? `${t("scene.on")} · ${read.brightness} %`
-      : t("scene.on");
+  function describe({
+    domain,
+    value,
+    unit,
+  }: {
+    domain: string;
+    value: SceneValue | null;
+    unit?: string;
+  }): string {
+    return describeSceneValue({
+      domain,
+      value,
+      unit,
+      locale: locale.value,
+      texts: lineTexts.value,
+    });
   }
 
   function extraText({ key, value }: { key: string; value: unknown }): string {
@@ -48,14 +55,14 @@ export function useSceneTexts(): SceneTexts {
     let shown: string;
 
     if (typeof value === "boolean") shown = value ? t("scene.on") : t("scene.off");
-    else if (key === "percentage") shown = `${String(value)} %`;
+    else if (key === "percentage") shown = percentText(String(value));
     else if (key === "volume_level" && typeof value === "number") {
-      shown = `${Math.round(value * 100)} %`;
+      shown = percentText(Math.round(value * 100));
     } else if (typeof value === "string") shown = t("common.quoted", { text: value });
     else shown = JSON.stringify(value);
 
     return `${label} ${shown}`;
   }
 
-  return { describe, extraText, hvacLabel };
+  return { describe, extraText, hvacLabel, percentText };
 }

@@ -99,7 +99,7 @@ const CHOICE_KEYS = [
 
 /** The texts `toDisplayFlow` needs, in the current UI language. */
 export function useFlowTexts(): ComputedRef<FlowTexts> {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
 
   return computed(() => ({
     yes: t("detail.yes"),
@@ -107,6 +107,8 @@ export function useFlowTexts(): ComputedRef<FlowTexts> {
     hours: t("flow.units.hours"),
     minutes: t("flow.units.minutes"),
     seconds: t("flow.units.seconds"),
+    locale: locale.value,
+    percent: (value: string) => t("common.percent", { value }),
     titles: Object.fromEntries(TITLE_KEYS.map((key) => [key, t(`flow.titles.${key}`)])),
     labels: Object.fromEntries(LABEL_KEYS.map((key) => [key, t(`flow.labels.${key}`)])),
     choices: Object.fromEntries(CHOICE_KEYS.map((key) => [key, t(`flow.choices.${key}`)])),

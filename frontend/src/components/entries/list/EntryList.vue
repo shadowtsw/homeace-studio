@@ -14,9 +14,16 @@
       :class="{ 'entry-list__body--docked': isDocked }"
       :style="dockRoomStyle"
     >
-      <p v-if="entries.length === 0 && entities.length === 0" class="entry-list__empty">
-        {{ isRealCategory && !isSearching ? t("list.emptyFolder") : t("list.empty") }}
-      </p>
+      <EntryListEmpty
+        v-if="entries.length === 0 && entities.length === 0"
+        :scopes="studio.scopes"
+        :counts="scopeCounts"
+        :place="category === CATEGORY_FILTER.all ? null : title.name"
+        :search="studio.search"
+        :is-real-category="isRealCategory"
+        @select-scope="(scope) => studio.selectScope(scope)"
+        @toggle-scope="(scope) => studio.toggleListScope(scope)"
+      />
 
       <template v-for="group in groups" :key="group.path ?? ''">
         <button
@@ -102,7 +109,12 @@ import { useListArrowKeys } from "@/composables/entryList/useListArrowKeys";
 import { useListGroups } from "@/composables/entryList/useListGroups";
 import { useListTicking } from "@/composables/entryList/useListTicking";
 import { useListTitle } from "@/composables/entryList/useListTitle";
-import type { EntryAction, ListScope, NewEntryKind } from "@/constants/entries";
+import {
+  CATEGORY_FILTER,
+  type EntryAction,
+  type ListScope,
+  type NewEntryKind,
+} from "@/constants/entries";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { useStudioStore } from "@/stores/studioStore";
 import type { EntityOption } from "@/types/editor";
@@ -112,6 +124,7 @@ import { isSpecialCategory } from "@/utils/entries/entryFilter";
 
 import EntityBulkBar from "./EntityBulkBar.vue";
 import EntryBulkBar from "./EntryBulkBar.vue";
+import EntryListEmpty from "./EntryListEmpty.vue";
 import EntryListHead from "./EntryListHead.vue";
 import EntryListRow from "./EntryListRow.vue";
 import ListGroupEntities from "./ListGroupEntities.vue";
@@ -330,11 +343,5 @@ function addFolder(): void {
   color: var(--faint);
   font-weight: 500;
   font-variant-numeric: tabular-nums;
-}
-
-.entry-list__empty {
-  padding: 40px 20px;
-  color: var(--muted);
-  text-align: center;
 }
 </style>

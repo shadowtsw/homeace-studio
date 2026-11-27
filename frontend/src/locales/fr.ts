@@ -68,6 +68,18 @@ const fr: MessageSchema = {
         text: "Un clic sur un filtre au-dessus de la liste n'affiche que celui-ci. Ainsi, un clic vous ramène toujours en arrière.",
         more: "Avec {key} + clic ou un clic droit, vous en ajoutez d'autres, par exemple automatisations et entités ensemble. Sur un téléphone, faites un appui long.",
       },
+      filterCounts: {
+        title: "Nombres et dossiers estompés",
+        text: "Quand un filtre est choisi, la navigation ne compte que ce qu'il affiche : avec « Scènes », « Tous les éléments », chaque dossier et chaque pièce ne comptent que les scènes. Seul le bilan compte toujours tout.",
+        more: "Les dossiers et les pièces sans résultat s'estompent, et les pièces passent à la fin. Les nombres sur les filtres au-dessus de la liste indiquent en revanche ce que chaque filtre afficherait dans le dossier ouvert.",
+        legend: "Exemple : trois dossiers dans la navigation",
+        found: { name: "Chauffage", text: "Le filtre trouve quelque chose ici." },
+        faded: {
+          name: "Lampes",
+          text: "Le filtre ne trouve rien ici. Vous pouvez quand même l'ouvrir et y déposer des éléments.",
+        },
+        folderOnly: { name: "Capteurs" },
+      },
       labels: {
         title: "Les étiquettes valent dans tout Home Assistant",
         text: "Une étiquette que vous attribuez ici est une étiquette de Home Assistant. Vous la voyez partout là-bas, aussi sur les appareils et les pièces.",
@@ -174,6 +186,8 @@ const fr: MessageSchema = {
     close: "Fermer",
     /** A name or value quoted the way this language does it. */
     quoted: "« {text} »",
+    /** A percentage the way this language writes it (as Home Assistant does): "25 %" or "25%". */
+    percent: "{value} %",
   },
   folder: {
     title: "Nouveau dossier",
@@ -745,6 +759,26 @@ const fr: MessageSchema = {
     favoritesSubtitle: "Marqués uniquement dans HomeAce Studio",
     directIn: "Directement dans {name}",
     empty: "Rien ici.",
+    /** An empty list whose filters hide what is here. */
+    filtered: {
+      noHits: "Aucun résultat pour « {search} ».",
+      none: "Pas {kinds}.",
+      noneIn: "Pas {kinds} dans « {place} ».",
+      hides: "Le filtre « {names} » masque {hidden}. | Les filtres « {names} » masquent {hidden}.",
+      otherEntries: "un autre élément | {count} autres éléments",
+      entities: "une entité | {count} entités",
+      showAll: "Tout afficher",
+      showEntities: "Afficher les entités",
+      /** What the chosen filters look for, with "de", as used in `none` and `noneIn`. */
+      kinds: {
+        all: "d'éléments",
+        automation: "d'automatisations",
+        script: "de scripts",
+        scene: "de scènes",
+        helper: "d'entrées",
+        entities: "d'entités",
+      },
+    },
     resize: "Redimensionner la liste",
   },
   detail: {

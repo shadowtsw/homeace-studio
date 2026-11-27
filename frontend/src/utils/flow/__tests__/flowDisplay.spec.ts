@@ -11,6 +11,8 @@ const texts: FlowTexts = {
   hours: "h",
   minutes: "min",
   seconds: "s",
+  locale: "de",
+  percent: (value) => `${value} %`,
   titles: { state: "Zustand ändert sich", delay: "Warten", if: "Wenn", unknown: "Unbekannt" },
   labels: { to: "zu", for: "für", if: "wenn", thenBranch: "dann", else: "sonst" },
   choices: { sunset: "Sonnenuntergang" },
@@ -99,7 +101,7 @@ describe("formatDuration and formatValue", () => {
         entityNames: {},
         texts,
       }),
-    ).toBe("21.5 °C");
+    ).toBe("21,5 °C");
     expect(
       formatValue({
         value: "zone.home",
@@ -109,6 +111,24 @@ describe("formatDuration and formatValue", () => {
       }),
     ).toBe("Zuhause");
     expect(formatValue({ value: true, selector: null, entityNames: {}, texts })).toBe("ja");
+  });
+
+  it("writes numbers and percent the way the UI language does", () => {
+    const english = { ...texts, locale: "en", percent: (value: string) => `${value}%` };
+    const celsius = { number: { unit_of_measurement: "°C" } };
+    const watts = { number: { unit_of_measurement: "W" } };
+    const percent = { number: { unit_of_measurement: "%" } };
+
+    expect(formatValue({ value: 21.5, selector: celsius, entityNames: {}, texts: english })).toBe(
+      "21.5 °C",
+    );
+    expect(formatValue({ value: 1527, selector: watts, entityNames: {}, texts })).toBe("1.527 W");
+    expect(formatValue({ value: 40, selector: percent, entityNames: {}, texts })).toBe("40 %");
+    expect(formatValue({ value: 40, selector: percent, entityNames: {}, texts: english })).toBe(
+      "40%",
+    );
+    // A limit without a selector, e.g. "über 21,5"
+    expect(formatValue({ value: 21.5, selector: null, entityNames: {}, texts })).toBe("21,5");
   });
 });
 

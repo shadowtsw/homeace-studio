@@ -11,7 +11,7 @@
         <small>
           {{
             t("scene.now", {
-              state: describe({ domain, value: device.current ? currentValue : null }),
+              state: describe({ domain, value: device.current ? currentValue : null, unit }),
             })
           }}
           <code v-if="isTechnicalDetailsVisible">{{ device.entityId }}</code>
@@ -66,7 +66,7 @@
         :value="controls.position ?? 0"
         @input="change({ position: Number(($event.target as HTMLInputElement).value) })"
       />
-      <span class="scene-row__value">{{ controls.position ?? 0 }} %</span>
+      <span class="scene-row__value">{{ percentText(controls.position ?? 0) }}</span>
     </label>
 
     <template v-if="domain === 'climate'">
@@ -94,7 +94,7 @@
           :value="controls.temperature ?? climate.min"
           @input="change({ temperature: Number(($event.target as HTMLInputElement).value) })"
         />
-        <span class="scene-row__value">{{ controls.temperature ?? "–" }} {{ unit }}</span>
+        <span class="scene-row__value">{{ temperatureText }} {{ unit }}</span>
       </label>
     </template>
 
@@ -122,6 +122,8 @@ import { useI18n } from "vue-i18n";
 import { useSceneTexts } from "@/composables/texts/useSceneTexts";
 import { DOMAIN_ICON } from "@/constants/domainIcons";
 import type { SceneDevice } from "@/services/scenesService";
+import { formatNumber } from "@/utils/formatNumber";
+import { DEFAULT_TEMPERATURE_UNIT } from "@/utils/sceneTexts";
 import {
   extrasOf,
   hasOnOff,
@@ -146,9 +148,7 @@ const props = defineProps<{
   temperatureUnit?: string;
 }>();
 
-/** Shown until HA's unit is known; HA's own default. */
-const FALLBACK_TEMPERATURE_UNIT = "°C";
-const unit = computed(() => props.temperatureUnit ?? FALLBACK_TEMPERATURE_UNIT);
+const unit = computed(() => props.temperatureUnit ?? DEFAULT_TEMPERATURE_UNIT);
 
 const emit = defineEmits<{
   change: [value: SceneValue];
@@ -160,8 +160,8 @@ const emit = defineEmits<{
 const DEFAULT_HVAC_MODES = ["off", "heat", "auto"];
 const CLIMATE_DEFAULTS = { min: 7, max: 30, step: 0.5 };
 
-const { t } = useI18n();
-const { describe, extraText, hvacLabel } = useSceneTexts();
+const { t, locale } = useI18n();
+const { describe, extraText, hvacLabel, percentText } = useSceneTexts();
 
 const domain = computed(() => props.device.domain);
 const icon = computed(() => DOMAIN_ICON[domain.value] ?? "mdi-devices");
@@ -187,6 +187,11 @@ const climate = computed(() => ({
   max: Number(attributes.value.max_temp ?? CLIMATE_DEFAULTS.max),
   step: Number(attributes.value.target_temp_step ?? CLIMATE_DEFAULTS.step),
 }));
+const temperatureText = computed(() =>
+  controls.value.temperature === null
+    ? "–"
+    : formatNumber({ value: controls.value.temperature, locale: locale.value }),
+);
 
 function change(next: Partial<SceneControls>): void {
   emit("change", writeControls({ domain: domain.value, value: props.value, change: next }));
