@@ -36,6 +36,63 @@ export const RELEASES_URL = "https://github.com/shadowtsw/homeace-studio/release
  */
 export const WHATS_NEW: readonly WhatsNewRelease[] = [
   {
+    version: "0.14.1",
+    items: [
+      {
+        icon: "mdi-filter-outline",
+        title: {
+          de: "Aktive Filter fallen auf",
+          en: "Active filters stand out",
+          fr: "Les filtres actifs se remarquent",
+          es: "Los filtros activos se notan",
+          ru: "Активные фильтры заметны",
+        },
+        text: {
+          de: "Ist nur ein Teil der Liste zu sehen, zeigt der Filter das jetzt mit einem farbigen Rand. Bleibt die Liste leer, steht dort, was der Filter ausblendet. „Alle zeigen“ holt alles zurück.",
+          en: "When only part of the list is showing, the filter now has a coloured border. If the list stays empty, it tells you what the filter hides, and “Show all” brings everything back.",
+          fr: "Quand seule une partie de la liste est visible, le filtre a maintenant une bordure colorée. Si la liste reste vide, elle indique ce que le filtre masque, et « Tout afficher » ramène tout.",
+          es: "Cuando solo se ve una parte de la lista, el filtro tiene ahora un borde de color. Si la lista queda vacía, dice qué oculta el filtro, y “Mostrar todo” lo trae todo de vuelta.",
+          ru: "Если видна только часть списка, у фильтра теперь цветная рамка. Если список пуст, в нём написано, что скрывает фильтр, а «Показать все» возвращает всё.",
+        },
+      },
+      {
+        icon: "mdi-folder-eye-outline",
+        title: {
+          de: "Blasse Ordner, klar erklärt",
+          en: "Faded folders, clearly explained",
+          fr: "Dossiers estompés, bien expliqués",
+          es: "Carpetas atenuadas, bien explicadas",
+          ru: "Бледные папки с пояснением",
+        },
+        text: {
+          de: "Findet der Filter in einem Ordner nichts, ist der Ordner jetzt immer blass, auch wenn du ihn selbst angelegt hast. Gesperrt ist er nicht. Was die Navigation bei einem Filter zählt, erklärt „Zahlen und blasse Ordner“ unter Einstellungen → Gut zu wissen.",
+          en: "A folder where the filter finds nothing is now always faded, also one you created yourself. It is not locked. “Numbers and faded folders” under Settings → Good to know explains what the navigation counts with a filter.",
+          fr: "Un dossier où le filtre ne trouve rien est maintenant toujours estompé, même si vous l'avez créé vous-même. Il n'est pas verrouillé. « Nombres et dossiers estompés » sous Paramètres → Bon à savoir explique ce que la navigation compte avec un filtre.",
+          es: "Una carpeta en la que el filtro no encuentra nada aparece ahora siempre atenuada, también si la creaste tú. No está bloqueada. “Números y carpetas atenuadas” en Ajustes → Conviene saber explica qué cuenta la navegación con un filtro.",
+          ru: "Папка, в которой фильтр ничего не находит, теперь всегда бледная, даже если вы создали её сами. Она не заблокирована. Что считает навигация при фильтре, объясняет раздел «Числа и бледные папки» в Настройки → Полезно знать.",
+        },
+      },
+      {
+        icon: "mdi-thermometer",
+        title: {
+          de: "Zahlen und Einheiten wie in Home Assistant",
+          en: "Numbers and units as in Home Assistant",
+          fr: "Nombres et unités comme dans Home Assistant",
+          es: "Números y unidades como en Home Assistant",
+          ru: "Числа и единицы как в Home Assistant",
+        },
+        text: {
+          de: "Thermostate zeigen im Szenen-Editor die Einheit, in der Home Assistant rechnet, also auch °F. Zahlen erscheinen wie in Home Assistant in deiner Sprache: 21,5 °C statt 21.5 °C.",
+          en: "Thermostats in the scene editor show the unit Home Assistant uses, °F included. Numbers and percentages are written the way Home Assistant writes them in your language.",
+          fr: "Dans l'éditeur de scènes, les thermostats affichent l'unité utilisée par Home Assistant, °F compris. Les nombres s'écrivent comme dans Home Assistant dans votre langue : 21,5 °C au lieu de 21.5 °C.",
+          es: "En el editor de escenas, los termostatos muestran la unidad que usa Home Assistant, también °F. Los números se escriben como en Home Assistant en tu idioma: 21,5 °C y 25%.",
+          ru: "В редакторе сцен термостаты показывают единицу, в которой считает Home Assistant, в том числе °F. Числа пишутся как в Home Assistant на вашем языке: 21,5 °C и 25%.",
+        },
+      },
+    ],
+    more: 1,
+  },
+  {
     version: "0.14.0",
     items: [
       {
