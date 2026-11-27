@@ -70,6 +70,8 @@ export const DETAIL_TAB = {
   states: "states",
   properties: "properties",
   history: "history",
+  /** Earlier versions of automations, scripts and scenes (Git light). */
+  versions: "versions",
   dependencies: "dependencies",
 } as const;
 

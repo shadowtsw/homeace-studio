@@ -66,6 +66,10 @@
           />
         </div>
 
+        <div v-else-if="activeTab === DETAIL_TAB.versions" class="entry-detail__body">
+          <VersionsView :entry="entry" />
+        </div>
+
         <div v-else-if="activeTab === DETAIL_TAB.states" class="entry-detail__body">
           <SceneEditorView
             :entry="entry"
@@ -115,6 +119,7 @@
           @save="emit('saveFlow')"
           @discard="editorStore.discard()"
         />
+        <VersionSaveNote v-if="!editorStore.isDirty" :entity-id="entry.entityId" />
       </div>
     </template>
   </section>
@@ -131,6 +136,8 @@ import RunHistoryView from "@/components/history/RunHistoryView.vue";
 import SaveFooter from "@/components/common/SaveFooter.vue";
 import HelperSettingsView from "@/components/helpers/HelperSettingsView.vue";
 import SceneEditorView from "@/components/scenes/SceneEditorView.vue";
+import VersionSaveNote from "@/components/versions/VersionSaveNote.vue";
+import VersionsView from "@/components/versions/VersionsView.vue";
 import { useDetailTabs } from "@/composables/useDetailTabs";
 import type { CheckupFinding } from "@/services/checkupService";
 import { useEditorStore } from "@/stores/editorStore";

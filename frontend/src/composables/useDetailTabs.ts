@@ -22,13 +22,24 @@ export function useDetailTabs({ entry }: { entry: Ref<Entry | null> }) {
   const isHelper = computed(() => entry.value?.kind === "helper");
   const tabs = computed((): DetailTab[] => {
     if (hasFlow.value) {
-      return [DETAIL_TAB.flow, DETAIL_TAB.properties, DETAIL_TAB.history, DETAIL_TAB.dependencies];
+      return [
+        DETAIL_TAB.flow,
+        DETAIL_TAB.properties,
+        DETAIL_TAB.history,
+        DETAIL_TAB.versions,
+        DETAIL_TAB.dependencies,
+      ];
     }
     if (isHelper.value) {
       return [DETAIL_TAB.settings, DETAIL_TAB.properties, DETAIL_TAB.dependencies];
     }
     if (entry.value?.kind === "scene") {
-      return [DETAIL_TAB.states, DETAIL_TAB.properties, DETAIL_TAB.dependencies];
+      return [
+        DETAIL_TAB.states,
+        DETAIL_TAB.properties,
+        DETAIL_TAB.versions,
+        DETAIL_TAB.dependencies,
+      ];
     }
     return [DETAIL_TAB.properties, DETAIL_TAB.dependencies];
   });

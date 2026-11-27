@@ -4,6 +4,7 @@ import { useI18n } from "vue-i18n";
 import { fetchSceneDevice, saveScene } from "@/services/scenesService";
 import { useMessagesStore } from "@/stores/messagesStore";
 import { useToastStore } from "@/stores/toastStore";
+import { useVersionsStore } from "@/stores/versionsStore";
 import type { Entry } from "@/types/entry";
 import type { SceneValue } from "@/utils/sceneValues";
 
@@ -21,6 +22,7 @@ export function useSceneEditor({ entry }: { entry: Ref<Entry> }) {
   const { t } = useI18n();
   const toasts = useToastStore();
   const messages = useMessagesStore();
+  const versions = useVersionsStore();
   const scene = useSceneDraft({ sceneId: () => entry.value.entityId });
 
   function fail(error: unknown): void {
@@ -120,6 +122,7 @@ export function useSceneEditor({ entry }: { entry: Ref<Entry> }) {
     try {
       const result = await saveScene({ entityId, entities: sent });
       scene.applySaved({ result, sent });
+      void versions.noteSaved(entityId);
       toasts.show({ text: t("scene.toast.saved", { name: entry.value.name }) });
       autoSave.reset();
     } catch (error) {

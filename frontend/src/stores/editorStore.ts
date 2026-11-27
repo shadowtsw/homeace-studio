@@ -5,6 +5,8 @@ import { fetchCatalog, fetchFlow, saveFlow } from "@/services/editorService";
 import type { EditorCatalog, Flow, FlowChange } from "@/types/editor";
 import { applyFlowChange } from "@/utils/flow/flowChanges";
 
+import { useVersionsStore } from "./versionsStore";
+
 type Config = Record<string, unknown>;
 
 /**
@@ -142,6 +144,8 @@ export const useEditorStore = defineStore("editor", () => {
       // The user may have opened another entry meanwhile; only this entry's draft is done.
       removeDraft(entityId);
       if (flow.value?.entityId === entityId) flow.value = saved;
+      // The versions tab and the footer say which version the save went into.
+      void useVersionsStore().noteSaved(entityId);
     } finally {
       isSaving.value = false;
     }

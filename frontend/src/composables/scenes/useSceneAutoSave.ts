@@ -4,6 +4,7 @@ import { useI18n } from "vue-i18n";
 import { saveScene, type SceneView } from "@/services/scenesService";
 import { useDraftsStore, type SceneEntities } from "@/stores/draftsStore";
 import { useSettingsStore } from "@/stores/settingsStore";
+import { useVersionsStore } from "@/stores/versionsStore";
 
 /** With automatic saving on, a scene is saved this long after the last edit. */
 const AUTO_SAVE_DELAY_MS = 1000;
@@ -38,6 +39,7 @@ export function useSceneAutoSave(options: SceneAutoSaveOptions) {
   const { applySaved, show, onUndone, fail } = options;
   const { locale } = useI18n();
   const drafts = useDraftsStore();
+  const versions = useVersionsStore();
   const settings = useSettingsStore();
 
   /** A failed automatic save falls back to the normal footer, so the edits are not left hanging. */
@@ -82,6 +84,7 @@ export function useSceneAutoSave(options: SceneAutoSaveOptions) {
       });
       drafts.noteAutoSave({ entityId, before, savedAt });
       applySaved({ result, sent });
+      void versions.noteSaved(entityId);
     } catch (error) {
       hasFailed.value = true;
       fail(error);
@@ -123,6 +126,7 @@ export function useSceneAutoSave(options: SceneAutoSaveOptions) {
       drafts.dropScene(entityId);
       drafts.forgetUndo();
       show(result);
+      void versions.noteSaved(entityId);
       onUndone();
     } catch (error) {
       fail(error);
