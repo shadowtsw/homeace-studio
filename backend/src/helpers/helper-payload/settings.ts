@@ -15,6 +15,7 @@ function isMissing(value: unknown): boolean {
   return value === undefined || value === null || value === "";
 }
 
+/** A finite number; the fallback when the field is empty and one is given. */
 export function readNumber({
   settings,
   field,
@@ -32,6 +33,7 @@ export function readNumber({
   return value;
 }
 
+/** Like readNumber, but a whole number. */
 export function readInteger({
   settings,
   field,
@@ -48,6 +50,7 @@ export function readInteger({
   return value;
 }
 
+/** A whole number, or undefined when the field is empty. */
 export function readOptionalInteger({
   settings,
   field,
@@ -58,6 +61,7 @@ export function readOptionalInteger({
   return isMissing(settings[field]) ? undefined : readInteger({ settings, field });
 }
 
+/** true or false; the fallback when the field is missing. */
 export function readBoolean({
   settings,
   field,
@@ -75,6 +79,7 @@ export function readBoolean({
   return value;
 }
 
+/** Trimmed text, or undefined when the field is empty or blank. */
 export function readOptionalString({
   settings,
   field,
@@ -97,6 +102,7 @@ type ReadChoiceOptions = {
   fallback: string;
 };
 
+/** One of the allowed values; the fallback when the field is empty. */
 export function readChoice({ settings, field, choices, fallback }: ReadChoiceOptions): string {
   const value = readOptionalString({ settings, field }) ?? fallback;
 

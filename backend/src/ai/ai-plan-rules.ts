@@ -64,6 +64,7 @@ export type OperationStateOptions = {
   context: PlanContext;
 };
 
+/** Whether an operation still fits HA as it is now: ok, already done, gone, or in conflict. */
 export function operationState({ operation, context }: OperationStateOptions): AiOperationState {
   if (operation.type === AI_OPERATION_TYPE.renameFolder) {
     if (!context.folders.has(operation.from)) return AI_OPERATION_STATE.gone;

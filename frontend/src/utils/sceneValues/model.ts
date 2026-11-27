@@ -38,11 +38,13 @@ export const COLOR_PRESETS = {
 } as const satisfies Record<string, readonly [number, number]>;
 export type ColorPreset = keyof typeof COLOR_PRESETS;
 
+/** "light.kitchen" → "light". */
 export const domainOf = (entityId: string): string => entityId.split(".")[0] ?? "";
 
 /** A finite number, else null. */
 export const numberOrNull = (value: unknown): number | null =>
   typeof value === "number" && Number.isFinite(value) ? value : null;
 
+/** The value, kept between min and max. */
 export const clamp = ({ value, min, max }: { value: number; min: number; max: number }): number =>
   Math.min(max, Math.max(min, value));

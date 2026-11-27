@@ -11,6 +11,7 @@ import {
   type HelperSettings,
 } from "./settings";
 
+/** A command body in HA's field names. */
 export type HaPayload = Record<string, unknown>;
 
 /** Duration of a timer as HH:MM:SS. */
@@ -20,6 +21,7 @@ const INPUT_TEXT_MODES = ["text", "password"];
 /** HA's own limit for input_text values. */
 const INPUT_TEXT_MAX_LIMIT = 255;
 
+/** HA's values for unset settings; also used when a stored helper is read back for the form. */
 export const DEFAULTS = {
   numberStep: 1,
   textMin: 0,
@@ -57,6 +59,7 @@ export function buildHelperPayload({
   return { ...common, ...TYPE_PAYLOADS[type](settings) };
 }
 
+/** The settings part of the payload per helper type, checked; used for creating and updating. */
 export const TYPE_PAYLOADS: Record<HelperType, (settings: HelperSettings) => HaPayload> = {
   [HELPER_TYPE.inputBoolean]: () => ({}),
   [HELPER_TYPE.inputButton]: () => ({}),
