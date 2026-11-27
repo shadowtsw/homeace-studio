@@ -80,5 +80,5 @@ user turns it on, and a busy HA does not turn the list colourful.
 - HA's `label_registry/update` takes only the fields that change; `icon: null` and `color: null` clear.
 - After every change the store reloads the lookups and the entries, because HA sends
   `label_registry_updated` without the new data.
-- The demo (`fake-ha.ts`) supports create, update and delete; the script "Everything off" targets the
-  label "lights", so the delete dialog has a flow to warn about.
+- The demo (`demo/fake-ha/labels.ts`) supports create, update and delete; the script
+  "Everything off" targets the label "lights", so the delete dialog has a flow to warn about.

@@ -83,5 +83,5 @@ Alles rückgängig → PUT :id { the state before the first automatic save }
    `sceneValues/`, plus tests in `utils/__tests__/sceneValues.spec.ts`.
 2. The row UI in `SceneDeviceRow.vue` (a light control in `SceneLightControls.vue`) and texts under `scene.*` in all five locales.
 3. Add the domain to `SCENE_DOMAINS` and, if it switches on/off, to the on/off list in `sceneValues/controls.ts`.
-4. The demo's `scene.apply` (`backend/src/demo/fake-ha.ts`) applies state and attributes generically.
-   Check that the demo home has such a device.
+4. The demo's `scene.apply` (`backend/src/demo/fake-ha/scenes.ts`) applies state and attributes
+   generically. Check that the demo home has such a device.

@@ -1,7 +1,7 @@
-import { HaCommandError } from "../ha/ha-command.error";
-import { HA_COMMAND, HA_REST_PATH } from "../ha/ha.constants";
-import type { HaCategory, HaEntityRegistryEntry, HaState } from "../ha/ha.types";
-import { createDemoHome } from "./demo-home";
+import { HaCommandError } from "../../ha/ha-command.error";
+import { HA_COMMAND, HA_REST_PATH } from "../../ha/ha.constants";
+import type { HaCategory, HaEntityRegistryEntry, HaState } from "../../ha/ha.types";
+import { createDemoHome } from "../demo-home";
 import { FakeHa } from "./fake-ha";
 
 function registry(fake: FakeHa): HaEntityRegistryEntry[] {

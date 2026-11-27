@@ -58,5 +58,5 @@ HA has two kinds of helpers, and HomeAce Studio treats them differently:
 3. Backend `HELPER_DOMAINS` (`entries/entries.constants.ts`) so it lists as a helper and its state
    changes reach the live updates, and `CHECKED_HELPER_DOMAINS` (`checkup/checkup-analysis.ts`) if unused
    ones should be reported.
-4. Demo: `fake-ha.ts` `helperCommand` handles `<type>/*` generically. Add the type's settings
-   attributes if it has any.
+4. Demo: `demo/fake-ha/helpers.ts` `helperCommand` handles `<type>/*` generically. Add the
+   type's settings attributes (`HELPER_SETTING_ATTRIBUTES`) if it has any.

@@ -14,7 +14,7 @@ page adds the risk, the code and a quick check per area. The routine is in
   developer blog, sometimes not at all.
 - The format of automations and scripts grows with every release (new trigger and condition styles, new
   keys). Old configs must keep working, new ones must not be broken by our editor.
-- **Tests and the demo do not catch it.** Unit tests and `backend/src/demo/fake-ha.ts` answer in the
+- **Tests and the demo do not catch it.** Unit tests and `backend/src/demo/fake-ha/` answer in the
   shape HA had when we wrote them, so they stay green when HA changes. Only a real HA shows it.
 
 ## Safety nets already in place

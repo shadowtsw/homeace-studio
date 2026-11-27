@@ -26,9 +26,9 @@ Checklists for changes that touch several places. Feature-specific recipes are o
 1. Add the command name to `HA_COMMAND` (`backend/src/ha/ha.constants.ts`) and call it through
    `HaConnectionService.call` (WebSocket) or `HaRestService` (REST, only where the WebSocket has no
    command).
-2. **Teach the demo:** `backend/src/demo/fake-ha.ts` must answer it in HA's shape (the `switch` in its
-   command handler, or `restGet` / `restPost` / `restDelete`). Otherwise demo mode and the screenshots
-   break. Add data to `demo-home.ts` if needed.
+2. **Teach the demo:** `backend/src/demo/fake-ha/` must answer it in HA's shape: the `switch` in
+   `FakeHa.call` (or `restGet` / `restPost` / `restDelete`) hands it to the module of its topic.
+   Otherwise demo mode and the screenshots break. Add data to `demo-home.ts` if needed.
 3. Add the API to the table "HA APIs we rely on" in [architecture.md](architecture.md), and a row with
    risk, code and quick check to [ha-compatibility.md](ha-compatibility.md#touchpoints-by-risk). Add
    that quick check to the HA check as well: an entry `{ area, name, run }` in
