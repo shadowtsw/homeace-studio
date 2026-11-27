@@ -4,6 +4,7 @@ import { HaConnectionService } from "../../ha/ha-connection.service";
 import { HaRestService } from "../../ha/ha-rest.service";
 import { HA_COMMAND, HA_REST_PATH } from "../../ha/ha.constants";
 import type { HaEntityRegistryEntry } from "../../ha/ha.types";
+import { RESTORE_LOOKUP_ATTEMPTS, RESTORE_LOOKUP_DELAY_MS } from "../versions.constants";
 import { VERSION_KIND, type VersionKind, type VersionRef } from "../versions.model";
 import type { VersionTargetRepository } from "./version-target.repository";
 
@@ -53,6 +54,17 @@ export class HaVersionTargetRepository implements VersionTargetRepository {
       const ref = refOf(entry);
       return ref ? [ref] : [];
     });
+  }
+
+  async waitForEntityId(ref: Pick<VersionRef, "kind" | "key">): Promise<string | null> {
+    for (let attempt = 0; attempt < RESTORE_LOOKUP_ATTEMPTS; attempt++) {
+      const found = (await this.listRefs()).find(
+        (item) => item.kind === ref.kind && item.key === ref.key,
+      );
+      if (found) return found.entityId;
+      await new Promise((done) => setTimeout(done, RESTORE_LOOKUP_DELAY_MS));
+    }
+    return null;
   }
 
   loadStoredConfig(ref: VersionRef): Promise<Record<string, unknown> | null> {

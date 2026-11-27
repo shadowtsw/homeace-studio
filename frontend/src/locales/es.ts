@@ -1793,7 +1793,24 @@ const es: MessageSchema = {
       restore: "recuperada",
       ai: "IA",
     },
+    trash: {
+      title: "Borrados hace poco",
+      hint: "Las automatizaciones, scripts y escenas borrados se quedan aquí 30 días, con sus versiones. Home Assistant no tiene papelera.",
+      deleted: "borrado {when}",
+      deletedJustNow: "borrado hace un momento",
+      where: {
+        homeace: "en HomeAce",
+        outside: "fuera de HomeAce",
+      },
+      versions: "1 versión | {count} versiones",
+      daysLeft: "queda 1 día | quedan {count} días",
+      restore: "Restaurar",
+      restored: "«{name}» ha vuelto, creado de nuevo en Home Assistant.",
+      restoredNewId:
+        "«{name}» ha vuelto. Home Assistant le dio un ID nuevo: {entityId} (antes {before}).",
+    },
     summary: {
+      fromTrash: "recuperada de la papelera",
       base: "Punto de partida",
       created: "creada en HomeAce",
       none: "sin cambios en el flujo",

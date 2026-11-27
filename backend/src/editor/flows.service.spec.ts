@@ -13,6 +13,8 @@ import type { VersionsService } from "src/versions/versions.service";
 const noVersions = {
   recordSaved: () => Promise.resolve(),
   recordRename: () => Promise.resolve(),
+  prepareDelete: () => Promise.resolve(null),
+  markDeleted: () => Promise.resolve(),
 } as unknown as VersionsService;
 
 const NOW = 1_763_600_000_000;

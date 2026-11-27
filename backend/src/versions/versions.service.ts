@@ -34,13 +34,17 @@ import {
   RELOAD_SERVICE,
   RELOAD_SETTLE_MS,
   VERSION_TARGET_REPOSITORY,
+  DAY_MS,
+  TRASH_DAYS,
   VERSIONS_CLOCK,
   VERSIONS_REPOSITORY,
 } from "./versions.constants";
 import {
   VERSION_KIND,
   VERSION_SOURCE,
+  type DeletedWhere,
   type EntityRename,
+  type VersionKind,
   type Version,
   type VersionHistory,
   type VersionRef,
@@ -56,6 +60,20 @@ export type VersionsView = {
   versions: Version[];
   /** The version later saves in HomeAce Studio still join, if any. */
   openVersionId: string | null;
+};
+
+/** An entry in the trash, for "Kürzlich gelöscht". */
+export type TrashItem = {
+  kind: VersionKind;
+  key: string;
+  /** The entity ID it had. */
+  entityId: string;
+  name: string;
+  deletedAt: string;
+  where: DeletedWhere;
+  /** Days until it is removed for good. */
+  daysLeft: number;
+  versionCount: number;
 };
 
 export type RestoreResult = VersionsView & {
@@ -306,6 +324,7 @@ export class VersionsService implements OnModuleInit, OnApplicationBootstrap, On
         },
       });
 
+      await this.sweepTrash(refs);
       await this.versions.writeLastSeen(new Date(this.now()).toISOString());
       if (changed > 0)
         this.logger.log(`Versions: ${changed} changed ${source} (${refs.length} checked)`);
@@ -351,6 +370,163 @@ export class VersionsService implements OnModuleInit, OnApplicationBootstrap, On
         }),
     });
     return !isFirst;
+  }
+
+  /**
+   * Before HomeAce Studio deletes an entry: keeps its last config, so the trash can bring it back.
+   * Never throws; returns the ref to mark as deleted afterwards (null: keeps no versions).
+   */
+  async prepareDelete(entityId: string): Promise<VersionRef | null> {
+    try {
+      const ref = await this.target.resolveRef(entityId);
+      if (!ref) return null;
+
+      const config = await this.target.loadStoredConfig(ref);
+      if (config) await this.keepLatest({ ref, config });
+      return ref;
+    } catch (error) {
+      this.logger.warn(`No trash entry prepared for ${entityId}: ${String(error)}`);
+      return null;
+    }
+  }
+
+  /** Puts a deleted entry into the trash, with its versions. Never throws. */
+  async markDeleted({ ref, where }: { ref: VersionRef; where: DeletedWhere }): Promise<void> {
+    try {
+      await this.versions.update({
+        ref,
+        change: (history) => {
+          const name = nameOf(history.versions.at(-1)?.config) ?? ref.entityId;
+          const deleted = { at: new Date(this.now()).toISOString(), where, name };
+          return { ...closeOpenVersion(history), deleted };
+        },
+      });
+    } catch (error) {
+      this.logger.warn(`${ref.entityId} not put into the trash: ${String(error)}`);
+    }
+  }
+
+  /** Deleted entries with their versions, newest deletion first; older than TRASH_DAYS are gone. */
+  async trash(): Promise<TrashItem[]> {
+    const histories = await this.missingHistories(await this.target.listRefs());
+
+    return histories
+      .flatMap((history): TrashItem[] => {
+        const mark = history.deleted;
+        if (!mark) return [];
+        const item: TrashItem = {
+          kind: history.ref.kind,
+          key: history.ref.key,
+          entityId: history.ref.entityId,
+          name: mark.name,
+          deletedAt: mark.at,
+          where: mark.where,
+          daysLeft: this.daysLeft(mark.at),
+          versionCount: history.versions.length,
+        };
+        return [item];
+      })
+      .sort((a, b) => b.deletedAt.localeCompare(a.deletedAt));
+  }
+
+  /**
+   * Brings a deleted entry back: writes its last config to HA under the same storage key (HA then
+   * gives it its entity ID again) and keeps a version "aus dem Papierkorb".
+   *
+   * @throws NotFoundException `TRASH_NOT_FOUND` when it is not in the trash.
+   */
+  async restoreFromTrash({
+    kind,
+    key,
+    user,
+  }: {
+    kind: VersionKind;
+    key: string;
+    user?: VersionUser;
+  }): Promise<{ entityId: string; name: string }> {
+    const history = await this.versions.read({ kind, key });
+    const last = history?.versions.at(-1);
+    if (!history?.deleted || !last) {
+      throw new NotFoundException(
+        apiError({ message: MESSAGE_ID.trashNotFound, details: { params: { key } } }),
+      );
+    }
+
+    const ref = history.ref;
+    const config = ref.kind === VERSION_KIND.script ? last.config : { ...last.config, id: ref.key };
+    this.ownSaves.set(refId(ref), this.now() + OWN_SAVE_GRACE_MS);
+    await this.target.saveStoredConfig({ ref, config });
+    const entityId = (await this.target.waitForEntityId(ref)) ?? ref.entityId;
+    const restoredRef = { ...ref, entityId };
+
+    await this.versions.update({
+      ref: restoredRef,
+      change: (current) => {
+        const back = addVersion({
+          history: withRef({ history: current, ref: restoredRef }),
+          config,
+          source: VERSION_SOURCE.restore,
+          now: this.now(),
+          newId: randomUUID,
+          user,
+          fromTrash: true,
+        });
+        const restored = { ...back };
+        delete restored.deleted;
+        return restored;
+      },
+    });
+    this.logger.log(`Brought ${entityId} back from the trash`);
+
+    return { entityId, name: history.deleted.name };
+  }
+
+  /** Entries deleted outside HomeAce Studio go into the trash; the trash forgets after TRASH_DAYS. */
+  private async sweepTrash(refs: readonly VersionRef[]): Promise<void> {
+    for (const history of await this.missingHistories(refs)) {
+      if (history.deleted) {
+        if (this.daysLeft(history.deleted.at) <= 0) await this.versions.remove(history.ref);
+        continue;
+      }
+      // Gone from the registry; only a missing stored config makes it "deleted" (HA may be starting).
+      const stored = await this.target.loadStoredConfig(history.ref);
+      if (!stored) await this.markDeleted({ ref: history.ref, where: "outside" });
+    }
+  }
+
+  /** Histories of entries HA no longer lists (deleted ones, or ones HA did not report). */
+  private async missingHistories(refs: readonly VersionRef[]): Promise<VersionHistory[]> {
+    const known = new Set(refs.map(refId));
+    const missing = (await this.versions.listKeys()).filter((key) => !known.has(refId(key)));
+    const histories = await Promise.all(missing.map((key) => this.versions.read(key)));
+
+    return histories.flatMap((history) => (history ? [history] : []));
+  }
+
+  private daysLeft(deletedAt: string): number {
+    const passed = (this.now() - Date.parse(deletedAt)) / DAY_MS;
+    return Math.max(0, Math.ceil(TRASH_DAYS - passed));
+  }
+
+  /** Adds the stored config as a version when it is newer than the history knows. */
+  private async keepLatest({
+    ref,
+    config,
+  }: {
+    ref: VersionRef;
+    config: Record<string, unknown>;
+  }): Promise<void> {
+    await this.versions.update({
+      ref,
+      change: (history) =>
+        addVersion({
+          history: withRef({ history, ref }),
+          config,
+          source: history.versions.length === 0 ? VERSION_SOURCE.base : VERSION_SOURCE.outside,
+          now: this.now(),
+          newId: randomUUID,
+        }),
+    });
   }
 
   private async requireRef(entityId: string): Promise<VersionRef> {
@@ -419,4 +595,10 @@ function versionNotFound(versionId: string): NotFoundException {
   return new NotFoundException(
     apiError({ message: MESSAGE_ID.versionNotFound, details: { params: { versionId } } }),
   );
+}
+
+/** The name a config gives its entry: `alias` (automations, scripts) or `name` (scenes). */
+function nameOf(config: Record<string, unknown> | undefined): string | null {
+  const name = config?.alias ?? config?.name;
+  return typeof name === "string" && name !== "" ? name : null;
 }

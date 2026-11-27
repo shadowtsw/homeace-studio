@@ -8,6 +8,11 @@ export interface VersionTargetRepository {
   listRefs(): Promise<VersionRef[]>;
   /** The config as HA stores it, or null when it is not stored where HomeAce Studio can write. */
   loadStoredConfig(ref: VersionRef): Promise<Record<string, unknown> | null>;
+  /**
+   * The entity ID HA gave an entry after it was written again (from the trash); asks a few times,
+   * because HA registers it only after its reload. Null when it did not show up.
+   */
+  waitForEntityId(ref: Pick<VersionRef, "kind" | "key">): Promise<string | null>;
   /** Writes a whole config back; HA validates it and reloads on its own. */
   saveStoredConfig(options: { ref: VersionRef; config: Record<string, unknown> }): Promise<void>;
 }

@@ -5,17 +5,29 @@ import {
   Headers,
   HttpCode,
   HttpStatus,
+  NotFoundException,
   Param,
   Post,
   Put,
 } from "@nestjs/common";
 import type { IncomingHttpHeaders } from "node:http";
 
+import { apiError } from "src/common/api/api-response";
 import { ResponseMessage } from "src/common/api/response-message.decorator";
 import { MESSAGE_ID } from "src/messages/message-ids";
 import { haUserFrom } from "../preferences/ha-user";
 import { NameVersionDto } from "./dto/name-version.dto";
-import { VersionsService, type RestoreResult, type VersionsView } from "./versions.service";
+import { VERSION_KIND, type VersionKind } from "./versions.model";
+import {
+  VersionsService,
+  type RestoreResult,
+  type TrashItem,
+  type VersionsView,
+} from "./versions.service";
+
+function isVersionKind(value: string): value is VersionKind {
+  return Object.values<string>(VERSION_KIND).includes(value);
+}
 
 /**
  * Earlier versions of automations, scripts and scenes (docs/api.md). Only through the app's API:
@@ -24,6 +36,29 @@ import { VersionsService, type RestoreResult, type VersionsView } from "./versio
 @Controller("versions")
 export class VersionsController {
   constructor(private readonly versions: VersionsService) {}
+
+  /** Deleted automations, scripts and scenes, kept for 30 days ("Kürzlich gelöscht"). */
+  @Get("trash")
+  trash(): Promise<TrashItem[]> {
+    return this.versions.trash();
+  }
+
+  @Post("trash/:kind/:key/restore")
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage(MESSAGE_ID.trashRestored)
+  restoreFromTrash(
+    @Headers() headers: IncomingHttpHeaders,
+    @Param("kind") kind: string,
+    @Param("key") key: string,
+  ): Promise<{ entityId: string; name: string }> {
+    if (!isVersionKind(kind)) {
+      throw new NotFoundException(
+        apiError({ message: MESSAGE_ID.trashNotFound, details: { params: { key } } }),
+      );
+    }
+    const user = haUserFrom(headers) ?? undefined;
+    return this.versions.restoreFromTrash({ kind, key, user });
+  }
 
   @Get(":entityId")
   list(@Param("entityId") entityId: string): Promise<VersionsView> {

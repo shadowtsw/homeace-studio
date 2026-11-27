@@ -74,6 +74,8 @@
         </div>
       </template>
 
+      <CheckupTrash @select="(id) => emit('select', id)" />
+
       <div v-if="checkup.ignoredCount" class="checkup-list__hidden">
         <span class="mdi mdi-eye-off-outline" />
         {{ t("checkup.hidden", { count: checkup.ignoredCount }) }}
@@ -93,6 +95,8 @@ import { useCheckupStore } from "@/stores/checkupStore";
 import { useMessagesStore } from "@/stores/messagesStore";
 import { useToastStore } from "@/stores/toastStore";
 import { relativeTime } from "@/utils/runs/relativeTime";
+
+import CheckupTrash from "./CheckupTrash.vue";
 
 /** The check-up view in the list column: findings grouped by kind; a click opens the entry. */
 defineProps<{

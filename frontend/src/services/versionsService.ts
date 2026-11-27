@@ -20,6 +20,8 @@ export type Version = {
   since?: string;
   /** `restore`: the version that was brought back. */
   restoredFrom?: { id: string; at: string; name?: string };
+  /** `restore`: the whole entry came back from the trash. */
+  fromTrash?: boolean;
 };
 
 export type VersionKind = "automation" | "script" | "scene";
@@ -71,5 +73,33 @@ export function restoreVersion({
 }: RestoreVersionOptions): Promise<RestoredVersions> {
   return apiPost<RestoredVersions>({
     path: `${base(entityId)}/${encodeURIComponent(versionId)}/restore`,
+  });
+}
+
+/** An entry in the trash ("Kürzlich gelöscht"), kept for 30 days with its versions. */
+export type TrashItem = {
+  kind: VersionKind;
+  key: string;
+  entityId: string;
+  name: string;
+  deletedAt: string;
+  where: "homeace" | "outside";
+  daysLeft: number;
+  versionCount: number;
+};
+
+export function fetchTrash(): Promise<TrashItem[]> {
+  return apiFetch<TrashItem[]>({ path: "/versions/trash" });
+}
+
+export type RestoreFromTrashOptions = { kind: VersionKind; key: string };
+
+/** Creates the entry in HA again, under its old ID; the answer has the entity ID HA gave it. */
+export function restoreFromTrash({
+  kind,
+  key,
+}: RestoreFromTrashOptions): Promise<{ entityId: string; name: string }> {
+  return apiPost<{ entityId: string; name: string }>({
+    path: `/versions/trash/${encodeURIComponent(kind)}/${encodeURIComponent(key)}/restore`,
   });
 }

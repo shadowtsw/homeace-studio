@@ -1758,7 +1758,24 @@ const en: MessageSchema = {
       restore: "brought back",
       ai: "AI",
     },
+    trash: {
+      title: "Recently deleted",
+      hint: "Deleted automations, scripts and scenes stay here for 30 days, with their versions. Home Assistant itself has no trash.",
+      deleted: "deleted {when}",
+      deletedJustNow: "deleted just now",
+      where: {
+        homeace: "in HomeAce",
+        outside: "outside HomeAce",
+      },
+      versions: "1 version | {count} versions",
+      daysLeft: "1 day left | {count} days left",
+      restore: "Restore",
+      restored: "“{name}” is back, created in Home Assistant again.",
+      restoredNewId:
+        "“{name}” is back. Home Assistant gave it a new ID: {entityId} (was {before}).",
+    },
     summary: {
+      fromTrash: "brought back from the trash",
       base: "Starting point",
       created: "created in HomeAce",
       none: "no change to the flow",

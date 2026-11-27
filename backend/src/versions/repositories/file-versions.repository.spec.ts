@@ -80,4 +80,15 @@ describe("FileVersionsRepository", () => {
     ]);
     expect(await repository.readLastSeen()).toBe("2026-11-27T21:00:00.000Z");
   });
+  it("lists the entries it keeps and removes one for good", async () => {
+    const repository = new FileVersionsRepository(dir);
+    await repository.update({ ref: REF, change: (history) => history });
+    await repository.writeLastSeen("2026-11-27T21:00:00.000Z");
+
+    expect(await repository.listKeys()).toEqual([{ kind: "automation", key: REF.key }]);
+
+    await repository.remove(REF);
+    expect(await repository.listKeys()).toEqual([]);
+    expect(await repository.read(REF)).toBeNull();
+  });
 });

@@ -42,6 +42,8 @@ export type AddVersionOptions = {
   since?: string;
   /** `restore`: the version that was brought back. */
   restoredFrom?: Version;
+  /** Brought back from the trash: a version even when the config did not change. */
+  fromTrash?: boolean;
 };
 
 /**
@@ -62,9 +64,10 @@ export function addVersion({
   user,
   since,
   restoredFrom,
+  fromTrash,
 }: AddVersionOptions): VersionHistory {
   const newest = history.versions.at(-1);
-  if (newest && sameConfig(newest.config, config)) return history;
+  if (newest && !fromTrash && sameConfig(newest.config, config)) return history;
 
   if (newest && source === VERSION_SOURCE.homeace && isOpen({ version: newest, now })) {
     const joined: Version = { ...newest, config, saves: (newest.saves ?? 1) + 1 };
@@ -80,6 +83,7 @@ export function addVersion({
     version.saves = 1;
   }
   if (restoredFrom) version.restoredFrom = describeRestored(restoredFrom);
+  if (fromTrash) version.fromTrash = true;
 
   return { ...history, versions: dropOldUnnamed([...closed, version]) };
 }

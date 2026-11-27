@@ -21,6 +21,11 @@ class FakeTarget implements VersionTargetRepository {
     return Promise.resolve(this.refs.find((ref) => ref.entityId === entityId) ?? null);
   }
 
+  waitForEntityId(ref: Pick<VersionRef, "kind" | "key">): Promise<string | null> {
+    const found = this.refs.find((item) => item.kind === ref.kind && item.key === ref.key);
+    return Promise.resolve(found?.entityId ?? null);
+  }
+
   listRefs(): Promise<VersionRef[]> {
     return Promise.resolve(this.refs);
   }

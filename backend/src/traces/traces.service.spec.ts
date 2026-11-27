@@ -10,6 +10,8 @@ import type { VersionsService } from "src/versions/versions.service";
 const noVersions = {
   recordSaved: () => Promise.resolve(),
   recordRename: () => Promise.resolve(),
+  prepareDelete: () => Promise.resolve(null),
+  markDeleted: () => Promise.resolve(),
 } as unknown as VersionsService;
 
 /** Runs of the demo home, through the real editor repository. */

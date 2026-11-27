@@ -1807,7 +1807,24 @@ const ru: MessageSchema = {
       restore: "восстановлено",
       ai: "ИИ",
     },
+    trash: {
+      title: "Недавно удалённые",
+      hint: "Удалённые автоматизации, скрипты и сцены хранятся здесь 30 дней вместе с версиями. В самом Home Assistant корзины нет.",
+      deleted: "удалено {when}",
+      deletedJustNow: "удалено только что",
+      where: {
+        homeace: "в HomeAce",
+        outside: "вне HomeAce",
+      },
+      versions: "{count} версия | {count} версии | {count} версий",
+      daysLeft: "остался {count} день | осталось {count} дня | осталось {count} дней",
+      restore: "Восстановить",
+      restored: "«{name}» снова на месте, заново создано в Home Assistant.",
+      restoredNewId:
+        "«{name}» снова на месте. Home Assistant выдал новый ID: {entityId} (раньше {before}).",
+    },
     summary: {
+      fromTrash: "восстановлено из корзины",
       base: "Исходное состояние",
       created: "создано в HomeAce",
       none: "сценарий не изменился",

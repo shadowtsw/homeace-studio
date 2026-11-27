@@ -11,6 +11,8 @@ import type { VersionsService } from "src/versions/versions.service";
 const noVersions = {
   recordSaved: () => Promise.resolve(),
   recordRename: () => Promise.resolve(),
+  prepareDelete: () => Promise.resolve(null),
+  markDeleted: () => Promise.resolve(),
 } as unknown as VersionsService;
 
 /** Scenes in the demo home, through the real repository and the fake HA. */

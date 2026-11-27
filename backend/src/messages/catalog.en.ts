@@ -87,6 +87,8 @@ export const CATALOG_EN: Catalog = {
   VERSION_SAVED: "Saved.",
   VERSION_RESTORED: "Brought back. The previous state stays in the versions.",
   VERSION_CLOSED: "Closed. The next change starts a new version.",
+  TRASH_RESTORED: "{name} is back, created in Home Assistant again.",
+  TRASH_NOT_FOUND: "This is no longer in the trash.",
   FLOW_DELETED: "Deleted in Home Assistant.",
 
   MCP_SAVED: "Saved.",

@@ -1787,7 +1787,24 @@ export default {
       restore: "zurückgeholt",
       ai: "KI",
     },
+    trash: {
+      title: "Kürzlich gelöscht",
+      hint: "Gelöschte Automationen, Skripte und Szenen bleiben 30 Tage hier, samt ihren Versionen. Home Assistant selbst hat keinen Papierkorb.",
+      deleted: "gelöscht {when}",
+      deletedJustNow: "gerade eben gelöscht",
+      where: {
+        homeace: "in HomeAce",
+        outside: "außerhalb von HomeAce",
+      },
+      versions: "1 Version | {count} Versionen",
+      daysLeft: "noch 1 Tag | noch {count} Tage",
+      restore: "Wiederherstellen",
+      restored: "„{name}“ ist wieder da, in Home Assistant neu angelegt.",
+      restoredNewId:
+        "„{name}“ ist wieder da. Home Assistant hat eine neue ID vergeben: {entityId} (vorher {before}).",
+    },
     summary: {
+      fromTrash: "aus dem Papierkorb wiederhergestellt",
       base: "Ausgangsstand",
       created: "in HomeAce angelegt",
       none: "keine Änderung am Ablauf",

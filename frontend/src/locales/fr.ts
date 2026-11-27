@@ -1811,7 +1811,24 @@ const fr: MessageSchema = {
       restore: "restaurée",
       ai: "IA",
     },
+    trash: {
+      title: "Supprimés récemment",
+      hint: "Les automatisations, scripts et scènes supprimés restent ici 30 jours, avec leurs versions. Home Assistant n’a pas de corbeille.",
+      deleted: "supprimé {when}",
+      deletedJustNow: "supprimé à l’instant",
+      where: {
+        homeace: "dans HomeAce",
+        outside: "en dehors de HomeAce",
+      },
+      versions: "1 version | {count} versions",
+      daysLeft: "encore 1 jour | encore {count} jours",
+      restore: "Restaurer",
+      restored: "« {name} » est de retour, recréé dans Home Assistant.",
+      restoredNewId:
+        "« {name} » est de retour. Home Assistant lui a donné un nouvel ID : {entityId} (avant {before}).",
+    },
     summary: {
+      fromTrash: "restaurée depuis la corbeille",
       base: "Point de départ",
       created: "créée dans HomeAce",
       none: "aucune modification du déroulement",

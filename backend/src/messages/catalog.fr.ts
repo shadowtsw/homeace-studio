@@ -89,6 +89,8 @@ export const CATALOG_FR: Catalog = {
   VERSION_SAVED: "Enregistré.",
   VERSION_RESTORED: "Restauré. L’état précédent reste dans les versions.",
   VERSION_CLOSED: "Clôturé. La prochaine modification commence une nouvelle version.",
+  TRASH_RESTORED: "{name} est de retour, recréé dans Home Assistant.",
+  TRASH_NOT_FOUND: "Ceci n’est plus dans la corbeille.",
   FLOW_DELETED: "Supprimé dans Home Assistant.",
 
   MCP_SAVED: "Enregistré.",

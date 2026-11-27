@@ -158,6 +158,7 @@ export function useVersionLines({ entry }: { entry: Ref<Entry | null> }) {
     const more = hidden > 0 ? ` ${t("versions.summary.more", { count: hidden })}` : "";
     const text = parts.length ? shown + more : t("versions.summary.none");
 
+    if (version.source === "restore" && version.fromTrash) return t("versions.summary.fromTrash");
     if (version.source !== "restore" || !version.restoredFrom) return text;
     const from = t("versions.summary.restoredFrom", { from: labelOf(version.restoredFrom) });
     return `${from} · ${text}`;

@@ -15,6 +15,10 @@ export interface VersionsRepository {
   read(key: HistoryKey): Promise<VersionHistory | null>;
   /** Changes one entry's history; changes of the same entry run one after another. */
   update(options: UpdateHistoryOptions): Promise<VersionHistory>;
+  /** Kind and storage key of every entry with a history, without reading the histories. */
+  listKeys(): Promise<HistoryKey[]>;
+  /** Removes an entry's history for good (trash emptied after TRASH_DAYS). */
+  remove(key: HistoryKey): Promise<void>;
   readRenames(): Promise<EntityRename[]>;
   addRename(rename: EntityRename): Promise<void>;
   /** When HomeAce Studio last compared all stored configs (ISO 8601), or null before the first time. */

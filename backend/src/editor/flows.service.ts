@@ -114,7 +114,10 @@ export class FlowsService {
     const { kind, key } = await this.editorService.requireStoredFlow(entityId);
     const categoryId = await this.editor.loadCategoryId({ kind, entityId });
 
+    // Keeps the last config, so the trash can bring the flow back (never throws).
+    const versionRef = await this.versions.prepareDelete(entityId);
     await this.editor.deleteConfig({ kind, key });
+    if (versionRef) await this.versions.markDeleted({ ref: versionRef, where: "homeace" });
     await this.overlay.update((overlay) => removeExtras({ overlay, entityId }));
 
     if (categoryId) await this.categories.cleanUp({ scope: kind, categoryId });

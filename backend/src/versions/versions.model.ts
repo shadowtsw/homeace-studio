@@ -51,6 +51,8 @@ export type Version = {
   since?: string;
   /** `restore` only: the version that was brought back. */
   restoredFrom?: { id: string; at: string; name?: string };
+  /** `restore` only: the whole entry came back from the trash. */
+  fromTrash?: boolean;
 };
 
 /** Identifies an entry's config independent of its entity ID, which the user can rename. */
@@ -62,10 +64,18 @@ export type VersionRef = {
   entityId: string;
 };
 
+/** Where an entry was deleted: in HomeAce Studio or outside (HA's editor, a YAML file). */
+export type DeletedWhere = "homeace" | "outside";
+
+/** An entry in the trash: deleted, kept with its versions for TRASH_DAYS days. */
+export type DeletedMark = { at: string; where: DeletedWhere; name: string };
+
 /** All versions of one entry, oldest first. */
 export type VersionHistory = {
   ref: VersionRef;
   versions: Version[];
+  /** Set while the entry is in the trash. */
+  deleted?: DeletedMark;
   /** When HomeAce Studio last compared the stored config with the newest version, ISO 8601. */
   checkedAt?: string;
 };

@@ -1,4 +1,4 @@
-import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
+import { mkdir, readdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { promisify } from "node:util";
 import { gunzip, gzip } from "node:zlib";
@@ -6,7 +6,12 @@ import { gunzip, gzip } from "node:zlib";
 import { Inject, Injectable } from "@nestjs/common";
 
 import { MAX_KEPT_RENAMES, VERSIONS_DIR } from "../versions.constants";
-import type { EntityRename, VersionHistory } from "../versions.model";
+import {
+  VERSION_KIND,
+  type EntityRename,
+  type VersionHistory,
+  type VersionKind,
+} from "../versions.model";
 import {
   emptyHistory,
   type HistoryKey,
@@ -22,6 +27,8 @@ const TEMP_FILE_SUFFIX = ".tmp";
 const HISTORY_SUFFIX = ".json.gz";
 const RENAMES_FILE = "entity-renames.json";
 const STATE_FILE = "state.json";
+/** "automation-<base64url key>.json.gz" */
+const HISTORY_FILE = /^([a-z]+)-([A-Za-z0-9_-]+).json.gz$/;
 
 /**
  * One gzipped JSON file per entry in the versions folder next to the overlay (part of HA backups).
@@ -51,6 +58,28 @@ export class FileVersionsRepository implements VersionsRepository {
 
       return changed;
     });
+  }
+
+  async listKeys(): Promise<HistoryKey[]> {
+    let names: string[];
+    try {
+      names = await readdir(this.dir);
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === FILE_NOT_FOUND) return [];
+      throw error;
+    }
+
+    return names.flatMap((name) => {
+      const match = HISTORY_FILE.exec(name);
+      if (!match?.[1] || !match[2]) return [];
+      if (!isVersionKind(match[1])) return [];
+      return [{ kind: match[1], key: Buffer.from(match[2], "base64url").toString("utf8") }];
+    });
+  }
+
+  remove(key: HistoryKey): Promise<void> {
+    const path = this.historyPath(key);
+    return this.queued(path, () => rm(path, { force: true }));
   }
 
   async readRenames(): Promise<EntityRename[]> {
@@ -120,4 +149,8 @@ export class FileVersionsRepository implements VersionsRepository {
 
     return next;
   }
+}
+
+function isVersionKind(value: string): value is VersionKind {
+  return Object.values<string>(VERSION_KIND).includes(value);
 }

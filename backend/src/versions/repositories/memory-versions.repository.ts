@@ -26,6 +26,17 @@ export class MemoryVersionsRepository implements VersionsRepository {
     return Promise.resolve(changed);
   }
 
+  listKeys(): Promise<HistoryKey[]> {
+    return Promise.resolve(
+      [...this.histories.values()].map(({ ref }) => ({ kind: ref.kind, key: ref.key })),
+    );
+  }
+
+  remove(key: HistoryKey): Promise<void> {
+    this.histories.delete(historyId(key));
+    return Promise.resolve();
+  }
+
   readRenames(): Promise<EntityRename[]> {
     return Promise.resolve([...this.renames]);
   }

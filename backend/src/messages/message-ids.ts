@@ -97,6 +97,8 @@ export const MESSAGE_ID = {
   versionSaved: "VERSION_SAVED",
   versionRestored: "VERSION_RESTORED",
   versionClosed: "VERSION_CLOSED",
+  trashRestored: "TRASH_RESTORED",
+  trashNotFound: "TRASH_NOT_FOUND",
 
   // AI access (MCP) and folder plans
   mcpSaved: "MCP_SAVED",
