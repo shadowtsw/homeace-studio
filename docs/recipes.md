@@ -66,6 +66,10 @@ Checklists for changes that touch several places. Feature-specific recipes are o
   `messages.textFor(error, t("errors.actionFailed"))`.
 - Every text in all five locales ([features/i18n.md](features/i18n.md)). Technical details only behind
   `isTechnicalDetailsVisible`.
+- Numbers from HA (values with a unit, number fields) go through `formatNumber` / `formatWithUnit`
+  (`utils/formatNumber.ts`): decimals and thousands in the UI language, as HA shows them; percent
+  through `common.percent` ("25 %" in German and French, "25%" in English, Spanish, Russian, like HA).
+  Never `${value} ${unit}` or a hard-coded "°C": the unit comes from HA.
 - User-facing texts (UI, "Was ist neu", CHANGELOG, DOCS.md) say what the user notices, never how it is
   built. This wiki and code comments stay complete.
 - A feature with a quirk brings a "Gut zu wissen" topic: add it to `GOOD_TO_KNOW_TOPICS`

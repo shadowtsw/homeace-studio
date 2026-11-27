@@ -173,6 +173,8 @@ const es: MessageSchema = {
     close: "Cerrar",
     /** A name or value quoted the way this language does it. */
     quoted: "“{text}”",
+    /** A percentage the way this language writes it (as Home Assistant does): "25 %" or "25%". */
+    percent: "{value}%",
   },
   folder: {
     title: "Nueva carpeta",
@@ -523,7 +525,7 @@ const es: MessageSchema = {
     off: "apagado",
     open: "abierta",
     closed: "cerrada",
-    openPercent: "abierta al {percent} %",
+    openPercent: "abierta al {percent}%",
     try: "Probar",
     tryHint: "Poner solo este dispositivo un momento en el valor de la escena",
     tryBack: "Volver",

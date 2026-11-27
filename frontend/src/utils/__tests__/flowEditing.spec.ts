@@ -15,6 +15,8 @@ const texts: FlowTexts = {
   hours: "h",
   minutes: "min",
   seconds: "s",
+  locale: "de",
+  percent: (value) => `${value} %`,
   titles: {},
   labels: { to: "zu", for: "für", event: "Ereignis", offset: "Versatz" },
   choices: { sunset: "Sonnenuntergang", sunrise: "Sonnenaufgang" },

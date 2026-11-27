@@ -56,7 +56,9 @@ Alles rückgängig → PUT :id { the state before the first automatic save }
 - Devices offered for adding: `light`, `switch`, `cover`, `climate`, `fan`, `media_player`
   (`SCENE_DOMAINS`). Others may already be in a scene and stay as they are.
 - Thermostats: the temperature shows in HA's own unit (`temperatureUnit` of the scene, from
-  `get_config`; HA converts climate values into it, so °F homes see °F). The single temperature
+  `get_config`; HA converts climate values into it, so °F homes see °F), in the slider and in the
+  "gerade:" line (`describeSceneValue` in `utils/sceneTexts.ts`; until 0.14.1 that line said °C
+  always). Numbers and percent follow the UI language (`formatNumber`, `common.percent`). The single temperature
   slider only shows where the device takes one (`hasSingleTargetTemperature`: feature bit
   `TARGET_TEMPERATURE`, and not "heat_cool" on a device with a low/high range). A stored
   `target_temp_low`/`target_temp_high` stays and is named under "Außerdem gespeichert".

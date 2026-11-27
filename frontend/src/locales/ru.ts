@@ -170,6 +170,8 @@ const ru: MessageSchema = {
     close: "Закрыть",
     /** A name or value quoted the way this language does it. */
     quoted: "«{text}»",
+    /** A percentage the way this language writes it (as Home Assistant does): "25 %" or "25%". */
+    percent: "{value}%",
   },
   folder: {
     title: "Новая папка",
@@ -520,7 +522,7 @@ const ru: MessageSchema = {
     off: "выкл.",
     open: "открыто",
     closed: "закрыто",
-    openPercent: "открыто на {percent} %",
+    openPercent: "открыто на {percent}%",
     try: "Попробовать",
     tryHint: "Ненадолго установить только это устройство в значение сцены",
     tryBack: "Вернуть",

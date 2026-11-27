@@ -74,7 +74,7 @@
           :style="tone ? { '--tone': tone } : undefined"
           @input="change({ brightness: Number(($event.target as HTMLInputElement).value) })"
         />
-        <span class="scene-row__value">{{ controls.brightness ?? 100 }} %</span>
+        <span class="scene-row__value">{{ percentText(controls.brightness ?? 100) }}</span>
       </label>
 
       <div v-if="caps.white || caps.color" class="scene-row__line">
@@ -125,7 +125,7 @@
         :value="controls.position ?? 0"
         @input="change({ position: Number(($event.target as HTMLInputElement).value) })"
       />
-      <span class="scene-row__value">{{ controls.position ?? 0 }} %</span>
+      <span class="scene-row__value">{{ percentText(controls.position ?? 0) }}</span>
     </label>
 
     <template v-if="domain === 'climate'">
@@ -153,7 +153,7 @@
           :value="controls.temperature ?? climate.min"
           @input="change({ temperature: Number(($event.target as HTMLInputElement).value) })"
         />
-        <span class="scene-row__value">{{ controls.temperature ?? "–" }} {{ unit }}</span>
+        <span class="scene-row__value">{{ temperatureText }} {{ unit }}</span>
       </label>
     </template>
 
@@ -182,6 +182,7 @@ import { useI18n } from "vue-i18n";
 
 import { DOMAIN_ICON } from "@/constants/domainIcons";
 import type { SceneDevice } from "@/services/scenesService";
+import { formatNumber } from "@/utils/formatNumber";
 import {
   COLOR_PRESETS,
   WHITE_PRESETS,
@@ -201,6 +202,7 @@ import {
   type SceneValue,
   type WhitePreset,
 } from "@/utils/sceneValues";
+import { DEFAULT_TEMPERATURE_UNIT, describeSceneValue, sceneLineTexts } from "@/utils/sceneTexts";
 
 const props = defineProps<{
   device: SceneDevice;
@@ -211,9 +213,7 @@ const props = defineProps<{
   temperatureUnit?: string;
 }>();
 
-/** Shown until HA's unit is known; HA's own default. */
-const FALLBACK_TEMPERATURE_UNIT = "°C";
-const unit = computed(() => props.temperatureUnit ?? FALLBACK_TEMPERATURE_UNIT);
+const unit = computed(() => props.temperatureUnit ?? DEFAULT_TEMPERATURE_UNIT);
 
 const emit = defineEmits<{
   change: [value: SceneValue];
@@ -227,7 +227,8 @@ const COLORS = Object.keys(COLOR_PRESETS) as ColorPreset[];
 const DEFAULT_HVAC_MODES = ["off", "heat", "auto"];
 const CLIMATE_DEFAULTS = { min: 7, max: 30, step: 0.5 };
 
-const { t, te } = useI18n();
+const { t, te, locale } = useI18n();
+const lineTexts = computed(() => sceneLineTexts({ t, te }));
 const isMenuOpen = ref(false);
 const menuRoot = useTemplateRef("menuRoot");
 onClickOutside(menuRoot, () => (isMenuOpen.value = false));
@@ -256,6 +257,11 @@ const climate = computed(() => ({
   max: Number(attributes.value.max_temp ?? CLIMATE_DEFAULTS.max),
   step: Number(attributes.value.target_temp_step ?? CLIMATE_DEFAULTS.step),
 }));
+const temperatureText = computed(() =>
+  controls.value.temperature === null
+    ? "–"
+    : formatNumber({ value: controls.value.temperature, locale: locale.value }),
+);
 
 function change(next: Partial<SceneControls>): void {
   emit("change", writeControls(domain.value, props.value, next));
@@ -272,32 +278,23 @@ function hsCss(hs: readonly [number, number]): string {
 }
 
 function hvacLabel(mode: string): string {
-  return te(`scene.hvac.${mode}`) ? t(`scene.hvac.${mode}`) : mode;
+  return lineTexts.value.hvacMode(mode);
 }
 
-/** "an · 25 %", "40 % offen", "heizen · 22 °C" … for the "gerade:" line. */
+/** "25 %" in German, "25%" in English, as Home Assistant writes it. */
+function percentText(value: number | string): string {
+  return lineTexts.value.percent(formatNumber({ value, locale: locale.value }));
+}
+
+/** "an · 25 %", "40 % offen", "heizen · 21,5 °C" … for the "gerade:" line. */
 function describe(value: SceneValue | null): string {
-  if (!value || value.state === undefined) return "–";
-  const read = readControls(domain.value, value);
-
-  if (domain.value === "cover") {
-    if (read.position === 0) return t("scene.closed");
-    return read.position === 100
-      ? t("scene.open")
-      : t("scene.openPercent", { percent: read.position });
-  }
-  if (domain.value === "climate") {
-    const mode = hvacLabel(String(value.state));
-    return read.temperature === null || value.state === "off"
-      ? mode
-      : `${mode} · ${read.temperature} °C`;
-  }
-  if (read.on === null) return String(value.state);
-  if (!read.on) return t("scene.off");
-
-  return domain.value === "light" && read.brightness !== null
-    ? `${t("scene.on")} · ${read.brightness} %`
-    : t("scene.on");
+  return describeSceneValue({
+    domain: domain.value,
+    value,
+    unit: unit.value,
+    locale: locale.value,
+    texts: lineTexts.value,
+  });
 }
 
 function extraText(key: string, value: unknown): string {
@@ -305,9 +302,9 @@ function extraText(key: string, value: unknown): string {
   let shown: string;
 
   if (typeof value === "boolean") shown = value ? t("scene.on") : t("scene.off");
-  else if (key === "percentage") shown = `${String(value)} %`;
+  else if (key === "percentage") shown = percentText(String(value));
   else if (key === "volume_level" && typeof value === "number")
-    shown = `${Math.round(value * 100)} %`;
+    shown = percentText(Math.round(value * 100));
   else if (typeof value === "string") shown = t("common.quoted", { text: value });
   else shown = JSON.stringify(value);
 

@@ -174,6 +174,8 @@ const fr: MessageSchema = {
     close: "Fermer",
     /** A name or value quoted the way this language does it. */
     quoted: "« {text} »",
+    /** A percentage the way this language writes it (as Home Assistant does): "25 %" or "25%". */
+    percent: "{value} %",
   },
   folder: {
     title: "Nouveau dossier",

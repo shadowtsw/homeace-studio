@@ -12,6 +12,8 @@ const texts: FlowTexts = {
   hours: "h",
   minutes: "min",
   seconds: "s",
+  locale: "de",
+  percent: (value) => `${value} %`,
   titles: { state: "Zustand ändert sich", state_condition: "Zustand ist", delay: "Warten" },
   labels: { at: "um", state: "ist", sequence: "Ablauf" },
   choices: {},

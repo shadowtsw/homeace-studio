@@ -1,3 +1,5 @@
+import { formatNumber, formatWithUnit } from "@/utils/formatNumber";
+
 /** Small words the formatters need, from the locale files. */
 export type FormatTexts = {
   yes: string;
@@ -5,6 +7,10 @@ export type FormatTexts = {
   hours: string;
   minutes: string;
   seconds: string;
+  /** The UI language, so numbers read "21,5" in German and "21.5" in English. */
+  locale: string;
+  /** "25 %" in German, "25%" in English, for an already formatted "25". */
+  percent: (value: string) => string;
 };
 
 const TIME_SEPARATOR = ":";
@@ -107,8 +113,12 @@ export function formatValue(
   if (selectorType === "number" && typeof value === "number") {
     const unit =
       typeof options?.unit_of_measurement === "string" ? options.unit_of_measurement : "";
-    return `${value}${unit ? ` ${unit}` : ""}`;
+    return unit
+      ? formatWithUnit({ value, unit, locale: texts.locale, percent: texts.percent })
+      : formatNumber({ value, locale: texts.locale });
   }
+  // A number without a selector, e.g. a limit like "über 21,5"
+  if (typeof value === "number") return formatNumber({ value, locale: texts.locale });
 
   return formatGeneric(value);
 }

@@ -166,6 +166,8 @@ const en: MessageSchema = {
     close: "Close",
     /** A name or value quoted the way this language does it. */
     quoted: "“{text}”",
+    /** A percentage the way this language writes it (as Home Assistant does): "25 %" or "25%". */
+    percent: "{value}%",
   },
   folder: {
     title: "New folder",
@@ -514,7 +516,7 @@ const en: MessageSchema = {
     off: "off",
     open: "open",
     closed: "closed",
-    openPercent: "{percent} % open",
+    openPercent: "{percent}% open",
     try: "Try",
     tryHint: "Set only this device to the scene's value for a moment",
     tryBack: "Back",
