@@ -1,3 +1,4 @@
+import { isRecord } from "../../common/utils/record";
 import { HaRestError } from "../../ha/ha-rest.service";
 import { HA_REST_PATH } from "../../ha/ha.constants";
 import { emit, setState, type FakeHaData } from "./data";
@@ -76,7 +77,7 @@ export function applyScene({ ha, payload }: { ha: FakeHaData; payload: Payload }
   const data = (payload.service_data ?? {}) as { entities?: Record<string, unknown> };
 
   for (const [entityId, raw] of Object.entries(data.entities ?? {})) {
-    const value = (raw && typeof raw === "object" ? raw : { state: raw }) as Payload;
+    const value: Payload = isRecord(raw) ? raw : { state: raw };
     const { state, ...attributes } = value;
     setState({ ha, entityId, value: typeof state === "string" ? state : "on", attributes });
   }

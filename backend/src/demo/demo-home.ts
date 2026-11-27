@@ -290,8 +290,9 @@ const ENTITY_FOLDERS: Partial<Record<string, string>> = {
 
 function inEntityFolder(entity: DemoEntity): DemoEntity {
   const category = ENTITY_FOLDERS[entity.entityId];
+  if (!category) return entity;
 
-  return category ? { ...entity, category } : entity;
+  return { ...entity, category };
 }
 
 const DEVICES: DemoEntity[] = [

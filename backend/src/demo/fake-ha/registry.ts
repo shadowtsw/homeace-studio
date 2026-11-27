@@ -91,15 +91,17 @@ export function addEntity({ ha, entity }: { ha: FakeHaData; entity: DemoEntity }
       // Like newer HA versions: null stands for the entity's own name.
       aliases: [null],
     });
+
+  // Like HA: a new automation has never run
+  const lastTriggered = ha.isSeeded ? null : hoursAgo(3);
+  const automationAttributes =
+    domainOf(entity.entityId) === "automation" ? { last_triggered: lastTriggered } : {};
   ha.states.set(entity.entityId, {
     entity_id: entity.entityId,
     state: entity.state,
     attributes: {
       friendly_name: entity.name,
-      // Like HA: a new automation has never run
-      ...(domainOf(entity.entityId) === "automation"
-        ? { last_triggered: ha.isSeeded ? null : hoursAgo(3) }
-        : {}),
+      ...automationAttributes,
       ...entity.attributes,
     },
     last_changed: entity.lastChanged ?? now(),

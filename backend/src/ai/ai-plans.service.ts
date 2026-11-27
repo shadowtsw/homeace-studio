@@ -181,9 +181,11 @@ export class AiPlansService {
 
     await this.overlay.update((current) => ({
       ...current,
-      aiPlans: current.aiPlans.map((plan) =>
-        plan.id === planId ? { ...plan, status, appliedOperationIds: appliedIds, decidedAt } : plan,
-      ),
+      aiPlans: current.aiPlans.map((plan) => {
+        if (plan.id !== planId) return plan;
+
+        return { ...plan, status, appliedOperationIds: appliedIds, decidedAt };
+      }),
     }));
     this.live.notify();
   }

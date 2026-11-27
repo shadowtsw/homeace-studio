@@ -56,8 +56,10 @@ export function helperSettingsOf({ type, item }: HelperSettingsOfOptions): Helpe
         mode: item.mode ?? "text",
         pattern: optional(item.pattern),
       };
-    case HELPER_TYPE.inputSelect:
-      return { options: Array.isArray(item.options) ? [...(item.options as unknown[])] : [] };
+    case HELPER_TYPE.inputSelect: {
+      const options: unknown[] = Array.isArray(item.options) ? item.options : [];
+      return { options: [...options] };
+    }
     case HELPER_TYPE.inputDatetime:
       return { hasDate: item.has_date ?? true, hasTime: item.has_time ?? true };
     case HELPER_TYPE.counter:

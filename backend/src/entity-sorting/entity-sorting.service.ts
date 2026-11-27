@@ -14,10 +14,10 @@ import {
   type EntityMoveResult,
   type EntitySortingMemory,
   type SortingContext,
-  type SortingRun,
 } from "./entity-sorting.model";
 import type { SortingSourcesRepository } from "./repositories/sorting-sources.repository";
 import { buildSortingContext } from "./sorting-context";
+import { addToRun } from "./sorting-memory";
 
 /** What the browser may change of the memory; the last run is written by the moves only. */
 export type SortingMemoryChanges = Omit<EntitySortingMemory, "lastRun">;
@@ -98,10 +98,8 @@ export class EntitySortingService {
 
     await this.overlay.update((overlay) => {
       const memory = overlay.entitySorting ?? EMPTY_SORTING_MEMORY;
-      const current = memory.lastRun?.runId === runId ? memory.lastRun : null;
-      const lastRun: SortingRun = current
-        ? { ...current, moves: [...current.moves, ...moved] }
-        : { runId, at: new Date().toISOString(), moves: moved };
+      const at = new Date().toISOString();
+      const lastRun = addToRun({ lastRun: memory.lastRun, runId, moves: moved, at });
 
       return { ...overlay, entitySorting: { ...memory, lastRun } };
     });
@@ -143,7 +141,8 @@ export class EntitySortingService {
       if (memory.lastRun?.runId !== runId) return current;
 
       const left = memory.lastRun.moves.filter((move) => !done.has(move.entityId));
-      const lastRun = left.length ? { ...memory.lastRun, moves: left } : null;
+      const remainingRun = { ...memory.lastRun, moves: left };
+      const lastRun = left.length > 0 ? remainingRun : null;
 
       return { ...current, entitySorting: { ...memory, lastRun } };
     });

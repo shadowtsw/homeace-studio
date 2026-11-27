@@ -16,6 +16,12 @@ import { mapToEntries } from "../entry.mapper";
 import type { Entry, EntryDetails } from "../entry.model";
 import type { EntryRepository, UpdateEntryOptions, CallServiceOptions } from "./entry.repository";
 
+/** For `hidden_by` / `disabled_by`: only "user" is ours to set; null gives the switch back to HA. */
+function userFlag(isSet: boolean | undefined): "user" | null | undefined {
+  if (isSet === undefined) return undefined;
+  return isSet ? "user" : null;
+}
+
 /** Reads entries straight from HA on every call; a cache follows once live updates exist. */
 @Injectable()
 export class HaEntriesRepository implements EntryRepository {
@@ -53,11 +59,7 @@ export class HaEntriesRepository implements EntryRepository {
   }
 
   async update({ entityId, changes }: UpdateEntryOptions): Promise<void> {
-    // HA's null in the aliases means "the name itself"; it must survive our list of names.
-    const aliases =
-      changes.aliases === undefined
-        ? undefined
-        : [...(await this.namePlaceholders(entityId)), ...changes.aliases];
+    const aliases = await this.aliasesToSave({ entityId, aliases: changes.aliases });
 
     // Only fields that are set go to HA; undefined means "leave as it is".
     const fields = {
@@ -66,10 +68,8 @@ export class HaEntriesRepository implements EntryRepository {
       area_id: changes.areaId,
       labels: changes.labelIds,
       aliases,
-      // Only "user" is ours to set; null gives the switch back to HA.
-      hidden_by: changes.isHidden === undefined ? undefined : changes.isHidden ? "user" : null,
-      disabled_by:
-        changes.isDisabled === undefined ? undefined : changes.isDisabled ? "user" : null,
+      hidden_by: userFlag(changes.isHidden),
+      disabled_by: userFlag(changes.isDisabled),
     };
     const definedFields = Object.entries(fields).filter(([, value]) => value !== undefined);
 
@@ -99,6 +99,23 @@ export class HaEntriesRepository implements EntryRepository {
     return {
       aliases: (entry.aliases ?? []).filter((alias): alias is string => typeof alias === "string"),
     };
+  }
+
+  /**
+   * The aliases to send, or undefined to leave them. HA's null in the aliases means "the name
+   * itself"; it must survive our list of names, so HA is asked first (only when aliases change).
+   */
+  private async aliasesToSave({
+    entityId,
+    aliases,
+  }: {
+    entityId: string;
+    aliases: string[] | undefined;
+  }): Promise<(string | null)[] | undefined> {
+    if (aliases === undefined) return undefined;
+
+    const placeholders = await this.namePlaceholders(entityId);
+    return [...placeholders, ...aliases];
   }
 
   private async namePlaceholders(entityId: string): Promise<null[]> {

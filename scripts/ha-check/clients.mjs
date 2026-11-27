@@ -45,7 +45,8 @@ export async function waitForHa({ haUrl, timeoutMs, pollMs }) {
  * @param token - Bearer token; leave it out for the onboarding calls before a user exists.
  */
 export function createHaRest({ haUrl, token = "" }) {
-  const headers = token ? { ...JSON_HEADERS, authorization: `Bearer ${token}` } : JSON_HEADERS;
+  const authHeaders = { ...JSON_HEADERS, authorization: `Bearer ${token}` };
+  const headers = token ? authHeaders : JSON_HEADERS;
 
   return async function haRest(method, path, body) {
     const response = await fetch(haUrl + path, { method, headers, body: toBody(body) });

@@ -1,6 +1,7 @@
 import { BadRequestException, Inject, Injectable, Logger } from "@nestjs/common";
 
 import { apiError } from "../common/api/api-response";
+import { isRecord } from "../common/utils/record";
 import type { HaState } from "../ha/ha.types";
 import { MESSAGE_ID } from "../messages/message-ids";
 import { SCENE_REPOSITORY } from "./scenes.constants";
@@ -183,15 +184,10 @@ export class ScenesService {
 /** scenes.yaml allows a plain state ("on") or an object with state and attributes. */
 function entitiesOf(config: Record<string, unknown>): Record<string, SceneValue> {
   const raw = config.entities;
-  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return {};
+  if (!isRecord(raw)) return {};
 
   return Object.fromEntries(
-    Object.entries(raw as Record<string, unknown>).map(([id, value]) => [
-      id,
-      value && typeof value === "object" && !Array.isArray(value)
-        ? (value as SceneValue)
-        : { state: value },
-    ]),
+    Object.entries(raw).map(([id, value]) => [id, isRecord(value) ? value : { state: value }]),
   );
 }
 

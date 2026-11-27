@@ -1,8 +1,24 @@
 import {
   ENTITY_BUNDLE_PREFIX,
   type EntitySortingMemory,
+  type SortingRun,
   type SortingRunMove,
 } from "./entity-sorting.model";
+
+export type AddToRunOptions = {
+  lastRun: SortingRun | null;
+  runId: string;
+  moves: SortingRunMove[];
+  /** When a new run starts (ISO time); a continued run keeps its own. */
+  at: string;
+};
+
+/** The first batch of a new run starts it; later batches of the same run add their moves. */
+export function addToRun({ lastRun, runId, moves, at }: AddToRunOptions): SortingRun {
+  if (lastRun?.runId !== runId) return { runId, at, moves };
+
+  return { ...lastRun, moves: [...lastRun.moves, ...moves] };
+}
 
 export type MoveSortingPathsOptions = {
   memory: EntitySortingMemory;
@@ -62,9 +78,11 @@ export function renameSortingEntity({
     })),
     lastRun: memory.lastRun && {
       ...memory.lastRun,
-      moves: memory.lastRun.moves.map((move) =>
-        move.entityId === from ? { ...move, entityId: to } : move,
-      ),
+      moves: memory.lastRun.moves.map((move) => {
+        if (move.entityId !== from) return move;
+
+        return { ...move, entityId: to };
+      }),
     },
   };
 }

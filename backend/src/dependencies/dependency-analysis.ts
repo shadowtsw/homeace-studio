@@ -1,3 +1,5 @@
+import { entityIdsIn } from "../common/utils/entity-ids";
+import { isRecord } from "../common/utils/record";
 import type { HaEntityRegistryEntry, HaState } from "../ha/ha.types";
 
 /** What a flow does with an entity, in the order the UI groups them. */
@@ -25,8 +27,6 @@ export type RoleRefs = Map<string, Set<DependencyRole>>;
 
 type Context = "trigger" | "condition" | "action";
 
-/** A plain entity ID; values with templates or `!input` are skipped. */
-const ENTITY_ID = /^[a-z_]+\.[a-z0-9_]+$/;
 /** Entity-ID-like words inside a template; overlapping, so `states.sensor.x` yields `sensor.x`. */
 const TEMPLATE_ID = /(?=\b([a-z_]+\.[a-z0-9_]+)\b)/g;
 const TEMPLATE_MARK = "{{";
@@ -78,12 +78,7 @@ export function collectRoleRefs({ config, isKnown }: CollectRoleRefsOptions): Ro
       : DEPENDENCY_ROLE.action;
   };
   const addIds = ({ value, context }: { value: unknown; context: Context }): void => {
-    const values = Array.isArray(value) ? value : typeof value === "string" ? value.split(",") : [];
-
-    for (const item of values) {
-      const id = typeof item === "string" ? item.trim() : "";
-      if (ENTITY_ID.test(id)) add({ id, role: roleOf({ id, context }) });
-    }
+    for (const id of entityIdsIn(value)) add({ id, role: roleOf({ id, context }) });
   };
   const addTemplateIds = ({ text, context }: { text: string; context: Context }): void => {
     for (const match of text.matchAll(TEMPLATE_ID)) {
@@ -102,14 +97,13 @@ export function collectRoleRefs({ config, isKnown }: CollectRoleRefsOptions): Ro
       return;
     }
 
-    if (!node || typeof node !== "object") return;
+    if (!isRecord(node)) return;
 
-    const record = node as Record<string, unknown>;
     // A condition block among actions (`- condition: state`) checks, it does not act.
     const own: Context =
-      context === "action" && typeof record.condition === "string" ? "condition" : context;
+      context === "action" && typeof node.condition === "string" ? "condition" : context;
 
-    for (const [key, value] of Object.entries(record)) {
+    for (const [key, value] of Object.entries(node)) {
       if (key === "entity_id") {
         addIds({ value, context: own });
         if (typeof value === "string" && value.includes(TEMPLATE_MARK))
@@ -136,8 +130,8 @@ export function collectRoleRefs({ config, isKnown }: CollectRoleRefsOptions): Ro
     }
   };
 
-  if (config && typeof config === "object" && !Array.isArray(config)) {
-    for (const [key, value] of Object.entries(config as Record<string, unknown>)) {
+  if (isRecord(config)) {
+    for (const [key, value] of Object.entries(config)) {
       // Top-level `action` / `condition` are the old plural keys, always lists there.
       walk({ node: value, context: TOP_LEVEL[key] ?? "action" });
     }

@@ -1,3 +1,4 @@
+import { isRecord } from "../common/utils/record";
 import { RUN_RESULT, type Run, type RunResult, type RunStart, type RunStep } from "./traces.model";
 
 /**
@@ -41,10 +42,7 @@ const TRIGGER_PATH = /^trigger\/(\d+)$/;
  */
 const MANUAL_TRIGGER_PATH = "trigger";
 
-const record = (value: unknown): Record<string, unknown> | null =>
-  value && typeof value === "object" && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
-    : null;
+const record = (value: unknown): Record<string, unknown> | null => (isRecord(value) ? value : null);
 const text = (value: unknown): string | null => (typeof value === "string" ? value : null);
 
 function resultOf(trace: HaTrace): RunResult {

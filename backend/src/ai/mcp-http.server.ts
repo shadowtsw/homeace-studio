@@ -10,6 +10,7 @@ import {
   type OnModuleDestroy,
 } from "@nestjs/common";
 
+import { asRecord, isRecord } from "../common/utils/record";
 import { EntriesService } from "../entries/entries.service";
 import { OVERLAY_REPOSITORY } from "../overlay/overlay.constants";
 import type { OverlayRepository } from "../overlay/repositories/overlay.repository";
@@ -30,8 +31,6 @@ const HTTP = {
 
 /** JSON-RPC error codes for answers outside the MCP SDK. */
 const JSON_RPC = { parseError: -32700, serverError: -32000 } as const;
-
-type JsonRpcMessage = { method?: unknown; params?: { clientInfo?: { name?: unknown } } };
 
 class BodyTooLargeError extends Error {}
 
@@ -68,10 +67,11 @@ function readBody(request: IncomingMessage): Promise<string> {
 
 /** The client's name from an `initialize` message, e.g. "claude-code". */
 function clientNameOf(message: unknown): string | null {
-  const messages = (Array.isArray(message) ? message : [message]) as JsonRpcMessage[];
-  const name = messages.find((item) => item?.method === "initialize")?.params?.clientInfo?.name;
+  const messages: unknown[] = Array.isArray(message) ? message : [message];
+  const initialize = messages.filter(isRecord).find((item) => item.method === "initialize");
+  const clientInfo = asRecord(asRecord(initialize?.params).clientInfo);
 
-  return typeof name === "string" ? name.slice(0, 80) : null;
+  return typeof clientInfo.name === "string" ? clientInfo.name.slice(0, 80) : null;
 }
 
 /**

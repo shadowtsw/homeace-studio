@@ -80,9 +80,9 @@ function createDocker() {
   const desktopDocker = join(WINDOWS_DOCKER_DIR, "docker.exe");
   const isDesktopOnWindows = process.platform === "win32" && existsSync(desktopDocker);
   const pathKey = Object.keys(process.env).find((key) => key.toUpperCase() === "PATH") ?? "PATH";
-  const env = isDesktopOnWindows
-    ? { ...process.env, [pathKey]: `${WINDOWS_DOCKER_DIR}${delimiter}${process.env[pathKey]}` }
-    : process.env;
+  const pathWithDocker = `${WINDOWS_DOCKER_DIR}${delimiter}${process.env[pathKey]}`;
+  const envWithDocker = { ...process.env, [pathKey]: pathWithDocker };
+  const env = isDesktopOnWindows ? envWithDocker : process.env;
   const command = isDesktopOnWindows ? desktopDocker : "docker";
 
   return function docker(args, { input, mayFail = false } = {}) {

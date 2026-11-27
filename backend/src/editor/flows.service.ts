@@ -26,6 +26,19 @@ function pickIdentity(config: Record<string, unknown>): Record<string, unknown> 
     Object.entries(config).filter(([field]) => field === "id" || field === "alias"),
   );
 }
+
+type ConfigToCreateOptions = {
+  fresh: Record<string, unknown>;
+  copyOf: Record<string, unknown> | undefined;
+};
+
+/** A copy takes the whole flow; only the id (automations) and the name are new. */
+function configToCreate({ fresh, copyOf }: ConfigToCreateOptions): Record<string, unknown> {
+  if (!copyOf) return fresh;
+
+  return { ...copyOf, ...pickIdentity(fresh) };
+}
+
 const ENTITY_ID_SEPARATOR = ".";
 
 export type CreateOptions = {
@@ -58,8 +71,7 @@ export class FlowsService {
     const name = dto.name.trim();
     const fresh = await this.newConfig({ kind: dto.kind, name });
     const key = fresh.key;
-    // A copy takes the whole flow; only the id (automations) and the name are new.
-    const config = copyOf ? { ...copyOf, ...pickIdentity(fresh.config) } : fresh.config;
+    const config = configToCreate({ fresh: fresh.config, copyOf });
 
     await this.editor.saveConfig({ kind: dto.kind, key, config }).catch((error: unknown) => {
       throw toFlowError(error);

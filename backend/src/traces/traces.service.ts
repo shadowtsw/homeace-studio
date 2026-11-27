@@ -1,5 +1,6 @@
 import { Inject, Injectable } from "@nestjs/common";
 
+import { asRecord } from "../common/utils/record";
 import { EDITOR_REPOSITORY } from "../editor/editor.constants";
 import { FLOW_KIND, type FlowKind } from "../editor/editor.model";
 import { EditorService } from "../editor/editor.service";
@@ -34,10 +35,7 @@ export class TracesService {
   async keepRuns({ entityId, count }: KeepRunsOptions): Promise<{ storedTraces: number }> {
     const { kind, key } = await this.flows.requireStoredFlow(entityId);
     const stored = (await this.editor.loadStoredConfig({ kind, key })) ?? {};
-    const trace =
-      stored.trace && typeof stored.trace === "object"
-        ? (stored.trace as Record<string, unknown>)
-        : {};
+    const trace = asRecord(stored.trace);
 
     await this.editor.saveConfig({
       kind,
@@ -106,11 +104,7 @@ export class TracesService {
 }
 
 function storedTracesOf(config: Record<string, unknown>): number {
-  const trace = config.trace;
-  const value =
-    trace && typeof trace === "object"
-      ? (trace as Record<string, unknown>).stored_traces
-      : undefined;
+  const value = asRecord(config.trace).stored_traces;
 
   return typeof value === "number" && value > 0 ? value : DEFAULT_STORED_TRACES;
 }

@@ -95,7 +95,8 @@ export class EditorService {
     }
 
     // The id ties the automation to its entity; it must not change through an edit.
-    const toSave = kind === FLOW_KIND.automation ? { ...config, id: storageKey } : config;
+    const configWithId = { ...config, id: storageKey };
+    const toSave = kind === FLOW_KIND.automation ? configWithId : config;
 
     await this.editor
       .saveConfig({ kind, key: storageKey, config: toSave })

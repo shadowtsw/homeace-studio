@@ -1,3 +1,5 @@
+import { entityIdsIn } from "../common/utils/entity-ids";
+import { isRecord } from "../common/utils/record";
 import type { Entry, EntryKind } from "../entries/entry.model";
 import type { HaEntityRegistryEntry, HaState } from "../ha/ha.types";
 
@@ -63,8 +65,6 @@ export type CheckupInput = {
   ignored: ReadonlySet<string>;
 };
 
-/** A plain entity ID; values with templates or `!input` are skipped. */
-const ENTITY_ID = /^[a-z_]+\.[a-z0-9_]+$/;
 const ENTITY_ID_KEY = "entity_id";
 const ACTION_KEY = "action";
 const SCRIPT_PREFIX = "script.";
@@ -100,12 +100,7 @@ const KIND_ORDER: CheckupKind[] = Object.values(CHECKUP_KIND);
 export function collectEntityRefs(config: unknown): Set<string> {
   const refs = new Set<string>();
   const addIds = (value: unknown): void => {
-    const values = Array.isArray(value) ? value : typeof value === "string" ? value.split(",") : [];
-
-    for (const item of values) {
-      const id = typeof item === "string" ? item.trim() : "";
-      if (ENTITY_ID.test(id)) refs.add(id);
-    }
+    for (const id of entityIdsIn(value)) refs.add(id);
   };
   const walk = (node: unknown): void => {
     if (Array.isArray(node)) {
@@ -113,9 +108,9 @@ export function collectEntityRefs(config: unknown): Set<string> {
       return;
     }
 
-    if (!node || typeof node !== "object") return;
+    if (!isRecord(node)) return;
 
-    for (const [key, value] of Object.entries(node as Record<string, unknown>)) {
+    for (const [key, value] of Object.entries(node)) {
       if (key === ENTITY_ID_KEY) addIds(value);
 
       if (key === ACTION_KEY && typeof value === "string" && value.startsWith("script.")) {
