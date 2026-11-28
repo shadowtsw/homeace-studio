@@ -273,6 +273,7 @@ watch(() => props.entityId, close);
  */
 .flow-view__section {
   --section-color: var(--flow-then);
+  --section-on: var(--on-flow-then);
   --section-soft: var(--flow-then-soft);
 
   position: relative;
@@ -281,11 +282,13 @@ watch(() => props.entityId, close);
 
 .flow-view__section--when {
   --section-color: var(--flow-when);
+  --section-on: var(--on-flow-when);
   --section-soft: var(--flow-when-soft);
 }
 
 .flow-view__section--if {
   --section-color: var(--flow-if);
+  --section-on: var(--on-flow-if);
   --section-soft: var(--flow-if-soft);
 }
 
@@ -319,7 +322,7 @@ watch(() => props.entityId, close);
   padding: 3px 10px;
   border-radius: 999px;
   background: var(--section-color);
-  color: #fff;
+  color: var(--section-on);
   font-size: 12px;
   font-weight: 600;
   line-height: 1.4;
@@ -354,7 +357,7 @@ watch(() => props.entityId, close);
   padding: 6px 10px;
   border-radius: 7px;
   background: var(--section-color);
-  color: var(--on-accent);
+  color: var(--section-on);
   font: 700 12.5px/1 var(--font-display);
   letter-spacing: 0.07em;
   text-transform: uppercase;

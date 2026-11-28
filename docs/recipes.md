@@ -100,6 +100,19 @@ before storing, and again whenever stored data is read.
 - Everything must work on touch and narrow screens ([ui/layout.md](ui/layout.md)). Menus must be visible
   without hover on touch.
 
+## New theme colour (token)
+
+Every theme sets every token, so a new colour is added in all places at once
+([features/themes.md](features/themes.md)):
+
+1. `core/themes/themeFormat.ts` → `THEME_TOKENS` (then `node scripts/sync-core.mjs`; a file may also
+   bring it as a fine-tuned value).
+2. `frontend/src/utils/themes/tokens.ts` → `deriveTokens` derives it from the seven colours; if it is
+   text or a mark on something, add the pair to `FLOOR_PAIRS`.
+3. Standard's exact value in `STANDARD_TOKENS` (`builtInThemes.ts`) and the same in
+   `frontend/src/styles/tokens.css` (light and dark; a test keeps both equal).
+4. Components use it only through `var(--…)`; no fixed colour values in components.
+
 ## Release
 
 See [setup.md](setup.md#releases): version in `homeace-studio/config.yaml`, a `CHANGELOG.md` section, and

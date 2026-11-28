@@ -25,6 +25,9 @@
   --flow-if-soft: #dcf1ed;
   --flow-then: #3451d1;
   --flow-then-soft: #e7ebfc;
+  --on-flow-when: #ffffff;
+  --on-flow-if: #ffffff;
+  --on-flow-then: #ffffff;
   --kind-automation: #b0620a;
   --kind-automation-soft: #fcefdc;
   --kind-script: #6b43c2;
@@ -74,6 +77,9 @@
     --flow-if-soft: #11322d;
     --flow-then: #8197ff;
     --flow-then-soft: #222b50;
+    --on-flow-when: #0e1117;
+    --on-flow-if: #0e1117;
+    --on-flow-then: #0e1117;
     --kind-automation: #f0a54a;
     --kind-automation-soft: #38270f;
     --kind-script: #b595f6;

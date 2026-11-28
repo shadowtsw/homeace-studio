@@ -21,12 +21,18 @@ section): the brightness for this device and the theme for the user. The layout 
 - **Flow sections have tokens of their own**: `--flow-when`, `--flow-if`, `--flow-then` (each with
   `-soft`). They keep their family (orange, teal, blue) in every theme, also where the accent is another
   colour (Wald: green accent, blue "Dann"). `FlowView.vue` and the version comparison use them.
+- **Text on the filled flow labels** ("WENN", "UND NUR WENN", "DANN", the drop hint) has a token per
+  flow colour: `--on-flow-when`, `--on-flow-if`, `--on-flow-then`, light or dark, whichever reads
+  better on that colour. Not the accent's `--on-accent`: an own theme with light flow colours and a dark
+  accent would put white on light. One colour for all three is not enough either: on a mid-grey surface
+  one flow colour can be almost white and another almost black. In Standard all three equal
+  `--on-accent`, so its labels look as before (only the drop hint in dark became dark text on orange).
 - **Kinds of entries** in lists and filters: automation follows "Wenn", helper follows "Und nur wenn"
   (as before). Script (purple) and scene (pink) keep Standard's colour of the version; their soft
   backgrounds are mixed onto the theme's surface.
 - **Floor** (`MIN_CONTRAST` = 2 : 1): checked on the end result for text on background and surface, quiet
-  text, accent, text on accent buttons, the flow, kind and state colours on the surface
-  (`FLOOR_PAIRS`). Derived colours below it are moved in lightness (`ensureContrast`), so every theme stays
+  text, accent, text on accent buttons, the flow, kind and state colours on the surface, the label text
+  on each flow colour (`FLOOR_PAIRS`). Derived colours below it are moved in lightness (`ensureContrast`), so every theme stays
   readable, the settings window included. The ready-made themes reach at least 4.5 : 1 for text (test).
 - **Fine-tuned values** (prepared pro mode, no UI): single tokens per version on top of the derived ones
   (`fineTokens.light` / `.dark`). One that adds a pair below the floor is dropped (`withFineTokens`
@@ -73,6 +79,7 @@ the **check report**, and only "Übernehmen" keeps the theme and puts it on.
 
 ## Sharing
 
+"Gut zu wissen → Themes teilen" explains it for users (also "Mehr dazu" under "Meine Themes").
 "Exportieren" saves `<name>.homeace-theme.json`, "Kopieren" puts the same text on the clipboard (for a
 forum code block). Where the clipboard is closed (HA over plain http, some apps) the page "Theme als
 Text" shows it to copy by hand (`composables/useThemeSharing.ts`). The file is the format of

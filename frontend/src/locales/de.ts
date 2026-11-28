@@ -73,8 +73,8 @@ export default {
       },
       whereStored: {
         title: "Was wo gespeichert wird",
-        text: "Was du bewusst einstellst, folgt dir auf jedes Gerät: Sprache, Technische Details, Szenen automatisch speichern, Durchläufe merken.",
-        more: "Was HomeAce sich von selbst merkt, bleibt auf diesem Gerät: Spaltenbreiten, eingeklappte Details, Ordner oder Bereiche, gewählte Filter. Öffnest du HomeAce ohne Home Assistant davor, gilt alles nur auf diesem Gerät.",
+        text: "Was du bewusst einstellst, folgt dir auf jedes Gerät: Sprache, Theme und eigene Themes, Technische Details, Szenen automatisch speichern, Durchläufe merken.",
+        more: "Auf diesem Gerät bleiben die Helligkeit, weil sie vom Gerät abhängt, und was HomeAce sich von selbst merkt: Spaltenbreiten, eingeklappte Details, Ordner oder Bereiche, gewählte Filter. Öffnest du HomeAce ohne Home Assistant davor, gilt alles nur auf diesem Gerät.",
       },
       filters: {
         title: "Filter kombinieren",
@@ -107,6 +107,11 @@ export default {
         title: "Versionen und Papierkorb",
         text: "Jedes Speichern einer Automation, eines Skripts oder einer Szene wird zu einer Version. Speicherst du innerhalb von 10 Minuten noch einmal, kommt es in dieselbe Version. Auch Änderungen direkt in Home Assistant landen hier, ebenso alles, was sich geändert hat, während HomeAce aus war.",
         more: "Die letzten 20 Versionen bleiben, danach fällt die älteste weg. Mit „Merken“ und einem Namen hältst du bis zu 10 Versionen dauerhaft fest. Zurückholen speichert die Version in Home Assistant und sichert vorher den jetzigen Stand. Gelöschte Automationen, Skripte und Szenen liegen 30 Tage mit ihren Versionen in der Durchsicht unter „Kürzlich gelöscht“. Alles liegt bei HomeAce und ist in den Backups von Home Assistant enthalten.",
+      },
+      themes: {
+        title: "Themes teilen",
+        text: "Eigene Themes kannst du als Datei exportieren oder als Text kopieren, zum Beispiel für ein Forum. Ein Theme enthält nur Farben.",
+        more: "Was du importierst oder einfügst, prüft HomeAce zuerst und zeigt es als Vorschau mit Prüfbericht. Erst „Übernehmen“ legt es bei dir ab. Zu schwachen Text macht HomeAce lesbar, so bleibt jedes Theme bedienbar.",
       },
     },
     open: "Einstellungen",

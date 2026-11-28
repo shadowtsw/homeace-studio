@@ -76,8 +76,8 @@ const es: MessageSchema = {
       },
       whereStored: {
         title: "Qué se guarda dónde",
-        text: "Lo que ajustas a propósito te sigue a todos tus dispositivos: idioma, detalles técnicos, guardar escenas automáticamente, ejecuciones guardadas.",
-        more: "Lo que HomeAce recuerda por sí solo se queda en este dispositivo: ancho de columnas, detalles plegados, carpetas o áreas, filtros elegidos. Si abres HomeAce sin pasar por Home Assistant, todo se aplica solo en este dispositivo.",
+        text: "Lo que ajustas a propósito te sigue a todos tus dispositivos: idioma, tema y temas propios, detalles técnicos, guardar escenas automáticamente, ejecuciones guardadas.",
+        more: "El brillo se queda en este dispositivo, porque depende de él, y también lo que HomeAce recuerda por sí solo: ancho de columnas, detalles plegados, carpetas o áreas, filtros elegidos. Si abres HomeAce sin pasar por Home Assistant, todo se aplica solo en este dispositivo.",
       },
       filters: {
         title: "Combinar filtros",
@@ -110,6 +110,11 @@ const es: MessageSchema = {
         title: "Versiones y papelera",
         text: "Cada vez que guardas una automatización, un script o una escena se crea una versión. Si vuelves a guardar en 10 minutos, va a la misma versión. Los cambios hechos directamente en Home Assistant también aparecen, igual que todo lo que cambió mientras HomeAce estaba apagado.",
         more: "Se quedan las últimas 20 versiones; después desaparece la más antigua. Con “Guardar” y un nombre conservas hasta 10 versiones para siempre. Recuperar guarda la versión en Home Assistant y antes conserva el estado actual. Las automatizaciones, scripts y escenas borrados se quedan 30 días con sus versiones en la Revisión, en “Borrados hace poco”. Todo lo guarda HomeAce y está incluido en las copias de seguridad de Home Assistant.",
+      },
+      themes: {
+        title: "Compartir temas",
+        text: "Tus temas propios puedes exportarlos como archivo o copiarlos como texto, por ejemplo para un foro. Un tema solo contiene colores.",
+        more: "Lo que importas o pegas, HomeAce lo comprueba primero y lo muestra como vista previa con un informe de comprobación. Solo “Adoptar” lo guarda. Si un texto quedara demasiado débil, HomeAce lo hace legible, así cada tema sigue siendo utilizable.",
       },
     },
     open: "Ajustes",

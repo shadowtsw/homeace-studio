@@ -77,8 +77,8 @@ const fr: MessageSchema = {
       },
       whereStored: {
         title: "Ce qui est enregistré où",
-        text: "Ce que vous réglez volontairement vous suit sur tous vos appareils : langue, détails techniques, enregistrement automatique des scènes, exécutions conservées.",
-        more: "Ce que HomeAce retient de lui-même reste sur cet appareil : largeur des colonnes, détails repliés, dossiers ou pièces, filtres choisis. Si vous ouvrez HomeAce sans passer par Home Assistant, tout s'applique uniquement sur cet appareil.",
+        text: "Ce que vous réglez volontairement vous suit sur tous vos appareils : langue, thème et thèmes personnels, détails techniques, enregistrement automatique des scènes, exécutions conservées.",
+        more: "La luminosité reste sur cet appareil, car elle dépend de l'appareil, tout comme ce que HomeAce retient de lui-même : largeur des colonnes, détails repliés, dossiers ou pièces, filtres choisis. Si vous ouvrez HomeAce sans passer par Home Assistant, tout s'applique uniquement sur cet appareil.",
       },
       filters: {
         title: "Combiner les filtres",
@@ -111,6 +111,11 @@ const fr: MessageSchema = {
         title: "Versions et corbeille",
         text: "Chaque enregistrement d’une automatisation, d’un script ou d’une scène devient une version. Si vous enregistrez à nouveau dans les 10 minutes, cela va dans la même version. Les modifications faites directement dans Home Assistant apparaissent aussi, tout comme ce qui a changé pendant que HomeAce était arrêté.",
         more: "Les 20 dernières versions restent ; ensuite la plus ancienne disparaît. Avec « Garder » et un nom, vous conservez jusqu’à 10 versions pour de bon. Restaurer enregistre la version dans Home Assistant et garde d’abord l’état actuel. Les automatisations, scripts et scènes supprimés restent 30 jours avec leurs versions dans le Bilan, sous « Supprimés récemment ». Tout est stocké par HomeAce et inclus dans les sauvegardes de Home Assistant.",
+      },
+      themes: {
+        title: "Partager des thèmes",
+        text: "Vous pouvez exporter vos thèmes personnels sous forme de fichier ou les copier en texte, par exemple pour un forum. Un thème ne contient que des couleurs.",
+        more: "Ce que vous importez ou collez, HomeAce le vérifie d’abord et l’affiche en aperçu avec un rapport de vérification. Seul « Utiliser » l’enregistre. Un texte trop pâle est rendu lisible, ainsi chaque thème reste utilisable.",
       },
     },
     open: "Paramètres",
@@ -187,7 +192,7 @@ const fr: MessageSchema = {
       },
       ownThemes: "Mes thèmes",
       ownThemesHint:
-        "Créés ou importés par vous. Un fichier ou un texte est d’abord vérifié, rien n’est repris tout de suite.",
+        "Créés ou importés par vous. Un fichier ou un texte est d’abord vérifié, rien n’est ajouté tout de suite.",
       ownThemesFull:
         "{count} thèmes personnels au maximum. Supprimez-en un pour en importer un nouveau.",
       noOwnThemes: "Pas encore de thèmes personnels.",
@@ -213,17 +218,17 @@ const fr: MessageSchema = {
       byAuthor: "par {author}",
       ownTheme: "thème personnel",
       pasteHint:
-        "Par exemple depuis un message de forum. Le texte est d’abord vérifié, rien n’est repris tout de suite.",
+        "Par exemple depuis un message de forum. Le texte est d’abord vérifié, rien n’est ajouté tout de suite.",
       pasteLabel: "Thème en texte",
       checking: "Vérification isolée en cours …",
-      nothingTaken: "Rien n’a été repris.",
-      takeTitle: "Reprendre le thème « {name} » ?",
+      nothingTaken: "Rien n’a été ajouté.",
+      takeTitle: "Utiliser le thème « {name} » ?",
       gateNote:
         "Vérifié dans un processus isolé, sans accès à HomeAce, à Home Assistant ni à vos données.",
       backToText: "Retour au texte",
       check: "Vérifier",
-      take: "Reprendre",
-      taken: "« {name} » repris et activé.",
+      take: "Utiliser",
+      taken: "« {name} » ajouté et activé.",
       importedName: "Thème importé",
       copyByHand: "La copie est bloquée ici. Sélectionnez le texte et copiez-le vous-même.",
       copyLabel: "Thème en texte",
@@ -254,7 +259,7 @@ const fr: MessageSchema = {
         colorMissing: "{color} ({mode}) manque, Standard utilisé",
         colorInvalid: "{color} ({mode}) n’est pas une couleur (« {value} »), remplacé",
         unknownColor: "Valeur inconnue « {field} » ({mode}) écartée",
-        fineTokensKept: "Un réglage fin repris ({mode}) | {count} réglages fins repris ({mode})",
+        fineTokensKept: "Un réglage fin conservé ({mode}) | {count} réglages fins conservés ({mode})",
         fineTokenDropped: "Réglage fin « {field} » ({mode}) écarté : inconnu ou pas une couleur",
         textAdjusted: "Le texte ({mode}) serait illisible, il est ajusté",
         fineTokenUnreadable:
@@ -271,7 +276,7 @@ const fr: MessageSchema = {
         versionNewer: "Ce thème est fait pour une version plus récente de HomeAce.",
         noColors: "Le thème ne contient aucune couleur.",
         gateUnavailable:
-          "La vérification isolée n’a pas pu démarrer ici. Sans elle, rien n’est repris.",
+          "La vérification isolée n’a pas pu démarrer ici. Sans elle, rien n’est ajouté.",
         gateTooSlow: "La vérification a pris trop de temps et a été interrompue.",
       },
       themes: {

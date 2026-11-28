@@ -56,6 +56,7 @@
       :title="t('settings.appearance.ownThemes')"
       :hint="ownThemesHint"
       :preference="PREFERENCES.theme"
+      :more-topic="GOOD_TO_KNOW_TOPIC.themes"
     >
       <button class="btn btn--sm" type="button" :disabled="ownThemes.isFull" @click="newTheme">
         <span class="mdi mdi-plus" />{{ t("settings.appearance.editor.newTheme") }}
@@ -131,6 +132,7 @@ import { useI18n } from "vue-i18n";
 
 import { useThemeTexts } from "@/composables/texts/useThemeTexts";
 import { PREFERENCES } from "@/constants/preferences";
+import { GOOD_TO_KNOW_TOPIC } from "@/constants/settings";
 import { MAX_OWN_THEMES } from "@/core/themes/ownThemes";
 import { COLOR_MODE, type ThemeTokens } from "@/core/themes/themeFormat";
 import { useOwnThemesStore } from "@/stores/ownThemesStore";

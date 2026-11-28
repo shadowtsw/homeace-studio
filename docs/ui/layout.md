@@ -19,6 +19,7 @@ they help each other. Use exactly these words in every user text (app, README, D
 | Everything the page derives (tree, filtered entries, counts, area nav, open entry) | `composables/studio/useStudioData.ts` |
 | What the user is looking at: tree selection, scope tab, search, open entry, ticked rows, inline rename | `stores/studioStore.ts` |
 | Settings the user changes on purpose (scope `user`): technical details, language, scene auto-save | `stores/settingsStore.ts` |
+| Theme (scope `user`), brightness (scope `device`), own themes | `stores/themeStore.ts`, `stores/ownThemesStore.ts` ([features/themes.md](../features/themes.md)) |
 | How the columns look on this device (scope `device`): pane widths, nav mode, detail folded | `stores/layoutStore.ts` |
 | Every kept preference with its storage key and scope; read and written only through `usePreference` | `constants/preferences.ts`, `composables/usePreference.ts` (all in localStorage for now, `homeace.*`) |
 | Top bar (connection status, live dot, language menu, gear, What's new) | `components/layout/AppTopBar.vue`, `LanguageMenu.vue`, `WhatsNewMenu.vue` |
@@ -67,7 +68,8 @@ Choosing a tree node always sets `isNavOpen = false`, and opening an entry alway
   (`isLive`), entry count, the language menu (`LanguageMenu`, "DE ▾", the only quick setting) and the
   gear, which opens the settings window (see below).
 - `WhatsNewMenu`: after an update, a gift with a dot next to the gear and a popover with the highlights.
-  "Zeigen" leads to the feature (`utils/flash.ts` lets it light up), and only "OK" confirms.
+  "Zeigen" leads to the feature (`utils/flash.ts` lets it light up): `show` in an item is `settings`
+  ("Über HomeAce"), `appearance` (the page "Aussehen"), `helpers`, `scenes` or `entities`. Only "OK" confirms.
   `constants/whatsNew.ts` holds the highlights per release in every language. `utils/whatsNew/whatsNew.ts` has the
   logic (unseen releases, test builds without a version show the newest). `stores/whatsNewStore` keeps
   the confirmed version (`PREFERENCES.seenVersion`, scope `user`). `utils/whatsNew/earlierVisit.ts` tells a fresh install from an

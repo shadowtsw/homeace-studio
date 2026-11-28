@@ -3,8 +3,11 @@ import type { AppLocale } from "@/i18n";
 /** A text in every UI language; the type makes a missing language a build error. */
 export type LocalizedText = Record<AppLocale, string>;
 
-/** Where "Zeigen" takes the user: the gear menu, or the helpers or scenes in the list. */
-export type WhatsNewTarget = "settings" | "helpers" | "scenes" | "entities";
+/**
+ * Where "Zeigen" takes the user: the settings window ("Über HomeAce" or "Aussehen"), or the
+ * helpers, scenes or entities in the list.
+ */
+export type WhatsNewTarget = "settings" | "appearance" | "helpers" | "scenes" | "entities";
 
 export type WhatsNewItem = {
   /** MDI icon class, e.g. "mdi-gift-outline". */

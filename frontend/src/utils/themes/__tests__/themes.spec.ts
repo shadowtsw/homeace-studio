@@ -13,7 +13,7 @@ import {
 } from "@/utils/themes/builtInThemes";
 import { contrastRatio, isHexColor } from "@/core/themes/color";
 import { COLOR_MODE, THEME_TOKENS, type ColorMode } from "@/core/themes/themeFormat";
-import { pairsBelowFloor } from "@/utils/themes/tokens";
+import { deriveTokens, pairsBelowFloor } from "@/utils/themes/tokens";
 
 const TOKENS_CSS = readFileSync(join(__dirname, "..", "..", "..", "styles", "tokens.css"), "utf8");
 const DARK_BLOCK_START = "@media (prefers-color-scheme: dark)";
@@ -94,6 +94,70 @@ describe("ready-made themes", () => {
 
     expect(modeOfTheme({ theme: midnight, wanted: "light" })).toBe("dark");
     expect(modeOfTheme({ theme: STANDARD_THEME, wanted: "light" })).toBe("light");
+  });
+});
+
+/** Each flow colour with the text colour of its filled label. */
+const FLOW_LABELS = [
+  ["--flow-when", "--on-flow-when"],
+  ["--flow-if", "--on-flow-if"],
+  ["--flow-then", "--on-flow-then"],
+] as const;
+
+describe("text on the filled flow labels (--on-flow-*)", () => {
+  it("Standard keeps its labels: the same colour as on the accent", () => {
+    for (const [, label] of FLOW_LABELS) {
+      expect(STANDARD_TOKENS.light[label]).toBe(STANDARD_TOKENS.light["--on-accent"]);
+      expect(STANDARD_TOKENS.dark[label]).toBe(STANDARD_TOKENS.dark["--on-accent"]);
+    }
+  });
+
+  it("light flow colours with a dark accent get dark label text, not the accent's white", () => {
+    const tokens = deriveTokens({
+      colors: {
+        background: "#f4f5f7",
+        surface: "#ffffff",
+        text: "#1f2328",
+        accent: "#1a1a6e",
+        flowWhen: "#f5c58a",
+        flowIf: "#9fe0d6",
+        flowThen: "#b9c6ff",
+      },
+      mode: "light",
+      isStrong: false,
+    });
+
+    expect(tokens["--on-accent"]).toBe("#ffffff");
+    for (const [flow, label] of FLOW_LABELS) {
+      expect(tokens[label]).toBe("#0e1117");
+      expect(contrastRatio(tokens[label], tokens[flow])).toBeGreaterThanOrEqual(TEXT_CONTRAST);
+    }
+  });
+
+  it("reads well on each label, however far apart the flow colours are", () => {
+    const grounds = ["#ffffff", "#7a7a7a", "#1b1b1b"];
+    const flows = ["#fff3c4", "#888888", "#3451d1", "#0a0a0a"];
+    for (const surface of grounds) {
+      for (const flowWhen of flows) {
+        for (const flowThen of flows) {
+          const mode = surface === "#ffffff" ? "light" : "dark";
+          const colors = { background: surface, surface, text: "#808080", accent: "#808080" };
+          const tokens = deriveTokens({
+            colors: { ...colors, flowWhen, flowIf: "#808080", flowThen },
+            mode,
+            isStrong: false,
+          });
+          const failing = FLOW_LABELS.filter(
+            ([flow, label]) => contrastRatio(tokens[label], tokens[flow]) < TEXT_CONTRAST - 0.5,
+          );
+
+          expect(failing, `${surface} ${flowWhen} ${flowThen}`).toEqual([]);
+          expect(pairsBelowFloor(tokens).filter((pair) => pair.startsWith("--on-flow"))).toEqual(
+            [],
+          );
+        }
+      }
+    }
   });
 });
 

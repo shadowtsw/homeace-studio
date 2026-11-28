@@ -104,6 +104,7 @@ const { t } = useI18n();
 
 .theme-preview__section {
   --section-color: var(--flow-then);
+  --section-on: var(--on-flow-then);
   --section-soft: var(--flow-then-soft);
 
   display: flex;
@@ -114,11 +115,13 @@ const { t } = useI18n();
 
 .theme-preview__section--when {
   --section-color: var(--flow-when);
+  --section-on: var(--on-flow-when);
   --section-soft: var(--flow-when-soft);
 }
 
 .theme-preview__section--if {
   --section-color: var(--flow-if);
+  --section-on: var(--on-flow-if);
   --section-soft: var(--flow-if-soft);
 }
 
@@ -126,7 +129,7 @@ const { t } = useI18n();
   padding: 3px 8px;
   border-radius: 6px;
   background: var(--section-color);
-  color: var(--on-accent);
+  color: var(--section-on);
   font-size: 10.5px;
   font-weight: 700;
   letter-spacing: 0.06em;

@@ -103,6 +103,13 @@ async function show(target: WhatsNewTarget): Promise<void> {
     flashElement(document.querySelector(".settings-window__panel"));
   }
 
+  // Themes and brightness: the page "Aussehen" itself
+  if (target === "appearance") {
+    await settingsWindow.open(SETTINGS_TAB.appearance);
+    await nextTick();
+    flashElement(document.querySelector(".settings-window__panel"));
+  }
+
   if (target === "helpers" || target === "scenes") {
     studio.selectScope(target === "helpers" ? "helper" : "scene");
     await nextTick();
